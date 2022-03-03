@@ -1,5 +1,6 @@
 const joi = require('joi')
 const cacheConfig = require('./cache')
+const mqConfig = require('./mq-config')
 
 // Define config schema
 const schema = joi.object({
@@ -57,6 +58,18 @@ value.cacheConfig = cacheConfig
 value.isDev = value.env === 'development'
 value.isTest = value.env === 'test'
 value.isProd = value.env === 'production'
+
+value.serviceBus = mqConfig.serviceBus
+value.enrichmentTopic = mqConfig.enrichmentTopic
+value.enrichmentSubscription = mqConfig.enrichmentSubscription
+value.processingTopic = mqConfig.processingTopic
+value.processingSubscription = mqConfig.processingSubscription
+value.submissionTopic = mqConfig.submissionTopic
+value.submissionSubscription = mqConfig.submissionSubscription
+value.acknowledgeTopic = mqConfig.acknowledgeTopic
+value.acknowledgeSubscription = mqConfig.acknowledgeSubscription
+value.returnTopic = mqConfig.returnTopic
+value.returnSubscription = mqConfig.returnSubscription
 
 // Don't try to connect to Redis for testing or if Redis not available
 value.useRedis = !value.isTest && value.cacheConfig.redisCatboxOptions.host !== undefined

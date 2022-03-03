@@ -1,0 +1,78 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Back",
+        href: "/payment-monitor"
+      }]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <h1 class="govuk-heading-l">Storage Details</h1>
+          {% if containerName === 'batch' %}
+            <h1 class="govuk-heading-m">BATCH</h1>
+            <h1 class="govuk-heading-m">Inbound {{storageDetails.batchInbound.fileList.length}}</h1>
+            <ul class="govuk-list">
+              {% for item in storageDetails.batchInbound.fileList %}
+                <li><a class="govuk-link" href="/storage-details?filename={{item}}&prefix={{storageDetails.batchInbound.prefix}}&containerName={{storageDetails.batchInbound.containerName}}">{{ item }}</a></li>
+              {% endfor %}
+            </ul>
+            <h1 class="govuk-heading-m">Archive {{storageDetails.batchArchive.fileList.length}}</h1>
+            <ul class="govuk-list">
+              {% for item in storageDetails.batchArchive.fileList %}
+                <li><a class="govuk-link" href="/storage-details?filename={{item}}&prefix={{storageDetails.batchArchive.prefix}}&containerName={{storageDetails.batchArchive.containerName}}">{{ item }}</a></li>
+              {% endfor %}
+            </ul>
+            <h1 class="govuk-heading-m">Quarantine {{storageDetails.batchQuarantine.fileList.length}}</h1>
+            <ul class="govuk-list">
+              {% for item in storageDetails.batchQuarantine.fileList %}
+                <li><a class="govuk-link" href="/storage-details?filename={{item}}&prefix={{storageDetails.batchQuarantine.prefix}}&containerName={{storageDetails.batchQuarantine.containerName}}">{{ item }}</a></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <h1 class="govuk-heading-m">DAX</h1>
+            <h1 class="govuk-heading-m">Inbound {{storageDetails.daxInbound.fileList.length}}</h1>
+            <ul class="govuk-list">
+              {% for item in storageDetails.daxInbound.fileList %}
+                <li><a class="govuk-link" href="/storage-details?filename={{item}}&prefix={{storageDetails.daxInbound.prefix}}&containerName={{storageDetails.daxInbound.containerName}}">{{ item }}</a></li>
+              {% endfor %}
+            </ul>
+            <h1 class="govuk-heading-m">Outbound {{storageDetails.daxOutbound.fileList.length}}</h1>
+            <ul class="govuk-list">
+              {% for item in storageDetails.daxOutbound.fileList %}
+                <li><a class="govuk-link" href="/storage-details?filename={{item}}&prefix={{storageDetails.daxOutbound.prefix}}&containerName={{storageDetails.daxOutbound.containerName}}">{{ item }}</a></li>
+              {% endfor %}
+            </ul>
+            <h1 class="govuk-heading-m">Archive {{storageDetails.daxArchive.fileList.length}}</h1>
+            <ul class="govuk-list">
+              {% for item in storageDetails.daxArchive.fileList %}
+                <li><a class="govuk-link" href="/storage-details?filename={{item}}&prefix={{storageDetails.daxArchive.prefix}}&containerName={{storageDetails.daxArchive.containerName}}">{{ item }}</a></li>
+              {% endfor %}
+            </ul>
+            <h1 class="govuk-heading-m">Quarantine {{storageDetails.daxQuarantine.fileList.length}}</h1>
+            <ul class="govuk-list">
+              {% for item in storageDetails.daxQuarantine.fileList %}
+                <li><a class="govuk-link" href="/storage-details?filename={{item}}&prefix={{storageDetails.daxQuarantine.prefix}}&containerName={{storageDetails.daxQuarantine.containerName}}">{{ item }}</a></li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <h1 class="govuk-heading-m">File Details</h1>
+          <p class="govuk-body">Created On: {{ fileDetails.createdOn }} </p>
+          <p style="overflow: scroll; color: white; background-color: black; height: 400px; font-size: 10px; padding: 4px">{{ fileContent }} </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      }]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">Payment Monitor</h1>
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <div class="mermaid">
+            graph TD
+                1[<strong>Blob Storage - Batch</strong><br>Inbound: {{ storageDetails.batchInbound.fileList.length }}<br>Archive: {{ storageDetails.batchArchive.fileList.length }}<br>Quarantine: {{ storageDetails.batchQuarantine.fileList.length }}] --> A
+                click 1 "/storage-details?containerName=batch" "click"
+                A[<strong>Payment Batch Processor</strong>] --> |{{subscriptionDetails.enrichment.subscriptionName}}| B
+                B[<strong>Payment Enrichment</strong><br>Active Messages: {{ subscriptionDetails.enrichment.activeMessageCount }}<br>Dead Letter Messages: {{ subscriptionDetails.enrichment.deadLetterMessageCount }}] --> |{{subscriptionDetails.paymentProcessing.subscriptionName}}| C
+                click B "/service-bus-details?topic={{subscriptionDetails.enrichment.topicName}}&subscription={{subscriptionDetails.enrichment.subscriptionName}}" "click"
+                C[<strong>Payment Processing</strong><br>Active Messages: {{ subscriptionDetails.paymentProcessing.activeMessageCount }}<br>Dead Letter Messages: {{ subscriptionDetails.paymentProcessing.deadLetterMessageCount }}] --> |{{subscriptionDetails.paymentSubmission.subscriptionName}}| D
+                click C "/service-bus-details?topic={{subscriptionDetails.paymentProcessing.topicName}}&subscription={{subscriptionDetails.paymentProcessing.subscriptionName}}" "click"
+                D[<strong>Payment Submission</strong><br>Active Messages: {{ subscriptionDetails.paymentSubmission.activeMessageCount }}<br>Dead Letter Messages: {{ subscriptionDetails.paymentSubmission.deadLetterMessageCount }}] --> E
+                click D "/service-bus-details?topic={{subscriptionDetails.paymentSubmission.topicName}}&subscription={{subscriptionDetails.paymentSubmission.subscriptionName}}" "click"
+                E[<strong>Blob Storage - Dax</strong><br>Outbound: 0] --> F
+                click E "/storage-details?containerName=dax" "click"
+                F[<strong>Dynamics 365</strong>]
+                G[<strong>Payment Management</strong>] --> C
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <div class="mermaid">
+            graph TD
+                A[<strong>Dynamics 365</strong>] --> B
+                B[<strong>Blob Storage - Dax</strong><br>Inbound: {{ storageDetails.daxInbound.fileList.length }}<br>Outbound: {{ storageDetails.daxOutbound.fileList.length }}<br>Archive: {{ storageDetails.daxArchive.fileList.length }}<br>Quarantine: {{ storageDetails.daxQuarantine.fileList.length }}] --> C
+                click B "/storage-details?containerName=dax" "click"
+                C[<strong>Payment Response</strong>] --> |{{ subscriptionDetails.acknowledge.subscriptionName }}| D
+                D[<strong>Payment Processing</strong><br>Active Messages: {{ subscriptionDetails.acknowledge.activeMessageCount }}<br>Dead Letter Messages: {{ subscriptionDetails.acknowledge.deadLetterMessageCount }}]
+                E[<strong>Payment Processing</strong><br>Active Messages: {{ subscriptionDetails.returnProcessing.activeMessageCount }}<br>Dead Letter Messages: {{ subscriptionDetails.returnProcessing.deadLetterMessageCount }}]
+                C --> |{{ subscriptionDetails.returnProcessing.subscriptionName }}| E
+                click D "/service-bus-details?topic={{subscriptionDetails.acknowledge.topicName}}&subscription={{subscriptionDetails.acknowledge.subscriptionName}}" "click"
+                click E "/service-bus-details?topic={{subscriptionDetails.returnProcessing.topicName}}&subscription={{subscriptionDetails.returnProcessing.subscriptionName}}" "click"
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({startOnLoad:true, securityLevel='loose'});
+  </script>
+{% endblock %}

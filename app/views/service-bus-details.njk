@@ -1,0 +1,37 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Back",
+        href: "/payment-monitor"
+      }]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">Service Bus Details</h1>
+      <p class="govuk-body">
+        <ul class="govuk-list">
+          <li><strong>Subscription Name:</strong> {{ subscriptionDetails.subscriptionProperties.subscriptionName }}</li>
+          <li><strong>Topic Name:</strong> {{ subscriptionDetails.subscriptionProperties.topicName }}</li>
+          <li><strong>Total Message Count:</strong> {{ subscriptionDetails.subscriptionProperties.totalMessageCount }}</li>
+          <li><strong>Active Message Count:</strong> {{ subscriptionDetails.subscriptionProperties.activeMessageCount }}</li>
+          <li><strong>DeadLetter Message Count:</strong> {{ subscriptionDetails.subscriptionProperties.deadLetterMessageCount }}</li>
+          <li><strong>Transfer DeadLetter Message Count:</strong> {{ subscriptionDetails.subscriptionProperties.transferDeadLetterMessageCount }}</li>
+          <li><strong>Transfer Message Count:</strong> {{ subscriptionDetails.subscriptionProperties.transferMessageCount }}</li>
+          <li><strong>Created At:</strong> {{ subscriptionDetails.subscriptionProperties.createdAt }}</li>
+          <li><strong>Modified At:</strong> {{ subscriptionDetails.subscriptionProperties.modifiedAt }}</li>
+          <li><strong>Accessed At:</strong> {{ subscriptionDetails.subscriptionProperties.accessedAt }}</li>
+        </ul>
+      </p>
+  </div>
+</div>
+{% endblock %}
