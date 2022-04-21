@@ -40,6 +40,7 @@
     "log-timestamp": "^0.3.0",
     "moment": "^2.29.1",
     "nunjucks": "^3.2.3",
+    "powerbi-client": "^2.19.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

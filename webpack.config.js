@@ -13,7 +13,8 @@ module.exports = {
       './app/frontend/css/index.js',
       './app/frontend/images/favicon.ico',
       './app/frontend/images/search-icon.png'
-    ]
+    ],
+    miReport: './app/frontend/js/mi-dashboard.js'
   },
   mode: isDev ? 'development' : 'production',
   module: {
@@ -75,6 +76,12 @@ module.exports = {
       filename: '../views/_layout.njk',
       template: 'app/views/_layout.template.njk',
       chunks: ['core']
+    }),
+    new HtmlWebpackPlugin({
+      inject: false,
+      filename: '../views/mi-dashboard.njk',
+      template: 'app/views/mi-dashboard.template.njk',
+      chunks: ['miReport']
     }),
     new MiniCssExtractPlugin({
       filename: 'css/[name].[fullhash].css'

@@ -1,0 +1,17 @@
+{% extends '_layout.njk' %}
+{% from "./macros/logout.njk" import logout %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">MI Dashboard</h1>
+      <div id="miReportContainer" style="height: 750px"></div>
+  </div>
+</div>
+<% htmlWebpackPlugin.files.js.forEach(file => { %>
+  <script src="<%= file.replace('../dist/', '/static/') %>"></script>
+<% }) %>
+<script>
+  miReport.displayReport()
+</script>
+{% endblock %}

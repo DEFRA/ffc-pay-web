@@ -9,7 +9,8 @@ const routes = [].concat(
   require('../routes/holds'),
   require('../routes/schemes'),
   require('../routes/payment-requests'),
-  require('../routes/dev-auth')
+  require('../routes/dev-auth'),
+  require('../routes/mi-dashboard')
 )
 
 module.exports = {
