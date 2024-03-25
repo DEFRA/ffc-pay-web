@@ -1,4 +1,4 @@
-const { getMIReport, getSuppressedReport, getTransactionSummary, getAPListingReport, getARListingReport } = require('../storage')
+const { getMIReport, getSuppressedReport, getTransactionSummary } = require('../storage')
 const { getHolds } = require('../holds')
 const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
 const formatDate = require('../format-date')
@@ -46,46 +46,6 @@ module.exports = [{
       }
     }
   }
-}, {
-  method: 'GET',
-  path: '/report/ap-listing-report',
-  options: {
-    auth: { scope: [schemeAdmin, holdAdmin, dataView] },
-    handler: async (_request, h) => {
-      try {
-        const response = await getAPListingReport()
-        if (response) {
-          return h.response(response.readableStreamBody)
-            .type('text/csv')
-            .header('Connection', 'keep-alive')
-            .header('Cache-Control', 'no-cache')
-            .header('Content-Disposition', `attachment;filename=${storageConfig.apListingReportName}`)
-        }
-      } catch {
-        return h.view('payment-report-unavailable')
-      }
-    }
-  }
-}, {
-  method: 'GET',
-  path: '/report/ar-listing-report',
-  options: {
-    auth: { scope: [schemeAdmin, holdAdmin, dataView] },
-    handler: async (_request, h) => {
-      try {
-        const response = await getARListingReport()
-        if (response) {
-          return h.response(response.readableStreamBody)
-            .type('text/csv')
-            .header('Connection', 'keep-alive')
-            .header('Cache-Control', 'no-cache')
-            .header('Content-Disposition', `attachment;filename=${storageConfig.arListingReportName}`)
-        }
-      } catch {
-        return h.view('payment-report-unavailable')
-      }
-    }
-  }
 },
 {
   method: 'GET',
@@ -121,6 +81,7 @@ module.exports = [{
             return {
               frn: hold.frn,
               scheme: hold.holdCategorySchemeName,
+              marketingYear: hold.marketingYear,
               holdCategory: hold.holdCategoryName,
               dateAdded: formatDate(hold.dateTimeAdded)
             }

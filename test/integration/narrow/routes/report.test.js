@@ -68,30 +68,6 @@ describe('Report test', () => {
     expect(response.payload).toBe('Hello')
   })
 
-  test('GET /report/ap-listing-report route returns stream if report available', async () => {
-    const options = {
-      method: 'GET',
-      url: '/report/ap-listing-report',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).toBe('Hello')
-  })
-
-  test('GET /report/ar-listing-report route returns stream if report available', async () => {
-    const options = {
-      method: 'GET',
-      url: '/report/ar-listing-report',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).toBe('Hello')
-  })
-
   test('GET /report/suppressed-payments route returns stream if report available', async () => {
     const options = {
       method: 'GET',
@@ -141,30 +117,6 @@ describe('Report test', () => {
     const options = {
       method: 'GET',
       url: '/report/transaction-summary',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.payload).toContain('Payment report unavailable')
-  })
-
-  test('GET /report/ap-listing-report route returns unavailable page if report not available', async () => {
-    mockDownload = undefined
-    const options = {
-      method: 'GET',
-      url: '/report/ap-listing-report',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.payload).toContain('Payment report unavailable')
-  })
-
-  test('GET /report/ar-listing-report route returns unavailable page if report not available', async () => {
-    mockDownload = undefined
-    const options = {
-      method: 'GET',
-      url: '/report/ar-listing-report',
       auth
     }
 
