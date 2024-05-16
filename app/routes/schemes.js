@@ -11,9 +11,9 @@ module.exports = [{
     handler: async (_request, h) => {
       const schemes = await get('/payment-schemes')
       const schemesPayload = schemes.payload.paymentSchemes
-      for (let i = 0; i < schemesPayload.length; i++) {
-        if (schemesPayload[i].name === 'SFI') {
-          schemesPayload[i].name = 'SFI22'
+      for (const scheme of schemesPayload) {
+        if (scheme.name === 'SFI') {
+          scheme.name = 'SFI22'
         }
       }
       return h.view('payment-schemes', { schemes: schemesPayload })

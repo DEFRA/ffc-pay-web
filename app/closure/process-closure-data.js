@@ -4,9 +4,8 @@ const processClosureData = async (data) => {
   const uploadData = []
   const splitData = data.split(/\r?\n|\r|\n/g)
   const closureLines = splitData.filter((str) => str !== '')
-  for (let i = 0; i < closureLines.length; i++) {
-    const closure = closureLines[i]
-    const clData = closure.split(',')
+  for (const closureLine of closureLines) {
+    const clData = closureLine.split(',')
     if (clData.length !== 3) {
       return {
         errors: { details: [{ message: 'The file is not in the expected format' }] }
