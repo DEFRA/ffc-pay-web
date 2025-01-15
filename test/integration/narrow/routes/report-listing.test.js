@@ -116,14 +116,16 @@ describe('AP Listing Report tests', () => {
 
   test('GET /report-list/ap-ar-listing/download route sets endDate to current date if only startDate is provided', async () => {
     const now = new Date()
-    const expectedEndDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const expectedEndDate = `${now.getFullYear()}-${String(
+      now.getMonth() + 1
+    ).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
     const options = {
       method: 'GET',
       url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022',
       auth
     }
 
-    getTrackingData.mockImplementation((url) => {
+    getTrackingData.mockImplementation(url => {
       const urlObj = new URL(url, 'http://localhost')
       const requestEndDate = urlObj.searchParams.get('endDate')
       expect(requestEndDate).toBe(expectedEndDate)
@@ -161,7 +163,7 @@ describe('AP Listing Report tests', () => {
       url: '/report-list/ap-ar-listing/download',
       auth
     }
-    getTrackingData.mockImplementation((url) => {
+    getTrackingData.mockImplementation(url => {
       expect(url).toContain('startDate=2015-01-01')
       return Promise.resolve({
         payload: {
@@ -186,9 +188,16 @@ describe('AP Listing Report tests', () => {
     const h = {
       view: jest.fn()
     }
-    const handler = generateRoutes('ap-ar-listing', '/ap-report-data', 'apReportData')[1].options.handler
+    const handler = generateRoutes(
+      'ap-ar-listing',
+      '/ap-report-data',
+      'apReportData'
+    )[1].options.handler
     await handler(options, h)
-    expect(h.view).toHaveBeenCalledWith('reports-list/ap-ar-listing', expect.anything())
+    expect(h.view).toHaveBeenCalledWith(
+      'reports-list/ap-ar-listing',
+      expect.anything()
+    )
   })
   test('filename starts with correct reportName', async () => {
     const options = {
@@ -202,7 +211,9 @@ describe('AP Listing Report tests', () => {
       }
     })
     const response = await server.inject(options)
-    expect(response.headers['content-disposition']).toContain(config.apListingReportName.slice(0, -4))
+    expect(response.headers['content-disposition']).toContain(
+      config.apListingReportName.slice(0, -4)
+    )
   })
   test('CSV content is correct when reportName is ar-listing', async () => {
     const options = {
@@ -216,7 +227,9 @@ describe('AP Listing Report tests', () => {
       }
     })
     const response = await server.inject(options)
-    expect(response.headers['content-disposition']).toContain(config.arListingReportName.slice(0, -4))
+    expect(response.headers['content-disposition']).toContain(
+      config.arListingReportName.slice(0, -4)
+    )
   })
 
   test('GET /report-list/ap-ar-listing/download returns 400 for invalid request', async () => {
@@ -229,8 +242,6 @@ describe('AP Listing Report tests', () => {
     expect(response.statusCode).toBe(400)
   })
   test('GET /report-list/invalid-report-name returns 404 for invalid report name and query parameters', async () => {
-    const routes = generateRoutes('invalid-report-name', '/invalid-report-data', 'invalidReportData')
-    server.route(routes)
     const options = {
       method: 'GET',
       url: '/report-list/invalid-report-name/download?start-date-day=32',

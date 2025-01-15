@@ -1,4 +1,4 @@
-function ViewModel (labelText, value, error) {
+function viewModel (labelText, value, error) {
   this.model = {
     id: 'user-search',
     name: 'frn',
@@ -23,4 +23,4 @@ function ViewModel (labelText, value, error) {
   }
 }
 
-module.exports = ViewModel
+module.exports = viewModel

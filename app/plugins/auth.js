@@ -2,15 +2,17 @@ const config = require('../config')
 const authCookie = require('@hapi/cookie')
 const auth = require('../auth')
 
+const SESSION_AUTH = 'session-auth'
+
 module.exports = {
   plugin: {
     name: 'auth',
-    register: async (server) => {
+    register: async server => {
       await server.register(authCookie)
 
-      server.auth.strategy('session-auth', 'cookie', {
+      server.auth.strategy(SESSION_AUTH, 'cookie', {
         cookie: {
-          name: 'session-auth',
+          name: SESSION_AUTH,
           password: config.authConfig.cookie.password,
           ttl: config.authConfig.cookie.ttl,
           path: '/',
@@ -21,11 +23,14 @@ module.exports = {
         redirectTo: '/login'
       })
 
-      server.auth.default('session-auth')
+      server.auth.default(SESSION_AUTH)
 
       server.ext('onPreAuth', async (request, h) => {
         if (request.auth.credentials) {
-          await auth.refresh(request.auth.credentials.account, request.cookieAuth)
+          await auth.refresh(
+            request.auth.credentials.account,
+            request.cookieAuth
+          )
         }
         return h.continue
       })

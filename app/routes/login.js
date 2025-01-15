@@ -1,4 +1,5 @@
 const auth = require('../auth')
+const HTTP_SERVER_ERROR = 500
 
 module.exports = {
   method: 'GET',
@@ -13,6 +14,6 @@ module.exports = {
     } catch (err) {
       console.log('Error authenticating', err)
     }
-    return h.view('500').code(500)
+    return h.view('500').code(HTTP_SERVER_ERROR)
   }
 }

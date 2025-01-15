@@ -2,13 +2,18 @@ const joi = require('joi')
 const authConfig = require('./auth')
 const storageConfig = require('./storage')
 const messageConfig = require('./message')
+const portNumber = 3007
+const staticCacheTimeout = 604800000
 
 // Define config schema
 const schema = joi.object({
   serviceName: joi.string().default('Payment management'),
-  port: joi.number().default(3007),
-  env: joi.string().valid('development', 'test', 'production').default('development'),
-  staticCacheTimeoutMillis: joi.number().default(7 * 24 * 60 * 60 * 1000),
+  port: joi.number().default(portNumber),
+  env: joi
+    .string()
+    .valid('development', 'test', 'production')
+    .default('development'),
+  staticCacheTimeoutMillis: joi.number().default(staticCacheTimeout),
   googleTagManagerKey: joi.string().default(''),
   paymentsEndpoint: joi.string().uri().required(),
   trackingEndpoint: joi.string().uri().required(),

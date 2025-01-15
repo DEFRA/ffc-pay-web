@@ -7,111 +7,177 @@ const { holdAdmin } = require('../auth/permissions')
 const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost } = require('../hold')
 const searchLabelText = 'Search for a hold by FRN number'
+const ROUTES = {
+  HOLDS: '/payment-holds',
+  ADD: '/add-payment-hold',
+  BULK: '/payment-holds/bulk',
+  REMOVE: '/remove-payment-hold'
+}
 
-module.exports = [{
-  method: 'GET',
-  path: '/payment-holds',
-  options: {
-    auth: { scope: [holdAdmin] },
-    handler: async (request, h) => {
-      const page = parseInt(request.query.page) || 1
-      const perPage = parseInt(request.query.perPage || 100)
-      const paymentHolds = await getHolds(page, perPage)
-      return h.view('payment-holds', { paymentHolds, page, perPage, ...new ViewModel(searchLabelText) })
-    }
-  }
-}, {
-  method: 'POST',
-  path: '/payment-holds',
-  options: {
-    auth: { scope: [holdAdmin] },
-    validate: {
-      payload: searchSchema,
-      failAction: async (request, h, error) => {
-        const paymentHolds = await getHolds()
-        return h.view('payment-holds', { paymentHolds, ...new ViewModel(searchLabelText, request.payload.frn, error) }).code(400).takeover()
+const VIEWS = {
+  HOLDS: 'payment-holds',
+  ADD: 'add-payment-hold',
+  BULK: 'payment-holds/bulk',
+  REMOVE: 'remove-payment-hold'
+}
+
+const HTTP = {
+  BAD_REQUEST: 400
+}
+
+const CONFIG = {
+  MAX_BYTES: 1048576
+}
+
+module.exports = [
+  {
+    method: 'GET',
+    path: ROUTES.HOLDS,
+    options: {
+      auth: { scope: [holdAdmin] },
+      handler: async (request, h) => {
+        const page = parseInt(request.query.page) || 1
+        const perPage = parseInt(request.query.perPage || 100)
+        const paymentHolds = await getHolds(page, perPage)
+        return h.view(VIEWS.HOLDS, {
+          paymentHolds,
+          page,
+          perPage,
+          ...new ViewModel(searchLabelText)
+        })
       }
-    },
-    handler: async (request, h) => {
-      const frn = request.payload.frn
-      const paymentHolds = await getHolds(undefined, undefined, false)
-      const filteredPaymentHolds = paymentHolds.filter(x => x.frn === String(frn))
+    }
+  },
+  {
+    method: 'POST',
+    path: ROUTES.HOLDS,
+    options: {
+      auth: { scope: [holdAdmin] },
+      validate: {
+        payload: searchSchema,
+        failAction: async (request, h, error) => {
+          const paymentHolds = await getHolds()
+          return h
+            .view(VIEWS.HOLDS, {
+              paymentHolds,
+              ...new ViewModel(searchLabelText, request.payload.frn, error)
+            })
+            .code(HTTP.BAD_REQUEST)
+            .takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const frn = request.payload.frn
+        const paymentHolds = await getHolds(undefined, undefined, false)
+        const filteredPaymentHolds = paymentHolds.filter(
+          x => x.frn === String(frn)
+        )
 
-      if (filteredPaymentHolds.length) {
-        return h.view('payment-holds', { paymentHolds: filteredPaymentHolds, ...new ViewModel(searchLabelText, frn) })
+        if (filteredPaymentHolds.length) {
+          return h.view(VIEWS.HOLDS, {
+            paymentHolds: filteredPaymentHolds,
+            ...new ViewModel(searchLabelText, frn)
+          })
+        }
+
+        return h
+          .view(
+            VIEWS.HOLDS,
+            new ViewModel(searchLabelText, frn, {
+              message: 'No holds match the FRN provided.'
+            })
+          )
+          .code(HTTP.BAD_REQUEST)
       }
-
-      return h.view('payment-holds', new ViewModel(searchLabelText, frn, { message: 'No holds match the FRN provided.' })).code(400)
     }
-  }
-}, {
-  method: 'GET',
-  path: '/add-payment-hold',
-  options: {
-    auth: { scope: [holdAdmin] },
-    handler: async (_request, h) => {
-      const { schemes, paymentHoldCategories } = await getHoldCategories()
-      return h.view('add-payment-hold', { schemes, paymentHoldCategories })
-    }
-  }
-},
-{
-  method: 'GET',
-  path: '/payment-holds/bulk',
-  options: {
-    auth: { scope: [holdAdmin] },
-    handler: async (_request, h) => {
-      const { schemes, paymentHoldCategories } = await getHoldCategories()
-      return h.view('payment-holds/bulk', { schemes, paymentHoldCategories })
-    }
-  }
-},
-{
-  method: 'POST',
-  path: '/add-payment-hold',
-  options: {
-    auth: { scope: [holdAdmin] },
-    validate: {
-      payload: schema,
-      failAction: async (request, h, error) => {
+  },
+  {
+    method: 'GET',
+    path: ROUTES.ADD,
+    options: {
+      auth: { scope: [holdAdmin] },
+      handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view('add-payment-hold', { schemes, paymentHoldCategories, errors: error, frn: request.payload.frn }).code(400).takeover()
+        return h.view(VIEWS.ADD, { schemes, paymentHoldCategories })
       }
-    },
-    handler: async (request, h) => {
-      await post('/add-payment-hold', { holdCategoryId: request.payload.holdCategoryId, frn: request.payload.frn }, null)
-      return h.redirect('/payment-holds')
     }
-  }
-},
-{
-  method: 'POST',
-  path: '/remove-payment-hold',
-  options: {
-    auth: { scope: [holdAdmin] },
-    handler: async (request, h) => {
-      await post('/remove-payment-hold', { holdId: request.payload.holdId })
-      return h.redirect('/')
-    }
-  }
-},
-{
-  method: 'POST',
-  path: '/payment-holds/bulk',
-  handler: handleBulkPost,
-  options: {
-    auth: { scope: [holdAdmin] },
-    validate: {
-      payload: bulkSchema,
-      failAction: async (request, h, error) => {
+  },
+  {
+    method: 'GET',
+    path: ROUTES.BULK,
+    options: {
+      auth: { scope: [holdAdmin] },
+      handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view('payment-holds/bulk', { schemes, paymentHoldCategories, errors: error }).code(400).takeover()
+        return h.view(VIEWS.BULK, { schemes, paymentHoldCategories })
       }
-    },
-    payload: {
-      output: 'file',
-      maxBytes: 1048576,
-      multipart: true
+    }
+  },
+  {
+    method: 'POST',
+    path: ROUTES.ADD,
+    options: {
+      auth: { scope: [holdAdmin] },
+      validate: {
+        payload: schema,
+        failAction: async (request, h, error) => {
+          const { schemes, paymentHoldCategories } = await getHoldCategories()
+          return h
+            .view(VIEWS.ADD, {
+              schemes,
+              paymentHoldCategories,
+              errors: error,
+              frn: request.payload.frn
+            })
+            .code(HTTP.BAD_REQUEST)
+            .takeover()
+        }
+      },
+      handler: async (request, h) => {
+        await post(
+          ROUTES.ADD,
+          {
+            holdCategoryId: request.payload.holdCategoryId,
+            frn: request.payload.frn
+          },
+          null
+        )
+        return h.redirect(ROUTES.HOLDS)
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: ROUTES.REMOVE,
+    options: {
+      auth: { scope: [holdAdmin] },
+      handler: async (request, h) => {
+        await post(VIEWS.REMOVE, { holdId: request.payload.holdId })
+        return h.redirect('/')
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: ROUTES.BULK,
+    handler: handleBulkPost,
+    options: {
+      auth: { scope: [holdAdmin] },
+      validate: {
+        payload: bulkSchema,
+        failAction: async (request, h, error) => {
+          const { schemes, paymentHoldCategories } = await getHoldCategories()
+          return h
+            .view(VIEWS.BULK, { schemes, paymentHoldCategories, errors: error })
+            .code(HTTP.BAD_REQUEST)
+            .takeover()
+        }
+      },
+      payload: {
+        output: 'file',
+        maxBytes: CONFIG.MAX_BYTES,
+        multipart: true
+      }
     }
   }
-}]
+]

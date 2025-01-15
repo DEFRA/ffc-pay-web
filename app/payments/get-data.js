@@ -7,20 +7,36 @@ const { sendMessage, receiveMessage } = require('../messaging')
 const getData = async (category, value) => {
   const messageId = uuidv4()
   const request = { category, value }
-  await sendMessage(request, TYPE, config.messageConfig.dataTopic, { messageId })
+
+  await sendMessage(request, TYPE, config.messageConfig.dataTopic, {
+    messageId
+  })
   console.info('Data request sent:', util.inspect(request, false, null, true))
-  const response = await receiveMessage(messageId, config.messageConfig.dataQueue)
-  if (response) {
-    console.info('Data response received:', util.inspect(response, false, null, true))
-    if (Array.isArray(response.data)) {
-      for (let i = 0; i < response.data.length; i++) {
-        if (response.data[i].scheme === 'SFI') {
-          response.data[i].scheme = 'SFI22'
-        }
-      }
-    }
+
+  const response = await receiveMessage(
+    messageId,
+    config.messageConfig.dataQueue
+  )
+
+  if (!response) {
+    return null
+  }
+
+  console.info(
+    'Data response received:',
+    util.inspect(response, false, null, true)
+  )
+
+  if (!Array.isArray(response.data)) {
     return response.data
   }
+
+  const transformedData = response.data.map(item => ({
+    ...item,
+    scheme: item.scheme === 'SFI' ? 'SFI22' : item.scheme
+  }))
+
+  return transformedData
 }
 
 module.exports = {

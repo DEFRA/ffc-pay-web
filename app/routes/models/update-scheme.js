@@ -1,5 +1,4 @@
-function ViewModel (value, error) {
-  // Constructor function to create logic dependent nunjucks page
+function viewModel (value, error) {
   this.model = {
     id: 'confirm',
     name: 'confirm',
@@ -25,7 +24,6 @@ function ViewModel (value, error) {
     ]
   }
 
-  // If error is passed to model then this error property is added to the model
   if (error) {
     this.model.errorMessage = {
       text: 'Please select yes or no to update.'
@@ -40,4 +38,4 @@ const getText = (name, active) => {
   return `Would you like to enable ${name}?`
 }
 
-module.exports = ViewModel
+module.exports = viewModel

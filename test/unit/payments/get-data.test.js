@@ -2,7 +2,10 @@ jest.mock('uuid')
 const { v4: mockUuid } = require('uuid')
 
 jest.mock('../../../app/messaging')
-const { sendMessage: mockSendMessage, receiveMessage: mockReceiveMessage } = require('../../../app/messaging')
+const {
+  sendMessage: mockSendMessage,
+  receiveMessage: mockReceiveMessage
+} = require('../../../app/messaging')
 
 const { TYPE } = require('../../../app/constants/type')
 
@@ -23,7 +26,10 @@ describe('get data', () => {
 
   test('should send message with category and value', async () => {
     await getData(CATEGORY, VALUE)
-    expect(mockSendMessage.mock.calls[0][0]).toMatchObject({ category: CATEGORY, value: VALUE })
+    expect(mockSendMessage.mock.calls[0][0]).toMatchObject({
+      category: CATEGORY,
+      value: VALUE
+    })
   })
 
   test('should send message with type', async () => {
@@ -46,19 +52,15 @@ describe('get data', () => {
     expect(result).toBe(DATA)
   })
 
-  test('should return undefined if no response received', async () => {
-    mockReceiveMessage.mockResolvedValue(undefined)
+  test('should return null if no response received', async () => {
+    mockReceiveMessage.mockResolvedValue(null)
     const result = await getData(CATEGORY, VALUE)
-    expect(result).toBe(undefined)
+    expect(result).toBe(null)
   })
 
   test('should change scheme from SFI to SFI22 in response data', async () => {
     const responseMock = {
-      data: [
-        { scheme: 'SFI' },
-        { scheme: 'OTHER' },
-        { scheme: 'SFI' }
-      ]
+      data: [{ scheme: 'SFI' }, { scheme: 'OTHER' }, { scheme: 'SFI' }]
     }
     mockReceiveMessage.mockResolvedValue(responseMock)
 

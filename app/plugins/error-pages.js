@@ -1,6 +1,7 @@
-/*
-* Add an `onPreResponse` listener to return error pages
-*/
+const HTTP_NOT_AUTHORIZED = 401
+const HTTP_FORBIDDEN = 403
+const HTTP_NOT_FOUND = 404
+const HTTP_SERVER_ERROR = 500
 
 module.exports = {
   plugin: {
@@ -10,18 +11,16 @@ module.exports = {
         const response = request.response
 
         if (response.isBoom) {
-          // An error was raised during
-          // processing the request
           const statusCode = response.output.statusCode
 
-          // if not authorised then request login
-          if (statusCode === 401 || statusCode === 403) {
+          if (
+            statusCode === HTTP_NOT_AUTHORIZED ||
+            statusCode === HTTP_FORBIDDEN
+          ) {
             return h.view('unauthorized').code(statusCode)
           }
 
-          // In the event of 404
-          // return the `404` view
-          if (statusCode === 404) {
+          if (statusCode === HTTP_NOT_FOUND) {
             return h.view('404').code(statusCode)
           }
 
@@ -31,8 +30,11 @@ module.exports = {
             message: response.message
           })
 
-          // The return the `500` view
-          return h.view('500').code(statusCode)
+          if (statusCode >= HTTP_SERVER_ERROR) {
+            return h.view('500').code(statusCode)
+          }
+
+          return h.continue
         }
         return h.continue
       })

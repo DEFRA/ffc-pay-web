@@ -1,4 +1,8 @@
-const { schemeAdmin, holdAdmin, dataView } = require('../../../../app/auth/permissions')
+const {
+  schemeAdmin,
+  holdAdmin,
+  dataView
+} = require('../../../../app/auth/permissions')
 const { getHolds } = require('../../../../app/holds')
 const api = require('../../../../app/api')
 const { getMIReport, getSuppressedReport } = require('../../../../app/storage')
@@ -41,7 +45,10 @@ describe('Report test', () => {
     mockDownload = jest.fn().mockReturnValue({
       readableStreamBody: 'Hello'
     })
-    auth = { strategy: 'session-auth', credentials: { scope: [schemeAdmin, holdAdmin, dataView] } }
+    auth = {
+      strategy: 'session-auth',
+      credentials: { scope: [schemeAdmin, holdAdmin, dataView] }
+    }
     server = await createServer()
     await server.initialize()
   })
@@ -86,12 +93,14 @@ describe('Report test', () => {
   })
 
   test('GET /report-list/holds returns stream if report available', async () => {
-    getHolds.mockResolvedValue([{
-      frn: '123',
-      holdCategorySchemeName: 'Scheme 1',
-      holdCategoryName: 'Category 1',
-      dateTimeAdded: new Date()
-    }])
+    getHolds.mockResolvedValue([
+      {
+        frn: '123',
+        holdCategorySchemeName: 'Scheme 1',
+        holdCategoryName: 'Category 1',
+        dateTimeAdded: new Date()
+      }
+    ])
 
     const options = {
       method: 'GET',
@@ -177,7 +186,9 @@ describe('Report test', () => {
 
     const response = await server.inject(options)
     expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain('No data available for the selected filters')
+    expect(response.payload).toContain(
+      'No data available for the selected filters'
+    )
   })
 
   test('GET /report-list/claim-level-report renders with schemes', async () => {
@@ -197,7 +208,9 @@ describe('Report test', () => {
   test('GET /report-list/claim-level-report/download returns CSV', async () => {
     api.getTrackingData.mockResolvedValue({
       payload: {
-        claimLevelReportData: [{ frn: '789', claimNumber: '123', status: 'Completed' }]
+        claimLevelReportData: [
+          { frn: '789', claimNumber: '123', status: 'Completed' }
+        ]
       }
     })
 
@@ -233,19 +246,18 @@ describe('Report test', () => {
   })
 
   test('GET /report-list/request-editor-report returns unavailable page if no data', async () => {
-    api.getTrackingData.mockResolvedValue({
-      payload: { reReportData: [] }
-    })
+    api.getTrackingData.mockResolvedValue({})
 
     const options = {
       method: 'GET',
       url: '/report-list/request-editor-report',
       auth
     }
-
     const response = await server.inject(options)
     expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain('<h1 class="govuk-heading-l">Payment report unavailable</h1>')
+    expect(response.payload).toContain(
+      '<h1 class="govuk-heading-l">Payment report unavailable</h1>'
+    )
   })
 
   test('GET /report-list/claim-level-report/download shows error when no data', async () => {
@@ -263,7 +275,9 @@ describe('Report test', () => {
 
     const response = await server.inject(options)
     expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain('No data available for the selected filters')
+    expect(response.payload).toContain(
+      'No data available for the selected filters'
+    )
   })
 
   test('Validation error renders with validation messages', async () => {

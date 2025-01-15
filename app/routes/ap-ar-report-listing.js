@@ -4,168 +4,200 @@ const convertToCSV = require('../helpers/convert-to-csv')
 const apListingSchema = require('./schemas/ap-listing-schema')
 const config = require('../config/storage')
 
-function generateRoutes (reportName, reportDataUrl, reportDataKey) {
-  return [
-    {
-      method: 'GET',
-      path: `/report-list/${reportName}`,
-      options: {
-        auth: { scope: [holdAdmin, schemeAdmin, dataView] },
-        handler: async (request, h) => {
-          return h.view(`reports-list/${reportName}`)
-        }
-      }
+const REPORT_TYPES = {
+  REQUEST_EDITOR: 'request-editor-report',
+  CLAIM_LEVEL: 'claim-level-report',
+  AP_LISTING: 'ap-listing',
+  AR_LISTING: 'ar-listing',
+  AP_AR_LISTING: 'ap-ar-listing'
+}
+
+const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
+const DEFAULT_START_DATE = '2015-01-01'
+const HTTP_STATUS = { BAD_REQUEST: 400, NOT_FOUND: 404 }
+const startsAt = 0
+const removeFromEnd = -4
+
+const mapRequestEditorData = data => ({
+  FRN: data.frn,
+  deltaAmount: data.deltaAmount,
+  SourceSystem: data.sourceSystem,
+  agreementNumber: data.agreementNumber,
+  invoiceNumber: data.invoiceNumber,
+  PaymentRequestNumber: data.paymentRequestNumber,
+  year: data.year,
+  receivedInRequestEditor: data.receivedInRequestEditor,
+  enriched: data.enriched,
+  debtType: data.debtType,
+  ledgerSplit: data.ledgerSplit,
+  releasedFromRequestEditor: data.releasedFromRequestEditor
+})
+
+const mapClaimLevelData = data => ({
+  FRN: data.frn,
+  claimID: data.claimNumber,
+  revenueOrCapital: data.revenueOrCapital,
+  agreementNumber: data.agreementNumber,
+  year: data.year,
+  paymentCurrency: data.currency,
+  latestFullClaimAmount: data.value,
+  latestSitiPR: data.paymentRequestNumber,
+  latestInDAXAmount: data.daxValue,
+  latestInDAXPR: data.daxPaymentRequestNumber,
+  overallStatus: data.overallStatus,
+  crossBorderFlag: data.crossBorderFlag,
+  latestTransactionStatus: data.status,
+  valueStillToProcess: data.valueStillToProcess,
+  PRsStillToProcess: data.prStillToProcess
+})
+
+const mapBaseAPARData = data => ({
+  Filename: data.daxFileName,
+  'Date Time': data.lastUpdated,
+  Event: data.status,
+  FRN: data.frn,
+  'Original Invoice Number': data.originalInvoiceNumber,
+  'Original Invoice Value': data.value,
+  'Invoice Number': data.invoiceNumber,
+  'Invoice Delta Amount': data.deltaAmount,
+  'D365 Invoice Imported': data.routedToRequestEditor,
+  'D365 Invoice Payment': data.settledValue,
+  'PH Error Status': data.phError,
+  'D365 Error Status': data.daxError
+})
+
+const mapAPData = data => ({
+  ...mapBaseAPARData(data)
+})
+
+const mapARData = data => {
+  const mapped = { ...mapBaseAPARData(data) }
+  delete mapped['D365 Invoice Payment']
+  return mapped
+}
+
+const getDataMapper = reportName => {
+  switch (reportName) {
+    case REPORT_TYPES.AR_LISTING:
+      return mapARData
+    case REPORT_TYPES.REQUEST_EDITOR:
+      return mapRequestEditorData
+    case REPORT_TYPES.CLAIM_LEVEL:
+      return mapClaimLevelData
+    default:
+      return mapAPData
+  }
+}
+
+const formatDate = (day, month, year) => {
+  if (!day || !month || !year) {
+    return null
+  }
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(
+    2,
+    '0'
+  )}`
+}
+
+const getCurrentDate = () => {
+  const now = new Date()
+  return formatDate(now.getDate(), now.getMonth() + 1, now.getFullYear())
+}
+
+const getBaseFilename = reportName => {
+  const fileNames = {
+    [REPORT_TYPES.AR_LISTING]: config.arListingReportName,
+    [REPORT_TYPES.REQUEST_EDITOR]: config.requestEditorReportName,
+    [REPORT_TYPES.CLAIM_LEVEL]: config.claimLevelReportName,
+    default: config.apListingReportName
+  }
+  return (fileNames[reportName] || fileNames.default).slice(
+    startsAt,
+    removeFromEnd
+  )
+}
+
+const handleValidationError = async (request, h, err, reportName) => {
+  request.log(['error', 'validation'], err)
+  const errors =
+    err.details?.map(detail => ({
+      text: detail.message,
+      href: '#' + detail.path[0]
+    })) || []
+  return h
+    .view(`reports-list/${reportName}`, { errors })
+    .code(HTTP_STATUS.BAD_REQUEST)
+    .takeover()
+}
+
+const createGetRoute = reportName => ({
+  method: 'GET',
+  path: `/report-list/${reportName}`,
+  options: {
+    auth: AUTH_SCOPE,
+    handler: async (_request, h) => h.view(`reports-list/${reportName}`)
+  }
+})
+
+const createDownloadRoute = (reportName, reportDataUrl, reportDataKey) => ({
+  method: 'GET',
+  path: `/report-list/${reportName}/download`,
+  options: {
+    auth: AUTH_SCOPE,
+    validate: {
+      query: apListingSchema,
+      failAction: async (request, h, err) =>
+        handleValidationError(request, h, err, reportName)
     },
-    {
-      method: 'GET',
-      path: `/report-list/${reportName}/download`,
-      options: {
-        auth: { scope: [holdAdmin, schemeAdmin, dataView] },
-        validate: {
-          query: apListingSchema,
-          failAction: async (request, h, err) => {
-            request.log(['error', 'validation'], err)
-            const errors = err.details
-              ? err.details.map(detail => {
-                  return {
-                    text: detail.message,
-                    href: '#' + detail.path[0]
-                  }
-                })
-              : []
-            const data = { errors }
-            if (reportName === 'ar-listing' || reportName === 'ap-ar-listing') {
-              return h.view('reports-list/ap-ar-listing', data).code(400).takeover()
-            }
-            if (reportName === 'request-editor-report') {
-              return h.view('reports-list/request-editor-report', data).code(400).takeover()
-            }
-            if (reportName === 'claim-level-report') {
-              return h.view('reports-list/claim-level-report', data).code(400).takeover()
-            } else {
-              return h.view('404', data).code(404).takeover()
-            }
-          }
-        },
-        handler: async (request, h) => {
-          const { 'start-date-day': startDay, 'start-date-month': startMonth, 'start-date-year': startYear, 'end-date-day': endDay, 'end-date-month': endMonth, 'end-date-year': endYear } = request.query
+    handler: async (request, h) => {
+      const { query } = request
+      const startDate =
+        formatDate(
+          query['start-date-day'],
+          query['start-date-month'],
+          query['start-date-year']
+        ) || DEFAULT_START_DATE
+      const endDate =
+        formatDate(
+          query['end-date-day'],
+          query['end-date-month'],
+          query['end-date-year']
+        ) || getCurrentDate()
 
-          let url = reportDataUrl
-          let startDate, endDate
+      try {
+        const url = `${reportDataUrl}?startDate=${startDate}&endDate=${endDate}`
+        const response = await api.getTrackingData(url)
+        const mapper = getDataMapper(reportName)
+        const selectedData = response.payload[reportDataKey].map(mapper)
 
-          if (startDay && startMonth && startYear) {
-            startDate = `${startYear}-${String(startMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`
-          } else {
-            startDate = '2015-01-01'
-          }
-
-          if (endDay && endMonth && endYear) {
-            endDate = `${endYear}-${String(endMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`
-          } else if (startDate) {
-            const now = new Date()
-            endDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-          }
-
-          if (startDate && endDate) {
-            url += `?startDate=${startDate}&endDate=${endDate}`
-          }
-
-          try {
-            const response = await api.getTrackingData(url)
-            const trackingData = response.payload
-            const selectedData = trackingData[reportDataKey].map(data => {
-              let mappedData
-              if (reportName === 'request-editor-report') {
-                mappedData = {
-                  FRN: data.frn,
-                  deltaAmount: data.deltaAmount,
-                  SourceSystem: data.sourceSystem,
-                  agreementNumber: data.agreementNumber,
-                  invoiceNumber: data.invoiceNumber,
-                  PaymentRequestNumber: data.paymentRequestNumber,
-                  year: data.year,
-                  receivedInRequestEditor: data.receivedInRequestEditor,
-                  enriched: data.enriched,
-                  debtType: data.debtType,
-                  ledgerSplit: data.ledgerSplit,
-                  releasedFromRequestEditor: data.releasedFromRequestEditor
-                }
-              } else if (reportName === 'claim-level-report') {
-                mappedData = {
-                  FRN: data.frn,
-                  claimID: data.claimNumber,
-                  revenueOrCapital: data.revenueOrCapital,
-                  agreementNumber: data.agreementNumber,
-                  year: data.year,
-                  paymentCurrency: data.currency,
-                  latestFullClaimAmount: data.value,
-                  latestSitiPR: data.paymentRequestNumber,
-                  latestInDAXAmount: data.daxValue,
-                  latestInDAXPR: data.daxPaymentRequestNumber,
-                  overallStatus: data.overallStatus,
-                  crossBorderFlag: data.crossBorderFlag,
-                  latestTransactionStatus: data.status,
-                  valueStillToProcess: data.valueStillToProcess,
-                  PRsStillToProcess: data.prStillToProcess
-                }
-              } else {
-                mappedData = {
-                  Filename: data.daxFileName,
-                  'Date Time': data.lastUpdated,
-                  Event: data.status,
-                  FRN: data.frn,
-                  'Original Invoice Number': data.originalInvoiceNumber,
-                  'Original Invoice Value': data.value,
-                  'Invoice Number': data.invoiceNumber,
-                  'Invoice Delta Amount': data.deltaAmount,
-                  'D365 Invoice Imported': data.routedToRequestEditor,
-                  'D365 Invoice Payment': data.settledValue,
-                  'PH Error Status': data.phError,
-                  'D365 Error Status': data.daxError
-                }
-                if (reportName === 'ar-listing') {
-                  delete mappedData['D365 Invoice Payment']
-                }
-              }
-              return mappedData
-            })
-
-            if (selectedData.length === 0) {
-              return h.view(`reports-list/${reportName}`, {
-                errors: [{
-                  text: 'No data available for the selected date range'
-                }]
-              })
-            }
-
-            const csv = convertToCSV(selectedData)
-
-            let baseFilename
-            switch (reportName) {
-              case 'ar-listing':
-                baseFilename = config.arListingReportName.slice(0, -4)
-                break
-              case 'request-editor-report':
-                baseFilename = config.requestEditorReportName.slice(0, -4)
-                break
-              case 'claim-level-report':
-                baseFilename = config.claimLevelReportName.slice(0, -4)
-                break
-              default:
-                baseFilename = config.apListingReportName.slice(0, -4)
-            }
-            const filename = `${baseFilename}-from-${startDate}-to-${endDate}.csv`
-            return h.response(csv)
-              .header('Content-Type', 'text/csv')
-              .header('Content-Disposition', `attachment; filename=${filename}`)
-          } catch (error) {
-            console.error('Failed to fetch tracking data:', error)
-            return h.view(`reports-list/${reportName}`, { errorMessage: 'Failed to fetch tracking data' })
-          }
+        if (selectedData.length === 0) {
+          return h.view(`reports-list/${reportName}`, {
+            errors: [{ text: 'No data available for the selected date range' }]
+          })
         }
+
+        const csv = convertToCSV(selectedData)
+        const filename = `${getBaseFilename(
+          reportName
+        )}-from-${startDate}-to-${endDate}.csv`
+
+        return h
+          .response(csv)
+          .header('Content-Type', 'text/csv')
+          .header('Content-Disposition', `attachment; filename=${filename}`)
+      } catch (error) {
+        console.error('Failed to fetch tracking data:', error)
+        return h.view(`reports-list/${reportName}`, {
+          errorMessage: 'Failed to fetch tracking data'
+        })
       }
     }
-  ]
-}
+  }
+})
+
+const generateRoutes = (reportName, reportDataUrl, reportDataKey) => [
+  createGetRoute(reportName),
+  createDownloadRoute(reportName, reportDataUrl, reportDataKey)
+]
 
 module.exports = generateRoutes

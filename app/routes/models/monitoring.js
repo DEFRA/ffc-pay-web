@@ -1,4 +1,4 @@
-function ViewModel () {
+function viewModel () {
   this.model = {
     searchByFrn: searchByFrn(),
     searchByBatch: searchByBatch()
@@ -46,4 +46,4 @@ const searchByBatch = () => {
   }
 }
 
-module.exports = ViewModel
+module.exports = viewModel

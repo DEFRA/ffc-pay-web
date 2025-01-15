@@ -1,12 +1,12 @@
 const parsedSchema = require('../routes/schemas/parsed-closure')
-
+const maxClosureDataLength = 3
 const processClosureData = async (data) => {
   const uploadData = []
   const splitData = data.split(/\r?\n|\r|\n/g)
   const closureLines = splitData.filter((str) => str !== '')
   for (const closureLine of closureLines) {
     const clData = closureLine.split(',')
-    if (clData.length !== 3) {
+    if (clData.length !== maxClosureDataLength) {
       return {
         errors: { details: [{ message: 'The file is not in the expected format' }] }
       }
