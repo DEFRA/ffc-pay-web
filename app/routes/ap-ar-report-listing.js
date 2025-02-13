@@ -22,6 +22,14 @@ const getPoundValue = (value) => {
   return value ? (Number(value) / 100).toFixed(2) : '0.00'
 }
 
+const convertDateToDDMMYYYY = (date) => {
+  if (!date) {
+    return null
+  }
+  const dateObj = new Date(date)
+  return isNaN(dateObj) ? null : dateObj.toLocaleDateString('en-GB')
+}
+
 const mapRequestEditorData = data => ({
   FRN: data.frn,
   deltaAmount: getPoundValue(data.deltaAmount),
@@ -30,11 +38,11 @@ const mapRequestEditorData = data => ({
   invoiceNumber: data.invoiceNumber,
   PaymentRequestNumber: data.paymentRequestNumber,
   year: data.year,
-  receivedInRequestEditor: data.receivedInRequestEditor,
+  receivedInRequestEditor: convertDateToDDMMYYYY(data.receivedInRequestEditor),
   enriched: data.enriched,
   debtType: data.debtType,
   ledgerSplit: data.ledgerSplit,
-  releasedFromRequestEditor: data.releasedFromRequestEditor
+  releasedFromRequestEditor: convertDateToDDMMYYYY(data.releasedFromRequestEditor)
 })
 
 const mapClaimLevelData = data => ({
@@ -57,7 +65,7 @@ const mapClaimLevelData = data => ({
 
 const mapBaseAPARData = data => ({
   Filename: data.daxFileName,
-  'Date Time': data.lastUpdated,
+  'Date Time': convertDateToDDMMYYYY(data.lastUpdated),
   Event: data.status,
   FRN: data.frn,
   'Original Invoice Number': data.originalInvoiceNumber,
