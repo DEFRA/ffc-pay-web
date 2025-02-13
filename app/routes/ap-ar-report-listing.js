@@ -18,9 +18,13 @@ const HTTP_STATUS = { BAD_REQUEST: 400, NOT_FOUND: 404 }
 const startsAt = 0
 const removeFromEnd = -4
 
+const getPoundValue = (value) => {
+  return value ? (Number(value) / 100).toFixed(2) : '0.00'
+}
+
 const mapRequestEditorData = data => ({
   FRN: data.frn,
-  deltaAmount: data.deltaAmount ? (Number(data.deltaAmount) / 100).toFixed(2) : '0.00',
+  deltaAmount: getPoundValue(data.deltaAmount),
   SourceSystem: data.sourceSystem,
   agreementNumber: data.agreementNumber,
   invoiceNumber: data.invoiceNumber,
@@ -40,14 +44,14 @@ const mapClaimLevelData = data => ({
   agreementNumber: data.agreementNumber,
   year: data.year,
   paymentCurrency: data.currency,
-  latestFullClaimAmount: data.value,
+  latestFullClaimAmount: getPoundValue(data.value),
   latestSitiPR: data.paymentRequestNumber,
-  latestInDAXAmount: data.daxValue,
+  latestInDAXAmount: getPoundValue(data.daxValue),
   latestInDAXPR: data.daxPaymentRequestNumber,
   overallStatus: data.overallStatus,
   crossBorderFlag: data.crossBorderFlag,
   latestTransactionStatus: data.status,
-  valueStillToProcess: data.valueStillToProcess,
+  valueStillToProcess: getPoundValue(data.valueStillToProcess),
   PRsStillToProcess: data.prStillToProcess
 })
 
@@ -57,11 +61,11 @@ const mapBaseAPARData = data => ({
   Event: data.status,
   FRN: data.frn,
   'Original Invoice Number': data.originalInvoiceNumber,
-  'Original Invoice Value': data.value,
+  'Original Invoice Value': getPoundValue(data.value),
   'Invoice Number': data.invoiceNumber,
   'Invoice Delta Amount': data.deltaAmount,
   'D365 Invoice Imported': data.routedToRequestEditor,
-  'D365 Invoice Payment': data.settledValue,
+  'D365 Invoice Payment': getPoundValue(data.settledValue),
   'PH Error Status': data.phError,
   'D365 Error Status': data.daxError
 })
