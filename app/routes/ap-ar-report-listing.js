@@ -20,7 +20,7 @@ const removeFromEnd = -4
 
 const mapRequestEditorData = data => ({
   FRN: data.frn,
-  deltaAmount: data.deltaAmount,
+  deltaAmount: data.deltaAmount ? (Number(data.deltaAmount) / 100).toFixed(2) : '0.00',
   SourceSystem: data.sourceSystem,
   agreementNumber: data.agreementNumber,
   invoiceNumber: data.invoiceNumber,
