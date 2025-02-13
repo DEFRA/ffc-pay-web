@@ -274,4 +274,25 @@ describe('AP Listing Report tests', () => {
     const csvContent = response.payload
     expect(csvContent).toContain('18/03/2024')
   })
+
+  test('GET /report-list/ap-ar-listing/download includes null date in CSV', async () => {
+    const options = {
+      method: 'GET',
+      url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
+      auth
+    }
+
+    getTrackingData.mockResolvedValueOnce({
+      payload: {
+        apReportData: [{
+          ...mockApReportData,
+          lastUpdated: null
+        }]
+      }
+    })
+
+    const response = await server.inject(options)
+    const csvContent = response.payload
+    expect(csvContent).toContain(',"","Calculation of final state completed"')
+  })
 })
