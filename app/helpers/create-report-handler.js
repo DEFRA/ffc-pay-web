@@ -11,8 +11,8 @@ const createReportHandler = (path, fields, filenameFunc, errorView) => {
     return fetchDataAndRespond(
       () => api.getTrackingData(url),
       (response) => {
-        const data = sanitizeData(response.payload[Object.keys(response.payload)[0]])
-        return data.map(data => mapReportData(data, fields))
+        const sanitizedData = sanitizeData(response.payload[Object.keys(response.payload)[0]])
+        return sanitizedData.map(data => mapReportData(data, fields))
       },
       filenameFunc(schemeId, year, prn, revenueOrCapital, frn),
       h,
