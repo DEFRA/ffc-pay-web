@@ -1,6 +1,11 @@
+
+identity: pay-web
 resources:
   topics:
-    - name: data
+    - name: ffc-pay-data-request
+      role: receiver
+      subscriptions:
+        - ffc-pay-enrichment
   queues:
-    - name: dataResponse
+    - name: ffc-pay-data-request-response
       enableSessions: true
