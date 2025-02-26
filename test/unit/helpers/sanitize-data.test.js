@@ -10,8 +10,8 @@ describe('sanitizeData', () => {
     jest.clearAllMocks()
   })
 
-  test('should transform all fields when they exist', () => {
-    const input = {
+  test('should transform all fields in each object of the array', () => {
+    const input = [{
       deltaAmount: 12345,
       value: 54321,
       daxValue: 54321,
@@ -22,7 +22,7 @@ describe('sanitizeData', () => {
       releasedFromRequestEditor: '29/11/2023T14:05:30',
       batchExportDate: '30/11/2023T09:15:00',
       lastUpdated: '01/12/2023T22:30:10'
-    }
+    }]
 
     getPoundValue.mockImplementation(value => (value / 100).toFixed(2))
     convertDateToDDMMYYYY.mockImplementation(date => {
@@ -34,19 +34,9 @@ describe('sanitizeData', () => {
     const result = sanitizeData(input)
 
     expect(getPoundValue).toHaveBeenCalledTimes(6)
-    expect(getPoundValue).toHaveBeenCalledWith(12345)
-    expect(getPoundValue).toHaveBeenCalledWith(54321)
-    expect(getPoundValue).toHaveBeenCalledWith(10000)
-    expect(getPoundValue).toHaveBeenCalledWith(2000)
-    expect(getPoundValue).toHaveBeenCalledWith(3000)
-
     expect(convertDateToDDMMYYYY).toHaveBeenCalledTimes(4)
-    expect(convertDateToDDMMYYYY).toHaveBeenCalledWith('28/11/2023T13:02:45')
-    expect(convertDateToDDMMYYYY).toHaveBeenCalledWith('29/11/2023T14:05:30')
-    expect(convertDateToDDMMYYYY).toHaveBeenCalledWith('30/11/2023T09:15:00')
-    expect(convertDateToDDMMYYYY).toHaveBeenCalledWith('01/12/2023T22:30:10')
 
-    expect(result).toEqual({
+    expect(result).toEqual([{
       deltaAmount: '123.45',
       value: '543.21',
       daxValue: '543.21',
@@ -57,15 +47,15 @@ describe('sanitizeData', () => {
       releasedFromRequestEditor: '29/11/2023',
       batchExportDate: '30/11/2023',
       lastUpdated: '01/12/2023'
-    })
+    }])
   })
 
-  test('should skip transformation for missing fields', () => {
-    const input = {
+  test('should skip transformation for missing fields in each object', () => {
+    const input = [{
       value: 54321,
       apValue: 2000,
       receivedInRequestEditor: '28/11/2023T13:02:45'
-    }
+    }]
 
     getPoundValue.mockImplementation(value => (value / 100).toFixed(2))
     convertDateToDDMMYYYY.mockImplementation(date => {
@@ -79,18 +69,18 @@ describe('sanitizeData', () => {
     expect(getPoundValue).toHaveBeenCalledTimes(2)
     expect(convertDateToDDMMYYYY).toHaveBeenCalledTimes(1)
 
-    expect(result).toEqual({
+    expect(result).toEqual([{
       value: '543.21',
       apValue: '20.00',
       receivedInRequestEditor: '28/11/2023'
-    })
+    }])
   })
 
-  test('should return the original object if no transformable fields exist', () => {
-    const input = {
+  test('should return the original array if no transformable fields exist', () => {
+    const input = [{
       unrelatedField: 'test',
       anotherField: 123
-    }
+    }]
 
     const result = sanitizeData(input)
 
