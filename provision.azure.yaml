@@ -3,7 +3,7 @@ resources:
   topics:
     - name: ffc-pay-data-request
       role: sender
-  queue:
+  queues:
     - name: ffc-pay-data-request-response
       role: receiver
       session: true
