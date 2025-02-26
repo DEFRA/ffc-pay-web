@@ -29,6 +29,9 @@ describe('Payment holds', () => {
       {
         holdId: 1,
         frn: '1234567890',
+        marketingYear: '2022',
+        agreementNumber: 'A123456',
+        contractNumber: 'A654321',
         holdCategoryName: 'Outstanding debt',
         holdCategorySchemeId: 1,
         holdCategorySchemeName: 'SFI23',
@@ -38,6 +41,9 @@ describe('Payment holds', () => {
       {
         holdId: 4,
         frn: '1111111111',
+        marketingYear: '2023',
+        agreementNumber: 'S12345678',
+        contractNumber: 'S12345678',
         holdCategoryName: 'Outstanding debt',
         holdCategorySchemeId: 1,
         holdCategorySchemeName: 'SFI23',
@@ -96,8 +102,9 @@ describe('Payment holds', () => {
         expect(holdCells.eq(1).text()).toEqual(mockPaymentHolds[i].holdCategoryName)
         expect(holdCells.eq(2).text()).toEqual(mockPaymentHolds[i].holdCategorySchemeName)
         expect(holdCells.eq(3).text()).toEqual(mockPaymentHolds[i].marketingYear)
-        expect(holdCells.eq(4).text()).toEqual(mockPaymentHolds[i].agreementNumber)
-        expect(holdCells.eq(5).text()).toEqual(mockPaymentHolds[i].dateTimeAdded)
+        expect(holdCells.eq(4).text()).toEqual(mockPaymentHolds[i].contractNumber)
+        expect(holdCells.eq(5).text()).toEqual(mockPaymentHolds[i].agreementNumber)
+        expect(holdCells.eq(6).text()).toEqual(mockPaymentHolds[i].dateTimeAdded)
       })
     })
 
