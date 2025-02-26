@@ -1,5 +1,5 @@
-identity: pay-web
 resources:
+  identity: pay-web
   topics:
     - name: ffc-pay-data-request
       role: sender
