@@ -157,6 +157,7 @@ describe('AP Listing Report tests', () => {
     const viewModel = response.request.response.source.context
     expect(viewModel.errorMessage).toBe('Failed to fetch tracking data')
   })
+
   test('startDate defaults to 2015-01-01 if not provided', async () => {
     const options = {
       method: 'GET',
@@ -173,6 +174,7 @@ describe('AP Listing Report tests', () => {
     })
     await server.inject(options)
   })
+
   test('returns view with correct reportName when no data is available', async () => {
     const options = {
       method: 'GET',
@@ -199,6 +201,7 @@ describe('AP Listing Report tests', () => {
       expect.anything()
     )
   })
+
   test('filename starts with correct reportName', async () => {
     const options = {
       method: 'GET',
@@ -215,6 +218,7 @@ describe('AP Listing Report tests', () => {
       config.apListingReportName.slice(0, -4)
     )
   })
+
   test('CSV content is correct when reportName is ar-listing', async () => {
     const options = {
       method: 'GET',
@@ -241,6 +245,7 @@ describe('AP Listing Report tests', () => {
     const response = await server.inject(options)
     expect(response.statusCode).toBe(400)
   })
+
   test('GET /report-list/invalid-report-name returns 404 for invalid report name and query parameters', async () => {
     const options = {
       method: 'GET',
@@ -250,5 +255,44 @@ describe('AP Listing Report tests', () => {
     const response = await server.inject(options)
     expect(response.statusCode).toBe(404)
     expect(response.request.response.source.template).toBe('404')
+  })
+
+  test('GET /report-list/ap-ar-listing/download includes correctly formatted date in CSV', async () => {
+    const options = {
+      method: 'GET',
+      url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
+      auth
+    }
+
+    getTrackingData.mockResolvedValueOnce({
+      payload: {
+        apReportData: [mockApReportData]
+      }
+    })
+
+    const response = await server.inject(options)
+    const csvContent = response.payload
+    expect(csvContent).toContain('18/03/2024')
+  })
+
+  test('GET /report-list/ap-ar-listing/download includes null date in CSV', async () => {
+    const options = {
+      method: 'GET',
+      url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
+      auth
+    }
+
+    getTrackingData.mockResolvedValueOnce({
+      payload: {
+        apReportData: [{
+          ...mockApReportData,
+          lastUpdated: null
+        }]
+      }
+    })
+
+    const response = await server.inject(options)
+    const csvContent = response.payload
+    expect(csvContent).toContain(',"","Calculation of final state completed"')
   })
 })
