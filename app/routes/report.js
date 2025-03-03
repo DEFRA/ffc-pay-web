@@ -57,12 +57,12 @@ const getTransactionSummaryHandler = createReportHandler(
 const getClaimLevelReportHandler = createReportHandler(
   REPORTS_HANDLER.CLAIM_LEVEL_REPORT,
   claimLevelReportFields,
-  (schemeId, year, revenueOrCapital, prn, frn) =>
+  (schemeId, year, revenueOrCapital, frn) =>
     addDetailsToFilename(
       storageConfig.claimLevelReportName,
       schemeId,
       year,
-      prn,
+      null,
       revenueOrCapital,
       frn
     ),
