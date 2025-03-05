@@ -15,12 +15,14 @@ if (config.useConnectionStr) {
 
 const projectionContainer = blobServiceClient.getContainerClient(config.projectionContainer)
 const reportContainer = blobServiceClient.getContainerClient(config.reportContainer)
+const dataRequestContainer = blobServiceClient.getContainerClient(config.dataRequestContainer)
 
 const initialiseContainers = async () => {
   if (config.createContainers) {
     console.log('Making sure blob containers exist')
     await projectionContainer.createIfNotExists()
     await reportContainer.createIfNotExists()
+    await dataRequestContainer.createIfNotExists()
   }
   containersInitialised = true
 }
@@ -37,8 +39,17 @@ const getSuppressedReport = async () => {
   return blob.download()
 }
 
+const getDataRequestFile = async (filename) => {
+  containersInitialised ?? await initialiseContainers()
+  const blob = await dataRequestContainer.getBlockBlobClient(filename)
+  const downloadResponse = await blob.download()
+  await blob.delete()
+  return downloadResponse
+}
+
 module.exports = {
   blobServiceClient,
   getMIReport,
-  getSuppressedReport
+  getSuppressedReport,
+  getDataRequestFile
 }
