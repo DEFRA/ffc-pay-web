@@ -2,8 +2,8 @@ resources:
   identity: pay-web
   topics:
     - name: ffc-pay-data-request
-      role: receiver
+      role: sender
   queues:
     - name: ffc-pay-data-request-response
-      role: sender
+      role: receiver
       session: true
