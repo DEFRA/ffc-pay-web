@@ -15,7 +15,9 @@ const schema = Joi.object({
   apListingReportName: Joi.string().default('ffc-pay-ap-listing-report.csv'),
   arListingReportName: Joi.string().default('ffc-pay-ar-listing-report.csv'),
   requestEditorReportName: Joi.string().default('ffc-pay-request-editor-report.csv'),
-  claimLevelReportName: Joi.string().default('ffc-pay-claim-level-report.csv')
+  claimLevelReportName: Joi.string().default('ffc-pay-claim-level-report.csv'),
+  managedIdentityClientId: Joi.string().optional()
+
 })
 
 // Build config
@@ -33,7 +35,9 @@ const config = {
   apListingReportName: process.env.AP_LISTING_REPORT_NAME,
   arListingReportName: process.env.AR_LISTING_REPORT_NAME,
   requestEditorReportName: process.env.REQUEST_EDITOR_REPORT_NAME,
-  claimLevelReportName: process.env.CLAIM_LEVEL_REPORT_NAME
+  claimLevelReportName: process.env.CLAIM_LEVEL_REPORT_NAME,
+  managedIdentityClientId: process.env.AZURE_CLIENT_ID
+
 }
 
 // Validate config
