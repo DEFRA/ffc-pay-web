@@ -10,7 +10,8 @@ module.exports = {
     '<rootDir>/jest.config.js',
     '<rootDir>/webpack.config.js',
     '<rootDir>/app/frontend/',
-    '<rootDir>/app/dist/'
+    '<rootDir>/app/dist/',
+    '<rootDir>/app/config'
   ],
   modulePathIgnorePatterns: ['node_modules'],
   reporters: [
