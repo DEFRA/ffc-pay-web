@@ -14,7 +14,9 @@ const schema = Joi.object({
   },
   dataQueue: {
     address: Joi.string()
-  }
+  },
+  managedIdentityClientId: Joi.string().optional()
+
 })
 
 const config = {
@@ -30,7 +32,9 @@ const config = {
   },
   dataQueue: {
     address: process.env.DATARESPONSE_QUEUE_ADDRESS
-  }
+  },
+  managedIdentityClientId: process.env.AZURE_CLIENT_ID
+
 }
 
 const result = schema.validate(config, {

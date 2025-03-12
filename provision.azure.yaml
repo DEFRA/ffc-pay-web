@@ -1,6 +1,9 @@
 resources:
+  identity: pay-web
   topics:
-    - name: data
+    - name: ffc-pay-data-request
+      role: sender
   queues:
-    - name: dataResponse
-      enableSessions: true
+    - name: ffc-pay-data-request-response
+      role: receiver
+      session: true
