@@ -2,6 +2,7 @@ const { buildQueryUrl } = require('./build-query-url')
 const { fetchDataAndRespond } = require('./fetch-data-and-respond')
 const api = require('../api')
 const { mapReportData } = require('./map-report-data')
+const { sanitizeData } = require('./sanitize-data')
 
 const createReportHandler = (path, fields, filenameFunc, errorView) => {
   return async (request, h) => {
@@ -9,7 +10,10 @@ const createReportHandler = (path, fields, filenameFunc, errorView) => {
     const url = buildQueryUrl(path, schemeId, year, prn, frn, revenueOrCapital)
     return fetchDataAndRespond(
       () => api.getTrackingData(url),
-      (response) => response.payload[Object.keys(response.payload)[0]].map(data => mapReportData(data, fields)),
+      (response) => {
+        const sanitizedData = sanitizeData(response.payload[Object.keys(response.payload)[0]])
+        return sanitizedData.map(data => mapReportData(data, fields))
+      },
       filenameFunc(schemeId, year, prn, revenueOrCapital, frn),
       h,
       errorView

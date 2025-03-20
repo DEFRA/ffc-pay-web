@@ -24,13 +24,15 @@ const REPORT_LIST = {
   REQUEST_EDITOR_REPORT: '/report-list/request-editor-report',
   TRANSACTION_SUMMARY_DOWNLOAD: '/report-list/transaction-summary/download',
   SUPPRESSED_PAYMENTS: '/report-list/suppressed-payments',
-  HOLDS: '/report-list/holds'
+  HOLDS: '/report-list/holds',
+  REPORT_UNAVAILABLE: '/report-unavailable'
 }
 const REPORTS_VIEWS = {
   TRANSACTION_SUMMARY: 'reports-list/transaction-summary',
   CLAIM_LEVEL_REPORT: 'reports-list/claim-level-report',
   REQUEST_EDITOR_REPORT: 'reports-list/request-editor-report',
-  HOLD_REPORT_UNAVAILABLE: 'hold-report-unavailable'
+  HOLD_REPORT_UNAVAILABLE: 'hold-report-unavailable',
+  REPORT_UNAVAILABLE: 'report-unavailable'
 }
 const REPORTS_HANDLER = {
   TRANSACTION_SUMMARY: '/transaction-summary',
@@ -74,7 +76,7 @@ const getRequestEditorReportHandler = createReportHandler(
   REPORTS_HANDLER.REQUEST_EDITOR_REPORT,
   requestEditorReportFields,
   () => storageConfig.requestEditorReportName,
-  REPORTS_VIEWS.REQUEST_EDITOR_REPORT
+  REPORTS_VIEWS.REPORT_UNAVAILABLE
 )
 
 module.exports = [
@@ -194,6 +196,16 @@ module.exports = [
         } catch {
           return h.view(REPORTS_VIEWS.HOLD_REPORT_UNAVAILABLE)
         }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: REPORT_LIST.REPORT_UNAVAILABLE,
+    options: {
+      auth: authOptions,
+      handler: async (_request, h) => {
+        return h.view(REPORTS_VIEWS.REPORT_UNAVAILABLE)
       }
     }
   }

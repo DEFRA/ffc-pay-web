@@ -292,4 +292,18 @@ describe('Report test', () => {
     const $ = cheerio.load(response.payload)
     expect($('h2').text()).toContain('There is a problem')
   })
+
+  test('GET /report-unavailable renders unavailable page', async () => {
+    const options = {
+      method: 'GET',
+      url: '/report-unavailable',
+      auth
+    }
+
+    const response = await server.inject(options)
+    expect(response.statusCode).toBe(200)
+    expect(response.payload).toContain(
+      '<h1 class="govuk-heading-l">Report unavailable</h1>'
+    )
+  })
 })
