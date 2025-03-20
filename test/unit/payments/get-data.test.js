@@ -71,7 +71,7 @@ describe('get data', () => {
       readableStreamBody: {
         on: jest.fn((event, callback) => {
           if (event === 'data') {
-            callback(Buffer.from('[{"scheme": "SFI"}, {"scheme": "OTHER"}, {"scheme": "SFI"}]'))
+            callback(Buffer.from('{"data": [{"scheme": "SFI"}, {"scheme": "OTHER"}, {"scheme": "SFI"}]}'))
           }
           if (event === 'end') {
             callback()
@@ -121,7 +121,7 @@ describe('get data', () => {
       readableStreamBody: {
         on: jest.fn((event, callback) => {
           if (event === 'data') {
-            callback(Buffer.from('{"data": "mockData"}'))
+            callback(Buffer.from('{"data": {"someKey": "someValue"}}'))
           }
           if (event === 'end') {
             callback()
@@ -131,6 +131,6 @@ describe('get data', () => {
     })
 
     const result = await getData(CATEGORY, VALUE)
-    expect(result).toEqual({ data: 'mockData' })
+    expect(result).toEqual({ someKey: 'someValue' })
   })
 })

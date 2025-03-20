@@ -48,22 +48,22 @@ const getData = async (category, value) => {
     return null
   }
 
-  const data = JSON.parse(downloadedData)
+  const parsedData = JSON.parse(downloadedData)
 
   console.info(
     'Data response received:',
-    util.inspect(data, false, null, true)
+    util.inspect(parsedData, false, null, true)
   )
 
-  if (!Array.isArray(data)) {
-    return data
+  if (!Array.isArray(parsedData.data)) {
+    return parsedData.data
   }
 
-  const transformedData = data.map(item => ({
+  const transformedData = parsedData.data.map(item => ({
     ...item,
     scheme: item.scheme === 'SFI' ? 'SFI22' : item.scheme
   }))
-
+  console.log(transformedData)
   return transformedData
 }
 
