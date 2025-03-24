@@ -1,7 +1,5 @@
-const { DATA } = require('./values/data')
-
 module.exports = {
   RESPONSE: {
-    data: DATA
+    uri: 'https://example.blob.core.windows.net/container/blobname.json'
   }
 }
