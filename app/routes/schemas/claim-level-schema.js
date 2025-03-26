@@ -1,24 +1,12 @@
 const Joi = require('joi')
 const { CS } = require('../../constants/schemes')
+const { frnValidation } = require('./shared-validation-models')
 
-const frnGreaterThan = 999999999
-const frnLessThan = 10000000000
 const yearGreaterThan = 1993
 const yearLessThan = 2099
 
 module.exports = Joi.object({
-  frn: Joi.number()
-    .integer()
-    .greater(frnGreaterThan)
-    .less(frnLessThan)
-    .empty('')
-    .optional()
-    .error(errors => {
-      errors.forEach(err => {
-        err.message = 'The FRN, if present, must be 10 digits'
-      })
-      return errors
-    }),
+  frn: frnValidation,
 
   year: Joi.number()
     .integer()
