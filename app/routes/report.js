@@ -15,6 +15,7 @@ const {
 const transactionSummaryFields = require('../constants/transaction-summary-fields')
 const claimLevelReportFields = require('../constants/claim-level-report-fields')
 const requestEditorReportFields = require('../constants/request-editor-report-fields')
+const claimLevelSchema = require('./schemas/claim-level-schema')
 const REPORT_LIST = {
   PAYMENT_REQUESTS: '/report-list/payment-requests',
   TRANSACTION_SUMMARY: '/report-list/transaction-summary',
@@ -59,12 +60,12 @@ const getTransactionSummaryHandler = createReportHandler(
 const getClaimLevelReportHandler = createReportHandler(
   REPORTS_HANDLER.CLAIM_LEVEL_REPORT,
   claimLevelReportFields,
-  (schemeId, year, revenueOrCapital, prn, frn) =>
+  (schemeId, year, revenueOrCapital, frn) =>
     addDetailsToFilename(
       storageConfig.claimLevelReportName,
       schemeId,
       year,
-      prn,
+      null,
       revenueOrCapital,
       frn
     ),
@@ -141,7 +142,7 @@ module.exports = [
     options: {
       auth: authOptions,
       validate: {
-        query: schema,
+        query: claimLevelSchema,
         failAction: async (request, h, err) => {
           return renderErrorPage(
             REPORTS_VIEWS.CLAIM_LEVEL_REPORT,
