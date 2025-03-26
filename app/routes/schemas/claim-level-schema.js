@@ -14,7 +14,7 @@ module.exports = Joi.object({
     .less(yearLessThan)
     .when('frn', {
       is: Joi.exist(),
-      then: Joi.optional(),
+      then: Joi.optional().allow(''),
       otherwise: Joi.when('schemeId', {
         is: Joi.number().integer().valid(CS),
         then: Joi.optional().allow(''),
@@ -24,6 +24,19 @@ module.exports = Joi.object({
           })
           return errors
         })
+      })
+    }),
+
+  schemeId: Joi.number()
+    .integer()
+    .when('frn', {
+      is: Joi.exist(),
+      then: Joi.optional(),
+      otherwise: Joi.required().error(errors => {
+        errors.forEach(err => {
+          err.message = 'A scheme must be selected'
+        })
+        return errors
       })
     }),
 
@@ -48,19 +61,6 @@ module.exports = Joi.object({
           })
           return errors
         })
-      })
-    }),
-
-  schemeId: Joi.number()
-    .integer()
-    .when('frn', {
-      is: Joi.exist(),
-      then: Joi.optional(),
-      otherwise: Joi.required().error(errors => {
-        errors.forEach(err => {
-          err.message = 'A scheme must be selected'
-        })
-        return errors
       })
     })
 })

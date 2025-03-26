@@ -17,6 +17,21 @@ describe('Validation Schema', () => {
       const result = validationSchema.validate({ frn: 10000000000, schemeId: 1 })
       expect(result.error.message).toBe('The FRN, if present, must be 10 digits')
     })
+
+    test('should not accept an empty string as FRN', () => {
+      const result = validationSchema.validate({ frn: '', schemeId: 1 })
+      expect(result.error.message).toBe('A valid year must be provided')
+    })
+
+    test('should accept an empty string as FRN for CS', () => {
+      const result = validationSchema.validate({ frn: '', schemeId: CS, revenueOrCapital: 'Revenue' })
+      expect(result.error).toBeUndefined()
+    })
+
+    test('should accept when FRN is not provided', () => {
+      const result = validationSchema.validate({ schemeId: 1, year: 2020 })
+      expect(result.error).toBeUndefined()
+    })
   })
 
   describe('year validation', () => {
@@ -44,6 +59,11 @@ describe('Validation Schema', () => {
       const result = validationSchema.validate({ schemeId: 1 })
       expect(result.error.message).toBe('A valid year must be provided')
     })
+
+    test('should not require year when FRN is provided', () => {
+      const result = validationSchema.validate({ frn: 1000000000, schemeId: 1 })
+      expect(result.error).toBeUndefined()
+    })
   })
 
   describe('revenueOrCapital validation', () => {
@@ -58,11 +78,48 @@ describe('Validation Schema', () => {
       const result = validationSchema.validate({ schemeId: CS })
       expect(result.error.message).toBe('Select Revenue or Capital')
     })
+
+    test('should accept empty string for revenueOrCapital when schemeId is not CS', () => {
+      const result = validationSchema.validate({ revenueOrCapital: '', schemeId: 1, year: 2020 })
+      expect(result.error).toBeUndefined()
+    })
+
+    test('should not require revenueOrCapital when FRN is provided', () => {
+      const result = validationSchema.validate({ frn: 1000000000, schemeId: CS })
+      expect(result.error).toBeUndefined()
+    })
   })
 
   describe('schemeId validation', () => {
-    test('should require schemeId even when FRN is provided', () => {
+    test('should require schemeId when FRN is not provided', () => {
+      const result = validationSchema.validate({ year: 2020 })
+      expect(result.error.message).toBe('A scheme must be selected')
+    })
+
+    test('should not require schemeId when FRN is provided', () => {
       const result = validationSchema.validate({ frn: 1000000000 })
+      expect(result.error).toBeUndefined()
+    })
+
+    test('should accept a valid schemeId', () => {
+      const result = validationSchema.validate({ schemeId: 1, year: 2020 })
+      expect(result.error).toBeUndefined()
+    })
+  })
+
+  describe('combined validations', () => {
+    test('should accept valid data for CS scheme', () => {
+      const result = validationSchema.validate({ schemeId: CS, revenueOrCapital: 'Revenue', year: 2020 })
+      expect(result.error).toBeUndefined()
+    })
+
+    test('should accept valid data for non-CS scheme', () => {
+      const result = validationSchema.validate({ schemeId: 1, year: 2020, revenueOrCapital: '' })
+      expect(result.error).toBeUndefined()
+    })
+
+    test('should accept valid data with FRN', () => {
+      const result = validationSchema.validate({ frn: 1000000000, schemeId: 1 })
       expect(result.error).toBeUndefined()
     })
   })
