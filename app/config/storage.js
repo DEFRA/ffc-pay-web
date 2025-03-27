@@ -6,6 +6,7 @@ const schema = Joi.object({
   storageAccount: Joi.string().required(),
   projectionContainer: Joi.string().default('payeventstore'),
   reportContainer: Joi.string().default('reports'),
+  dataRequestContainer: Joi.string().default('data-requests'),
   useConnectionStr: Joi.boolean().default(false),
   createContainers: Joi.boolean().default(true),
   holdReportName: Joi.boolean().default('ffc-pay-hold-report.csv'),
@@ -15,7 +16,9 @@ const schema = Joi.object({
   apListingReportName: Joi.string().default('ffc-pay-ap-listing-report.csv'),
   arListingReportName: Joi.string().default('ffc-pay-ar-listing-report.csv'),
   requestEditorReportName: Joi.string().default('ffc-pay-request-editor-report.csv'),
-  claimLevelReportName: Joi.string().default('ffc-pay-claim-level-report.csv')
+  claimLevelReportName: Joi.string().default('ffc-pay-claim-level-report.csv'),
+  managedIdentityClientId: Joi.string().optional()
+
 })
 
 // Build config
@@ -23,6 +26,7 @@ const config = {
   connectionStr: process.env.AZURE_STORAGE_CONNECTION_STRING,
   storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME,
   projectionContainer: process.env.AZURE_STORAGE_CONTAINER_PROJECTION,
+  dataRequestContainer: process.env.AZURE_STORAGE_DATA_REQUEST_CONTAINER,
   reportContainer: process.env.AZURE_STORAGE_CONTAINER_REPORT,
   useConnectionStr: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,
   createContainers: process.env.AZURE_STORAGE_CREATE_CONTAINERS,
@@ -33,7 +37,9 @@ const config = {
   apListingReportName: process.env.AP_LISTING_REPORT_NAME,
   arListingReportName: process.env.AR_LISTING_REPORT_NAME,
   requestEditorReportName: process.env.REQUEST_EDITOR_REPORT_NAME,
-  claimLevelReportName: process.env.CLAIM_LEVEL_REPORT_NAME
+  claimLevelReportName: process.env.CLAIM_LEVEL_REPORT_NAME,
+  managedIdentityClientId: process.env.AZURE_CLIENT_ID
+
 }
 
 // Validate config

@@ -3,9 +3,11 @@ const { fetchDataAndRespond } = require('../../../app/helpers/fetch-data-and-res
 const api = require('../../../app/api')
 const { mapReportData } = require('../../../app/helpers/map-report-data')
 const { createReportHandler } = require('../../../app/helpers')
+const { sanitizeData } = require('../../../app/helpers/sanitize-data')
 
 jest.mock('../../../app/helpers/build-query-url')
 jest.mock('../../../app/helpers/fetch-data-and-respond')
+jest.mock('../../../app/helpers/sanitize-data')
 jest.mock('../../../app/api')
 jest.mock('../../../app/helpers/map-report-data')
 
@@ -45,6 +47,7 @@ describe('create report handler', () => {
     jest.clearAllMocks()
 
     buildQueryUrl.mockReturnValue('http://example.com/test-url')
+    sanitizeData.mockImplementation(data => data)
     fetchDataAndRespond.mockImplementation((fetchFn, mapFn, filename, h, errorView) => {
       return fetchFn().then(response => {
         const mappedData = mapFn(response)
