@@ -32,7 +32,7 @@ const REPORT_LIST = {
   REPORT_UNAVAILABLE: '/report-unavailable'
 }
 const REPORTS_VIEWS = {
-  PAYMENT_REQUESTS: 'reports-list/payment-requests',
+  PAYMENT_REQUESTS: 'reports-list/payment-requests-v2',
   TRANSACTION_SUMMARY: 'reports-list/transaction-summary',
   CLAIM_LEVEL_REPORT: 'reports-list/claim-level-report',
   REQUEST_EDITOR_REPORT: 'reports-list/request-editor-report',
@@ -122,7 +122,7 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: REPORT_LIST.PAYMENT_REQUESTS_DOWNLOAD,
+    path: REPORT_LIST.PAYMENT_REQUESTS_V2_DOWNLOAD,
     options: {
       auth: authOptions,
       validate: {

@@ -114,6 +114,83 @@ describe('Report test', () => {
     expect(response.payload).toContain('123')
   })
 
+  test('GET /report-list/payment-requests-v2 renders with schemes', async () => {
+    getSchemes.mockResolvedValue([{ name: 'Scheme A' }, { name: 'Scheme B' }])
+
+    const options = {
+      method: 'GET',
+      url: '/report-list/payment-requests-v2',
+      auth
+    }
+
+    const response = await server.inject(options)
+    expect(response.statusCode).toBe(200)
+    expect(response.payload).toContain('Scheme A')
+    expect(response.payload).toContain('Scheme B')
+  })
+
+  test('GET /report-list/payment-requests-v2/download returns CSV', async () => {
+    api.getTrackingData = jest.fn().mockResolvedValue({
+      payload: {
+        reportData: [
+          {
+            correlationId: '123',
+            frn: '1234567890',
+            claimNumber: 'CN123',
+            agreementNumber: 'AN123',
+            revenueOrCapital: 'Revenue',
+            year: 2023,
+            invoiceNumber: 'INV123',
+            currency: 'GBP',
+            paymentRequestNumber: 'PR123',
+            value: 1000,
+            batch: 'Batch1',
+            sourceSystem: 'System1',
+            batchExportDate: '2024-01-01',
+            routedToRequestEditor: false,
+            deltaAmount: 50,
+            apValue: 100,
+            arValue: 50,
+            debtType: 'Admin',
+            status: 'Completed',
+            lastUpdated: '2024-01-02'
+          }
+        ]
+      }
+    })
+
+    const options = {
+      method: 'GET',
+      url: '/report-list/payment-requests-v2/download?schemeId=1&year=2023&revenueOrCapital=Revenue',
+      auth
+    }
+
+    const response = await server.inject(options)
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toBe('text/csv; charset=utf-8')
+    expect(response.payload).toContain('123')
+  })
+
+  test('GET /report-list/payment-requests-v2/download shows error when no data', async () => {
+    api.getTrackingData.mockResolvedValue({
+      payload: {
+        reportData: []
+      }
+    })
+
+    const options = {
+      method: 'GET',
+      url: '/report-list/payment-requests-v2/download?schemeId=1&year=2023',
+      auth
+    }
+
+    const response = await server.inject(options)
+    expect(response.statusCode).toBe(200)
+    expect(response.payload).toContain(
+      'No data available for the selected filters'
+    )
+  })
+
   test('GET /report-list/transaction-summary renders with schemes', async () => {
     getSchemes.mockResolvedValue([{ name: 'Scheme A' }, { name: 'Scheme B' }])
 
