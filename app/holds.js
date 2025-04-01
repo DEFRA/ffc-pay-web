@@ -20,6 +20,10 @@ const getHolds = async (page = 1, pageSize = 100, usePagination = true) => {
       x.agreementNumber = 'All'
       x.canBeRemoved = true
     }
+    if (!x.contractNumber) {
+      x.contractNumber = 'All'
+      x.canBeRemoved = true
+    }
     return x
   })
 }
