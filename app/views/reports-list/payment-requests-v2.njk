@@ -1,0 +1,8 @@
+{% extends 'reports-list/base-report.njk' %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% set reportTitle = 'Payment Request Statuses Report' %}
+{% set reportUrl = '/report-list/payment-requests' %}
+{% set formAction = '/report-list/payment-requests/download' %}
+{% block reportContent %}
+  {% include "reports-list/report-form-fields.njk" %}
+{% endblock %}
