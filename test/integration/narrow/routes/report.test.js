@@ -383,4 +383,62 @@ describe('Report test', () => {
       '<h1 class="govuk-heading-l">Report unavailable</h1>'
     )
   })
+
+  test('GET /report-list/holds returns unavailable page if no holds', async () => {
+    getHolds.mockResolvedValue([])
+
+    const options = {
+      method: 'GET',
+      url: '/report-list/holds',
+      auth
+    }
+
+    const response = await server.inject(options)
+    expect(response.statusCode).toBe(200)
+    expect(response.payload).toContain('There are currently no holds.')
+  })
+
+  test('GET /report-list/transaction-summary/download returns error for invalid query params', async () => {
+    const options = {
+      method: 'GET',
+      url: '/report-list/transaction-summary/download?schemeId=invalid&year=2023',
+      auth
+    }
+
+    const response = await server.inject(options)
+    expect(response.statusCode).toBe(400)
+    expect(response.payload).toContain('There is a problem')
+  })
+
+  test('GET /report-list/payment-requests returns correct content type', async () => {
+    getMIReport.mockResolvedValue({
+      readableStreamBody: 'Hello'
+    })
+
+    const options = {
+      method: 'GET',
+      url: '/report-list/payment-requests',
+      auth
+    }
+
+    const response = await server.inject(options)
+    expect(response.headers['content-type']).toBe('text/csv; charset=utf-8')
+  })
+
+  test('GET /report-list/payment-requests returns 403 for unauthorized role', async () => {
+    const unauthorizedAuth = {
+      strategy: 'session-auth',
+      credentials: { scope: [] }
+    }
+
+    const options = {
+      method: 'GET',
+      url: '/report-list/payment-requests',
+      auth: unauthorizedAuth
+    }
+
+    const response = await server.inject(options)
+    expect(response.statusCode).toBe(403)
+    expect(response.payload).toContain('Sorry, you are not authorised to perform this action')
+  })
 })

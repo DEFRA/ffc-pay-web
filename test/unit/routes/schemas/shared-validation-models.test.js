@@ -1,4 +1,4 @@
-const { BPS, CS } = require('../../../../app/constants/schemes')
+const { BPS, CS, SFI } = require('../../../../app/constants/schemes')
 const { createValidationSchema } = require('../../../../app/routes/schemas/shared-validation-models')
 
 describe('Validation Schema', () => {
@@ -19,6 +19,18 @@ describe('Validation Schema', () => {
     test('validates year correctly', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ year: 2025, schemeId: 1 })
+      expect(error).toBeUndefined()
+    })
+
+    test('validates year that is the minimum valid year', () => {
+      const schema = createValidationSchema()
+      const { error } = schema.validate({ year: 1994, schemeId: SFI })
+      expect(error).toBeUndefined()
+    })
+
+    test('validates year that is the maximum valid year', () => {
+      const schema = createValidationSchema()
+      const { error } = schema.validate({ year: 2098, schemeId: SFI })
       expect(error).toBeUndefined()
     })
 
@@ -110,6 +122,13 @@ describe('Validation Schema', () => {
     test('invalid revenueOrCapital returns error when dependsOnFrn is true and frn is absent', () => {
       const schema = createValidationSchema(true)
       const { error } = schema.validate({ schemeId: CS, revenueOrCapital: 'Invalid' })
+      expect(error).toBeDefined()
+      expect(error.details[0].message).toBe('Select Revenue or Capital')
+    })
+
+    test('missing revenueOrCapital returns error when schemeId is CS and dependsOnFrn is true', () => {
+      const schema = createValidationSchema(true)
+      const { error } = schema.validate({ schemeId: CS })
       expect(error).toBeDefined()
       expect(error.details[0].message).toBe('Select Revenue or Capital')
     })
