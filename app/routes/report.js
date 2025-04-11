@@ -3,7 +3,6 @@ const { getHolds } = require('../holds')
 const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
 const formatDate = require('../helpers/format-date')
 const storageConfig = require('../config/storage')
-const schema = require('./schemas/report-schema')
 const {
   addDetailsToFilename,
   createReportHandler,
@@ -15,14 +14,14 @@ const {
 const transactionSummaryFields = require('../constants/transaction-summary-fields')
 const claimLevelReportFields = require('../constants/claim-level-report-fields')
 const requestEditorReportFields = require('../constants/request-editor-report-fields')
-const claimLevelSchema = require('./schemas/claim-level-schema')
+const claimLevelAndTransactionSummarySchema = require('./schemas/claim-level-and-transaction-summary-schema')
 const REPORT_LIST = {
   PAYMENT_REQUESTS: '/report-list/payment-requests',
   TRANSACTION_SUMMARY: '/report-list/transaction-summary',
+  TRANSACTION_SUMMARY_DOWNLOAD: '/report-list/transaction-summary/download',
   CLAIM_LEVEL_REPORT: '/report-list/claim-level-report',
   CLAIM_LEVEL_REPORT_DOWNLOAD: '/report-list/claim-level-report/download',
   REQUEST_EDITOR_REPORT: '/report-list/request-editor-report',
-  TRANSACTION_SUMMARY_DOWNLOAD: '/report-list/transaction-summary/download',
   SUPPRESSED_PAYMENTS: '/report-list/suppressed-payments',
   HOLDS: '/report-list/holds',
   REPORT_UNAVAILABLE: '/report-unavailable'
@@ -105,7 +104,7 @@ module.exports = [
     options: {
       auth: authOptions,
       validate: {
-        query: schema,
+        query: claimLevelAndTransactionSummarySchema,
         failAction: async (request, h, err) => {
           return renderErrorPage(
             REPORTS_VIEWS.TRANSACTION_SUMMARY,
@@ -142,7 +141,7 @@ module.exports = [
     options: {
       auth: authOptions,
       validate: {
-        query: claimLevelSchema,
+        query: claimLevelAndTransactionSummarySchema,
         failAction: async (request, h, err) => {
           return renderErrorPage(
             REPORTS_VIEWS.CLAIM_LEVEL_REPORT,

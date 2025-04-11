@@ -1,5 +1,5 @@
 const { CS } = require('../../../../app/constants/schemes')
-const validationSchema = require('../../../../app/routes/schemas/claim-level-schema')
+const validationSchema = require('../../../../app/routes/schemas/claim-level-and-transaction-summary-schema')
 
 describe('Validation Schema', () => {
   describe('frn validation', () => {
