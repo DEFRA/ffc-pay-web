@@ -11,12 +11,16 @@ const {
   getView,
   handleStreamResponse
 } = require('../helpers')
+const paymentRequestsFields = require('../constants/payment-requests-report-fields')
 const transactionSummaryFields = require('../constants/transaction-summary-fields')
 const claimLevelReportFields = require('../constants/claim-level-report-fields')
 const requestEditorReportFields = require('../constants/request-editor-report-fields')
 const claimLevelAndTransactionSummarySchema = require('./schemas/claim-level-and-transaction-summary-schema')
+const requestStatusSchema = require('./schemas/request-status-schema')
 const REPORT_LIST = {
   PAYMENT_REQUESTS: '/report-list/payment-requests',
+  PAYMENT_REQUESTS_V2: '/report-list/payment-requests-v2',
+  PAYMENT_REQUESTS_V2_DOWNLOAD: '/report-list/payment-requests-v2/download',
   TRANSACTION_SUMMARY: '/report-list/transaction-summary',
   TRANSACTION_SUMMARY_DOWNLOAD: '/report-list/transaction-summary/download',
   CLAIM_LEVEL_REPORT: '/report-list/claim-level-report',
@@ -27,6 +31,7 @@ const REPORT_LIST = {
   REPORT_UNAVAILABLE: '/report-unavailable'
 }
 const REPORTS_VIEWS = {
+  PAYMENT_REQUESTS: 'reports-list/payment-requests-v2',
   TRANSACTION_SUMMARY: 'reports-list/transaction-summary',
   CLAIM_LEVEL_REPORT: 'reports-list/claim-level-report',
   REQUEST_EDITOR_REPORT: 'reports-list/request-editor-report',
@@ -34,12 +39,28 @@ const REPORTS_VIEWS = {
   REPORT_UNAVAILABLE: 'report-unavailable'
 }
 const REPORTS_HANDLER = {
+  PAYMENT_REQUESTS: '/payment-requests-report',
   TRANSACTION_SUMMARY: '/transaction-summary',
   CLAIM_LEVEL_REPORT: '/claim-level-report',
   REQUEST_EDITOR_REPORT: '/request-editor-report'
 }
 
 const authOptions = { scope: [schemeAdmin, holdAdmin, dataView] }
+
+const getPaymentRequestsHandler = createReportHandler(
+  REPORTS_HANDLER.PAYMENT_REQUESTS,
+  paymentRequestsFields,
+  (schemeId, year, revenueOrCapital, prn, frn) =>
+    addDetailsToFilename(
+      storageConfig.paymentRequestsReportName,
+      schemeId,
+      year,
+      prn,
+      revenueOrCapital,
+      frn
+    ),
+  REPORTS_VIEWS.PAYMENT_REQUESTS
+)
 
 const getTransactionSummaryHandler = createReportHandler(
   REPORTS_HANDLER.TRANSACTION_SUMMARY,
@@ -86,6 +107,35 @@ module.exports = [
       auth: authOptions,
       handler: async (_request, h) =>
         handleStreamResponse(getMIReport, storageConfig.miReportName, h)
+    }
+  },
+  {
+    method: 'GET',
+    path: REPORT_LIST.PAYMENT_REQUESTS_V2,
+    options: {
+      auth: authOptions,
+      handler: async (_request, h) => {
+        return getView(REPORTS_VIEWS.PAYMENT_REQUESTS, h)
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: REPORT_LIST.PAYMENT_REQUESTS_V2_DOWNLOAD,
+    options: {
+      auth: authOptions,
+      validate: {
+        query: requestStatusSchema,
+        failAction: async (request, h, err) => {
+          return renderErrorPage(
+            REPORTS_VIEWS.PAYMENT_REQUESTS,
+            request,
+            h,
+            err
+          )
+        }
+      },
+      handler: getPaymentRequestsHandler
     }
   },
   {
