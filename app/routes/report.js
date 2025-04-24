@@ -15,8 +15,8 @@ const paymentRequestsFields = require('../constants/payment-requests-report-fiel
 const transactionSummaryFields = require('../constants/transaction-summary-fields')
 const claimLevelReportFields = require('../constants/claim-level-report-fields')
 const requestEditorReportFields = require('../constants/request-editor-report-fields')
-const claimLevelAndTransactionSummarySchema = require('./schemas/claim-level-and-transaction-summary-schema')
-const requestStatusSchema = require('./schemas/request-status-schema')
+const claimLevelSchema = require('./schemas/claim-level-schema')
+const standardReportSchema = require('./schemas/standard-report-schema')
 const REPORT_LIST = {
   PAYMENT_REQUESTS: '/report-list/payment-requests',
   PAYMENT_REQUESTS_V2: '/report-list/payment-requests-v2',
@@ -125,7 +125,7 @@ module.exports = [
     options: {
       auth: authOptions,
       validate: {
-        query: requestStatusSchema,
+        query: standardReportSchema,
         failAction: async (request, h, err) => {
           return renderErrorPage(
             REPORTS_VIEWS.PAYMENT_REQUESTS,
@@ -154,7 +154,7 @@ module.exports = [
     options: {
       auth: authOptions,
       validate: {
-        query: claimLevelAndTransactionSummarySchema,
+        query: standardReportSchema,
         failAction: async (request, h, err) => {
           return renderErrorPage(
             REPORTS_VIEWS.TRANSACTION_SUMMARY,
@@ -191,7 +191,7 @@ module.exports = [
     options: {
       auth: authOptions,
       validate: {
-        query: claimLevelAndTransactionSummarySchema,
+        query: claimLevelSchema,
         failAction: async (request, h, err) => {
           return renderErrorPage(
             REPORTS_VIEWS.CLAIM_LEVEL_REPORT,
