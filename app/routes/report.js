@@ -3,7 +3,6 @@ const { getHolds } = require('../holds')
 const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
 const formatDate = require('../helpers/format-date')
 const storageConfig = require('../config/storage')
-const schema = require('./schemas/report-schema')
 const {
   addDetailsToFilename,
   createReportHandler,
@@ -17,7 +16,7 @@ const transactionSummaryFields = require('../constants/transaction-summary-field
 const claimLevelReportFields = require('../constants/claim-level-report-fields')
 const requestEditorReportFields = require('../constants/request-editor-report-fields')
 const claimLevelSchema = require('./schemas/claim-level-schema')
-const requestStatusSchema = require('./schemas/request-status-schema')
+const standardReportSchema = require('./schemas/standard-report-schema')
 const REPORT_LIST = {
   PAYMENT_REQUESTS: '/report-list/payment-requests',
   PAYMENT_REQUESTS_V2: '/report-list/payment-requests-v2',
@@ -126,7 +125,7 @@ module.exports = [
     options: {
       auth: authOptions,
       validate: {
-        query: requestStatusSchema,
+        query: standardReportSchema,
         failAction: async (request, h, err) => {
           return renderErrorPage(
             REPORTS_VIEWS.PAYMENT_REQUESTS,
@@ -155,7 +154,7 @@ module.exports = [
     options: {
       auth: authOptions,
       validate: {
-        query: schema,
+        query: standardReportSchema,
         failAction: async (request, h, err) => {
           return renderErrorPage(
             REPORTS_VIEWS.TRANSACTION_SUMMARY,
