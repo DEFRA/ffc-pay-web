@@ -27,6 +27,7 @@ data:
   AZURE_STORAGE_CREATE_CONTAINERS: {{ quote .Values.container.azureStorageCreateContainers }}
   AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
   USE_V2_EVENTS: {{ quote .Values.container.useV2Events }}
+  LEGACY_REPORTS_LIVE: {{ quote .Values.container.legacyReportsLive }}
   MESSAGE_QUEUE_HOST: {{ quote .Values.container.messageQueueHost }}
   {{- if and (.Values.environmentCode) (not .Values.pr) }}
   DATA_TOPIC_ADDRESS: {{ .Values.container.dataTopicAddress }}-{{ .Values.environmentCode }}
