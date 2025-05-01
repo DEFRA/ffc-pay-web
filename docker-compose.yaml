@@ -25,7 +25,7 @@ services:
       MESSAGE_QUEUE_USER: ${MESSAGE_QUEUE_USER}
       DATA_TOPIC_ADDRESS: ${DATA_TOPIC_ADDRESS:-ffc-pay-data-request}${MESSAGE_QUEUE_SUFFIX}
       DATARESPONSE_QUEUE_ADDRESS: ${DATARESPONSE_QUEUE_ADDRESS:-ffc-pay-data-request-response}${MESSAGE_QUEUE_SUFFIX}
-      LEGACY_REPORTS_ACTIVE: ${LEGACY_REPORTS_ACTIVE}
+      LEGACY_REPORTS_ACTIVE: ${LEGACY_REPORTS_ACTIVE:-true}
 
   ffc-pay-event-store-azurite:
     image: mcr.microsoft.com/azure-storage/azurite:3.32.0
