@@ -1,7 +1,8 @@
 const config = require('../config')
 
 const getReportTypes = () => {
-  if (config.legacyReportsLive) {
+  console.log(process.env.LEGACY_REPORTS_ACTIVE)
+  if (config.legacyReportsActive) {
     return {
       'Payment request statuses': 'payment-requests',
       'Payment request statuses v2': 'payment-requests-v2',

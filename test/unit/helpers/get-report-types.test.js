@@ -8,8 +8,8 @@ describe('getReportTypes', () => {
     jest.resetModules()
   })
 
-  test('should return all report types when legacyReportsLive is true', () => {
-    config.legacyReportsLive = true
+  test('should return all report types when legacyReportsActive is true', () => {
+    config.legacyReportsActive = true
 
     const reportTypes = getReportTypes()
 
@@ -25,8 +25,8 @@ describe('getReportTypes', () => {
     })
   })
 
-  test('should return limited report types when legacyReportsLive is false', () => {
-    config.legacyReportsLive = false
+  test('should return limited report types when legacyReportsActive is false', () => {
+    config.legacyReportsActive = false
 
     const reportTypes = getReportTypes()
 

@@ -18,7 +18,7 @@ const schema = joi.object({
   paymentsEndpoint: joi.string().uri().required(),
   trackingEndpoint: joi.string().uri().required(),
   useV2Events: joi.boolean().default(true),
-  legacyReportsLive: joi.boolean().default(true)
+  legacyReportsActive: joi.boolean().default(true)
 })
 
 // Build config
@@ -31,7 +31,7 @@ const config = {
   paymentsEndpoint: process.env.PAYMENTS_SERVICE_ENDPOINT,
   trackingEndpoint: process.env.TRACKING_SERVICE_ENDPOINT,
   useV2Events: process.env.USE_V2_EVENTS,
-  legacyReportsLive: process.env.LEGACY_REPORTS_LIVE
+  legacyReportsActive: process.env.LEGACY_REPORTS_ACTIVE
 }
 
 // Validate config
