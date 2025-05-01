@@ -1,6 +1,6 @@
 const { get } = require('../api')
 const { holdAdmin, schemeAdmin, dataView, closureAdmin } = require('../auth/permissions')
-const { getReportTypes } = require('../constants/report-types')
+const { getReportTypes } = require('../helpers/get-report-types')
 
 module.exports = {
   method: 'GET',

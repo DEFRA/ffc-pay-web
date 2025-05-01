@@ -17,7 +17,8 @@ const schema = joi.object({
   googleTagManagerKey: joi.string().default(''),
   paymentsEndpoint: joi.string().uri().required(),
   trackingEndpoint: joi.string().uri().required(),
-  useV2Events: joi.boolean().default(true)
+  useV2Events: joi.boolean().default(true),
+  legacyReportsActive: joi.boolean().default(true)
 })
 
 // Build config
@@ -29,7 +30,8 @@ const config = {
   googleTagManagerKey: process.env.GOOGLE_TAG_MANAGER_KEY,
   paymentsEndpoint: process.env.PAYMENTS_SERVICE_ENDPOINT,
   trackingEndpoint: process.env.TRACKING_SERVICE_ENDPOINT,
-  useV2Events: process.env.USE_V2_EVENTS
+  useV2Events: process.env.USE_V2_EVENTS,
+  legacyReportsActive: process.env.LEGACY_REPORTS_ACTIVE
 }
 
 // Validate config
