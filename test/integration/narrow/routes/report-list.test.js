@@ -1,5 +1,5 @@
 const createServer = require('../../../../app/server')
-const { getReportTypes } = require('../../../../app/constants/report-types')
+const { getReportTypes } = require('../../../../app/constants/get-report-types')
 const { schemeAdmin } = require('../../../../app/auth/permissions')
 const { getHolds } = require('../../../../app/holds')
 
