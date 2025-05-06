@@ -21,10 +21,17 @@
     }) 
   }}
   {% endif %}
-  <form id="reportForm" method="get" action="{{ formAction }}">
+  <form id="reportForm" method="post" action="{{ formAction }}">
+    <input type="hidden" name="crumb" value="{{crumb}}"/>
     {% block reportContent %}{% endblock %}
     <button class="govuk-button" data-module="govuk-button">
       Submit
     </button>
   </form>
+  {# <form id="reportForm" method="get" action="{{ formAction }}">
+    {% block reportContent %}{% endblock %}
+    <button class="govuk-button" data-module="govuk-button">
+      Submit
+    </button>
+  </form> #}
 {% endblock %}

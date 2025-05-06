@@ -1,5 +1,5 @@
 const REPORT_TYPES = require('../constants/report-types')
-const storageConfig = require('../storageConfig/storage')
+const storageConfig = require('../config/storage')
 
 const startsAt = 0
 const removeFromEnd = -4

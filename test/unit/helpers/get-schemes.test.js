@@ -26,8 +26,8 @@ describe('get schemes', () => {
     expect(api.get).toHaveBeenCalledWith('/payment-schemes')
     expect(result).toEqual([
       { name: 'Scheme A' },
-      { name: 'SFI22' },
-      { name: 'Scheme B' }
+      { name: 'Scheme B' },
+      { name: 'SFI22' }
     ])
   })
 
@@ -47,9 +47,9 @@ describe('get schemes', () => {
     const result = await getSchemes()
 
     expect(result).toEqual([
+      { name: 'Non-SFI' },
       { name: 'SFI22' },
-      { name: 'SFI22' },
-      { name: 'Non-SFI' }
+      { name: 'SFI22' }
     ])
   })
 

@@ -6,6 +6,10 @@ const { BAD_REQUEST } = require('../constants/http-status')
 
 const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
 
+const apListingSchema = require('./schemas/ap-listing-schema')
+
+const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
+
 const handleValidationError = async (request, h, err, reportName) => {
   request.log(['error', 'validation'], err)
   const errors =
@@ -19,10 +23,6 @@ const handleValidationError = async (request, h, err, reportName) => {
     .takeover()
 }
 
-const apListingSchema = require('./schemas/ap-listing-schema')
-
-const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
-
 const createGetRoute = reportName => ({
   method: 'GET',
   path: `/report-list/${reportName}`,
@@ -34,20 +34,23 @@ const createGetRoute = reportName => ({
 
 const createSubmitRoute = reportName => ({
   method: 'POST',
-  path: `/report-list/${reportName}`,
+  path: `/report-list/${reportName}/submit`,
   options: {
     auth: AUTH_SCOPE,
     validate: {
-      payload: apListingSchema,
-      failAction: async (request, h, err) => handleValidationError(request, h, err, reportName)
+      query: apListingSchema,
+      failAction: async (request, h, err) =>
+        handleValidationError(request, h, err, reportName)
     },
     handler: async (request, h) => {
       const jobId = uuidv4()
+      console.log(jobId)
       const { payload } = request
       await set(request, jobId, 'preparing')
 
       await generateReport(reportName, payload, jobId) // Kicks off async
-      return h.redirect(`/report-list/${reportName}/status/${jobId}`)
+      return h.redirect(`/report-list/${reportName}`)
+      // return h.redirect(`/report-list/${reportName}/status/${jobId}`)
     }
   }
 })
@@ -105,10 +108,9 @@ const createSubmitRoute = reportName => ({
 //   }
 // })
 
-module.exports = reportName => [
+const generateRoutes = (reportName, reportDataUrl, reportDataKey) => [
   createGetRoute(reportName),
-  createSubmitRoute(reportName)
-  // createStatusPageRoute(reportName),
-  // createStatusPollRoute(reportName),
-  // createDownloadRoute(reportName)
+  createSubmitRoute(reportName, reportDataUrl, reportDataKey)
 ]
+
+module.exports = generateRoutes
