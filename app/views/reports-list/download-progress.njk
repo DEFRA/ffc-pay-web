@@ -1,0 +1,103 @@
+{% extends '_layout.njk' %}
+
+{% block content %}
+  <h1 class="govuk-heading-l">Preparing your report</h1>
+
+  <div id="progress-container" class="govuk-notification-banner govuk-notification-banner--info" role="region" aria-labelledby="progress-status-heading">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="progress-status-heading">
+        Please wait
+      </h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-body" id="progress-status-text">We’re preparing your report. This can take a few minutes for large files.</p>
+      <div class="govuk-spinner" role="status" aria-live="polite">
+        <span class="govuk-visually-hidden">Loading</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="error-message" class="govuk-error-summary" hidden>
+    <h2 class="govuk-error-summary__title">
+      There was a problem
+    </h2>
+    <div class="govuk-error-summary__body">
+      <p class="govuk-body">We were unable to generate your report. Please try again later or contact support.</p>
+    </div>
+  </div>
+
+  <style>
+    .govuk-spinner {
+      border: 4px solid #f3f2f1;
+      border-top: 4px solid #1d70b8;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 0.6s linear infinite;
+      margin-top: 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #progress-container {
+      margin-top: 1rem;
+    }
+  </style>
+
+  <script>
+    const requestId = "{{ jobId }}"
+    const checkUrl = `/report-generation/status/${requestId}`
+    const downloadUrl = `/report-generation/download/${requestId}`
+
+    let pollStartTime = null;
+
+    function startTimer() {
+      pollStartTime = Date.now();
+    }
+
+    function stopTimer() {
+      const elapsed = Math.floor((Date.now() - pollStartTime) / 1000);
+      console.log(`✅ Report process completed in ${elapsed}s`);
+    }
+
+    function checkStatus() {
+      fetch(checkUrl)
+        .then(res => {
+          if (!res.ok) throw new Error('Status check failed')
+          return res.json();
+        })
+        .then(data => {
+          if (data.status === 'ready') {
+            // Update status message and banner style
+            const progressContainer = document.getElementById('progress-container');
+            const progressStatusText = document.getElementById('progress-status-text');
+            const spinner = document.querySelector('.govuk-spinner');
+
+            progressStatusText.textContent = 'Report is ready. Downloading now...';
+            progressContainer.classList.remove('govuk-notification-banner--info');
+            progressContainer.classList.add('govuk-notification-banner--success');
+            spinner.style.display = 'none';
+            window.location.href = downloadUrl;
+            stopTimer()
+          } else if (data.status === 'failed') {
+            showError()
+          } else {
+            setTimeout(checkStatus, 4000)
+          }
+        })
+        .catch(showError)
+    }
+
+    function showError() {
+      document.getElementById('progress-container').hidden = true
+      document.getElementById('error-message').hidden = false
+    }
+
+    document.addEventListener('DOMContentLoaded', checkStatus)
+    startTimer()
+  </script>
+{% endblock %}

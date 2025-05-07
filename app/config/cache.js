@@ -39,4 +39,6 @@ value.catboxOptions = {
   partition: value.partition
 }
 
+console.log(value.catboxOptions)
+
 module.exports = value

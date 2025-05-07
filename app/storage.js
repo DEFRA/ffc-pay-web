@@ -57,7 +57,7 @@ const saveReportFile = async (filename, readableStream) => {
     const client = dataRequestContainer.getBlockBlobClient(`${filename}`)
     const options = {
       blobHTTPHeaders: {
-        blobContentType: 'text/json'
+        blobContentType: 'text/csv'
       }
     }
 

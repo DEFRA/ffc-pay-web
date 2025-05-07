@@ -17,7 +17,8 @@ const routes = [].concat(
   require('../routes/view-closures'),
   require('../routes/report-list'),
   require('../routes/ap-ar-listing'),
-  require('../routes/ar-listing')
+  require('../routes/ar-listing'),
+  require('../routes/report-generation')
 )
 
 module.exports = {

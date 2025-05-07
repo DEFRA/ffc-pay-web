@@ -11,8 +11,9 @@ const { Transform } = require('stream')
 
 const generateReport = async (reportName, reportDataUrl, startDate, endDate) => {
   const url = `${reportDataUrl}?startDate=${startDate}&endDate=${endDate}`
+  console.log(url)
+  const jsonFile = await downloadTrackingData(url)
 
-  const jsonFile = downloadTrackingData(url)
   const csvStream = format({ headers: true })
 
   // Stream the CSV file directly to the user.
@@ -21,10 +22,10 @@ const generateReport = async (reportName, reportDataUrl, startDate, endDate) => 
     .pipe(mapTransform(reportName))
     .pipe(csvStream)
 
-  // ? use stream to save directly to Azure BLOB storage
   const filename = `${getBaseFilename(reportName)}-from-${startDate}-to-${endDate}.csv`
-
   await saveReportFile(filename, responseStream)
+
+  return filename
 }
 
 const queryTrackingApi = async (url) => {

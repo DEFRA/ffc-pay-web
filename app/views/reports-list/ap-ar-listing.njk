@@ -33,7 +33,7 @@
   <script>
   document.getElementById('report-type').addEventListener('change', function() {
     var actionPath = this.value;
-    var newAction = '/report-list/' + actionPath + '-listing/download';
+    var newAction = '/report-list/' + actionPath + '-listing/submit';
     document.getElementById('reportForm').action = newAction;
   });
 </script>
