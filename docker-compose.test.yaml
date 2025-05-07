@@ -7,6 +7,8 @@ services:
       target: development
     image: ffc-pay-web-development
     container_name: ffc-pay-web-test
+    depends_on:
+      - ffc-pay-web-redis
     command: npm run test
     environment:
       NODE_ENV: ${NODE_ENV:-test}

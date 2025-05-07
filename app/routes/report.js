@@ -31,10 +31,10 @@ const REPORT_LIST = {
   REPORT_UNAVAILABLE: '/report-unavailable'
 }
 const REPORTS_VIEWS = {
-  PAYMENT_REQUESTS: 'reports-list/payment-requests-v2',
-  TRANSACTION_SUMMARY: 'reports-list/transaction-summary',
-  CLAIM_LEVEL_REPORT: 'reports-list/claim-level-report',
-  REQUEST_EDITOR_REPORT: 'reports-list/request-editor-report',
+  PAYMENT_REQUESTS: 'report-list/payment-requests-v2',
+  TRANSACTION_SUMMARY: 'report-list/transaction-summary',
+  CLAIM_LEVEL_REPORT: 'report-list/claim-level-report',
+  REQUEST_EDITOR_REPORT: 'report-list/request-editor-report',
   HOLD_REPORT_UNAVAILABLE: 'hold-report-unavailable',
   REPORT_UNAVAILABLE: 'report-unavailable'
 }

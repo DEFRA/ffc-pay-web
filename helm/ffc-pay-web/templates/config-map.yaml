@@ -35,5 +35,7 @@ data:
   {{ else }}
   DATA_TOPIC_ADDRESS: {{ quote .Values.container.dataTopicAddress }}
   DATARESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.dataResponseQueueAddress }}
+  REDIS_HOSTNAME: {{ quote .Values.container.redisHostname }}
+  REDIS_PORT: {{ quote .Values.container.redisPort }}
   {{- end }}
 {{- end -}}
