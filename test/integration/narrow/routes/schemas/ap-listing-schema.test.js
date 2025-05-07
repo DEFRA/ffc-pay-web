@@ -1,4 +1,4 @@
-const schema = require('../../../../../app/routes/schemas/ap-listing-schema')
+const schema = require('../../../../../app/routes/schemas/ap-ar-listing-schema')
 
 describe('AP Listing Schema', () => {
   test('should return error when start date is partially provided', () => {

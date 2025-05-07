@@ -8,13 +8,13 @@ const getReportTypes = () => {
       'Payment request statuses v2': 'payment-requests-v2',
       'Combined transaction report': 'transaction-summary',
       'Suppressed payment requests': 'suppressed-payments',
-      'AP-AR listing report': 'ap-ar-listing',
+      'AP-AR listing report': 'ap-ar-report',
       Holds: 'holds',
       'Request Editor report': 'request-editor-report',
       'Claim level report': 'claim-level-report'
     }
   }
-  return {
+  return { // dont goto tracking (Report exists in BLOB)
     'Payment request statuses': 'payment-requests',
     'Suppressed payment requests': 'suppressed-payments',
     Holds: 'holds'

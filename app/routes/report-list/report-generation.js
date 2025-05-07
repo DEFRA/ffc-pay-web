@@ -1,12 +1,12 @@
-const { get } = require('../cache')
-const { getDataRequestFile } = require('../storage')
-const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
+const { get, drop } = require('../../cache')
+const { generateReport } = require('../../reporting/get-ap-ar-report')
+const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 
 const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 
 const createReportStatusRoute = () => ({
   method: 'GET',
-  path: '/report-generation/status/{jobId}',
+  path: '/report-list/generation/status/{jobId}',
   options: {
     auth: AUTH_SCOPE,
     handler: async (request, h) => {
@@ -19,8 +19,6 @@ const createReportStatusRoute = () => ({
           return h.response({ status: 'not-found' }).code(404)
         }
 
-        console.log(`Cache value is: ${result}`)
-
         return h.response({ status: result.status }) // Example: { status: "preparing" | "ready" | "failed" }
       } catch (err) {
         console.error('Error fetching report status from cache:', err)
@@ -32,7 +30,7 @@ const createReportStatusRoute = () => ({
 
 const createDownloadRoute = () => ({
   method: 'GET',
-  path: '/report-generation/download/{jobId}',
+  path: '/report-list/generation/download/{jobId}',
   options: {
     auth: AUTH_SCOPE,
     handler: async (request, h) => {
@@ -42,12 +40,16 @@ const createDownloadRoute = () => ({
         return h.response('Report not ready').code(202) // Accepted
       }
 
-      const filename = `${result.filename}`
-      const blobStream = await getDataRequestFile(filename)
+      await drop(request, jobId)
 
-      return h.response(blobStream.readableStreamBody)
+      const filename = `${result.filename}`
+
+      const blobStream = await generateReport(filename)
+
+      return h.response(blobStream)
         .header('Content-Type', 'text/csv')
-        .header('Content-Disposition', `attachment; filename="${filename}"`)
+        .header('Content-Disposition', `attachment; filename="${filename.replace('.json', '.csv')}"`)
+        .header('Transfer-Encoding', 'chunked')
     }
   }
 })

@@ -1,31 +1,28 @@
 const api = require('../api')
-const { getDataRequestFile, saveReportFile } = require('../storage')
+const { getDataRequestFile } = require('../storage')
 
 const { getDataMapper } = require('./mapping')
-const { getBaseFilename } = require('../helpers/get-base-filename')
 
 const JSONStream = require('JSONStream')
 
 const { format } = require('@fast-csv/format')
 const { Transform } = require('stream')
 
-const generateReport = async (reportName, reportDataUrl, startDate, endDate) => {
-  const url = `${reportDataUrl}?startDate=${startDate}&endDate=${endDate}`
-  console.log(url)
-  const jsonFile = await downloadTrackingData(url)
+const getReportData = async (url) => await queryTrackingApi(url)
 
+const generateReport = async (jsonLocation) => {
+  const jsonFile = await downloadTrackingData(jsonLocation)
+  console.log(jsonLocation)
+  // set to ready once JSON
   const csvStream = format({ headers: true })
 
   // Stream the CSV file directly to the user.
   const responseStream = jsonFile.readableStreamBody
     .pipe(JSONStream.parse('*'))
-    .pipe(mapTransform(reportName))
+    .pipe(mapTransform(jsonLocation))
     .pipe(csvStream)
 
-  const filename = `${getBaseFilename(reportName)}-from-${startDate}-to-${endDate}.csv`
-  await saveReportFile(filename, responseStream)
-
-  return filename
+  return responseStream
 }
 
 const queryTrackingApi = async (url) => {
@@ -38,10 +35,9 @@ const queryTrackingApi = async (url) => {
   return response.payload.file
 }
 
-const downloadTrackingData = async (url) => {
-  const reportLocation = await queryTrackingApi(url)
-
+const downloadTrackingData = async (reportLocation) => {
   const jsonFile = await getDataRequestFile(reportLocation)
+
   if (!jsonFile) {
     console.log('No data available for the supplied category and value')
     return null
@@ -49,20 +45,37 @@ const downloadTrackingData = async (url) => {
   return jsonFile
 }
 
-const mapTransform = (reportName) => {
+const mapTransform = (filename) => {
+  const reportMatch = filename.match(/^ffc-pay-(.*?)-from/)
+  const reportName = reportMatch ? reportMatch[1] : '' // if null will just do ap data.
+  console.log(reportName)
   const mapper = getDataMapper(reportName)
+
+  let rowCount = 0
+  const start = Date.now()
 
   return new Transform({
     objectMode: true,
+    highWaterMark: 100,
     transform (chunk, _encoding, callback) {
       try {
         const mapped = mapper(chunk)
+        rowCount++
         callback(null, mapped)
       } catch (err) {
         callback(err)
       }
+    },
+    flush (callback) {
+      const duration = Date.now() - start
+
+      const minutes = Math.floor(duration / 60000)
+      const seconds = ((duration % 60000) / 1000).toFixed(1)
+
+      console.debug(`Finished processing ${rowCount} rows for report: ${reportName} in ${minutes}m ${seconds}s`)
+      callback()
     }
   })
 }
 
-module.exports = { generateReport }
+module.exports = { generateReport, getReportData }

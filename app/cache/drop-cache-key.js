@@ -1,5 +1,5 @@
 const dropCacheKey = async (cache, key) => {
-  console.log(`Dropping cache key: ${key}`)
+  console.debug(`Dropping cache key: ${key}`)
   try {
     return cache.drop(key)
   } catch (err) {

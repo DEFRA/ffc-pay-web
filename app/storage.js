@@ -3,8 +3,6 @@ const { BlobServiceClient } = require('@azure/storage-blob')
 const config = require('./config').storageConfig
 let blobServiceClient
 let containersInitialised
-const BUFFER_SIZE = 4 * 1024 * 1024 // 4 MB
-const MAX_CONCURRENCY = 5
 
 if (config.useConnectionStr) {
   console.log('Using connection string for BlobServiceClient')
@@ -49,45 +47,9 @@ const getDataRequestFile = async (filename) => {
   return downloadResponse
 }
 
-const saveReportFile = async (filename, readableStream) => {
-  try {
-    console.debug('[STORAGE] Starting report file save:', filename)
-    containersInitialised ?? await initialiseContainers()
-
-    const client = dataRequestContainer.getBlockBlobClient(`${filename}`)
-    const options = {
-      blobHTTPHeaders: {
-        blobContentType: 'text/csv'
-      }
-    }
-
-    return new Promise((resolve, reject) => {
-      readableStream.on('error', (err) => {
-        reject(err)
-      })
-
-      client.uploadStream(
-        readableStream,
-        BUFFER_SIZE,
-        MAX_CONCURRENCY,
-        options
-      )
-        .then(() => {
-          console.debug('[STORAGE] Upload completed')
-          resolve()
-        })
-        .catch(reject)
-    })
-  } catch (error) {
-    console.error('[STORAGE] Error saving report file:', error)
-    throw error
-  }
-}
-
 module.exports = {
   blobServiceClient,
   getMIReport,
   getSuppressedReport,
-  getDataRequestFile,
-  saveReportFile
+  getDataRequestFile
 }

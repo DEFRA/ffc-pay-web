@@ -6,7 +6,7 @@ const removeFromEnd = -4
 
 const getBaseFilename = reportName => {
   const fileNames = {
-    [REPORT_TYPES.AR_LISTING]: storageConfig.arListingReportName,
+    [REPORT_TYPES.AR]: storageConfig.arListingReportName,
     [REPORT_TYPES.REQUEST_EDITOR]: storageConfig.requestEditorReportName,
     [REPORT_TYPES.CLAIM_LEVEL]: storageConfig.claimLevelReportName,
     default: storageConfig.apListingReportName

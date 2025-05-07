@@ -1,27 +1,30 @@
-{% extends 'reports-list/base-report.njk' %}
+{% extends 'report-list/base-report.njk' %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
-{% from "reports-list/date-form.njk" import dateInput %}
+{% from "report-list/date-form.njk" import dateInput %}
 {% set reportTitle = 'AP/AR Listing Report' %}
-{% set reportUrl = '/report-list/ap-ar-listing' %}
-{% set formAction = '/report-list/ap-ar-listing/submit' %}
+{% set reportUrl = '/report-list/ap-ar-report' %}
+{% set formAction = '/report-list/ap-ar-report/submit' %}
 {% block reportContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">AP/AR Listing Report</h1>
+      <input type="hidden" name="report-url" value="{{ reportUrl }}">
+      <input type="hidden" name="report-title" value="{{ reportTitle }}">      
       {{ govukSelect({
         id: "report-type",
+        name: "report-type",
         label: {
           text: "Report Type"
         },
         items: [
           {
-            value: "ap-ar",
+            value: "ap-listing-report",
             text: "AP Listing Report",
             selected: true
           },
           {
-            value: "ar",
+            value: "ar-listing-report",
             text: "AR Listing Report"
           }
         ]
@@ -30,11 +33,4 @@
       {{ dateInput('end-date', errors) }}
     </div>
   </div>
-  <script>
-  document.getElementById('report-type').addEventListener('change', function() {
-    var actionPath = this.value;
-    var newAction = '/report-list/' + actionPath + '-listing/submit';
-    document.getElementById('reportForm').action = newAction;
-  });
-</script>
 {% endblock %}

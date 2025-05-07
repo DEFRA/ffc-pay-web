@@ -80,10 +80,10 @@ describe('AP Listing Report tests', () => {
     })
   })
 
-  test('GET /report-list/ap-ar-listing route returns 200', async () => {
+  test('GET /report-list/ap-ar-report route returns 200', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing',
+      url: '/report-list/ap-ar-report',
       auth
     }
 
@@ -91,10 +91,10 @@ describe('AP Listing Report tests', () => {
     expect(response.statusCode).toBe(200)
   })
 
-  test('GET /report-list/ap-ar-listing/download route returns 200 with valid query parameters', async () => {
+  test('GET /report-list/ap-ar-report/download route returns 200 with valid query parameters', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
+      url: '/report-list/ap-ar-report/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
       auth
     }
 
@@ -102,10 +102,10 @@ describe('AP Listing Report tests', () => {
     expect(response.statusCode).toBe(200)
   })
 
-  test('GET /report-list/ap-ar-listing/download route returns CSV file with valid query parameters', async () => {
+  test('GET /report-list/ap-ar-report/download route returns CSV file with valid query parameters', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
+      url: '/report-list/ap-ar-report/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
       auth
     }
 
@@ -114,14 +114,14 @@ describe('AP Listing Report tests', () => {
     expect(response.headers['content-disposition']).toContain('.csv')
   })
 
-  test('GET /report-list/ap-ar-listing/download route sets endDate to current date if only startDate is provided', async () => {
+  test('GET /report-list/ap-ar-report/download route sets endDate to current date if only startDate is provided', async () => {
     const now = new Date()
     const expectedEndDate = `${now.getFullYear()}-${String(
       now.getMonth() + 1
     ).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022',
+      url: '/report-list/ap-ar-report/download?start-date-day=01&start-date-month=01&start-date-year=2022',
       auth
     }
 
@@ -142,10 +142,10 @@ describe('AP Listing Report tests', () => {
     await server.inject(options)
   })
 
-  test('GET /report-list/ap-ar-listing/download route returns error message when fetching tracking data fails', async () => {
+  test('GET /report-list/ap-ar-report/download route returns error message when fetching tracking data fails', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022',
+      url: '/report-list/ap-ar-report/download?start-date-day=01&start-date-month=01&start-date-year=2022',
       auth
     }
 
@@ -161,7 +161,7 @@ describe('AP Listing Report tests', () => {
   test('startDate defaults to 2015-01-01 if not provided', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing/download',
+      url: '/report-list/ap-ar-report/download',
       auth
     }
     getTrackingData.mockImplementation(url => {
@@ -178,7 +178,7 @@ describe('AP Listing Report tests', () => {
   test('returns view with correct reportName when no data is available', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing',
+      url: '/report-list/ap-ar-report',
       auth,
       query: {}
     }
@@ -191,13 +191,13 @@ describe('AP Listing Report tests', () => {
       view: jest.fn()
     }
     const handler = generateRoutes(
-      'ap-ar-listing',
+      'ap-ar-report',
       '/ap-report-data',
       'apReportData'
     )[1].options.handler
     await handler(options, h)
     expect(h.view).toHaveBeenCalledWith(
-      'reports-list/ap-ar-listing',
+      'report-list/ap-ar-report',
       expect.anything()
     )
   })
@@ -205,7 +205,7 @@ describe('AP Listing Report tests', () => {
   test('filename starts with correct reportName', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing/download?start-date-day=1&start-date-month=1&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
+      url: '/report-list/ap-ar-report/download?start-date-day=1&start-date-month=1&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
       auth
     }
     getTrackingData.mockResolvedValueOnce({
@@ -236,10 +236,10 @@ describe('AP Listing Report tests', () => {
     )
   })
 
-  test('GET /report-list/ap-ar-listing/download returns 400 for invalid request', async () => {
+  test('GET /report-list/ap-ar-report/download returns 400 for invalid request', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing/download?invalid-param=invalid',
+      url: '/report-list/ap-ar-report/download?invalid-param=invalid',
       auth
     }
     const response = await server.inject(options)
@@ -257,10 +257,10 @@ describe('AP Listing Report tests', () => {
     expect(response.request.response.source.template).toBe('404')
   })
 
-  test('GET /report-list/ap-ar-listing/download includes correctly formatted date in CSV', async () => {
+  test('GET /report-list/ap-ar-report/download includes correctly formatted date in CSV', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
+      url: '/report-list/ap-ar-report/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
       auth
     }
 
@@ -275,10 +275,10 @@ describe('AP Listing Report tests', () => {
     expect(csvContent).toContain('18/03/2024')
   })
 
-  test('GET /report-list/ap-ar-listing/download includes null date in CSV', async () => {
+  test('GET /report-list/ap-ar-report/download includes null date in CSV', async () => {
     const options = {
       method: 'GET',
-      url: '/report-list/ap-ar-listing/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
+      url: '/report-list/ap-ar-report/download?start-date-day=01&start-date-month=01&start-date-year=2022&end-date-day=31&end-date-month=12&end-date-year=2022',
       auth
     }
 
