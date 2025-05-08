@@ -89,15 +89,14 @@ const mapARData = data => {
 }
 
 const getDataMapper = reportName => {
-  switch (reportName) {
-    case REPORT_TYPES.AR_LISTING:
-      return mapARData
-    case REPORT_TYPES.REQUEST_EDITOR:
-      return mapRequestEditorData
-    case REPORT_TYPES.CLAIM_LEVEL:
-      return mapClaimLevelData
-    default:
-      return mapAPData
+  if (reportName === REPORT_TYPES.AR_LISTING) {
+    return mapARData
+  } else if (reportName === REPORT_TYPES.REQUEST_EDITOR) {
+    return mapRequestEditorData
+  } else if (reportName === REPORT_TYPES.CLAIM_LEVEL) {
+    return mapClaimLevelData
+  } else {
+    return mapAPData
   }
 }
 
