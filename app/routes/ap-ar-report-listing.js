@@ -51,11 +51,10 @@ const mapARData = data => {
 }
 
 const getDataMapper = reportName => {
-  switch (reportName) {
-    case REPORT_TYPES.AR_LISTING:
-      return mapARData
-    default:
-      return mapAPData
+  if (reportName === REPORT_TYPES.AR_LISTING) {
+    return mapARData
+  } else {
+    return mapAPData
   }
 }
 
