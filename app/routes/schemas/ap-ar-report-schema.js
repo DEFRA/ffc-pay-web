@@ -7,10 +7,10 @@ const maxDateMonth = 12
 const minYear = 2015
 
 // Import report types
-const { AP: AP_LISTING, AR: AR_LISTING } = require('../../constants/report-types')
+const { AP, AR } = require('../../constants/report-types')
 
 // Allowed report types
-const allowedReportTypes = [AP_LISTING, AR_LISTING]
+const allowedReportTypes = [AP, AR]
 
 // Helper function to create a date part schema (day, month, year)
 const createDatePartSchema = (min, max) =>
@@ -77,7 +77,7 @@ const getSchema = () => {
     // Validate report type (AP and AR listing reports)
     'report-title': Joi.string().required(),
     'report-url': Joi.string().required(),
-    'report-type': Joi.string().valid(...allowedReportTypes).required(),
+    'report-type': Joi.string().valid(...allowedReportTypes),
 
     // Date parts validation (day, month, year)
     'start-date-day': createDatePartSchema(minDate, maxDateDay),

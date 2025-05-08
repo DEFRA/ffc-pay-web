@@ -14,7 +14,8 @@ const getReportTypes = () => {
       'Claim level report': 'claim-level-report'
     }
   }
-  return { // dont goto tracking (Report exists in BLOB)
+  return {
+    // These don't call call tracking api (Report already exists in BLOB)
     'Payment request statuses': 'payment-requests',
     'Suppressed payment requests': 'suppressed-payments',
     Holds: 'holds'

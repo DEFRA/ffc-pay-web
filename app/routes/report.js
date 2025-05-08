@@ -1,7 +1,7 @@
 const { getMIReport, getSuppressedReport } = require('../storage')
 const { getHolds } = require('../holds')
 const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
-const formatDate = require('../helpers/format-date')
+const { formatDateFromString } = require('../helpers/format-date')
 const REPORT_LIST = require('../constants/report-list')
 const REPORTS_VIEWS = require('../constants/report-views')
 const REPORTS_HANDLER = require('../constants/report-handlers')
@@ -213,7 +213,7 @@ module.exports = [
             scheme: hold.holdCategorySchemeName,
             marketingYear: hold.marketingYear ?? 'All',
             holdCategory: hold.holdCategoryName,
-            dateAdded: formatDate(hold.dateTimeAdded)
+            dateAdded: formatDateFromString(hold.dateTimeAdded)
           }))
 
           return handleCSVResponse(

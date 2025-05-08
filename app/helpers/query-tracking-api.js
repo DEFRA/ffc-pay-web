@@ -10,4 +10,4 @@ const queryTrackingApi = async (url) => {
   return response.payload.file
 }
 
-module.exports = queryTrackingApi
+module.exports = { queryTrackingApi }

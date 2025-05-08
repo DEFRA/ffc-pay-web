@@ -15,7 +15,7 @@ const getDataMapper = reportType => {
     case REPORT_TYPES.CLAIM_LEVEL:
       return mapClaimLevelData
     default:
-      return null
+      throw new Error(`Data mapper for Report Type: ${reportType} does not match any mappers.`)
   }
 }
 

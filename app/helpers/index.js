@@ -4,7 +4,7 @@ const { convertDateToDDMMYYYY } = require('./convert-date-to-ddmmyyyy')
 const convertToCSV = require('./convert-to-csv')
 const { createReportHandler } = require('./create-report-handler')
 const { fetchDataAndRespond } = require('./fetch-data-and-respond')
-const formatDate = require('./format-date')
+const { formatDateFromString, formatDateFromParts } = require('./format-date')
 const { getPoundValue } = require('./get-pound-value')
 const { getSchemes } = require('./get-schemes')
 const { getView } = require('./get-view')
@@ -15,6 +15,7 @@ const { readableStreamReturn } = require('./readable-stream-return')
 const { renderErrorPage } = require('./render-error-page')
 const { sanitizeData } = require('./sanitize-data')
 const { createFormRoute, createDownloadRoute } = require('./report-route-generator')
+const { generateReportHandler } = require('./reporting/generateReportHandler')
 
 module.exports = {
   addDetailsToFilename,
@@ -23,7 +24,8 @@ module.exports = {
   convertToCSV,
   createReportHandler,
   fetchDataAndRespond,
-  formatDate,
+  formatDateFromString,
+  formatDateFromParts,
   getPoundValue,
   getSchemes,
   getView,
@@ -34,5 +36,6 @@ module.exports = {
   renderErrorPage,
   sanitizeData,
   createFormRoute,
-  createDownloadRoute
+  createDownloadRoute,
+  generateReportHandler
 }

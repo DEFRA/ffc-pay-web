@@ -1,5 +1,5 @@
 const { get, drop } = require('../../cache')
-const generateReportByType = require('../../reporting')
+const { generateReport } = require('../../reporting')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 
@@ -42,12 +42,14 @@ const createDownloadRoute = () => ({
 
       await drop(request, jobId)
 
-      const { filename, reportType } = result
-      const { filename: csvFileName, responseStream } = await generateReportByType(reportType, filename)
+      const { reportType, returnedFilename, reportFilename } = result
+      const responseStream = await generateReport(returnedFilename, reportType)
+
+      console.debug(`Writing response stream to ${reportFilename}.`)
 
       return h.response(responseStream)
         .header('Content-Type', 'text/csv')
-        .header('Content-Disposition', `attachment; filename="${csvFileName}"`)
+        .header('Content-Disposition', `attachment; filename="${reportFilename}"`)
         .header('Transfer-Encoding', 'chunked')
     }
   }

@@ -1,6 +1,11 @@
+const reportTypes = require('./report-types')
+
 module.exports = {
-  PAYMENT_REQUESTS: '/payment-requests-report',
-  TRANSACTION_SUMMARY: '/transaction-summary',
-  CLAIM_LEVEL_REPORT: '/claim-level-report',
-  REQUEST_EDITOR_REPORT: '/request-editor-report'
+  [reportTypes.PAYMENT_REQUEST_STATUSES]: '/payment-requests-report',
+  [reportTypes.PAYMENT_REQUEST_STATUSES_V2]: '/payment-requests-report',
+  [reportTypes.COMBINED_TRANSACTION]: '/transaction-summary',
+  [reportTypes.REQUEST_EDITOR]: '/request-editor-report',
+  [reportTypes.CLAIM_LEVEL]: '/claim-level-report',
+  [reportTypes.AP]: '/ap-report-data',
+  [reportTypes.AR]: '/ar-report-data'
 }

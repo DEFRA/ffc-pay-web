@@ -1,29 +1,27 @@
-const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
+const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
 const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 
-const {
-  renderErrorPage,
-  getView
-} = require('./')
+const { getView } = require('./get-view')
+const { renderErrorPage } = require('./render-error-page')
 
 const createFormRoute = (path, returnViewRoute) => ({
   method: 'GET',
-  path: path,
+  path,
   options: {
     auth: AUTH_SCOPE,
     handler: async (_request, h) => {
-      return getView(returnViewRoute, h)
+      return await getView(returnViewRoute, h)
     }
   }
 })
 
 const createDownloadRoute = (path, viewOnFail, validationSchema, requestHandler) => ({
   method: 'POST',
-  path: path,
+  path,
   options: {
     auth: AUTH_SCOPE,
     validate: {
-      query: validationSchema,
+      payload: validationSchema,
       failAction: async (request, h, err) => {
         return renderErrorPage(
           viewOnFail,
