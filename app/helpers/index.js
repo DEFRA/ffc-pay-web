@@ -14,6 +14,7 @@ const { mapReportData } = require('./map-report-data')
 const { readableStreamReturn } = require('./readable-stream-return')
 const { renderErrorPage } = require('./render-error-page')
 const { sanitizeData } = require('./sanitize-data')
+const { createFormRoute, createDownloadRoute } = require('./report-route-generator')
 
 module.exports = {
   addDetailsToFilename,
@@ -31,5 +32,7 @@ module.exports = {
   mapReportData,
   readableStreamReturn,
   renderErrorPage,
-  sanitizeData
+  sanitizeData,
+  createFormRoute,
+  createDownloadRoute
 }

@@ -1,15 +1,18 @@
 const { v4: uuidv4 } = require('uuid')
-const { set } = require('../../cache')
-const { getReportData } = require('../../reporting/get-ap-ar-report')
+
+const setReportStatus = require('../../helpers/set-report-status')
+
+const queryTrackingApi = require('../../helpers/query-tracking-api')
 const { BAD_REQUEST } = require('../../constants/http-status')
+
 const REPORT_TYPES = require('../../constants/report-types')
 const REPORT_DATA_URL = require('../../constants/data-url-by-report-type')
 
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
+const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 
 const apListingSchema = require('../schemas/ap-ar-report-schema')
 const DEFAULT_START_DATE = '2015-01-01'
-const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 
 const handleValidationError = async (request, h, err) => {
   request.log(['error', 'validation'], err)
@@ -60,19 +63,12 @@ const createSubmitRoute = () => ({
         handleValidationError(request, h, err)
     },
     handler: async (request, h) => {
-      const jobId = uuidv4()
-
       const { payload } = request
-
-      console.log(payload)
-
-      await set(request, jobId, { status: 'preparing', filename: undefined })
-      console.log(`${jobId} preparing state set`)
-
+      console.log(request.path)
       const {
         'report-title': reportTitle,
         'report-url': reportUrl,
-        'report-type': reportType,
+        'report-type': rawReportType,
         'start-date-day': startDay,
         'start-date-month': startMonth,
         'start-date-year': startYear,
@@ -81,20 +77,14 @@ const createSubmitRoute = () => ({
         'end-date-year': endYear
       } = payload
 
-      // Assign default value for reportType if it's not already defined in the payload
-      const resolvedReportType = REPORT_TYPES[reportType] || reportType
+      const reportType = REPORT_TYPES[rawReportType] || rawReportType
 
       const startDate = getDateOrDefault(startDay, startMonth, startYear, DEFAULT_START_DATE)
       const endDate = getDateOrDefault(endDay, endMonth, endYear, getCurrentDate())
 
-      const url = `${REPORT_DATA_URL[resolvedReportType]}?startDate=${startDate}&endDate=${endDate}`
+      const url = `${REPORT_DATA_URL[reportType]}?startDate=${startDate}&endDate=${endDate}`
 
-      getReportData(url)
-        .then((filename) => set(request, jobId, { status: 'ready', filename }))
-        .catch(err => {
-          console.error(`Error generating report ${jobId}:`, err)
-          set(request, jobId, { status: 'failed', filename: undefined })
-        })
+      const jobId = startReportGeneration(request, url, reportType)
 
       return h.view('report-list/download-progress', {
         jobId,
@@ -104,6 +94,22 @@ const createSubmitRoute = () => ({
     }
   }
 })
+
+const startReportGeneration = (request, url, reportType) => {
+  const jobId = uuidv4()
+  setReportStatus(request, jobId, { status: 'pending', reportType })
+
+  queryTrackingApi(url)
+    .then((filename) => {
+      return setReportStatus(request, jobId, { status: 'ready', filename, reportType })
+    })
+    .catch((err) => {
+      console.error(`Error generating report ${jobId}:`, err)
+      return setReportStatus(request, jobId, { status: 'failed' })
+    })
+
+  return jobId
+}
 
 module.exports = [
   createGetRoute(),

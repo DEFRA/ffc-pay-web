@@ -1,7 +1,6 @@
 const { get, drop } = require('../../cache')
-const { generateReport } = require('../../reporting/get-ap-ar-report')
+const generateReportByType = require('../../reporting')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
-
 const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 
 const createReportStatusRoute = () => ({
@@ -36,19 +35,19 @@ const createDownloadRoute = () => ({
     handler: async (request, h) => {
       const jobId = request.params.jobId
       const result = await get(request, jobId)
+
       if (!result || result.status !== 'ready') {
         return h.response('Report not ready').code(202) // Accepted
       }
 
       await drop(request, jobId)
 
-      const filename = `${result.filename}`
+      const { filename, reportType } = result
+      const { filename: csvFileName, responseStream } = await generateReportByType(reportType, filename)
 
-      const blobStream = await generateReport(filename)
-
-      return h.response(blobStream)
+      return h.response(responseStream)
         .header('Content-Type', 'text/csv')
-        .header('Content-Disposition', `attachment; filename="${filename.replace('.json', '.csv')}"`)
+        .header('Content-Disposition', `attachment; filename="${csvFileName}"`)
         .header('Transfer-Encoding', 'chunked')
     }
   }

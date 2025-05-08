@@ -73,9 +73,9 @@
   </style>
 
   <script>
-    const requestId = "{{ jobId }}"
-    const checkUrl = `/report-list/generation/status/${requestId}`
-    const downloadUrl = `/report-list/generation/download/${requestId}`
+    const jobId = "{{ jobId }}"
+    const checkUrl = `/report-list/generation/status/${jobId}`
+    const downloadUrl = `/report-list/generation/download/${jobId}`
 
     let pollStartTime = null
 

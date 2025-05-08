@@ -2,6 +2,10 @@ const { getMIReport, getSuppressedReport } = require('../storage')
 const { getHolds } = require('../holds')
 const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
 const formatDate = require('../helpers/format-date')
+const REPORT_LIST = require('../constants/report-list')
+const REPORTS_VIEWS = require('../constants/report-views')
+const REPORTS_HANDLER = require('../constants/report-handlers')
+
 const storageConfig = require('../config/storage')
 const {
   addDetailsToFilename,
@@ -11,39 +15,13 @@ const {
   getView,
   handleStreamResponse
 } = require('../helpers')
+
 const paymentRequestsFields = require('../constants/payment-requests-report-fields')
 const transactionSummaryFields = require('../constants/transaction-summary-fields')
 const claimLevelReportFields = require('../constants/claim-level-report-fields')
 const requestEditorReportFields = require('../constants/request-editor-report-fields')
 const claimLevelSchema = require('./schemas/claim-level-schema')
 const standardReportSchema = require('./schemas/standard-report-schema')
-const REPORT_LIST = {
-  PAYMENT_REQUESTS: '/report-list/payment-requests',
-  PAYMENT_REQUESTS_V2: '/report-list/payment-requests-v2',
-  PAYMENT_REQUESTS_V2_DOWNLOAD: '/report-list/payment-requests-v2/download',
-  TRANSACTION_SUMMARY: '/report-list/transaction-summary',
-  TRANSACTION_SUMMARY_DOWNLOAD: '/report-list/transaction-summary/download',
-  CLAIM_LEVEL_REPORT: '/report-list/claim-level-report',
-  CLAIM_LEVEL_REPORT_DOWNLOAD: '/report-list/claim-level-report/download',
-  REQUEST_EDITOR_REPORT: '/report-list/request-editor-report',
-  SUPPRESSED_PAYMENTS: '/report-list/suppressed-payments',
-  HOLDS: '/report-list/holds',
-  REPORT_UNAVAILABLE: '/report-unavailable'
-}
-const REPORTS_VIEWS = {
-  PAYMENT_REQUESTS: 'report-list/payment-requests-v2',
-  TRANSACTION_SUMMARY: 'report-list/transaction-summary',
-  CLAIM_LEVEL_REPORT: 'report-list/claim-level-report',
-  REQUEST_EDITOR_REPORT: 'report-list/request-editor-report',
-  HOLD_REPORT_UNAVAILABLE: 'hold-report-unavailable',
-  REPORT_UNAVAILABLE: 'report-unavailable'
-}
-const REPORTS_HANDLER = {
-  PAYMENT_REQUESTS: '/payment-requests-report',
-  TRANSACTION_SUMMARY: '/transaction-summary',
-  CLAIM_LEVEL_REPORT: '/claim-level-report',
-  REQUEST_EDITOR_REPORT: '/request-editor-report'
-}
 
 const authOptions = { scope: [schemeAdmin, holdAdmin, dataView] }
 

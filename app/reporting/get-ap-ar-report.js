@@ -1,4 +1,3 @@
-const api = require('../api')
 const { getDataRequestFile } = require('../storage')
 
 const { getDataMapper } = require('./mapping')
@@ -8,31 +7,19 @@ const JSONStream = require('JSONStream')
 const { format } = require('@fast-csv/format')
 const { Transform } = require('stream')
 
-const getReportData = async (url) => await queryTrackingApi(url)
+const generateAPARReport = async (filename) => {
+  const jsonFile = await downloadTrackingData(filename)
 
-const generateReport = async (jsonLocation) => {
-  const jsonFile = await downloadTrackingData(jsonLocation)
-  console.log(jsonLocation)
   // set to ready once JSON
   const csvStream = format({ headers: true })
 
   // Stream the CSV file directly to the user.
   const responseStream = jsonFile.readableStreamBody
     .pipe(JSONStream.parse('*'))
-    .pipe(mapTransform(jsonLocation))
+    .pipe(mapTransform(filename))
     .pipe(csvStream)
 
-  return responseStream
-}
-
-const queryTrackingApi = async (url) => {
-  console.log(`Downloading report data from ${url}`)
-
-  const response = await api.getTrackingData(url)
-
-  console.log('Tracking response received', response.payload)
-
-  return response.payload.file
+  return { filename: filename.split('/').pop()?.replace('.json', '.csv') || 'report.csv', responseStream }
 }
 
 const downloadTrackingData = async (reportLocation) => {
@@ -78,4 +65,4 @@ const mapTransform = (filename) => {
   })
 }
 
-module.exports = { generateReport, getReportData }
+module.exports = { generateAPARReport }
