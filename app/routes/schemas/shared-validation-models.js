@@ -161,6 +161,9 @@ const createRevenueOrCapitalValidation = (dependsOnFrn = false) => {
 
 const createValidationSchema = (dependsOnFrn = false, includePrn = true) => {
   const schema = {
+    'report-title': Joi.string().required(),
+    'report-url': Joi.string().required(),
+
     frn: frnValidation,
     year: createYearValidation(dependsOnFrn),
     schemeId: createSchemeIdValidation(dependsOnFrn),

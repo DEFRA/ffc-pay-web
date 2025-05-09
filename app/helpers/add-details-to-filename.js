@@ -23,12 +23,14 @@ const addDetailsToFilename = (reportName, payload) => {
 
   let newReportName = `${baseName}_schemeId_${schemeId}_year_${year}`
 
-  if (prn) {
-    newReportName += `_prn_${prn}`
+  if (revenueOrCapital) {
+    newReportName += `_${revenueOrCapital}`
+  } else {
+    newReportName += '_revenueOrCapital'
   }
 
-  if (revenueOrCapital) {
-    newReportName += `_revenueOrCapital_${revenueOrCapital}`
+  if (prn) {
+    newReportName += `_${prn}`
   }
 
   if (frn) {

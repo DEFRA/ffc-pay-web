@@ -1,7 +1,8 @@
-const { get, drop } = require('../../cache')
+const { get } = require('../../cache')
 const { generateReport } = require('../../reporting')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
+const setReportStatus = require('../../helpers/set-report-status')
 
 const createReportStatusRoute = () => ({
   method: 'GET',
@@ -40,10 +41,15 @@ const createDownloadRoute = () => ({
         return h.response('Report not ready').code(202) // Accepted
       }
 
-      await drop(request, jobId)
-
       const { reportType, returnedFilename, reportFilename } = result
-      const responseStream = await generateReport(returnedFilename, reportType)
+
+      const setStatusCallback = () => {
+        setReportStatus(request, jobId, {
+          status: 'completed'
+        })
+      }
+
+      const responseStream = await generateReport(returnedFilename, reportType, setStatusCallback)
 
       console.debug(`Writing response stream to ${reportFilename}.`)
 

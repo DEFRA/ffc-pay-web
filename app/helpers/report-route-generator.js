@@ -15,24 +15,26 @@ const createFormRoute = (path, returnViewRoute) => ({
   }
 })
 
-const createDownloadRoute = (path, viewOnFail, validationSchema, requestHandler) => ({
-  method: 'POST',
-  path,
-  options: {
+const createDownloadRoute = (path, viewOnFail, validationSchema, requestHandler) => {
+  const options = {
     auth: AUTH_SCOPE,
-    validate: {
-      payload: validationSchema,
-      failAction: async (request, h, err) => {
-        return renderErrorPage(
-          viewOnFail,
-          request,
-          h,
-          err
-        )
-      }
-    },
     handler: requestHandler
   }
-})
+
+  if (validationSchema) {
+    options.validate = {
+      query: validationSchema,
+      failAction: async (request, h, err) => {
+        return renderErrorPage(viewOnFail, request, h, err)
+      }
+    }
+  }
+
+  return {
+    method: 'GET',
+    path,
+    options
+  }
+}
 
 module.exports = { createFormRoute, createDownloadRoute }

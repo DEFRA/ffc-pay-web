@@ -10,7 +10,7 @@ const getCurrentDate = () => {
 const getDateOrDefault = (day, month, year, defaultValue) =>
   formatDateFromParts(day, month, year) || defaultValue
 
-const normalisePayload = (payload) => {
+const normaliseQuery = (query) => {
   const {
     'report-type': reportType,
     'start-date-day': startDay,
@@ -24,7 +24,7 @@ const normalisePayload = (payload) => {
     prn,
     frn,
     revenueOrCapital
-  } = payload
+  } = query
 
   const isDateRange = startDay && startMonth && startYear && endDay && endMonth && endYear
 
@@ -50,4 +50,4 @@ const normalisePayload = (payload) => {
   }
 }
 
-module.exports = { normalisePayload }
+module.exports = { normaliseQuery }

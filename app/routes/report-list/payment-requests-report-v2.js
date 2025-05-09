@@ -1,33 +1,17 @@
 const REPORT_LIST = require('../../constants/report-list')
+const REPORT_TYPES = require('../../constants/report-types')
 const REPORTS_VIEWS = require('../../constants/report-views')
-const REPORTS_HANDLER = require('../../constants/report-handlers')
-const REQUEST_FIELDS = require('../constants/payment-requests-report-fields')
 
 const {
   addDetailsToFilename,
-  createReportHandler,
   createFormRoute,
-  createDownloadRoute
+  createDownloadRoute,
+  generateReportHandler
 } = require('../../helpers')
 
-const standardReportSchema = require('./schemas/standard-report-schema')
+const standardReportSchema = require('../schemas/standard-report-schema')
 
-const storageConfig = require('../config/storage')
-
-const getPaymentRequestsHandler = createReportHandler(
-  REPORTS_HANDLER.PAYMENT_REQUESTS,
-  REQUEST_FIELDS,
-  (schemeId, year, revenueOrCapital, prn, frn) =>
-    addDetailsToFilename(
-      storageConfig.paymentRequestsReportName,
-      schemeId,
-      year,
-      prn,
-      revenueOrCapital,
-      frn
-    ),
-  REPORTS_VIEWS.PAYMENT_REQUESTS
-)
+const storageConfig = require('../../config').storageConfig
 
 module.exports = [
   createFormRoute(
@@ -38,6 +22,13 @@ module.exports = [
     REPORT_LIST.PAYMENT_REQUESTS_V2_DOWNLOAD,
     REPORTS_VIEWS.PAYMENT_REQUESTS,
     standardReportSchema,
-    getPaymentRequestsHandler
+    generateReportHandler(
+      REPORT_TYPES.PAYMENT_REQUEST_STATUSES,
+      (payload) =>
+        addDetailsToFilename(
+          storageConfig.paymentRequestsReportName,
+          payload
+        )
+    )
   )
 ]

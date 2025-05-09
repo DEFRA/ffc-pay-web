@@ -1,6 +1,5 @@
 module.exports = {
   PAYMENT_REQUEST_STATUSES: 'payment-requests',
-  PAYMENT_REQUEST_STATUSES_V2: 'payment-requests-v2',
   COMBINED_TRANSACTION: 'transaction-summary',
   SUPPRESSED_PAYMENT_REQUESTS: 'suppressed-payments',
   HOLDS: 'holds',
