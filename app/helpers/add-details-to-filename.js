@@ -1,4 +1,4 @@
-const addDetailsToFilename = (reportName, payload) => {
+const addDetailsToFilename = (reportName, query) => {
   const {
     schemeId,
     year,
@@ -7,37 +7,34 @@ const addDetailsToFilename = (reportName, payload) => {
     frn,
     startDate,
     endDate
-  } = payload
+  } = query
 
   if (!reportName.endsWith('.csv')) {
-    throw new Error('An internal configuration error occurred - filename is not in expected format')
+    throw new Error('Filename must end with .csv')
   }
 
-  const csvIndex = reportName.lastIndexOf('.csv')
-  const baseName = reportName.slice(0, csvIndex)
+  const baseName = reportName.slice(0, -4) // remove ".csv"
 
-  // For AP and AR reports, append the start and end dates if available
+  // For AP and AR reports
   if (startDate && endDate) {
     return `${baseName}_from_${startDate}_to_${endDate}.csv`
   }
 
-  let newReportName = `${baseName}_schemeId_${schemeId}_year_${year}`
+  const parts = []
 
-  if (revenueOrCapital) {
-    newReportName += `_${revenueOrCapital}`
+  if (schemeId) parts.push(`schemeId_${schemeId}`)
+  if (year) parts.push(`year_${year}`)
+  if (revenueOrCapital && revenueOrCapital.trim()) {
+    parts.push(revenueOrCapital.trim())
   } else {
-    newReportName += '_revenueOrCapital'
+    parts.push('revenueOrCapital')
   }
+  if (prn) parts.push(prn)
+  if (frn) parts.push(`frn_${frn}`)
 
-  if (prn) {
-    newReportName += `_${prn}`
-  }
+  const suffix = parts.length > 0 ? `_${parts.join('_')}` : ''
 
-  if (frn) {
-    newReportName += `_frn_${frn}`
-  }
-
-  return `${newReportName}.csv`
+  return `${baseName}${suffix}.csv`
 }
 
 module.exports = {

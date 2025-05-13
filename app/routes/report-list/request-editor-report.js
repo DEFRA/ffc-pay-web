@@ -5,7 +5,6 @@ const REPORTS_VIEWS = require('../../constants/report-views')
 const { getReportMeta } = require('../../helpers/get-report-meta')
 
 const {
-  addDetailsToFilename,
   createDownloadRoute,
   generateReportHandler
 } = require('../../helpers')
@@ -19,11 +18,7 @@ module.exports = [
     undefined,
     generateReportHandler(
       REPORT_TYPES.REQUEST_EDITOR,
-      (payload) =>
-        addDetailsToFilename(
-          storageConfig.requestEditorReportName,
-          payload
-        ),
+      (payload) => storageConfig.requestEditorReportName,
       {
         reportTitle: getReportMeta(REPORT_TYPES.REQUEST_EDITOR).title,
         reportUrl: getReportMeta(REPORT_TYPES.REQUEST_EDITOR).url

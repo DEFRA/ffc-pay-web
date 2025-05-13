@@ -10,7 +10,7 @@ const routes = [].concat(
   require('../routes/schemes'),
   require('../routes/monitoring'),
   require('../routes/payment-requests'),
-  // require('../routes/report'),
+  require('../routes/report'),
   require('../routes/dev-auth'),
   require('../routes/view-processed-payment-requests'),
   require('../routes/closure'),
@@ -20,7 +20,8 @@ const routes = [].concat(
   require('../routes/report-list/report-generator'),
   require('../routes/report-list/request-editor-report'),
   require('../routes/report-list/payment-requests-report-v2'),
-  require('../routes/report-list/claim-level-report')
+  require('../routes/report-list/claim-level-report'),
+  require('../routes/report-list/transaction-summary-report')
 )
 
 module.exports = {

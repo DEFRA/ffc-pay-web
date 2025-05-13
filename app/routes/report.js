@@ -4,16 +4,10 @@ const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
 const formatDate = require('../helpers/format-date')
 const storageConfig = require('../config/storage')
 const {
-  addDetailsToFilename,
-  createReportHandler,
   handleCSVResponse,
-  renderErrorPage,
-  getView,
   handleStreamResponse
 } = require('../helpers')
-const transactionSummaryFields = require('../constants/transaction-summary-fields')
 
-const standardReportSchema = require('./schemas/standard-report-schema')
 const REPORT_LIST = {
   PAYMENT_REQUESTS: '/report-list/payment-requests',
   PAYMENT_REQUESTS_V2: '/report-list/payment-requests-v2',
@@ -35,29 +29,8 @@ const REPORTS_VIEWS = {
   HOLD_REPORT_UNAVAILABLE: 'hold-report-unavailable',
   REPORT_UNAVAILABLE: 'report-unavailable'
 }
-const REPORTS_HANDLER = {
-  PAYMENT_REQUESTS: '/payment-requests-report',
-  TRANSACTION_SUMMARY: '/transaction-summary',
-  CLAIM_LEVEL_REPORT: '/claim-level-report',
-  REQUEST_EDITOR_REPORT: '/request-editor-report'
-}
 
 const authOptions = { scope: [schemeAdmin, holdAdmin, dataView] }
-
-const getTransactionSummaryHandler = createReportHandler(
-  REPORTS_HANDLER.TRANSACTION_SUMMARY,
-  transactionSummaryFields,
-  (schemeId, year, revenueOrCapital, prn, frn) =>
-    addDetailsToFilename(
-      storageConfig.summaryReportName,
-      schemeId,
-      year,
-      prn,
-      revenueOrCapital,
-      frn
-    ),
-  REPORTS_VIEWS.TRANSACTION_SUMMARY
-)
 
 module.exports = [
   {
@@ -67,35 +40,6 @@ module.exports = [
       auth: authOptions,
       handler: async (_request, h) =>
         handleStreamResponse(getMIReport, storageConfig.miReportName, h)
-    }
-  },
-  {
-    method: 'GET',
-    path: REPORT_LIST.TRANSACTION_SUMMARY,
-    options: {
-      auth: authOptions,
-      handler: async (_request, h) => {
-        return getView(REPORTS_VIEWS.TRANSACTION_SUMMARY, h)
-      }
-    }
-  },
-  {
-    method: 'GET',
-    path: REPORT_LIST.TRANSACTION_SUMMARY_DOWNLOAD,
-    options: {
-      auth: authOptions,
-      validate: {
-        query: standardReportSchema,
-        failAction: async (request, h, err) => {
-          return renderErrorPage(
-            REPORTS_VIEWS.TRANSACTION_SUMMARY,
-            request,
-            h,
-            err
-          )
-        }
-      },
-      handler: getTransactionSummaryHandler
     }
   },
   {

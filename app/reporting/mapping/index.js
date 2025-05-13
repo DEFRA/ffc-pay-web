@@ -4,6 +4,7 @@ const { AP_FIELDS, AR_FIELDS } = require('./ap-ar-fields')
 const CLAIM_LEVEL_FIELDS = require('./claim-level-report-fields')
 const REQUEST_EDITOR_REPORT_FIELDS = require('./request-editor-report-fields')
 const PAYMENT_REQUEST_STATUSES_FIELDS = require('./payment-requests-report-fields')
+const TRANSACTION_SUMMARY_FIELDS = require('./transaction-summary-fields')
 
 const getDataFields = reportType => {
   switch (reportType) {
@@ -17,6 +18,8 @@ const getDataFields = reportType => {
       return PAYMENT_REQUEST_STATUSES_FIELDS
     case REPORT_TYPES.REQUEST_EDITOR:
       return REQUEST_EDITOR_REPORT_FIELDS
+    case REPORT_TYPES.COMBINED_TRANSACTION:
+      return TRANSACTION_SUMMARY_FIELDS
     default:
       throw new Error(`Data mapper for Report Type: ${reportType} does not match any mappers.`)
   }

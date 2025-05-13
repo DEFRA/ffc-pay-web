@@ -13,19 +13,22 @@ const buildReportUrl = (reportType, payload) => {
 
   const baseUrl = REPORT_HANDLERS[reportType]
 
-  // AP-AR Reports only
+  // AP-AR Reports: only use startDate and endDate
   if (startDate && endDate) {
     return `${baseUrl}?startDate=${startDate}&endDate=${endDate}`
   }
 
-  // Fall back to generic url but swap out tracking endpoint
-  let url = `${baseUrl}?schemeId=${schemeId}&year=${year}`
-  if (prn) url += `&prn=${prn}`
-  if (frn) url += `&frn=${frn}`
-  if (revenueOrCapital && revenueOrCapital.trim() !== '') {
-    url += `&revenueOrCapital=${revenueOrCapital}`
+  const params = new URLSearchParams()
+
+  if (schemeId) params.append('schemeId', schemeId)
+  if (year) params.append('year', year)
+  if (prn) params.append('prn', prn)
+  if (frn) params.append('frn', frn)
+  if (revenueOrCapital && revenueOrCapital.trim()) {
+    params.append('revenueOrCapital', revenueOrCapital.trim())
   }
-  return url
+
+  return `${baseUrl}?${params.toString()}`
 }
 
 module.exports = {
