@@ -1,8 +1,9 @@
 {% macro dateInput(id, errors) %}
+{% set formattedId = id | replace('-', ' ') %}
 <div class="govuk-form-group {% if errors[id + '-day'] or errors[id + '-month'] or errors[id + '-year'] %}govuk-form-group--error{% endif %}">
   <fieldset class="govuk-fieldset" role="group" aria-describedby="{{ id }}-hint {{ id }}-error">
     <legend class="govuk-fieldset__legend">
-      {{ id | capitalize }}
+      {{ formattedId | capitalize }} (optional)
     </legend>
     {% if errors[id + '-day'] or errors[id + '-month'] or errors[id + '-year'] %}
       <p id="{{ id }}-error" class="govuk-error-message">
