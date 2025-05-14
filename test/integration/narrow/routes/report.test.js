@@ -4,7 +4,6 @@ const {
   dataView
 } = require('../../../../app/auth/permissions')
 const { getHolds } = require('../../../../app/holds')
-const api = require('../../../../app/api')
 const { getMIReport, getSuppressedReport } = require('../../../../app/storage')
 const { getSchemes } = require('../../../../app/helpers/get-schemes')
 const createServer = require('../../../../app/server')
