@@ -92,7 +92,7 @@ describe('Report test', () => {
     expect(response.payload).toBe('Hello')
   })
 
-  test('GET /report-list/holds returns stream if report available', async () => {
+  test('GET /report-list/holds returns view if report available', async () => {
     getHolds.mockResolvedValue([
       {
         frn: '123',
