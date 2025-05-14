@@ -20,8 +20,9 @@ const createDownloadRoute = (path, viewOnFail, validationSchema, requestHandler)
     auth: AUTH_SCOPE,
     handler: requestHandler
   }
-
   if (validationSchema) {
+    console.log('validationSchema exists. ' + path)
+
     options.validate = {
       query: validationSchema,
       failAction: async (request, h, err) => {

@@ -1,5 +1,5 @@
-const searchSchema = require('../../../../../app/routes/schemas/hold-search')
-jest.mock('../../../../../app/auth')
+const searchSchema = require('../../../../app/routes/schemas/hold-search')
+jest.mock('../../../../app/auth')
 
 test('should return error when FRN is not 10 digits', () => {
   const data = { frn: 123456789 } // 9 digits

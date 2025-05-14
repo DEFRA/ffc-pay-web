@@ -114,48 +114,47 @@ const createSchemeIdValidation = (dependsOnFrn = false) => {
 }
 
 const createRevenueOrCapitalValidation = (dependsOnFrn = false) => {
-  const revenueOrCapitalValidation = Joi.string().allow('', 'Revenue', 'Capital')
+  const base = Joi.string().allow('', 'Revenue', 'Capital')
 
   if (dependsOnFrn) {
-    return revenueOrCapitalValidation.when('frn', {
-      is: Joi.exist(),
-      then: Joi.optional(),
-      otherwise: revenueOrCapitalValidation.when('schemeId', {
-        is: Joi.number().integer().valid(CS),
-        then: Joi.required()
-          .valid('Revenue', 'Capital')
-          .error(errors => {
-            errors.forEach(err => {
-              err.message = 'Select Revenue or Capital'
-            })
-            return errors
-          }),
-        otherwise: Joi.valid('').error(errors => {
-          errors.forEach(err => {
-            err.message = 'Revenue/Capital should not be selected for this scheme'
+    // No more frn‐based bypass: always apply the schemeId logic
+    return base.when('schemeId', {
+      is: Joi.number().integer().valid(CS),
+      then: base
+        .required()
+        .valid('Revenue', 'Capital')
+        .error(errs => {
+          errs.forEach(e => { e.message = 'Select Revenue or Capital' })
+          return errs
+        }),
+      otherwise: base
+        .invalid('Revenue', 'Capital')
+        .error(errs => {
+          errs.forEach(e => {
+            e.message = 'Revenue/Capital should not be selected for this scheme'
           })
-          return errors
+          return errs
         })
-      })
     })
   }
 
-  return revenueOrCapitalValidation.when('schemeId', {
+  return base.when('schemeId', {
     is: Joi.number().integer().valid(CS),
-    then: Joi.required()
+    then: base
+      .required()
       .valid('Revenue', 'Capital')
-      .error(errors => {
-        errors.forEach(err => {
-          err.message = 'Select Revenue or Capital'
-        })
-        return errors
+      .error(errs => {
+        errs.forEach(e => { e.message = 'Select Revenue or Capital' })
+        return errs
       }),
-    otherwise: Joi.valid('').error(errors => {
-      errors.forEach(err => {
-        err.message = 'Revenue/Capital should not be selected for this scheme'
+    otherwise: base
+      .invalid('Revenue', 'Capital')
+      .error(errs => {
+        errs.forEach(e => {
+          e.message = 'Revenue/Capital should not be selected for this scheme'
+        })
+        return errs
       })
-      return errors
-    })
   })
 }
 

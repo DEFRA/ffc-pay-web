@@ -16,7 +16,7 @@ const schema = Joi.object({
   googleTagManagerKey: Joi.string().default(''),
   paymentsEndpoint: Joi.string().uri().required(),
   trackingEndpoint: Joi.string().uri().required(),
-  useV2Events: Joi.boolean().default(true),
+  useV2Events: Joi.boolean().default(false),
   legacyReportsActive: Joi.boolean().default(true)
 })
 
