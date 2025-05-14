@@ -3,10 +3,9 @@ const api = require('../api')
 const convertToCSV = require('../helpers/convert-to-csv')
 const apListingSchema = require('./schemas/ap-listing-schema')
 const config = require('../config/storage')
+const { getPoundValue } = require('../helpers')
 
 const REPORT_TYPES = {
-  REQUEST_EDITOR: 'request-editor-report',
-  CLAIM_LEVEL: 'claim-level-report',
   AP_LISTING: 'ap-listing',
   AR_LISTING: 'ar-listing',
   AP_AR_LISTING: 'ap-ar-listing'
@@ -18,10 +17,6 @@ const HTTP_STATUS = { BAD_REQUEST: 400, NOT_FOUND: 404 }
 const startsAt = 0
 const removeFromEnd = -4
 
-const getPoundValue = (value) => {
-  return value ? (Number(value) / 100).toFixed(2) : '0.00'
-}
-
 const convertDateToDDMMYYYY = (date) => {
   if (!date) {
     return null
@@ -29,39 +24,6 @@ const convertDateToDDMMYYYY = (date) => {
   const dateObj = new Date(date)
   return isNaN(dateObj) ? null : dateObj.toLocaleDateString('en-GB')
 }
-
-const mapRequestEditorData = data => ({
-  FRN: data.frn,
-  deltaAmount: getPoundValue(data.deltaAmount),
-  SourceSystem: data.sourceSystem,
-  agreementNumber: data.agreementNumber,
-  invoiceNumber: data.invoiceNumber,
-  PaymentRequestNumber: data.paymentRequestNumber,
-  year: data.year,
-  receivedInRequestEditor: convertDateToDDMMYYYY(data.receivedInRequestEditor),
-  enriched: data.enriched,
-  debtType: data.debtType,
-  ledgerSplit: data.ledgerSplit,
-  releasedFromRequestEditor: convertDateToDDMMYYYY(data.releasedFromRequestEditor)
-})
-
-const mapClaimLevelData = data => ({
-  FRN: data.frn,
-  claimID: data.claimNumber,
-  revenueOrCapital: data.revenueOrCapital,
-  agreementNumber: data.agreementNumber,
-  year: data.year,
-  paymentCurrency: data.currency,
-  latestFullClaimAmount: getPoundValue(data.value),
-  latestSitiPR: data.paymentRequestNumber,
-  latestInDAXAmount: getPoundValue(data.daxValue),
-  latestInDAXPR: data.daxPaymentRequestNumber,
-  overallStatus: data.overallStatus,
-  crossBorderFlag: data.crossBorderFlag,
-  latestTransactionStatus: data.status,
-  valueStillToProcess: getPoundValue(data.valueStillToProcess),
-  PRsStillToProcess: data.prStillToProcess
-})
 
 const mapBaseAPARData = data => ({
   Filename: data.daxFileName,
@@ -71,7 +33,7 @@ const mapBaseAPARData = data => ({
   'Original Invoice Number': data.originalInvoiceNumber,
   'Original Invoice Value': getPoundValue(data.value),
   'Invoice Number': data.invoiceNumber,
-  'Invoice Delta Amount': data.deltaAmount,
+  'Invoice Delta Amount': getPoundValue(data.deltaAmount),
   'D365 Invoice Imported': data.routedToRequestEditor,
   'D365 Invoice Payment': getPoundValue(data.settledValue),
   'PH Error Status': data.phError,
@@ -91,10 +53,6 @@ const mapARData = data => {
 const getDataMapper = reportName => {
   if (reportName === REPORT_TYPES.AR_LISTING) {
     return mapARData
-  } else if (reportName === REPORT_TYPES.REQUEST_EDITOR) {
-    return mapRequestEditorData
-  } else if (reportName === REPORT_TYPES.CLAIM_LEVEL) {
-    return mapClaimLevelData
   } else {
     return mapAPData
   }
@@ -118,8 +76,6 @@ const getCurrentDate = () => {
 const getBaseFilename = reportName => {
   const fileNames = {
     [REPORT_TYPES.AR_LISTING]: config.arListingReportName,
-    [REPORT_TYPES.REQUEST_EDITOR]: config.requestEditorReportName,
-    [REPORT_TYPES.CLAIM_LEVEL]: config.claimLevelReportName,
     default: config.apListingReportName
   }
   return (fileNames[reportName] || fileNames.default).slice(
