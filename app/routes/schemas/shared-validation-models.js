@@ -57,8 +57,8 @@ const revCapErrorInvalid = errors => {
 const createPRNValidation = (dependsOnFrn = false) => {
   const prnValidation = Joi.number().integer()
 
-  return dependsOnFrn
-    ? prnValidation.when('frn', {
+  if (dependsOnFrn) {
+    return prnValidation.when('frn', {
       is: Joi.exist(),
       then: Joi.optional().allow('', null),
       otherwise: prnValidation.when('schemeId', {
@@ -67,18 +67,20 @@ const createPRNValidation = (dependsOnFrn = false) => {
         otherwise: Joi.allow('').error(e => e)
       })
     })
-    : prnValidation.when('schemeId', {
-      is: Joi.number().integer().valid(BPS),
-      then: Joi.required().error(prnError),
-      otherwise: Joi.allow('').error(e => e)
-    })
+  }
+
+  return prnValidation.when('schemeId', {
+    is: Joi.number().integer().valid(BPS),
+    then: Joi.required().error(prnError),
+    otherwise: Joi.allow('').error(e => e)
+  })
 }
 
 const createYearValidation = (dependsOnFrn = false) => {
   const yearValidation = Joi.number().integer().greater(yearGreaterThan).less(yearLessThan)
 
-  return dependsOnFrn
-    ? yearValidation.when('frn', {
+  if (dependsOnFrn) {
+    return yearValidation.when('frn', {
       is: Joi.exist(),
       then: Joi.optional().allow('', null),
       otherwise: yearValidation.when('schemeId', {
@@ -87,22 +89,27 @@ const createYearValidation = (dependsOnFrn = false) => {
         otherwise: Joi.required().error(yearError)
       })
     })
-    : yearValidation.when('schemeId', {
-      is: Joi.number().integer().valid(CS),
-      then: Joi.optional().allow('', null),
-      otherwise: Joi.required().error(yearError)
-    })
+  }
+
+  return yearValidation.when('schemeId', {
+    is: Joi.number().integer().valid(CS),
+    then: Joi.optional().allow('', null),
+    otherwise: Joi.required().error(yearError)
+  })
 }
 
 const createSchemeIdValidation = (dependsOnFrn = false) => {
   const schemeIdValidation = Joi.number().integer()
-  return dependsOnFrn
-    ? schemeIdValidation.when('frn', {
+
+  if (dependsOnFrn) {
+    return schemeIdValidation.when('frn', {
       is: Joi.exist(),
       then: Joi.optional(),
       otherwise: schemeIdValidation.required().error(schemeError)
     })
-    : schemeIdValidation.required().error(schemeError)
+  }
+
+  return schemeIdValidation.required().error(schemeError)
 }
 
 const createRevenueOrCapitalValidation = () => {

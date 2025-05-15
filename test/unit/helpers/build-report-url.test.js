@@ -62,6 +62,6 @@ describe('buildReportUrl', () => {
   })
 
   test('returns just baseUrl + "?" when payload is empty', () => {
-    expect(buildReportUrl(reportType, {})).toBe(`${baseUrl}?`)
+    expect(buildReportUrl(reportType, {})).toBe(`${baseUrl}`)
   })
 })

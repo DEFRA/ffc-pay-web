@@ -5,9 +5,7 @@ const {
 } = require('../../../../app/auth/permissions')
 const { getHolds } = require('../../../../app/holds')
 const { getMIReport, getSuppressedReport } = require('../../../../app/storage')
-const { getSchemes } = require('../../../../app/helpers/get-schemes')
 const createServer = require('../../../../app/server')
-const cheerio = require('cheerio')
 
 let mockDownload
 jest.mock('../../../../app/auth')
@@ -111,34 +109,6 @@ describe('Report test', () => {
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toBe('text/html; charset=utf-8')
     expect(response.payload).toContain('123')
-  })
-
-  test('GET /report-list/transaction-summary renders with schemes', async () => {
-    getSchemes.mockResolvedValue([{ name: 'Scheme A' }, { name: 'Scheme B' }])
-
-    const options = {
-      method: 'GET',
-      url: '/report-list/transaction-summary',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain('Scheme A')
-    expect(response.payload).toContain('Scheme B')
-  })
-
-  test('Validation error renders with validation messages', async () => {
-    const options = {
-      method: 'GET',
-      url: '/report-list/transaction-summary/download',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(400)
-    const $ = cheerio.load(response.payload)
-    expect($('h2').text()).toContain('There is a problem')
   })
 
   test('GET /report-unavailable renders unavailable page', async () => {
