@@ -1,8 +1,10 @@
 const { get } = require('../../cache')
 const { generateReport } = require('../../reporting')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
-const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 const setReportStatus = require('../../helpers/set-report-status')
+
+const HTTP_STATUS = require('../../constants/http-status')
+const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 
 const createReportStatusRoute = () => ({
   method: 'GET',
@@ -16,13 +18,13 @@ const createReportStatusRoute = () => ({
         const result = await get(request, jobId)
 
         if (!result) {
-          return h.response({ status: 'not-found' }).code(404)
+          return h.response({ status: 'not-found' }).code(HTTP_STATUS.NOT_FOUND)
         }
 
         return h.response({ status: result.status }) // Example: { status: "preparing" | "ready" | "failed" }
       } catch (err) {
         console.error('Error fetching report status from cache:', err)
-        return h.response({ status: 'failed' }).code(500)
+        return h.response({ status: 'failed' }).code(HTTP_STATUS.INTERNAL_SERVER_ERROR)
       }
     }
   }
@@ -38,7 +40,7 @@ const createDownloadRoute = () => ({
       const result = await get(request, jobId)
 
       if (!result || result.status !== 'ready') {
-        return h.response('Report not ready').code(202) // Accepted
+        return h.response('Report not ready').code(HTTP_STATUS.ACCEPTED)
       }
 
       const { reportType, returnedFilename, reportFilename } = result

@@ -15,8 +15,6 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
     // All other reports will have their report type passed as a param, except AP and AR Reports.
     const reportType = reportTypeParam ?? query['report-type']
 
-    console.log({ reportType, reportUrl, reportTitle })
-
     const normalisedQuery = normaliseQuery(query)
 
     const url = buildReportUrl(reportType, normalisedQuery)

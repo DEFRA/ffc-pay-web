@@ -1,35 +1,33 @@
 const REPORT_HANDLERS = require('../constants/report-handlers')
 
 const buildReportUrl = (reportType, payload) => {
-  const {
-    schemeId,
-    year,
-    prn,
-    revenueOrCapital,
-    frn,
-    startDate,
-    endDate
-  } = payload
-
   const baseUrl = REPORT_HANDLERS[reportType]
+  if (!baseUrl) {
+    throw new Error(`Unknown report type: ${reportType}`)
+  }
 
-  // AP-AR Reports: only use startDate and endDate
+  const { startDate, endDate } = payload
+
+  // For AP/AR reports: only use startDate and endDate
   if (startDate && endDate) {
     return `${baseUrl}?startDate=${startDate}&endDate=${endDate}`
   }
 
-  const params = new URLSearchParams()
+  const params = new URLSearchParams(
+    buildQueryParams(payload)
+  )
 
-  if (schemeId) params.append('schemeId', schemeId)
-  if (year) params.append('year', year)
-  if (prn) params.append('prn', prn)
-  if (frn) params.append('frn', frn)
-  if (revenueOrCapital && revenueOrCapital.trim()) {
-    params.append('revenueOrCapital', revenueOrCapital.trim())
-  }
-
-  return `${baseUrl}?${params.toString()}`
+  const queryString = params.toString()
+  return queryString ? `${baseUrl}?${queryString}` : baseUrl
 }
+
+const buildQueryParams = ({ schemeId, year, prn, frn, revenueOrCapital }) => ({
+  ...(schemeId && { schemeId }),
+  ...(year && { year }),
+  ...(prn && { prn }),
+  ...(frn && { frn }),
+  ...(revenueOrCapital?.trim() && { revenueOrCapital: revenueOrCapital.trim() })
+})
 
 module.exports = {
   buildReportUrl

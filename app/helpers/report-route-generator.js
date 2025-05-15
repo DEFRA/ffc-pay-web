@@ -10,7 +10,7 @@ const createFormRoute = (path, returnViewRoute) => ({
   options: {
     auth: AUTH_SCOPE,
     handler: async (_request, h) => {
-      return await getView(returnViewRoute, h)
+      return getView(returnViewRoute, h)
     }
   }
 })

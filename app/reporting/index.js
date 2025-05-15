@@ -5,49 +5,52 @@ const JSONStream = require('JSONStream')
 const { format } = require('@fast-csv/format')
 const { Transform } = require('stream')
 
-const DEFAULT_HIGH_WATER_MARK = 100
+const MILLISECONDS_PER_SECOND = 1000
+const MILLISECONDS_PER_MINUTE = 60000
+const CSV_HIGH_WATER_MARK = 100
 
-const generateReport = async (filename, reportType, statusCallback) => {
-  const file = await getDataRequestFile(filename)
-  if (!file || !file.readableStreamBody) {
+const generateReport = async (filename, reportType, onComplete) => {
+  const fileData = await getDataRequestFile(filename)
+
+  if (!fileData?.readableStreamBody) {
     console.warn(`No data available for report type: ${reportType} with filename: ${filename}`)
     return null
   }
 
-  const fields = getDataFields(reportType)
+  const csvFields = getDataFields(reportType)
   const csvStream = format({ headers: true })
 
-  return file.readableStreamBody
+  return fileData.readableStreamBody
     .pipe(JSONStream.parse('*'))
-    .pipe(createMappingTransform(fields, statusCallback))
+    .pipe(createTransformStream(csvFields, onComplete))
     .pipe(csvStream)
 }
 
-const createMappingTransform = (fields, statusCallback) => {
-  let rowCount = 0
-  const startTime = Date.now()
+const createTransformStream = (fields, onComplete) => {
+  let processedRowCount = 0
+  const startTimestamp = Date.now()
 
   return new Transform({
     objectMode: true,
-    highWaterMark: DEFAULT_HIGH_WATER_MARK,
-    transform (chunk, _enc, callback) {
+    highWaterMark: CSV_HIGH_WATER_MARK,
+
+    transform (dataRow, _encoding, callback) {
       try {
-        const mapped = mapAndSanitize(chunk, fields)
-        rowCount++
-        callback(null, mapped)
-      } catch (err) {
-        callback(err)
+        const transformedRow = mapAndSanitize(dataRow, fields)
+        processedRowCount++
+        callback(null, transformedRow)
+      } catch (error) {
+        callback(error)
       }
     },
+
     async flush (callback) {
-      const duration = Date.now() - startTime
-      const minutes = Math.floor(duration / 60000)
-      const seconds = ((duration % 60000) / 1000).toFixed(1)
+      const elapsedTime = Date.now() - startTimestamp
+      const minutes = Math.floor(elapsedTime / MILLISECONDS_PER_MINUTE)
+      const seconds = ((elapsedTime % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND).toFixed(1)
 
-      console.debug(`Finished processing ${rowCount} rows in ${minutes}m ${seconds}s`)
-
-      await statusCallback()
-
+      console.debug(`Finished processing ${processedRowCount} rows in ${minutes}m ${seconds}s`)
+      await onComplete()
       callback()
     }
   })

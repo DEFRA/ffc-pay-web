@@ -1,50 +1,15 @@
 {% extends 'report-list/base-report.njk' %}
+{% from 'macros/report-form-fields.njk' import pageTitle, schemeSelect, yearInput, revenueOrCapitalSelect, frnInput, submitButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
 {% set reportTitle = 'Claim Level Report' %}
 {% set reportUrl = '/report-list/claim-level-report' %}
 {% set formAction = '/report-list/claim-level-report/download' %}
+
 {% block reportContent %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">{{ reportTitle }}</h1>
-      <div class="govuk-form-group">
-        <label class="govuk-label govuk-label-s" for="schemeId">
-          Select the scheme to view data for
-        </label>
-        <select class="govuk-select" id="schemeId" name="schemeId">
-          {% for scheme in schemes %}
-            <option value="{{scheme.schemeId}}">{{scheme.name}}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label govuk-label-s" for="year">
-          Year
-        </label>
-        <input class="govuk-input govuk-input--width-4" id="year" name="year" type="text" value="{{ year }}" inputmode="numeric">
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label govuk-label-s" for="revenueOrCapital">
-          Revenue/Capital (CS only)
-        </label>
-        <div class="govuk-hint">
-          Revenue/Capital is mandatory for CS only, and should not be selected for other schemes.
-        </div>
-        <select class="govuk-select" id="revenueOrCapital" name="revenueOrCapital">
-          <option value=""></option>
-          <option value="Revenue">Revenue</option>
-          <option value="Capital">Capital</option>
-        </select>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label govuk-label-s" for="frn">
-          Firm reference number (FRN) (optional)
-        </label>
-        <div class="govuk-hint">
-          Enter a 10-digit FRN
-        </div>
-        <input class="govuk-input govuk-input--width-10" id="frn" name="frn" type="text" value="{{ frn }}" inputmode="numeric">
-      </div>
-    </div>
-  </div>
+    {{ pageTitle(reportTitle) }}
+    {{ schemeSelect(schemes, selectedSchemeId) }}
+    {{ yearInput(year) }}
+    {{ revenueOrCapitalSelect(revenueOrCapital) }}
+    {{ frnInput(frn) }}
 {% endblock %}

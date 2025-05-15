@@ -18,7 +18,7 @@ module.exports = [
     undefined,
     generateReportHandler(
       REPORT_TYPES.REQUEST_EDITOR,
-      (payload) => storageConfig.requestEditorReportName,
+      (_payload) => storageConfig.requestEditorReportName,
       {
         reportTitle: getReportMeta(REPORT_TYPES.REQUEST_EDITOR).title,
         reportUrl: getReportMeta(REPORT_TYPES.REQUEST_EDITOR).url

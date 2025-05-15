@@ -3,7 +3,7 @@ const dropCacheKey = async (cache, key) => {
   try {
     return cache.drop(key)
   } catch (err) {
-    console.error(`Cannot drop cache key: ${key}`)
+    console.error(`Cannot drop cache key: ${key}`, err)
     return undefined
   }
 }

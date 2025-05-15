@@ -1,40 +1,32 @@
-const addDetailsToFilename = (reportName, query) => {
-  const {
-    schemeId,
-    year,
-    prn,
-    revenueOrCapital,
-    frn,
-    startDate,
-    endDate
-  } = query
+const zero = 0
+const negative4 = -4
 
+const addDetailsToFilename = (reportName, query) => {
   if (!reportName.endsWith('.csv')) {
     throw new Error('Filename must end with .csv')
   }
 
-  const baseName = reportName.slice(0, -4) // remove ".csv"
+  const baseName = reportName.slice(zero, negative4) // removes .csv
+  const { schemeId, year, prn, revenueOrCapital, frn, startDate, endDate } = query
 
-  // For AP and AR reports
   if (startDate && endDate) {
     return `${baseName}_from_${startDate}_to_${endDate}.csv`
   }
 
-  const parts = []
+  const parts = [
+    schemeId && `schemeId_${schemeId}`,
+    year && `year_${year}`,
+    formatRevenueOrCapital(revenueOrCapital),
+    prn || null,
+    frn && `frn_${frn}`
+  ].filter(Boolean)
 
-  if (schemeId) parts.push(`schemeId_${schemeId}`)
-  if (year) parts.push(`year_${year}`)
-  if (revenueOrCapital && revenueOrCapital.trim()) {
-    parts.push(revenueOrCapital.trim())
-  } else {
-    parts.push('revenueOrCapital')
-  }
-  if (prn) parts.push(prn)
-  if (frn) parts.push(`frn_${frn}`)
-
-  const suffix = parts.length > 0 ? `_${parts.join('_')}` : ''
-
+  const suffix = parts.length ? `_${parts.join('_')}` : ''
   return `${baseName}${suffix}.csv`
+}
+
+const formatRevenueOrCapital = (value) => {
+  return value && value.trim() ? value.trim() : 'revenueOrCapital'
 }
 
 module.exports = {

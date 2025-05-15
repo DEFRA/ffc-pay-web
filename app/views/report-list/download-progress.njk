@@ -27,7 +27,7 @@
   }) }}
   <h1 class="govuk-heading-l">Preparing your report</h1>
 
-  <div id="progress-container" class="govuk-notification-banner govuk-notification-banner--info" role="region" aria-labelledby="progress-status-heading">
+  <section id="progress-container" class="govuk-notification-banner govuk-notification-banner--info" aria-labelledby="progress-status-heading">
     <div class="govuk-notification-banner__header">
       <h2 class="govuk-notification-banner__title" id="progress-status-heading">
         Please wait
@@ -35,11 +35,11 @@
     </div>
     <div class="govuk-notification-banner__content">
       <p class="govuk-body" id="progress-status-text">We’re preparing your report. This can take a few minutes for large datasets.</p>
-      <div class="govuk-spinner" role="status" aria-live="polite">
+      <output class="govuk-spinner" aria-live="polite">
         <span class="govuk-visually-hidden">Loading</span>
-      </div>
+      </output>
     </div>
-  </div>
+  </section>
 
   <div id="error-message" class="govuk-error-summary" hidden>
     <h2 class="govuk-error-summary__title">
@@ -50,29 +50,7 @@
     </div>
   </div>
 
-  <iframe id="download-frame" style="display: none;"></iframe>
-
-  <style>
-    .govuk-spinner {
-      border: 4px solid #f3f2f1;
-      border-top: 4px solid #1d70b8;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      animation: spin 0.6s linear infinite;
-      margin-top: 1rem;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg)
-      }
-    }
-
-    #progress-container {
-      margin-top: 1rem;
-    }
-  </style>
+  <iframe id="download-frame" style="display: none;" title="Report download frame"></iframe>
 
   <script>
     const jobId = "{{ jobId }}"
