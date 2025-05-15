@@ -2,13 +2,13 @@ const {
   schemeAdmin,
   holdAdmin,
   dataView
-} = require('../../../../app/auth/permissions')
-const { getHolds } = require('../../../../app/holds')
-const { getMIReport, getSuppressedReport } = require('../../../../app/storage')
-const createServer = require('../../../../app/server')
+} = require('../../../../../app/auth/permissions')
+const { getHolds } = require('../../../../../app/holds')
+const { getMIReport, getSuppressedReport } = require('../../../../../app/storage')
+const createServer = require('../../../../../app/server')
 
 let mockDownload
-jest.mock('../../../../app/auth')
+jest.mock('../../../../../app/auth')
 jest.mock('@azure/storage-blob', () => {
   return {
     BlobServiceClient: {
@@ -29,10 +29,10 @@ jest.mock('@azure/storage-blob', () => {
     }
   }
 })
-jest.mock('../../../../app/holds')
-jest.mock('../../../../app/api')
-jest.mock('../../../../app/storage')
-jest.mock('../../../../app/helpers/get-schemes')
+jest.mock('../../../../../app/holds')
+jest.mock('../../../../../app/api')
+jest.mock('../../../../../app/storage')
+jest.mock('../../../../../app/helpers/get-schemes')
 
 describe('Report test', () => {
   let server

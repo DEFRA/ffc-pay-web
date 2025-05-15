@@ -1,12 +1,12 @@
-const { getMIReport, getSuppressedReport } = require('../storage')
-const { getHolds } = require('../holds')
-const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
-const formatDate = require('../helpers/format-date')
-const storageConfig = require('../config/storage')
+const { getMIReport, getSuppressedReport } = require('../../storage')
+const { getHolds } = require('../../holds')
+const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
+const formatDate = require('../../helpers/format-date')
+const storageConfig = require('../../config/storage')
 const {
   handleCSVResponse,
   handleStreamResponse
-} = require('../helpers')
+} = require('../../helpers')
 
 const REPORT_LIST = {
   PAYMENT_REQUESTS: '/report-list/payment-requests',

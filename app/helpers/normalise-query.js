@@ -26,7 +26,7 @@ const normaliseQuery = (query) => {
     revenueOrCapital
   } = query
 
-  const isDateRange = !schemeId || (startDay && startMonth && startYear && endDay && endMonth && endYear)
+  const isDateRange = !schemeId || [startDay, startMonth, startYear, endDay, endMonth, endYear].every(Boolean)
 
   // Initialize startDate and endDate to null by default
   let startDate = null

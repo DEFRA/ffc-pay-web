@@ -31,7 +31,7 @@ describe('addDetailsToFilename', () => {
 
     const q2 = { schemeId: 1, year: 2024, prn: 3, revenueOrCapital: '', frn: 2 }
     expect(addDetailsToFilename('r.csv', q2))
-      .toBe('r_schemeId_1_year_2024_revenueOrCapital_3_frn_2.csv')
+      .toBe('r_schemeId_1_year_2024_3_frn_2.csv')
   })
 
   test('omits prn and/or frn when they are null', () => {

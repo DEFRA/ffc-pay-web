@@ -11,6 +11,8 @@ const {
 
 const storageConfig = require('../../config').storageConfig
 
+const requestEditorReportMeta = getReportMeta(REPORT_TYPES.REQUEST_EDITOR)
+
 module.exports = [
   createDownloadRoute(
     REPORT_LIST.REQUEST_EDITOR_REPORT,
@@ -20,8 +22,8 @@ module.exports = [
       REPORT_TYPES.REQUEST_EDITOR,
       (_payload) => storageConfig.requestEditorReportName,
       {
-        reportTitle: getReportMeta(REPORT_TYPES.REQUEST_EDITOR).title,
-        reportUrl: getReportMeta(REPORT_TYPES.REQUEST_EDITOR).url
+        reportTitle: requestEditorReportMeta.title,
+        reportUrl: requestEditorReportMeta.url
       }
     )
   )

@@ -1,7 +1,7 @@
 const Hapi = require('@hapi/hapi')
 
-jest.mock('../../../../app/helpers', () => {
-  const actualRouteGen = require('../../../../app/helpers/report-route-generator')
+jest.mock('../../../../../app/helpers', () => {
+  const actualRouteGen = require('../../../../../app/helpers/report-route-generator')
   return {
     generateReportHandler: jest.fn((_, filenameFn) => {
       return async (request, h) => {
@@ -17,32 +17,32 @@ jest.mock('../../../../app/helpers', () => {
   }
 })
 
-jest.mock('../../../../app/helpers/get-view', () => ({
+jest.mock('../../../../../app/helpers/get-view', () => ({
   getView: jest.fn()
 }))
-jest.mock('../../../../app/helpers/render-error-page', () => ({
+jest.mock('../../../../../app/helpers/render-error-page', () => ({
   renderErrorPage: jest.fn()
 }))
 
-jest.mock('../../../../app/config', () => ({
+jest.mock('../../../../../app/config', () => ({
   storageConfig: {
     apListingReportName: 'ap-report.csv',
     arListingReportName: 'ar-report.csv'
   }
 }))
 
-jest.mock('../../../../app/routes/schemas/ap-ar-report-schema', () => {
+jest.mock('../../../../../app/routes/schemas/ap-ar-report-schema', () => {
   const Joi = require('joi')
   return Joi.object({
     reportType: Joi.string().valid('AP', 'AR').required()
   })
 })
 
-const { getView } = require('../../../../app/helpers/get-view')
-const { renderErrorPage } = require('../../../../app/helpers/render-error-page')
-const REPORT_LIST = require('../../../../app/constants/report-list')
-const REPORT_VIEWS = require('../../../../app/constants/report-views')
-const routes = require('../../../../app/routes/report-list/ap-ar-report')
+const { getView } = require('../../../../../app/helpers/get-view')
+const { renderErrorPage } = require('../../../../../app/helpers/render-error-page')
+const REPORT_LIST = require('../../../../../app/constants/report-list')
+const REPORT_VIEWS = require('../../../../../app/constants/report-views')
+const routes = require('../../../../../app/routes/report-list/ap-ar-report')
 
 describe('AP/AR Report Routes', () => {
   let server
