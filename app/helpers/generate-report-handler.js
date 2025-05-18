@@ -1,8 +1,8 @@
 const { v4: uuidv4 } = require('uuid')
-const setReportStatus = require('../helpers/set-report-status')
-const { buildReportUrl } = require('../helpers/build-query-url')
-const { queryTrackingApi } = require('../helpers/query-tracking-api')
-const { normaliseQuery } = require('../helpers/normalise-query')
+const setReportStatus = require('./set-report-status')
+const { buildReportUrl } = require('./build-query-url')
+const { queryTrackingApi } = require('./query-tracking-api')
+const { normaliseQuery } = require('./normalise-query')
 
 const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, options = {}) => {
   return async (request, h) => {

@@ -18,8 +18,6 @@ services:
       REDIRECT_URL: http://thesearenotthedroidsyouarelookingfor
       AUTHENTICATION_ENABLED: "true"
       AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://ffc-pay-event-store-azurite:10000/devstoreaccount1;
-      REDIS_HOSTNAME: ffc-pay-web-redis
-      REDIS_PASSWORD: redis
     volumes:
       - ./test:/home/node/test
       - ./test-output:/home/node/test-output
