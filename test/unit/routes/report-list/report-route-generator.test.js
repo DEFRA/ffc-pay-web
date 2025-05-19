@@ -1,13 +1,13 @@
 const { get } = require('../../../../app/cache')
+// Instead of exporting an object with setReportStatus property, we mock the module as a function.
 const setReportStatus = require('../../../../app/helpers/set-report-status')
 const { generateReport } = require('../../../../app/reporting')
 
 jest.mock('../../../../app/cache', () => ({
   get: jest.fn()
 }))
-jest.mock('../../../../app/helpers/set-report-status', () => ({
-  setReportStatus: jest.fn()
-}))
+// Mock setReportStatus as a jest function directly.
+jest.mock('../../../../app/helpers/set-report-status', () => jest.fn())
 jest.mock('../../../../app/reporting', () => ({
   generateReport: jest.fn()
 }))
@@ -109,15 +109,13 @@ describe('handlerDownload', () => {
     h = createH()
     get.mockReset()
     generateReport.mockReset()
-    // Instead of calling setReportStatus.mockReset(), ensure it's a jest mock
-    if (setReportStatus.mockReset) { setReportStatus.mockReset() }
+    // Directly reset setReportStatus mock function.
+    setReportStatus.mockClear()
     consoleDebugSpy = jest.spyOn(console, 'debug').mockImplementation(() => {})
   })
 
   afterEach(() => {
-    if (consoleDebugSpy && consoleDebugSpy.mockRestore) {
-      consoleDebugSpy.mockRestore()
-    }
+    consoleDebugSpy.mockRestore()
   })
 
   test("returns 'Report not ready' if get returns falsy", async () => {
@@ -146,7 +144,7 @@ describe('handlerDownload', () => {
     generateReport.mockResolvedValue(fakeStream)
     const response = await handlerDownload(request, h)
     expect(generateReport).toHaveBeenCalled()
-    // Callback not invoked automatically; setReportStatus should not be called here.
+    // setReportStatus should not have been called yet because setStatusCallback hasn't been invoked by generateReport.
     expect(setReportStatus).not.toHaveBeenCalled()
     expect(console.debug).toHaveBeenCalledWith('Writing response stream to report.csv.')
     expect(response.payload).toBe(fakeStream)
@@ -169,7 +167,8 @@ describe('handlerDownload', () => {
       return Promise.resolve('streamOutput')
     })
     await handlerDownload(request, h)
-    callbackFn && callbackFn()
+    // Invoke the callback simulating the completion of report generation.
+    if (callbackFn) callbackFn()
     expect(setReportStatus).toHaveBeenCalledWith(request, '456', { status: 'completed' })
   })
 })
