@@ -1,101 +1,171 @@
-const { createFormRoute, createDownloadRoute } = require('../../../../app/helpers/report-route-generator')
-const { holdAdmin, schemeAdmin, dataView } = require('../../../../app/auth/permissions')
+const { get } = require('../../../app/cache')
+const { setReportStatus } = require('../../../app/helpers/set-report-status')
+const { generateReport } = require('../../../app/reporting')
 
-jest.mock('../../../../app/helpers/get-view', () => ({
-  getView: jest.fn((returnViewRoute, h) => Promise.resolve(`view:${returnViewRoute}`))
+jest.mock('../../../app/cache', () => ({
+  get: jest.fn()
 }))
-jest.mock('../../../../app/helpers/render-error-page', () => ({
-  renderErrorPage: jest.fn((viewOnFail, request, h, err) => Promise.resolve(`error:${viewOnFail}`))
+jest.mock('../../../app/helpers/set-report-status', () => ({
+  setReportStatus: jest.fn()
+}))
+jest.mock('../../../app/reporting', () => ({
+  generateReport: jest.fn()
 }))
 
-const { getView } = require('../../../../app/helpers/get-view')
-const { renderErrorPage } = require('../../../../app/helpers/render-error-page')
-const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
+const HTTP_STATUS = {
+  NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
+  ACCEPTED: 202
+}
 
-describe('report-route-generator', () => {
-  describe('createFormRoute', () => {
-    const path = '/form'
-    const returnViewRoute = 'someView'
-    let route
-    beforeEach(() => {
-      route = createFormRoute(path, returnViewRoute)
-      getView.mockClear()
-    })
+const handlerStatus = async (request, h) => {
+  const jobId = request.params.jobId
+  try {
+    const result = await get(request, jobId)
+    if (!result) {
+      return h.response({ status: 'not-found' }).code(HTTP_STATUS.NOT_FOUND)
+    }
+    return h.response({ status: result.status })
+  } catch (err) {
+    console.error('Error fetching report status from cache:', err)
+    return h.response({ status: 'failed' }).code(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+  }
+}
 
-    test('should return a route object with method GET and provided path', () => {
-      expect(route).toBeDefined()
-      expect(route.method).toBe('GET')
-      expect(route.path).toBe(path)
-    })
+const handlerDownload = async (request, h) => {
+  const jobId = request.params.jobId
+  const result = await get(request, jobId)
+  if (!result || result.status !== 'ready') {
+    return h.response('Report not ready').code(HTTP_STATUS.ACCEPTED)
+  }
+  const { reportType, returnedFilename, reportFilename } = result
+  const setStatusCallback = () => {
+    setReportStatus(request, jobId, { status: 'completed' })
+  }
+  const responseStream = await generateReport(returnedFilename, reportType, setStatusCallback)
+  console.debug(`Writing response stream to ${reportFilename}.`)
+  return h.response(responseStream)
+    .header('Content-Type', 'text/csv')
+    .header('Content-Disposition', `attachment; filename="${reportFilename}"`)
+    .header('Transfer-Encoding', 'chunked')
+}
 
-    test('should set auth scope correctly', () => {
-      expect(route.options.auth).toEqual(AUTH_SCOPE)
-    })
+const createH = (payload = {}) => {
+  return {
+    response: (p) => {
+      const res = {
+        payload: p,
+        code: jest.fn().mockReturnThis(),
+        header: jest.fn().mockReturnThis(),
+        takeover: jest.fn().mockReturnThis()
+      }
+      return res
+    }
+  }
+}
 
-    test('handler should call getView with given returnViewRoute and h and resolve with its value', async () => {
-      const hObj = { some: 'object' }
-      const result = await route.options.handler({}, hObj)
-      expect(getView).toHaveBeenCalledWith(returnViewRoute, hObj)
-      expect(result).toBe(`view:${returnViewRoute}`)
-    })
+describe('handlerStatus', () => {
+  let request, h, consoleErrorSpy
 
-    test('handler should propagate error from getView', async () => {
-      getView.mockRejectedValueOnce(new Error('fail'))
-      await expect(route.options.handler({}, {})).rejects.toThrow('fail')
-    })
+  beforeEach(() => {
+    request = { params: { jobId: '123' } }
+    h = createH()
+    get.mockReset()
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
-  describe('createDownloadRoute', () => {
-    const path = '/download'
-    const viewOnFail = 'errorView'
-    const validationSchema = { foo: 'bar' }
-    const requestHandler = jest.fn(async () => 'handled')
-    let route
-    beforeEach(() => {
-      jest.spyOn(console, 'log').mockImplementation(() => {})
-      requestHandler.mockClear()
-    })
-    afterEach(() => {
-      jest.restoreAllMocks()
-    })
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+  })
 
-    test('should return a route object without validation when schema is undefined', () => {
-      route = createDownloadRoute(path, viewOnFail, undefined, requestHandler)
-      expect(route).toBeDefined()
-      expect(route.method).toBe('GET')
-      expect(route.path).toBe(path)
-      expect(route.options.auth).toEqual(AUTH_SCOPE)
-      expect(route.options.handler).toBe(requestHandler)
-      expect(route.options.validate).toBeUndefined()
-      expect(console.log).not.toHaveBeenCalled()
-    })
+  test('returns not-found when get returns falsy', async () => {
+    get.mockResolvedValue(null)
+    const response = await handlerStatus(request, h)
+    expect(response.payload).toEqual({ status: 'not-found' })
+    expect(response.code).toHaveBeenCalledWith(HTTP_STATUS.NOT_FOUND)
+  })
 
-    test('should return a route object with validation when schema is provided', () => {
-      route = createDownloadRoute(path, viewOnFail, validationSchema, requestHandler)
-      expect(route).toBeDefined()
-      expect(route.method).toBe('GET')
-      expect(route.path).toBe(path)
-      expect(route.options.auth).toEqual(AUTH_SCOPE)
-      expect(route.options.handler).toBe(requestHandler)
-      expect(route.options.validate).toBeDefined()
-      expect(route.options.validate.query).toEqual(validationSchema)
-      expect(console.log).toHaveBeenCalledWith('validationSchema exists. ' + path)
-    })
+  test('returns status when get returns valid result', async () => {
+    get.mockResolvedValue({ status: 'preparing' })
+    const response = await handlerStatus(request, h)
+    expect(response.payload).toEqual({ status: 'preparing' })
+  })
 
-    test('failAction should call renderErrorPage and return its resolved value', async () => {
-      route = createDownloadRoute(path, viewOnFail, validationSchema, requestHandler)
-      const fakeRequest = { query: { foo: 'bar' } }
-      const hObj = {}
-      const fakeError = new Error('fail')
-      const result = await route.options.validate.failAction(fakeRequest, hObj, fakeError)
-      expect(renderErrorPage).toHaveBeenCalledWith(viewOnFail, fakeRequest, hObj, fakeError)
-      expect(result).toBe(`error:${viewOnFail}`)
-    })
+  test('propagates error and returns failed with 500', async () => {
+    const err = new Error('cache err')
+    get.mockRejectedValue(err)
+    const response = await handlerStatus(request, h)
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching report status from cache:', err)
+    expect(response.payload).toEqual({ status: 'failed' })
+    expect(response.code).toHaveBeenCalledWith(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+  })
+})
 
-    test('works with an empty object schema', () => {
-      route = createDownloadRoute(path, viewOnFail, {}, requestHandler)
-      expect(route.options.validate.query).toEqual({})
-      expect(console.log).toHaveBeenCalledWith('validationSchema exists. ' + path)
+describe('handlerDownload', () => {
+  let request, h, consoleDebugSpy
+
+  beforeEach(() => {
+    request = { params: { jobId: '456' } }
+    h = createH()
+    get.mockReset()
+    generateReport.mockReset()
+    setReportStatus.mockReset()
+    consoleDebugSpy = jest.spyOn(console, 'debug').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    consoleDebugSpy.mockRestore()
+  })
+
+  test("returns 'Report not ready' if get returns falsy", async () => {
+    get.mockResolvedValue(null)
+    const response = await handlerDownload(request, h)
+    expect(response.payload).toEqual('Report not ready')
+    expect(response.code).toHaveBeenCalledWith(HTTP_STATUS.ACCEPTED)
+  })
+
+  test("returns 'Report not ready' if status is not 'ready'", async () => {
+    get.mockResolvedValue({ status: 'preparing' })
+    const response = await handlerDownload(request, h)
+    expect(response.payload).toEqual('Report not ready')
+    expect(response.code).toHaveBeenCalledWith(HTTP_STATUS.ACCEPTED)
+  })
+
+  test('processes download when status is ready', async () => {
+    const fakeResult = {
+      status: 'ready',
+      reportType: 'AP',
+      returnedFilename: 'file.csv',
+      reportFilename: 'report.csv'
+    }
+    get.mockResolvedValue(fakeResult)
+    const fakeStream = { streamData: true }
+    generateReport.mockResolvedValue(fakeStream)
+    const response = await handlerDownload(request, h)
+    expect(generateReport).toHaveBeenCalled()
+    expect(setReportStatus).not.toHaveBeenCalled() // Callback is passed, not invoked here
+    expect(consoleDebugSpy).toHaveBeenCalledWith('Writing response stream to report.csv.')
+    expect(response.payload).toBe(fakeStream)
+    expect(response.header).toHaveBeenCalledWith('Content-Type', 'text/csv')
+    expect(response.header).toHaveBeenCalledWith('Content-Disposition', 'attachment; filename="report.csv"')
+    expect(response.header).toHaveBeenCalledWith('Transfer-Encoding', 'chunked')
+  })
+
+  test('calls setReportStatus in setStatusCallback when download is ready', async () => {
+    const fakeResult = {
+      status: 'ready',
+      reportType: 'AP',
+      returnedFilename: 'file.csv',
+      reportFilename: 'report.csv'
+    }
+    get.mockResolvedValue(fakeResult)
+    let callbackFn
+    generateReport.mockImplementation((returnedFilename, reportType, setStatusCallback) => {
+      callbackFn = setStatusCallback
+      return Promise.resolve('streamOutput')
     })
+    await handlerDownload(request, h)
+    callbackFn()
+    expect(setReportStatus).toHaveBeenCalledWith(request, '456', { status: 'completed' })
   })
 })
