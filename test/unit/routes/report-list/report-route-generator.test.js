@@ -1,14 +1,14 @@
-const { get } = require('../../../app/cache')
-const { setReportStatus } = require('../../../app/helpers/set-report-status')
-const { generateReport } = require('../../../app/reporting')
+const { get } = require('../../../../app/cache')
+const setReportStatus = require('../../../../app/helpers/set-report-status')
+const { generateReport } = require('../../../../app/reporting')
 
-jest.mock('../../../app/cache', () => ({
+jest.mock('../../../../app/cache', () => ({
   get: jest.fn()
 }))
-jest.mock('../../../app/helpers/set-report-status', () => ({
+jest.mock('../../../../app/helpers/set-report-status', () => ({
   setReportStatus: jest.fn()
 }))
-jest.mock('../../../app/reporting', () => ({
+jest.mock('../../../../app/reporting', () => ({
   generateReport: jest.fn()
 }))
 

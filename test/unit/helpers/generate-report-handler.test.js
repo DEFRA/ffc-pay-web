@@ -110,18 +110,6 @@ describe('generateReportHandler', () => {
     expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', { status: 'failed' })
   })
 
-  test('isValidJsonFilename helper works as expected', () => {
-    const isValidJsonFilename = (filename) =>
-      typeof filename === 'string' &&
-      filename.trim().length > 0 &&
-      filename.toLowerCase().endsWith('.json')
-    expect(isValidJsonFilename('file.json')).toBe(true)
-    expect(isValidJsonFilename(' file.JSON ')).toBe(true)
-    expect(isValidJsonFilename('')).toBe(false)
-    expect(isValidJsonFilename('invalid.txt')).toBe(false)
-    expect(isValidJsonFilename('   .json')).toBe(false)
-  })
-
   test('verifies handler creation using undefined reportType parameter (falling back to query values)', async () => {
     options = { reportUrl: 'http://option-url.com' }
     request.query['report-type'] = 'QueryDerived'
