@@ -95,7 +95,7 @@ describe('handlerStatus', () => {
     const err = new Error('cache err')
     get.mockRejectedValue(err)
     const response = await handlerStatus(request, h)
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching report status from cache:', err)
+    expect(console.error).toHaveBeenCalledWith('Error fetching report status from cache:', err)
     expect(response.payload).toEqual({ status: 'failed' })
     expect(response.code).toHaveBeenCalledWith(HTTP_STATUS.INTERNAL_SERVER_ERROR)
   })
@@ -109,12 +109,15 @@ describe('handlerDownload', () => {
     h = createH()
     get.mockReset()
     generateReport.mockReset()
-    setReportStatus.mockReset()
+    // Instead of calling setReportStatus.mockReset(), ensure it's a jest mock
+    if (setReportStatus.mockReset) { setReportStatus.mockReset() }
     consoleDebugSpy = jest.spyOn(console, 'debug').mockImplementation(() => {})
   })
 
   afterEach(() => {
-    consoleDebugSpy.mockRestore()
+    if (consoleDebugSpy && consoleDebugSpy.mockRestore) {
+      consoleDebugSpy.mockRestore()
+    }
   })
 
   test("returns 'Report not ready' if get returns falsy", async () => {
@@ -143,8 +146,9 @@ describe('handlerDownload', () => {
     generateReport.mockResolvedValue(fakeStream)
     const response = await handlerDownload(request, h)
     expect(generateReport).toHaveBeenCalled()
-    expect(setReportStatus).not.toHaveBeenCalled() // Callback is passed, not invoked here
-    expect(consoleDebugSpy).toHaveBeenCalledWith('Writing response stream to report.csv.')
+    // Callback not invoked automatically; setReportStatus should not be called here.
+    expect(setReportStatus).not.toHaveBeenCalled()
+    expect(console.debug).toHaveBeenCalledWith('Writing response stream to report.csv.')
     expect(response.payload).toBe(fakeStream)
     expect(response.header).toHaveBeenCalledWith('Content-Type', 'text/csv')
     expect(response.header).toHaveBeenCalledWith('Content-Disposition', 'attachment; filename="report.csv"')
@@ -165,7 +169,7 @@ describe('handlerDownload', () => {
       return Promise.resolve('streamOutput')
     })
     await handlerDownload(request, h)
-    callbackFn()
+    callbackFn && callbackFn()
     expect(setReportStatus).toHaveBeenCalledWith(request, '456', { status: 'completed' })
   })
 })
