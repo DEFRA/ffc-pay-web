@@ -10,60 +10,54 @@ jest.mock('../../../app/helpers/render-error-page', () => ({
 
 const { getView } = require('../../../app/helpers/get-view')
 const { renderErrorPage } = require('../../../app/helpers/render-error-page')
-
 const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 
 describe('report-route-generator', () => {
   describe('createFormRoute', () => {
     const path = '/form'
-    const returnViewRoute = 'viewRoute'
+    const returnViewRoute = 'myView'
     let route
-
     beforeEach(() => {
       route = createFormRoute(path, returnViewRoute)
     })
-
-    test('should return a route object with method GET, correct path and auth scope', () => {
-      expect(route).toBeDefined()
+    test('returns valid form route', async () => {
       expect(route.method).toBe('GET')
       expect(route.path).toBe(path)
       expect(route.options.auth).toEqual(AUTH_SCOPE)
+      const hObj = { dummy: 'object' }
+      const result = await route.options.handler({}, hObj)
+      expect(getView).toHaveBeenCalledWith(returnViewRoute, hObj)
+      expect(result).toBe(`view:${returnViewRoute}`)
     })
-
-    test('handler should call getView with provided returnViewRoute and h', async () => {
-      const h = {}
-      const request = {}
-      const outcome = await route.options.handler(request, h)
-      expect(getView).toHaveBeenCalledWith(returnViewRoute, h)
-      expect(outcome).toBe(`view:${returnViewRoute}`)
+    test('propagates error if getView rejects', async () => {
+      getView.mockRejectedValueOnce(new Error('fail'))
+      await expect(route.options.handler({}, {})).rejects.toThrow('fail')
     })
   })
 
   describe('createDownloadRoute', () => {
     const path = '/download'
     const viewOnFail = 'failView'
-    const validationSchema = { param: 'string' }
-    const requestHandler = jest.fn(async (req, h) => 'downloaded')
+    const validationSchema = { foo: 'bar' }
+    const requestHandler = jest.fn(async () => 'downloaded')
     let route
-
+    beforeEach(() => {
+      jest.spyOn(console, 'log').mockImplementation(() => {})
+    })
     afterEach(() => {
       jest.restoreAllMocks()
     })
-
-    test('should return a route object with GET method, provided path, auth scope, and no validation if schema is undefined', () => {
+    test('returns route without validation when schema is undefined', () => {
       route = createDownloadRoute(path, viewOnFail, undefined, requestHandler)
-      expect(route).toBeDefined()
       expect(route.method).toBe('GET')
       expect(route.path).toBe(path)
       expect(route.options.auth).toEqual(AUTH_SCOPE)
       expect(route.options.handler).toBe(requestHandler)
       expect(route.options.validate).toBeUndefined()
+      expect(console.log).not.toHaveBeenCalled()
     })
-
-    test('should include validation when validationSchema is provided and log the event', () => {
-      console.log = jest.fn()
+    test('returns route with validation when schema is provided', () => {
       route = createDownloadRoute(path, viewOnFail, validationSchema, requestHandler)
-      expect(route).toBeDefined()
       expect(route.method).toBe('GET')
       expect(route.path).toBe(path)
       expect(route.options.auth).toEqual(AUTH_SCOPE)
@@ -72,8 +66,7 @@ describe('report-route-generator', () => {
       expect(route.options.validate.query).toEqual(validationSchema)
       expect(console.log).toHaveBeenCalledWith('validationSchema exists. ' + path)
     })
-
-    test('failAction should call renderErrorPage and return its value', async () => {
+    test('failAction calls renderErrorPage and returns its value', async () => {
       route = createDownloadRoute(path, viewOnFail, validationSchema, requestHandler)
       const fakeRequest = { query: {} }
       const h = {}
@@ -81,6 +74,11 @@ describe('report-route-generator', () => {
       const result = await route.options.validate.failAction(fakeRequest, h, fakeError)
       expect(renderErrorPage).toHaveBeenCalledWith(viewOnFail, fakeRequest, h, fakeError)
       expect(result).toBe(`error:${viewOnFail}`)
+    })
+    test('works with empty object schema', () => {
+      route = createDownloadRoute(path, viewOnFail, {}, requestHandler)
+      expect(route.options.validate.query).toEqual({})
+      expect(console.log).toHaveBeenCalledWith('validationSchema exists. ' + path)
     })
   })
 })
