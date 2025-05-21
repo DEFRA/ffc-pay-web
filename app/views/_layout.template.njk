@@ -1,33 +1,14 @@
 {% extends "govuk/template.njk" %}
+{% set govukRebrand = true %}
 
 {% block head %}
-  <!--[if !IE 8]><!-->
   <% htmlWebpackPlugin.files.css.forEach(file => { %>
   <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
   <% }) %>
-  <!--<![endif]-->
-  {# For Internet Explorer 8, you need to compile specific stylesheet #}
-  {# see https://github.com/alphagov/govuk-frontend/blob/master/docs/installation/supporting-internet-explorer-8.md #}
-  <!--[if IE 8]>
-    <link href="{{ govukAssetPath }}/govuk-frontend/govuk/all-ie8.css" rel="stylesheet" />
-  <![endif]-->
-
-  {# For older browsers to allow them to recognise HTML5 elements such as `<header>` #}
-  <!--[if lt IE 9]>
-    <script src="/html5-shiv/html5shiv.js"></script>
-  <![endif]-->
 {% endblock %}
 
 {% block header %}
-   <header class="govuk-header " role="banner" data-module="govuk-header">
-  <div class="govuk-header__container govuk-width-container">
-    <div class="govuk-header__content govuk-!-width-full govuk-!-text-align-centre">
-      <a href="/" class="govuk-header__link govuk-header__link--service-name">
-        {{ serviceName }}
-      </a>
-    </div>
-  </div>
-</header>
+  {{ govukHeader({ rebrand: true, homepageUrl: "/", productName: serviceName, serviceUrl: "/" }) }}
 {% endblock %}
 
 {% block beforeContent %}
@@ -44,11 +25,7 @@
 {% endblock %}
 
 {% block footer %}
-  {{ govukFooter({
-    meta: {
-      items: []
-    }
-  }) }}
+  {{ govukFooter({ rebrand: true }) }}
 {% endblock %}
 
 {% block bodyEnd %}
