@@ -29,6 +29,29 @@ const CONFIG = {
   MAX_BYTES: 1048576
 }
 
+const bulkFailAction = async (request, h, error) => {
+  const { schemes, paymentHoldCategories } = await getHoldCategories()
+  const maxMB = CONFIG.MAX_BYTES / (1024 * 1024)
+
+  // If the error comes from the payload being too large, it will have status code 413.
+  if (error && error.output && error.output.statusCode === 413) {
+    return h
+      .view(VIEWS.BULK, {
+        schemes,
+        paymentHoldCategories,
+        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${maxMB} MB.` }] }
+      })
+      .code(HTTP.BAD_REQUEST)
+      .takeover()
+  }
+
+  // For other errors (such as Joi validation errors), return the error as is.
+  return h
+    .view(VIEWS.BULK, { schemes, paymentHoldCategories, errors: error })
+    .code(HTTP.BAD_REQUEST)
+    .takeover()
+}
+
 module.exports = [
   {
     method: 'GET',
@@ -166,17 +189,18 @@ module.exports = [
       validate: {
         payload: bulkSchema,
         failAction: async (request, h, error) => {
-          const { schemes, paymentHoldCategories } = await getHoldCategories()
-          return h
-            .view(VIEWS.BULK, { schemes, paymentHoldCategories, errors: error })
-            .code(HTTP.BAD_REQUEST)
-            .takeover()
+          console.log('Validation error in bulk upload', error)
+          return bulkFailAction(request, h, error)
         }
       },
       payload: {
         output: 'file',
         maxBytes: CONFIG.MAX_BYTES,
-        multipart: true
+        multipart: true,
+        failAction: async (request, h, error) => {
+          console.error('Payload error in bulk upload', error)
+          return bulkFailAction(request, h, error)
+        }
       }
     }
   }

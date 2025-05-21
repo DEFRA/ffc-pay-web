@@ -281,23 +281,18 @@ describe('Payment holds', () => {
   })
 
   describe('POST payment-holds/bulk', () => {
+    const CONFIG = { MAX_BYTES: 1048576 }
+
     const method = 'POST'
     const url = '/payment-holds/bulk'
-    const mockPaymentHoldCategories = [{
-      holdCategoryId: 123,
-      name: 'my hold category',
-      schemeName: 'schemeName'
-    }]
 
-    const mockGetPaymentHoldCategories = (paymentHoldCategories) => {
-      get.mockResolvedValue({ payload: { paymentHoldCategories } })
-    }
-    const validForm = {
+    const validBulkForm = {
       remove: true,
       holdCategoryId: 123,
+      crumb: 'placeholder',
       file: {
         filename: 'bulkHolds.csv',
-        path: '/tmp/1706098344068-88-f392ed7e665a8ec8',
+        path: '/tmp/small-file',
         headers: {
           'content-disposition': 'form-data; name="file"; filename="bulkHolds.csv"',
           'content-type': 'text/csv'
@@ -306,36 +301,62 @@ describe('Payment holds', () => {
       }
     }
 
-    test.each([
-      { viewCrumb: 'incorrect' },
-      { viewCrumb: undefined }
-    ])('returns 403 when view crumb is invalid or not included', async ({ viewCrumb }) => {
+    const mockPaymentHoldCategories = [{
+      holdCategoryId: 123,
+      name: 'my hold category',
+      schemeName: 'schemeName'
+    }]
+
+    const mockGetPaymentHoldCategories = (categories) => {
+      get.mockResolvedValue({ payload: { paymentHoldCategories: categories } })
+    }
+
+    test('returns error view for bulk upload when file is too large', async () => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
-      const { cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-      validForm.crumb = viewCrumb
+      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
+
+      const invalidForm = {
+        ...validBulkForm,
+        crumb: viewCrumb,
+        file: { ...validBulkForm.file, bytes: CONFIG.MAX_BYTES + 1000 }
+      }
+
       const res = await server.inject({
         method,
         url,
         auth,
-        payload: validForm,
+        payload: invalidForm,
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
 
-      expect(res.statusCode).toBe(403)
+      expect(res.statusCode).toBe(400)
+      const $ = cheerio.load(res.payload)
+      expect($('body').text()).toMatch(
+        new RegExp(`The uploaded file is too large. Please upload a file smaller than ${CONFIG.MAX_BYTES / (1024 * 1024)} MB`)
+      )
     })
 
-    test('returns 302 no auth', async () => {
+    test('returns error view for bulk upload when schema validation fails', async () => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
       const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-      validForm.crumb = viewCrumb
+
+      const invalidForm = {
+        ...validBulkForm,
+        crumb: viewCrumb
+      }
+      delete invalidForm.file
+
       const res = await server.inject({
         method,
         url,
-        payload: validForm,
+        auth,
+        payload: invalidForm,
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
 
-      expect(res.statusCode).toBe(302)
+      expect(res.statusCode).toBe(400)
+      const $ = cheerio.load(res.payload)
+      expect($('body').text()).toMatch(/Validation error/)
     })
   })
 
