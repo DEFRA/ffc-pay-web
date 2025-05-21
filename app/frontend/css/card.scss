@@ -1,6 +1,6 @@
 $govuk-suppressed-warnings: "legacy-organisation-colours";
 $govuk-assets-path: "~govuk-frontend/dist/govuk/assets/";
-@import "~govuk-frontend/dist/govuk/all";
+@import "~govuk-frontend/dist/govuk/index";
 
 .govuk-cards__item {
   box-sizing: border-box;

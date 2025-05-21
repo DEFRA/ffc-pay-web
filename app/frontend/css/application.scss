@@ -1,7 +1,7 @@
 $govuk-suppressed-warnings: "legacy-organisation-colours";
 $govuk-assets-path: "~govuk-frontend/dist/govuk/assets/";
 $govuk-font-family: "Arial", sans-serif !important;
-@import "~govuk-frontend/dist/govuk/all";
+@import "~govuk-frontend/dist/govuk/index";
 
 .nojs-hidden {
   display: none;
