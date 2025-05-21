@@ -41,7 +41,7 @@
     "@joi/date": "2.1.0",
     "applicationinsights": "2.9.6",
     "ffc-messaging": "2.10.1",
-    "govuk-frontend": "4.7.0",
+    "govuk-frontend": "5.10.0",
     "hapi-pino": "10.1.0",
     "joi": "17.4.0",
     "log-timestamp": "0.3.0",
