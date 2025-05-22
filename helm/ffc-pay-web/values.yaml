@@ -53,7 +53,7 @@ container:
   dataTopicAddress: ffc-pay-data-request
   dataResponseQueueAddress: ffc-pay-data-request-response
   redisHostname: redis-host-name
-  redisPort: 6381
+  redisPort: 6379
   redisPassword: redis
 
 ingress:

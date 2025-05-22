@@ -4,7 +4,7 @@ const TTL = 10 * 60 * 1000 // 10 mins
 
 const schema = Joi.object({
   host: Joi.string(),
-  port: Joi.number().integer().default(6381),
+  port: Joi.number().integer().default(6379),
   password: Joi.string().allow(''),
   partition: Joi.string().default('ffc-pay-web'),
   cacheName: Joi.string().default('reportPreparation'),

@@ -23,7 +23,7 @@ services:
       - "6381:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --port 6381 --dir /data --save 5 1
+    command: redis-server --dir /data --save 5 1
 
   ffc-pay-event-store-azurite:
     volumes:
