@@ -347,30 +347,6 @@ describe('Payment holds', () => {
       expect(readFileContent).toHaveBeenCalledWith(expect.any(String))
     })
 
-    test('returns 400 when file size exceeds maximum allowed bytes', async () => {
-      const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
-      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-
-      const largeCsvContent = '1234567890'.repeat(200000) // Creates ~2MB of data
-      const { payload, boundary } = createPayload(viewCrumb, largeCsvContent)
-
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload,
-        headers: {
-          cookie: `crumb=${cookieCrumb}`,
-          'content-type': `multipart/form-data; boundary=${boundary}`
-        }
-      })
-
-      expect(res.statusCode).toBe(400)
-      const $ = cheerio.load(res.payload)
-      expect($('.govuk-error-summary__body').text())
-        .toContain('The uploaded file is too large. Please upload a file smaller than 1 MB')
-    })
-
     test('returns 400 when file contents are invalid', async () => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
       const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
@@ -437,6 +413,31 @@ describe('Payment holds', () => {
 
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/login')
+    })
+
+    test('returns 400 with correct error view when file size exceeds maximum bytes (413 error)', async () => {
+      const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
+      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
+
+      const largeCsvContent = Buffer.alloc(1048577).fill('1') // Creates ~1MB of data
+      const { payload, boundary } = createPayload(viewCrumb, largeCsvContent)
+
+      const res = await server.inject({
+        method,
+        url,
+        auth,
+        payload,
+        headers: {
+          cookie: `crumb=${cookieCrumb}`,
+          'content-type': `multipart/form-data; boundary=${boundary}`
+        }
+      })
+
+      expect(res.statusCode).toBe(400)
+      const $ = cheerio.load(res.payload)
+      expect($('.govuk-error-summary__body').text())
+        .toContain('The uploaded file is too large. Please upload a file smaller than 1 MB')
+      expect($('input[name="crumb"]').val()).toBeDefined()
     })
   })
 

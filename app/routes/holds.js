@@ -2,11 +2,14 @@ const ViewModel = require('./models/search')
 const schema = require('./schemas/hold')
 const searchSchema = require('./schemas/hold-search')
 const bulkSchema = require('./schemas/bulk-hold')
+const HTTP_STATUS = require('../constants/http-status')
+const { bulkFailAction } = require('../helpers/bulk-fail-action')
 const { post } = require('../api')
 const { holdAdmin } = require('../auth/permissions')
 const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost } = require('../hold')
 const searchLabelText = 'Search for a hold by FRN number'
+
 const ROUTES = {
   HOLDS: '/payment-holds',
   ADD: '/add-payment-hold',
@@ -21,42 +24,8 @@ const VIEWS = {
   REMOVE: 'remove-payment-hold'
 }
 
-const HTTP = {
-  BAD_REQUEST: 400
-}
-
 const CONFIG = {
   MAX_BYTES: 1048576
-}
-
-const bulkFailAction = async (request, h, error) => {
-  const { schemes, paymentHoldCategories } = await getHoldCategories()
-  const maxMB = CONFIG.MAX_BYTES / (1024 * 1024)
-
-  // Try getting the crumb from request.payload and fallback to the crumb in state
-  const crumb = (request.payload && request.payload.crumb) || request.state.crumb
-
-  if (error && error.output && error.output.statusCode === 413) {
-    return h
-      .view(VIEWS.BULK, {
-        schemes,
-        paymentHoldCategories,
-        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${maxMB} MB.` }] },
-        crumb
-      })
-      .code(HTTP.BAD_REQUEST)
-      .takeover()
-  }
-
-  return h
-    .view(VIEWS.BULK, {
-      schemes,
-      paymentHoldCategories,
-      errors: error,
-      crumb
-    })
-    .code(HTTP.BAD_REQUEST)
-    .takeover()
 }
 
 module.exports = [
@@ -92,7 +61,7 @@ module.exports = [
               paymentHolds,
               ...new ViewModel(searchLabelText, request.payload.frn, error)
             })
-            .code(HTTP.BAD_REQUEST)
+            .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
         }
       },
@@ -117,7 +86,7 @@ module.exports = [
               message: 'No holds match the FRN provided.'
             })
           )
-          .code(HTTP.BAD_REQUEST)
+          .code(HTTP_STATUS.BAD_REQUEST)
       }
     }
   },
@@ -159,7 +128,7 @@ module.exports = [
               errors: error,
               frn: request.payload.frn
             })
-            .code(HTTP.BAD_REQUEST)
+            .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
         }
       },
