@@ -29,6 +29,36 @@ const CONFIG = {
   MAX_BYTES: 1048576
 }
 
+const bulkFailAction = async (request, h, error) => {
+  const { schemes, paymentHoldCategories } = await getHoldCategories()
+  const maxMB = CONFIG.MAX_BYTES / (1024 * 1024)
+
+  // Try getting the crumb from request.payload and fallback to the crumb in state
+  const crumb = (request.payload && request.payload.crumb) || request.state.crumb
+
+  if (error && error.output && error.output.statusCode === 413) {
+    return h
+      .view(VIEWS.BULK, {
+        schemes,
+        paymentHoldCategories,
+        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${maxMB} MB.` }] },
+        crumb
+      })
+      .code(HTTP.BAD_REQUEST)
+      .takeover()
+  }
+
+  return h
+    .view(VIEWS.BULK, {
+      schemes,
+      paymentHoldCategories,
+      errors: error,
+      crumb
+    })
+    .code(HTTP.BAD_REQUEST)
+    .takeover()
+}
+
 module.exports = [
   {
     method: 'GET',
@@ -163,20 +193,21 @@ module.exports = [
     handler: handleBulkPost,
     options: {
       auth: { scope: [holdAdmin] },
+      payload: {
+        output: 'file',
+        parse: true,
+        allow: 'multipart/form-data',
+        maxBytes: CONFIG.MAX_BYTES,
+        multipart: true,
+        failAction: async (request, h, error) => {
+          return bulkFailAction(request, h, error)
+        }
+      },
       validate: {
         payload: bulkSchema,
         failAction: async (request, h, error) => {
-          const { schemes, paymentHoldCategories } = await getHoldCategories()
-          return h
-            .view(VIEWS.BULK, { schemes, paymentHoldCategories, errors: error })
-            .code(HTTP.BAD_REQUEST)
-            .takeover()
+          return bulkFailAction(request, h, error)
         }
-      },
-      payload: {
-        output: 'file',
-        maxBytes: CONFIG.MAX_BYTES,
-        multipart: true
       }
     }
   }
