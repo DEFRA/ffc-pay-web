@@ -1,7 +1,5 @@
 const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
-
 const { getReportTypes } = require('../helpers/get-report-types')
-
 const { getHolds } = require('../holds')
 
 module.exports = {

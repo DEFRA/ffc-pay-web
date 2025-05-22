@@ -21,8 +21,6 @@ const createDownloadRoute = (path, viewOnFail, validationSchema, requestHandler)
     handler: requestHandler
   }
   if (validationSchema) {
-    console.log('validationSchema exists. ' + path)
-
     options.validate = {
       query: validationSchema,
       failAction: async (request, h, err) => {

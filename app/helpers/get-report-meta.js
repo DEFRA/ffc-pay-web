@@ -1,5 +1,5 @@
-const REPORT_TYPES = require('../constants/report-types') // Your enum-style object
-const REPORT_PATHS = require('../constants/report-list') // Contains basePaths and download paths
+const REPORT_TYPES = require('../constants/report-types')
+const REPORT_PATHS = require('../constants/report-list')
 
 const reportMeta = {
   [REPORT_TYPES.PAYMENT_REQUEST_STATUSES]: {

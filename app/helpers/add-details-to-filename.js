@@ -1,12 +1,12 @@
-const zero = 0
-const negative4 = -4
+const startIndex = 0
+const fileTypeIndex = -4
 
 const addDetailsToFilename = (reportName, query) => {
   if (!reportName.endsWith('.csv')) {
     throw new Error('Filename must end with .csv')
   }
 
-  const baseName = reportName.slice(zero, negative4) // removes .csv
+  const baseName = reportName.slice(startIndex, fileTypeIndex) // removes .csv
   const { schemeId, year, prn, revenueOrCapital, frn, startDate, endDate } = query
 
   if (startDate && endDate) {
