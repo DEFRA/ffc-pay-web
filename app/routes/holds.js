@@ -33,21 +33,28 @@ const bulkFailAction = async (request, h, error) => {
   const { schemes, paymentHoldCategories } = await getHoldCategories()
   const maxMB = CONFIG.MAX_BYTES / (1024 * 1024)
 
-  // If the error comes from the payload being too large, it will have status code 413.
+  // Try getting the crumb from request.payload and fallback to the crumb in state
+  const crumb = (request.payload && request.payload.crumb) || request.state.crumb
+
   if (error && error.output && error.output.statusCode === 413) {
     return h
       .view(VIEWS.BULK, {
         schemes,
         paymentHoldCategories,
-        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${maxMB} MB.` }] }
+        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${maxMB} MB.` }] },
+        crumb
       })
       .code(HTTP.BAD_REQUEST)
       .takeover()
   }
 
-  // For other errors (such as Joi validation errors), return the error as is.
   return h
-    .view(VIEWS.BULK, { schemes, paymentHoldCategories, errors: error })
+    .view(VIEWS.BULK, {
+      schemes,
+      paymentHoldCategories,
+      errors: error,
+      crumb
+    })
     .code(HTTP.BAD_REQUEST)
     .takeover()
 }
