@@ -8,9 +8,9 @@ const bulkFailAction = async (request, h, error) => {
   const maxMB = MAX_BYTES / (1024 * 1024)
 
   // Try getting the crumb from request.payload and fallback to the crumb in state
-  const crumb = (request.payload && request.payload.crumb) || request.state.crumb
+  const crumb = request.payload?.crumb ?? request.state.crumb
 
-  if (error && error.output && error.output.statusCode === 413) {
+  if (error?.output?.statusCode === HTTP_STATUS.CONTENT_TOO_LARGE) {
     return h
       .view(BULK, {
         schemes,
