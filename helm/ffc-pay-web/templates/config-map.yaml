@@ -4,6 +4,8 @@ data:
   NODE_ENV: {{ quote .Values.environment }}
   PORT: {{ quote .Values.container.port }}
   APPINSIGHTS_CLOUDROLE: {{ quote .Values.name }}
+  REDIS_HOSTNAME: {{ quote .Values.container.redisHostname }}
+  REDIS_PORT: {{ quote .Values.container.redisPort }}
   {{- if and (.Values.environmentCode) (not .Values.pr) }}
     {{- if ne .Values.environmentCode "snd" }}
   PAYMENTS_SERVICE_ENDPOINT: {{ .Values.container.paymentsEndpoint }}-{{ .Values.environmentCode }}
@@ -35,7 +37,5 @@ data:
   {{ else }}
   DATA_TOPIC_ADDRESS: {{ quote .Values.container.dataTopicAddress }}
   DATARESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.dataResponseQueueAddress }}
-  REDIS_HOSTNAME: {{ quote .Values.container.redisHostname }}
-  REDIS_PORT: {{ quote .Values.container.redisPort }}
   {{- end }}
 {{- end -}}
