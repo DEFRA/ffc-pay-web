@@ -1,0 +1,106 @@
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "./date-form.njk" import dateInput %}
+
+{% macro pageTitle(title) %}
+  <h1 class="govuk-heading-l">{{ title }}</h1>
+{% endmacro %}
+
+{% macro schemeSelect(schemes, selectedSchemeId = '') %}
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label-s" for="schemeId">
+      Select the scheme to view data for
+    </label>
+    <select class="govuk-select" id="schemeId" name="schemeId">
+      {% for scheme in schemes %}
+        {% if scheme and scheme.schemeId is defined and scheme.name is defined %}
+          <option value="{{ scheme.schemeId }}" {% if scheme.schemeId == selectedSchemeId %}selected{% endif %}>
+            {{ scheme.name }}
+          </option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+{% endmacro %}
+
+{% macro yearInput(yearValue = '') %}
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label-s" for="year">
+      Year
+    </label>
+    <input class="govuk-input govuk-input--width-4" id="year" name="year" type="text" value="{{ yearValue }}" inputmode="numeric">
+  </div>
+{% endmacro %}
+
+{% macro revenueOrCapitalSelect(selectedValue = '') %}
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label-s" for="revenueOrCapital">
+      Revenue/Capital (CS only)
+    </label>
+    <div class="govuk-hint">
+      Revenue/Capital is mandatory for CS only, and should not be selected for other schemes.
+    </div>
+    <select class="govuk-select" id="revenueOrCapital" name="revenueOrCapital">
+      <option value="" {% if selectedValue == '' %}selected{% endif %}></option>
+      <option value="Revenue" {% if selectedValue == 'Revenue' %}selected{% endif %}>Revenue</option>
+      <option value="Capital" {% if selectedValue == 'Capital' %}selected{% endif %}>Capital</option>
+    </select>
+  </div>
+{% endmacro %}
+
+{% macro frnInput(frnValue = '') %}
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label-s" for="frn">
+      Firm reference number (FRN) (optional)
+    </label>
+    <div class="govuk-hint">
+      Enter a 10-digit FRN
+    </div>
+    <input class="govuk-input govuk-input--width-10" id="frn" name="frn" type="text" value="{{ frnValue }}" inputmode="numeric">
+  </div>
+{% endmacro %}
+
+{% macro submitButton(label = "Download report") %}
+  <button class="govuk-button" data-module="govuk-button">{{ label }}</button>
+{% endmacro %}
+
+{% macro prnInput(prnValue = '') %}
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label-s" for="prn">
+      Payment Request Number
+    </label>
+    <div class="govuk-hint">
+      Due to the volume of data, payment request number is required for BPS, and optional for other schemes.
+    </div>
+    <input class="govuk-input govuk-input--width-1" id="prn" name="prn" type="text" value="{{ prnValue }}" inputmode="numeric">
+  </div>
+{% endmacro %}
+
+{% macro reportTypeSelect(selectedType = '') %}
+  {{ govukSelect({
+    id: "report-type",
+    name: "report-type",
+    label: {
+      text: "Report Type"
+    },
+    items: [
+      {
+        value: "ap-listing-report",
+        text: "AP Listing Report",
+        selected: selectedType == "ap-listing-report"
+      },
+      {
+        value: "ar-listing-report",
+        text: "AR Listing Report",
+        selected: selectedType == "ar-listing-report"
+      }
+    ]
+  }) }}
+{% endmacro %}
+
+{% macro startDateInput(errors = {}, value = {}) %}
+  {{ dateInput('start-date', errors, value) }}
+{% endmacro %}
+
+{% macro endDateInput(errors = {}, value = {}) %}
+  {{ dateInput('end-date', errors, value) }}
+{% endmacro %}

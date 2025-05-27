@@ -19,6 +19,41 @@ const frnValidation = Joi.number()
     return errors
   })
 
+const prnError = errors => {
+  errors.forEach(err => {
+    err.message = 'Provide a payment request number'
+  })
+  return errors
+}
+
+const schemeError = errors => {
+  errors.forEach(err => {
+    err.message = 'A scheme must be selected'
+  })
+  return errors
+}
+
+const yearError = errors => {
+  errors.forEach(err => {
+    err.message = 'A valid year must be provided'
+  })
+  return errors
+}
+
+const revCapErrorRequired = errors => {
+  errors.forEach(err => {
+    err.message = 'Select Revenue or Capital'
+  })
+  return errors
+}
+
+const revCapErrorInvalid = errors => {
+  errors.forEach(err => {
+    err.message = 'Revenue/Capital should not be selected for this scheme'
+  })
+  return errors
+}
+
 const createPRNValidation = (dependsOnFrn = false) => {
   const prnValidation = Joi.number().integer()
 
@@ -28,38 +63,22 @@ const createPRNValidation = (dependsOnFrn = false) => {
       then: Joi.optional().allow('', null),
       otherwise: prnValidation.when('schemeId', {
         is: Joi.number().integer().valid(BPS),
-        then: Joi.required().error(errors => {
-          errors.forEach(err => {
-            err.message = 'Provide a payment request number'
-          })
-          return errors
-        }),
-        otherwise: Joi.allow('').error(errors => {
-          return errors
-        })
+        then: Joi.required().error(prnError),
+        otherwise: Joi.allow('').error(e => e)
       })
     })
   }
 
   return prnValidation.when('schemeId', {
     is: Joi.number().integer().valid(BPS),
-    then: Joi.required().error(errors => {
-      errors.forEach(err => {
-        err.message = 'Provide a payment request number'
-      })
-      return errors
-    }),
-    otherwise: Joi.allow('').error(errors => {
-      return errors
-    })
+    then: Joi.required().error(prnError),
+    otherwise: Joi.allow('').error(e => e)
   })
 }
 
 const createYearValidation = (dependsOnFrn = false) => {
-  const yearValidation = Joi.number()
-    .integer()
-    .greater(yearGreaterThan)
-    .less(yearLessThan)
+  const yearValidation = Joi.number().integer().greater(yearGreaterThan).less(yearLessThan)
+
   if (dependsOnFrn) {
     return yearValidation.when('frn', {
       is: Joi.exist(),
@@ -67,12 +86,7 @@ const createYearValidation = (dependsOnFrn = false) => {
       otherwise: yearValidation.when('schemeId', {
         is: Joi.number().integer().valid(CS),
         then: Joi.optional().allow('', null),
-        otherwise: Joi.required().error(errors => {
-          errors.forEach(err => {
-            err.message = 'A valid year must be provided'
-          })
-          return errors
-        })
+        otherwise: Joi.required().error(yearError)
       })
     })
   }
@@ -80,12 +94,7 @@ const createYearValidation = (dependsOnFrn = false) => {
   return yearValidation.when('schemeId', {
     is: Joi.number().integer().valid(CS),
     then: Joi.optional().allow('', null),
-    otherwise: Joi.required().error(errors => {
-      errors.forEach(err => {
-        err.message = 'A valid year must be provided'
-      })
-      return errors
-    })
+    otherwise: Joi.required().error(yearError)
   })
 }
 
@@ -96,75 +105,31 @@ const createSchemeIdValidation = (dependsOnFrn = false) => {
     return schemeIdValidation.when('frn', {
       is: Joi.exist(),
       then: Joi.optional(),
-      otherwise: schemeIdValidation.required().error(errors => {
-        errors.forEach(err => {
-          err.message = 'A scheme must be selected'
-        })
-        return errors
-      })
+      otherwise: schemeIdValidation.required().error(schemeError)
     })
   }
 
-  return schemeIdValidation.required().error(errors => {
-    errors.forEach(err => {
-      err.message = 'A scheme must be selected'
-    })
-    return errors
-  })
+  return schemeIdValidation.required().error(schemeError)
 }
 
-const createRevenueOrCapitalValidation = (dependsOnFrn = false) => {
-  const revenueOrCapitalValidation = Joi.string().allow('', 'Revenue', 'Capital')
+const createRevenueOrCapitalValidation = () => {
+  const base = Joi.string().allow('', 'Revenue', 'Capital')
 
-  if (dependsOnFrn) {
-    return revenueOrCapitalValidation.when('frn', {
-      is: Joi.exist(),
-      then: Joi.optional(),
-      otherwise: revenueOrCapitalValidation.when('schemeId', {
-        is: Joi.number().integer().valid(CS),
-        then: Joi.required()
-          .valid('Revenue', 'Capital')
-          .error(errors => {
-            errors.forEach(err => {
-              err.message = 'Select Revenue or Capital'
-            })
-            return errors
-          }),
-        otherwise: Joi.valid('').error(errors => {
-          errors.forEach(err => {
-            err.message = 'Revenue/Capital should not be selected for this scheme'
-          })
-          return errors
-        })
-      })
-    })
-  }
-
-  return revenueOrCapitalValidation.when('schemeId', {
+  return base.when('schemeId', {
     is: Joi.number().integer().valid(CS),
-    then: Joi.required()
-      .valid('Revenue', 'Capital')
-      .error(errors => {
-        errors.forEach(err => {
-          err.message = 'Select Revenue or Capital'
-        })
-        return errors
-      }),
-    otherwise: Joi.valid('').error(errors => {
-      errors.forEach(err => {
-        err.message = 'Revenue/Capital should not be selected for this scheme'
-      })
-      return errors
-    })
+    then: base.required().valid('Revenue', 'Capital').error(revCapErrorRequired),
+    otherwise: base.invalid('Revenue', 'Capital').error(revCapErrorInvalid)
   })
 }
 
 const createValidationSchema = (dependsOnFrn = false, includePrn = true) => {
   const schema = {
+    'report-title': Joi.string().required(),
+    'report-url': Joi.string().required(),
     frn: frnValidation,
     year: createYearValidation(dependsOnFrn),
     schemeId: createSchemeIdValidation(dependsOnFrn),
-    revenueOrCapital: createRevenueOrCapitalValidation(dependsOnFrn)
+    revenueOrCapital: createRevenueOrCapitalValidation()
   }
 
   if (includePrn) {

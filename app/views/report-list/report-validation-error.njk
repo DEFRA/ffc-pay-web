@@ -1,0 +1,33 @@
+{% extends "_layout.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block content %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }, {
+      text: "Report List",
+      href: "/report-list"
+    }]
+  }) }}
+
+  {{ govukErrorSummary({
+    titleText: "There is a problem",
+    errorList: errors or [{
+      text: "Something went wrong while loading the report page. Please try again.",
+      href: "#"
+    }]
+  }) }}
+
+  <h1 class="govuk-heading-l">Unable to load report</h1>
+  <p class="govuk-body">We couldn’t load the report due to a technical issue or missing information.</p>
+
+  {{ govukButton({
+    text: "Go back",
+    href: "/report-list",
+    classes: "govuk-button"
+  }) }}
+{% endblock %}
