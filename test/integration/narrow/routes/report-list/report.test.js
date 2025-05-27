@@ -107,7 +107,7 @@ describe('Report test', () => {
 
     const response = await server.inject(options)
     expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toBe('text/html; charset=utf-8')
+    expect(response.headers['content-type']).toBe('text/csv; charset=utf-8')
     expect(response.payload).toContain('123')
   })
 
