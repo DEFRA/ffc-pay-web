@@ -1,7 +1,7 @@
 const { getMIReport, getSuppressedReport } = require('../../storage')
 const { getHolds } = require('../../holds')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
-const formatDate = require('../../helpers/format-date')
+const { formatDateFromString } = require('../../helpers/format-date')
 const storageConfig = require('../../config/storage')
 const {
   handleCSVResponse,
@@ -63,14 +63,15 @@ module.exports = [
             scheme: hold.holdCategorySchemeName,
             marketingYear: hold.marketingYear ?? 'All',
             holdCategory: hold.holdCategoryName,
-            dateAdded: formatDate(hold.dateTimeAdded)
+            dateAdded: formatDateFromString(hold.dateTimeAdded)
           }))
 
           return handleCSVResponse(
             paymentHoldsData,
             storageConfig.holdReportName
           )(h)
-        } catch {
+        } catch (error) {
+          console.error('Holds report generation failed.', error)
           return h.view(REPORTS_VIEWS.HOLD_REPORT_UNAVAILABLE)
         }
       }
