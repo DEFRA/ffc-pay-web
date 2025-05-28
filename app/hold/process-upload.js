@@ -13,7 +13,6 @@ const processUpload = async (request, jobId, uploadData) => {
     holdCategoryId: request.payload.holdCategoryId
   }
 
-  console.log(`Processing upload for jobId: ${jobId} at endpoint: ${endpoint}`, payload)
   await post(endpoint, payload, null)
   return setLoadingStatus(request, jobId, { status: 'completed' })
 }

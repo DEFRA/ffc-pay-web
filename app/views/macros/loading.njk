@@ -37,68 +37,106 @@
 
   <iframe id="download-frame" style="display: none;" title="Report download frame"></iframe>
 
-  <script>
-    const jobId = "{{ jobId }}"
-    const checkUrl = "{{ checkUrl }}"
-    const downloadUrl = "{{ downloadUrl }}"
-    const redirectUrl = "{{ redirectUrl }}"
-    const processingMessage = "{{ processingMessage }}"
-    const completedMessage = "{{ completedMessage }}"
+<script>
+  const state = {
+    downloadStarted: false,
+    config: {
+      jobId: "{{ jobId }}",
+      checkUrl: "{{ checkUrl }}",
+      downloadUrl: "{{ downloadUrl }}",
+      redirectUrl: "{{ redirectUrl }}",
+      processingMessage: "{{ processingMessage }}",
+      completedMessage: "{{ completedMessage }}"
+    },
+    elements: {
+      container: () => document.getElementById('progress-container'),
+      statusText: () => document.getElementById('progress-status-text'),
+      statusHeading: () => document.getElementById('progress-status-heading'),
+      spinner: () => document.querySelector('.govuk-spinner'),
+      downloadFrame: () => document.getElementById('download-frame'),
+      errorMessage: () => document.getElementById('error-message')
+    }
+  }
 
-    let downloadStarted = false
+  const updateElement = (element, updates) => {
+    Object.entries(updates).forEach(([key, value]) => {
+      element[key] = value
+    })
+  }
 
-    function checkStatus() {
-      fetch(checkUrl)
-        .then(res => {
-          if (!res.ok) throw new Error('Status check failed')
-          return res.json()
-        })
-        .then(data => {
-          const progressContainer = document.getElementById('progress-container')
-          const progressStatusText = document.getElementById('progress-status-text')
-          const progressStatusHeading = document.getElementById('progress-status-heading')
-          const spinner = document.querySelector('.govuk-spinner')
+  const updateClasses = (element, { add = [], remove = [] }) => {
+    remove.forEach(cls => element.classList.remove(cls))
+    add.forEach(cls => element.classList.add(cls))
+  }
 
-          console.log(data.status)
+  const cleanupCache = async (jobId) => {
+    try {
+      const response = await fetch(`/loading/${jobId}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) {
+        console.error('Failed to cleanup cache')
+      }
+    } catch (error) {
+      console.error('Error cleaning up cache:', error)
+    }
+  }
 
-          if (data.status === 'download') {
-            if (!downloadStarted) {
-              progressStatusText.textContent = 'The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.'
+  const handleDownload = () => {
+    if (!state.downloadStarted) {
+      updateElement(state.elements.statusText(), { textContent: 'The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.'})
+      updateElement(state.elements.downloadFrame(), { src: state.config.downloadUrl })
+      state.downloadStarted = true
+    }
+    setTimeout(checkStatus, 2500)
+  }
 
-              const iframe = document.getElementById('download-frame')
-              iframe.src = downloadUrl
-              downloadStarted = true 
-            }
+  const handleCompletion = async () => {
+    updateElement(state.elements.statusHeading(), { textContent: 'Processing complete'})
+    updateElement(state.elements.statusText(), { textContent: state.config.completedMessage })
 
-            setTimeout(checkStatus, 4000)
+    const spinner = state.elements.spinner()
+    if (spinner) {
+      spinner.style.display = 'none'
+    }
+    
+    updateClasses(state.elements.container(), { remove: ['govuk-notification-banner--info'], add: ['govuk-notification-banner--success']})
 
-          } else if (data.status === 'completed') {
-            progressStatusHeading.textContent = 'Processing complete'
-            progressStatusText.textContent = completedMessage
+    await cleanupCache(state.config.jobId)
 
-            progressContainer.classList.remove('govuk-notification-banner--info')
-            progressContainer.classList.add('govuk-notification-banner--success')
-            spinner.style.display = 'none'
+    if (state.config.redirectUrl) {
+      setTimeout(() => window.location.href = state.config.redirectUrl, 250)
+    }
+  }
 
-            if(redirectUrl !== '') {
-              setTimeout(() => window.location.href = redirectUrl, 250)
-            }
+  const showError = () => {
+    updateElement(state.elements.container(), { hidden: true })
+    updateElement(state.elements.errorMessage(), { hidden: false })
+  }
 
-          } else if (data.status === 'failed') {
-            showError()
-
-          } else {
-            setTimeout(checkStatus, 4000)
-          }
-        })
-        .catch(showError)
+  const handleStatus = async (data) => {
+    const statusHandlers = {
+      'download': handleDownload,
+      'completed': handleCompletion,
+      'failed': showError,
+      'default': () => setTimeout(checkStatus, 2500)
     }
 
-    function showError() {
-      document.getElementById('progress-container').hidden = true
-      document.getElementById('error-message').hidden = false
-    }
+    const handler = statusHandlers[data.status] || statusHandlers.default
+    await handler()
+  }
 
-    document.addEventListener('DOMContentLoaded', checkStatus)
-  </script>
+  const checkStatus = async () => {
+    try {
+      const response = await fetch(state.config.checkUrl)
+      if (!response.ok) throw new Error('Status check failed')
+      const data = await response.json()
+      await handleStatus(data)
+    } catch (error) {
+      showError()
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', checkStatus)
+</script>
 {% endmacro %}

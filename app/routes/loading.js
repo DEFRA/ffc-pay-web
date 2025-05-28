@@ -39,8 +39,6 @@ const createDropLoadingStatusRoute = () => ({
       try {
         await drop(request, jobId)
 
-        console.debug(`Dropped ${jobId} from cache`)
-
         return h.response().code(HTTP_STATUS.SUCCESS)
       } catch (err) {
         console.error(`Error droping ${jobId} from cache:`, err)
