@@ -16,6 +16,7 @@ const routes = [].concat(
   require('../routes/closure'),
   require('../routes/view-closures'),
   require('../routes/report-list'),
+  require('../routes/loading'),
   require('../routes/report-list/ap-ar-report'),
   require('../routes/report-list/report-generation'),
   require('../routes/report-list/request-editor-report'),

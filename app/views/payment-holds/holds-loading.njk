@@ -3,9 +3,24 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% block content %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Payment holds",
+      href: "/payment-holds"
+    },
+    { 
+      text: "Bulk upload", 
+      href: "#", 
+      attributes: { 'aria-disabled': 'true', 'class': 'govuk-breadcrumbs__link--disabled' } 
+    }]
+  })}}
+
   {{ renderLoadingPage(
     jobId=jobId,
-    checkUrl="/report-list/generation/status/" + jobId,
+    checkUrl="/loading/" + jobId,
     downloadUrl="/report-list/generation/download/" + jobId,
     title="Preparing your report",
     statusMessage="We’re preparing your report. This can take a few minutes for large datasets.",

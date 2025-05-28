@@ -30,13 +30,13 @@ describe('Report Generation Routes', () => {
     await server.stop()
   })
 
-  describe('GET /report-list/generation/status/{jobId}', () => {
+  describe('GET /loading/{jobId}', () => {
     test('returns status from cache if present', async () => {
       get.mockResolvedValue({ status: 'download' })
 
       const res = await server.inject({
         method: 'GET',
-        url: '/report-list/generation/status/test-job'
+        url: '/loading/test-job'
       })
 
       expect(res.statusCode).toBe(HTTP_STATUS.SUCCESS)
@@ -48,7 +48,7 @@ describe('Report Generation Routes', () => {
 
       const res = await server.inject({
         method: 'GET',
-        url: '/report-list/generation/status/missing-job'
+        url: '/loading/missing-job'
       })
 
       expect(res.statusCode).toBe(404)
@@ -60,7 +60,7 @@ describe('Report Generation Routes', () => {
 
       const res = await server.inject({
         method: 'GET',
-        url: '/report-list/generation/status/error-job'
+        url: '/loading/error-job'
       })
 
       expect(res.statusCode).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR)
