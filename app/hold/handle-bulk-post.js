@@ -6,8 +6,6 @@ const { setLoadingStatus } = require('../helpers/set-loading-status')
 const { BAD_REQUEST } = require('../constants/http-status')
 const { v4: uuidv4 } = require('uuid')
 
-const REDIRECT_URL = '/payment-holds'
-
 const handleBulkPost = async (request, h) => {
   const jobId = uuidv4()
   const data = readFileContent(request.payload.file.path)
@@ -26,14 +24,14 @@ const handleBulkPost = async (request, h) => {
       } else {
         await post('/payment-holds/bulk/add', { data: uploadData, holdCategoryId: request.payload.holdCategoryId }, null)
       }
-      return setLoadingStatus(request, jobId, { status: 'success', redirectUrl: REDIRECT_URL })
+      return setLoadingStatus(request, jobId, { status: 'completed' })
     })
     .catch((err) => {
       console.error(`Error generating report ${jobId}:`, err)
-      return setLoadingStatus(request, jobId, { status: 'failed' })
+      return setLoadingStatus(request, jobId, { status: 'failed', errors: [{ message: `An error occurred while processing the data, ${err.message}` }] })
     })
 
-  return h.view('report-list/report-loading', {
+  return h.view('payment-holds/holds-loading', {
     jobId
   })
 }

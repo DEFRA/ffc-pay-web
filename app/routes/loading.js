@@ -1,4 +1,4 @@
-const { get } = require('../cache')
+const { get, drop } = require('../cache')
 const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
 
 const HTTP_STATUS = require('../constants/http-status')
@@ -19,7 +19,7 @@ const createGetLoadingStatusRoute = () => ({
           return h.response({ status: 'not-found' }).code(HTTP_STATUS.NOT_FOUND)
         }
 
-        return h.response({ status: result.status })
+        return h.response({ status: result.status }).code(HTTP_STATUS.SUCCESS)
       } catch (err) {
         console.error(`Error getting ${jobId} from cache:`, err)
         return h.response({ status: 'failed' }).code(HTTP_STATUS.INTERNAL_SERVER_ERROR)
@@ -37,7 +37,9 @@ const createDropLoadingStatusRoute = () => ({
       const jobId = request.params.jobId
 
       try {
-        // Drop jobId from cache
+        await drop(request, jobId)
+
+        console.debug(`Dropped ${jobId} from cache`)
 
         return h.response().code(HTTP_STATUS.SUCCESS)
       } catch (err) {

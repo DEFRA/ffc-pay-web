@@ -1,12 +1,10 @@
 const { set } = require('../cache')
 
-const setLoadingStatus = async (request, jobId, { status, redirectUrl, errors }) => {
+const setLoadingStatus = async (request, jobId, { status, errors }) => {
   const data = {
     status,
-    ...(redirectUrl !== undefined && { redirectUrl }),
     ...(errors !== undefined && { errors })
   }
-
   return set(request, jobId, data)
 }
 

@@ -67,8 +67,6 @@
 
               const iframe = document.getElementById('download-frame')
               iframe.src = downloadUrl
-              console.log('Download started:', downloadUrl)
-              console.log('Iframe loaded', iframe.src)
               downloadStarted = true 
             }
 
@@ -83,7 +81,7 @@
             spinner.style.display = 'none'
 
             if(redirectUrl !== '') {
-              setTimeout(() => window.location.href = redirectUrl, 2000)
+              window.location.href = redirectUrl
             }
 
           } else if (data.status === 'failed') {
