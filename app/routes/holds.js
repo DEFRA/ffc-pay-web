@@ -2,11 +2,14 @@ const ViewModel = require('./models/search')
 const schema = require('./schemas/hold')
 const searchSchema = require('./schemas/hold-search')
 const bulkSchema = require('./schemas/bulk-hold')
+const HTTP_STATUS = require('../constants/http-status')
+const { bulkFailAction } = require('../helpers/bulk-fail-action')
 const { post } = require('../api')
 const { holdAdmin } = require('../auth/permissions')
 const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost } = require('../hold')
 const searchLabelText = 'Search for a hold by FRN number'
+
 const ROUTES = {
   HOLDS: '/payment-holds',
   ADD: '/add-payment-hold',
@@ -19,10 +22,6 @@ const VIEWS = {
   ADD: 'add-payment-hold',
   BULK: 'payment-holds/bulk',
   REMOVE: 'remove-payment-hold'
-}
-
-const HTTP = {
-  BAD_REQUEST: 400
 }
 
 const CONFIG = {
@@ -62,7 +61,7 @@ module.exports = [
               paymentHolds,
               ...new ViewModel(searchLabelText, request.payload.frn, error)
             })
-            .code(HTTP.BAD_REQUEST)
+            .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
         }
       },
@@ -87,7 +86,7 @@ module.exports = [
               message: 'No holds match the FRN provided.'
             })
           )
-          .code(HTTP.BAD_REQUEST)
+          .code(HTTP_STATUS.BAD_REQUEST)
       }
     }
   },
@@ -129,7 +128,7 @@ module.exports = [
               errors: error,
               frn: request.payload.frn
             })
-            .code(HTTP.BAD_REQUEST)
+            .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
         }
       },
@@ -163,20 +162,21 @@ module.exports = [
     handler: handleBulkPost,
     options: {
       auth: { scope: [holdAdmin] },
+      payload: {
+        output: 'file',
+        parse: true,
+        allow: 'multipart/form-data',
+        maxBytes: CONFIG.MAX_BYTES,
+        multipart: true,
+        failAction: async (request, h, error) => {
+          return bulkFailAction(request, h, error)
+        }
+      },
       validate: {
         payload: bulkSchema,
         failAction: async (request, h, error) => {
-          const { schemes, paymentHoldCategories } = await getHoldCategories()
-          return h
-            .view(VIEWS.BULK, { schemes, paymentHoldCategories, errors: error })
-            .code(HTTP.BAD_REQUEST)
-            .takeover()
+          return bulkFailAction(request, h, error)
         }
-      },
-      payload: {
-        output: 'file',
-        maxBytes: CONFIG.MAX_BYTES,
-        multipart: true
       }
     }
   }
