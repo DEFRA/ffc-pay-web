@@ -7,7 +7,6 @@ const { holdAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
 const { readFileContent } = require('../../../../app/hold/read-file-content')
 const getCrumbs = require('../../../helpers/get-crumbs')
-const { setLoadingStatus } = require('../../../../app/helpers/set-loading-status')
 jest.mock('../../../../app/helpers/set-loading-status')
 
 let server
