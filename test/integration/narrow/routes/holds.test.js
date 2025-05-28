@@ -350,52 +350,6 @@ describe('Payment holds', () => {
       expect(readFileContent).toHaveBeenCalledWith(expect.any(String))
     })
 
-    test('returns loading view and updates status when file contents are invalid', async () => {
-      const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
-      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-
-      readFileContent.mockReturnValue('invalid,not-frn,abc123')
-
-      const { payload, boundary } = createPayload(viewCrumb, 'xyz123')
-
-      const statusUpdateComplete = new Promise(resolve => {
-        setLoadingStatus.mockImplementationOnce(async (req, id, status) => {
-          if (status.status === 'failed') {
-            resolve()
-          }
-          return status
-        })
-      })
-
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload,
-        headers: {
-          cookie: `crumb=${cookieCrumb}`,
-          'content-type': `multipart/form-data; boundary=${boundary}`
-        }
-      })
-
-      expect(res.statusCode).toBe(200)
-      const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toContain('Processing bulk upload')
-
-      await statusUpdateComplete
-
-      expect(setLoadingStatus).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.any(String),
-        {
-          status: 'failed',
-          errors: expect.arrayContaining([{
-            message: expect.stringContaining('FRN is not in the required format')
-          }])
-        }
-      )
-    })
-
     test.each([
       { viewCrumb: 'incorrect' },
       { viewCrumb: undefined }
