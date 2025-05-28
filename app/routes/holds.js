@@ -3,6 +3,7 @@ const schema = require('./schemas/hold')
 const searchSchema = require('./schemas/hold-search')
 const bulkSchema = require('./schemas/bulk-hold')
 const HTTP_STATUS = require('../constants/http-status')
+const HOLDS_VIEWS = require('../constants/holds-views')
 const { bulkFailAction } = require('../helpers/bulk-fail-action')
 const { post } = require('../api')
 const { holdAdmin } = require('../auth/permissions')
@@ -15,13 +16,6 @@ const ROUTES = {
   ADD: '/add-payment-hold',
   BULK: '/payment-holds/bulk',
   REMOVE: '/remove-payment-hold'
-}
-
-const VIEWS = {
-  HOLDS: 'payment-holds',
-  ADD: 'add-payment-hold',
-  BULK: 'payment-holds/bulk',
-  REMOVE: 'remove-payment-hold'
 }
 
 const CONFIG = {
@@ -38,7 +32,7 @@ module.exports = [
         const page = parseInt(request.query.page) || 1
         const perPage = parseInt(request.query.perPage || 100)
         const paymentHolds = await getHolds(page, perPage)
-        return h.view(VIEWS.HOLDS, {
+        return h.view(HOLDS_VIEWS.HOLDS, {
           paymentHolds,
           page,
           perPage,
@@ -57,7 +51,7 @@ module.exports = [
         failAction: async (request, h, error) => {
           const paymentHolds = await getHolds()
           return h
-            .view(VIEWS.HOLDS, {
+            .view(HOLDS_VIEWS.HOLDS, {
               paymentHolds,
               ...new ViewModel(searchLabelText, request.payload.frn, error)
             })
@@ -73,7 +67,7 @@ module.exports = [
         )
 
         if (filteredPaymentHolds.length) {
-          return h.view(VIEWS.HOLDS, {
+          return h.view(HOLDS_VIEWS.HOLDS, {
             paymentHolds: filteredPaymentHolds,
             ...new ViewModel(searchLabelText, frn)
           })
@@ -81,7 +75,7 @@ module.exports = [
 
         return h
           .view(
-            VIEWS.HOLDS,
+            HOLDS_VIEWS.HOLDS,
             new ViewModel(searchLabelText, frn, {
               message: 'No holds match the FRN provided.'
             })
@@ -97,7 +91,7 @@ module.exports = [
       auth: { scope: [holdAdmin] },
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view(VIEWS.ADD, { schemes, paymentHoldCategories })
+        return h.view(HOLDS_VIEWS.ADD, { schemes, paymentHoldCategories })
       }
     }
   },
@@ -108,7 +102,7 @@ module.exports = [
       auth: { scope: [holdAdmin] },
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view(VIEWS.BULK, { schemes, paymentHoldCategories })
+        return h.view(HOLDS_VIEWS.BULK, { schemes, paymentHoldCategories })
       }
     }
   },
@@ -122,7 +116,7 @@ module.exports = [
         failAction: async (request, h, error) => {
           const { schemes, paymentHoldCategories } = await getHoldCategories()
           return h
-            .view(VIEWS.ADD, {
+            .view(HOLDS_VIEWS.ADD, {
               schemes,
               paymentHoldCategories,
               errors: error,

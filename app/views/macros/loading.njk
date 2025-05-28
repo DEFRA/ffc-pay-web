@@ -81,7 +81,7 @@
             spinner.style.display = 'none'
 
             if(redirectUrl !== '') {
-              window.location.href = redirectUrl
+              setTimeout(() => window.location.href = redirectUrl, 250)
             }
 
           } else if (data.status === 'failed') {
