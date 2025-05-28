@@ -1,8 +1,8 @@
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "./date-form.njk" import dateInput %}
 
-{% macro pageTitle(title) %}
-  <h1 class="govuk-heading-l">{{ title }}</h1>
+{% macro reportPageTitle(text) %}
+  <h1 class="govuk-heading-l">{{ text }}</h1>
 {% endmacro %}
 
 {% macro schemeSelect(schemes, selectedSchemeId = '') %}
