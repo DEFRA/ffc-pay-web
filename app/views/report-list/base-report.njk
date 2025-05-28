@@ -1,0 +1,31 @@
+{% extends '_layout.njk' %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/report-form-fields.njk' import submitButton %}
+{% block content %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },
+    {
+      text: "Report List",
+      href: "/report-list"
+    },{
+      text: reportTitle,
+      href: reportUrl
+    }]
+  })}}
+  {% if errors %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: errors
+    }) 
+  }}
+  {% endif %}
+  <form id="reportForm" method="get" action="{{ formAction }}">
+    <input type="hidden" name="report-url" value="{{ reportUrl }}">
+    <input type="hidden" name="report-title" value="{{ reportTitle }}">  
+    {% block reportContent %}{% endblock %}
+    {{ submitButton() }}
+  </form>
+{% endblock %}

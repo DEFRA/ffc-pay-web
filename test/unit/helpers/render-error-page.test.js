@@ -1,22 +1,18 @@
-const { renderErrorPage } = require('../../../app/helpers')
+const { renderErrorPage } = require('../../../app/helpers/render-error-page')
 const { getSchemes } = require('../../../app/helpers/get-schemes')
-
 jest.mock('../../../app/helpers/get-schemes')
+getSchemes.mockResolvedValue([{ name: 'Scheme 1' }, { name: 'Scheme 2' }])
 
 describe('render error page', () => {
   let mockRequest, mockHapi, mockView, mockError, mockResponse
 
   beforeEach(() => {
-    mockRequest = {
-      log: jest.fn()
-    }
+    mockRequest = { log: jest.fn() }
     mockResponse = {
       code: jest.fn().mockReturnThis(),
       takeover: jest.fn().mockReturnThis()
     }
-    mockHapi = {
-      view: jest.fn().mockReturnValue(mockResponse)
-    }
+    mockHapi = { view: jest.fn().mockReturnValue(mockResponse) }
     mockView = 'some-view'
     mockError = {
       details: [
@@ -24,7 +20,6 @@ describe('render error page', () => {
         { message: 'Error message 2', path: ['field2'] }
       ]
     }
-    getSchemes.mockResolvedValue([{ name: 'Scheme 1' }, { name: 'Scheme 2' }])
   })
 
   test('logs error details', async () => {
@@ -55,6 +50,17 @@ describe('render error page', () => {
 
   test('calls takeover on the response', async () => {
     const response = await renderErrorPage(mockView, mockRequest, mockHapi, mockError)
+    expect(response.takeover).toHaveBeenCalled()
+  })
+
+  test('renders view with empty errors when error.details is undefined', async () => {
+    const errorWithoutDetails = {}
+    const response = await renderErrorPage(mockView, mockRequest, mockHapi, errorWithoutDetails)
+    expect(mockHapi.view).toHaveBeenCalledWith(mockView, {
+      schemes: [{ name: 'Scheme 1' }, { name: 'Scheme 2' }],
+      errors: []
+    })
+    expect(response.code).toHaveBeenCalledWith(400)
     expect(response.takeover).toHaveBeenCalled()
   })
 })
