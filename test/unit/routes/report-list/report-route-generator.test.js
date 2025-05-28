@@ -131,7 +131,7 @@ describe('handlerDownload', () => {
 
   test('processes download when status is ready', async () => {
     const fakeResult = {
-      status: 'ready',
+      status: 'download',
       reportType: 'AP',
       returnedFilename: 'file.csv',
       reportFilename: 'report.csv'
@@ -151,7 +151,7 @@ describe('handlerDownload', () => {
 
   test('calls setReportStatus in setStatusCallback when download is ready', async () => {
     const fakeResult = {
-      status: 'ready',
+      status: 'download',
       reportType: 'AP',
       returnedFilename: 'file.csv',
       reportFilename: 'report.csv'

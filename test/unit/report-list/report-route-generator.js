@@ -32,7 +32,7 @@ describe('Report Generation Routes', () => {
 
   describe('GET /report-list/generation/status/{jobId}', () => {
     test('returns status from cache if present', async () => {
-      get.mockResolvedValue({ status: 'ready' })
+      get.mockResolvedValue({ status: 'download' })
 
       const res = await server.inject({
         method: 'GET',
@@ -40,7 +40,7 @@ describe('Report Generation Routes', () => {
       })
 
       expect(res.statusCode).toBe(HTTP_STATUS.SUCCESS)
-      expect(JSON.parse(res.payload)).toEqual({ status: 'ready' })
+      expect(JSON.parse(res.payload)).toEqual({ status: 'download' })
     })
 
     test('returns not-found if cache entry is missing', async () => {
@@ -88,7 +88,7 @@ describe('Report Generation Routes', () => {
       fakeStream.push(null)
 
       get.mockResolvedValue({
-        status: 'ready',
+        status: 'download',
         reportType: 'example-report',
         returnedFilename: 'returned.csv',
         reportFilename: 'final.csv'

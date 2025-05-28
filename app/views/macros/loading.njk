@@ -1,0 +1,106 @@
+{% macro renderLoadingPage(
+  jobId, 
+  checkUrl, 
+  downloadUrl, 
+  redirectUrl, 
+  title="Loading", 
+  statusMessage="Please wait.", 
+  processingMessage="The task is being processed.",
+  completedMessage="The task has been completed successfully.",
+  errorMessage="We were unable to complete the task."
+) %}
+
+  <h1 class="govuk-heading-l">{{ title }}</h1>
+
+  <section id="progress-container" class="govuk-notification-banner govuk-notification-banner--info" aria-labelledby="progress-status-heading">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="progress-status-heading">
+        Please wait
+      </h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-body" id="progress-status-text">{{ statusMessage }}</p>
+      <output class="govuk-spinner" aria-live="polite">
+        <span class="govuk-visually-hidden">Loading</span>
+      </output>
+    </div>
+  </section>
+
+  <div id="error-message" class="govuk-error-summary" hidden>
+    <h2 class="govuk-error-summary__title">
+      There was a problem
+    </h2>
+    <div class="govuk-error-summary__body">
+      <p class="govuk-body">{{ errorMessage }} Please try again later or contact the Payments & Documents Services team.</p>
+    </div>
+  </div>
+
+  <iframe id="download-frame" style="display: none;" title="Report download frame"></iframe>
+
+  <script>
+    const jobId = "{{ jobId }}"
+    const checkUrl = "{{ checkUrl }}"
+    const downloadUrl = "{{ downloadUrl }}"
+    const redirectUrl = "{{ redirectUrl }}"
+    const processingMessage = "{{ processingMessage }}"
+    const completedMessage = "{{ completedMessage }}"
+
+    let downloadStarted = false
+
+    function checkStatus() {
+      fetch(checkUrl)
+        .then(res => {
+          if (!res.ok) throw new Error('Status check failed')
+          return res.json()
+        })
+        .then(data => {
+          const progressContainer = document.getElementById('progress-container')
+          const progressStatusText = document.getElementById('progress-status-text')
+          const progressStatusHeading = document.getElementById('progress-status-heading')
+          const spinner = document.querySelector('.govuk-spinner')
+
+          console.log(data.status)
+
+          if (data.status === 'download') {
+            if (!downloadStarted) {
+              progressStatusText.textContent = 'The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.'
+
+              const iframe = document.getElementById('download-frame')
+              iframe.src = downloadUrl
+              console.log('Download started:', downloadUrl)
+              console.log('Iframe loaded', iframe.src)
+              downloadStarted = true 
+            }
+
+            setTimeout(checkStatus, 4000)
+
+          } else if (data.status === 'completed') {
+            progressStatusHeading.textContent = 'Processing complete'
+            progressStatusText.textContent = completedMessage
+
+            progressContainer.classList.remove('govuk-notification-banner--info')
+            progressContainer.classList.add('govuk-notification-banner--success')
+            spinner.style.display = 'none'
+
+            if(redirectUrl !== '') {
+              setTimeout(() => window.location.href = redirectUrl, 2000)
+            }
+
+          } else if (data.status === 'failed') {
+            showError()
+
+          } else {
+            setTimeout(checkStatus, 4000)
+          }
+        })
+        .catch(showError)
+    }
+
+    function showError() {
+      document.getElementById('progress-container').hidden = true
+      document.getElementById('error-message').hidden = false
+    }
+
+    document.addEventListener('DOMContentLoaded', checkStatus)
+  </script>
+{% endmacro %}

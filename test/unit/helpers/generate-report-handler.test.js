@@ -48,7 +48,7 @@ describe('generateReportHandler', () => {
       status: 'pending',
       reportType: 'ParamReport'
     })
-    expect(h.view).toHaveBeenCalledWith('report-list/download-progress', {
+    expect(h.view).toHaveBeenCalledWith('report-list/report-loading', {
       jobId: 'job-1234',
       reportTitle: 'Option Title',
       reportUrl: 'http://options.url'
@@ -57,7 +57,7 @@ describe('generateReportHandler', () => {
     await Promise.resolve()
     expect(queryTrackingApi).toHaveBeenCalledWith('http://built.url')
     expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', {
-      status: 'ready',
+      status: 'download',
       reportType: 'ParamReport',
       returnedFilename: 'valid.json',
       reportFilename: 'final.csv'
@@ -69,7 +69,7 @@ describe('generateReportHandler', () => {
     const handler = generateReportHandler(undefined, generateFinalFilenameFunc, options)
     await handler(request, h)
     expect(buildReportUrl).toHaveBeenCalledWith('QReport', { normalized: true })
-    expect(h.view).toHaveBeenCalledWith('report-list/download-progress', {
+    expect(h.view).toHaveBeenCalledWith('report-list/report-loading', {
       jobId: 'job-1234',
       reportTitle: 'Query Title',
       reportUrl: 'http://query.url'
@@ -77,7 +77,7 @@ describe('generateReportHandler', () => {
     await Promise.resolve()
     expect(queryTrackingApi).toHaveBeenCalledWith('http://built.url')
     expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', {
-      status: 'ready',
+      status: 'download',
       reportType: 'QReport',
       returnedFilename: 'valid.json',
       reportFilename: 'final.csv'
@@ -117,7 +117,7 @@ describe('generateReportHandler', () => {
     const handler = generateReportHandler(undefined, generateFinalFilenameFunc, options)
     await handler(request, h)
     expect(buildReportUrl).toHaveBeenCalledWith('QueryDerived', { normalized: true })
-    expect(h.view).toHaveBeenCalledWith('report-list/download-progress', {
+    expect(h.view).toHaveBeenCalledWith('report-list/report-loading', {
       jobId: 'job-1234',
       reportTitle: 'Query Derived Title',
       reportUrl: 'http://option-url.com'
@@ -125,7 +125,7 @@ describe('generateReportHandler', () => {
     await Promise.resolve()
     expect(queryTrackingApi).toHaveBeenCalledWith('http://built.url')
     expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', {
-      status: 'ready',
+      status: 'download',
       reportType: 'QueryDerived',
       returnedFilename: 'valid.json',
       reportFilename: 'final.csv'
