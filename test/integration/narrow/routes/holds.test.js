@@ -5,6 +5,7 @@ jest.mock('../../../../app/hold/read-file-content.js')
 const cheerio = require('cheerio')
 const { holdAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
+const { readFileContent } = require('../../../../app/hold/read-file-content.js')
 const getCrumbs = require('../../../helpers/get-crumbs')
 
 let server
@@ -292,19 +293,84 @@ describe('Payment holds', () => {
     const mockGetPaymentHoldCategories = (paymentHoldCategories) => {
       get.mockResolvedValue({ payload: { paymentHoldCategories } })
     }
-    const validForm = {
-      remove: true,
-      holdCategoryId: 123,
-      file: {
-        filename: 'bulkHolds.csv',
-        path: '/tmp/1706098344068-88-f392ed7e665a8ec8',
-        headers: {
-          'content-disposition': 'form-data; name="file"; filename="bulkHolds.csv"',
-          'content-type': 'text/csv'
-        },
-        bytes: 266
+
+    beforeEach(() => {
+      readFileContent.mockReturnValue('1234567890,2345678901,3456789012')
+    })
+
+    const createPayload = (viewCrumb, fileContent) => {
+      const boundary = '----WebKitFormBoundaryPovBlTQYGDYVuINo'
+      return {
+        payload: [
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="remove"',
+          '',
+          'true',
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="holdCategoryId"',
+          '',
+          '123',
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="crumb"',
+          '',
+          viewCrumb,
+          `--${boundary}`,
+          'Content-Disposition: form-data; name="file"; filename="bulkHolds.csv"',
+          'Content-Type: text/csv',
+          '',
+          fileContent,
+          `--${boundary}--`
+        ].join('\r\n'),
+        boundary
       }
     }
+
+    test('returns 302 when valid file upload and crumb provided', async () => {
+      const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
+      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
+
+      const { payload, boundary } = createPayload(viewCrumb, '1234567890,2345678901,3456789012')
+
+      const res = await server.inject({
+        method,
+        url,
+        auth,
+        payload,
+        headers: {
+          cookie: `crumb=${cookieCrumb}`,
+          'content-type': `multipart/form-data; boundary=${boundary}`
+        }
+      })
+
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe('/payment-holds')
+      expect(readFileContent).toHaveBeenCalledWith(expect.any(String))
+    })
+
+    test('returns 400 when file contents are invalid', async () => {
+      const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
+      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
+
+      readFileContent.mockReturnValue('invalid,not-frn,abc123')
+
+      const { payload, boundary } = createPayload(viewCrumb, 'xyz123')
+
+      const res = await server.inject({
+        method,
+        url,
+        auth,
+        payload,
+        headers: {
+          cookie: `crumb=${cookieCrumb}`,
+          'content-type': `multipart/form-data; boundary=${boundary}`
+        }
+      })
+
+      expect(res.statusCode).toBe(400)
+      const $ = cheerio.load(res.payload)
+      expect($('.govuk-error-summary__body').text())
+        .toContain('A provided FRN is not in the required format')
+    })
 
     test.each([
       { viewCrumb: 'incorrect' },
@@ -312,13 +378,18 @@ describe('Payment holds', () => {
     ])('returns 403 when view crumb is invalid or not included', async ({ viewCrumb }) => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
       const { cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-      validForm.crumb = viewCrumb
+
+      const { payload, boundary } = createPayload(viewCrumb, '1234567890')
+
       const res = await server.inject({
         method,
         url,
         auth,
-        payload: validForm,
-        headers: { cookie: `crumb=${cookieCrumb}` }
+        payload,
+        headers: {
+          cookie: `crumb=${cookieCrumb}`,
+          'content-type': `multipart/form-data; boundary=${boundary}`
+        }
       })
 
       expect(res.statusCode).toBe(403)
@@ -327,15 +398,46 @@ describe('Payment holds', () => {
     test('returns 302 no auth', async () => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
       const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-      validForm.crumb = viewCrumb
+
+      const { payload, boundary } = createPayload(viewCrumb, '1234567890')
+
       const res = await server.inject({
         method,
         url,
-        payload: validForm,
-        headers: { cookie: `crumb=${cookieCrumb}` }
+        payload,
+        headers: {
+          cookie: `crumb=${cookieCrumb}`,
+          'content-type': `multipart/form-data; boundary=${boundary}`
+        }
       })
 
       expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe('/login')
+    })
+
+    test('returns 400 with correct error view when file size exceeds maximum bytes (413 error)', async () => {
+      const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
+      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
+
+      const largeCsvContent = Buffer.alloc(1048577).fill('1') // Creates ~1MB of data
+      const { payload, boundary } = createPayload(viewCrumb, largeCsvContent)
+
+      const res = await server.inject({
+        method,
+        url,
+        auth,
+        payload,
+        headers: {
+          cookie: `crumb=${cookieCrumb}`,
+          'content-type': `multipart/form-data; boundary=${boundary}`
+        }
+      })
+
+      expect(res.statusCode).toBe(400)
+      const $ = cheerio.load(res.payload)
+      expect($('.govuk-error-summary__body').text())
+        .toContain('The uploaded file is too large. Please upload a file smaller than 1 MB')
+      expect($('input[name="crumb"]').val()).toBeDefined()
     })
   })
 
