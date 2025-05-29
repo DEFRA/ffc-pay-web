@@ -28,7 +28,7 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
       .then((returnedFilename) => {
         if (!isValidJsonFilename(returnedFilename)) { throw new Error(`Filename: ${returnedFilename} is not a valid format.`) }
         return setReportStatus(request, jobId, {
-          status: 'ready',
+          status: 'download',
           reportType,
           returnedFilename,
           reportFilename: generateFinalFilenameFunc(normalisedQuery)
@@ -41,7 +41,7 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
         })
       })
 
-    return h.view('report-list/download-progress', {
+    return h.view('report-list/report-loading', {
       jobId,
       reportTitle,
       reportUrl

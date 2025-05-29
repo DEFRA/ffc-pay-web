@@ -1,12 +1,13 @@
 jest.mock('../../../../app/api')
 const { get } = require('../../../../app/api')
 jest.mock('../../../../app/auth')
-jest.mock('../../../../app/hold/read-file-content.js')
+jest.mock('../../../../app/hold/read-file-content')
 const cheerio = require('cheerio')
 const { holdAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
-const { readFileContent } = require('../../../../app/hold/read-file-content.js')
+const { readFileContent } = require('../../../../app/hold/read-file-content')
 const getCrumbs = require('../../../helpers/get-crumbs')
+jest.mock('../../../../app/helpers/set-loading-status')
 
 let server
 let url
@@ -325,7 +326,7 @@ describe('Payment holds', () => {
       }
     }
 
-    test('returns 302 when valid file upload and crumb provided', async () => {
+    test('returns loading view when valid file upload and crumb provided', async () => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
       const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
 
@@ -342,34 +343,10 @@ describe('Payment holds', () => {
         }
       })
 
-      expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toBe('/payment-holds')
-      expect(readFileContent).toHaveBeenCalledWith(expect.any(String))
-    })
-
-    test('returns 400 when file contents are invalid', async () => {
-      const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
-      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-
-      readFileContent.mockReturnValue('invalid,not-frn,abc123')
-
-      const { payload, boundary } = createPayload(viewCrumb, 'xyz123')
-
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload,
-        headers: {
-          cookie: `crumb=${cookieCrumb}`,
-          'content-type': `multipart/form-data; boundary=${boundary}`
-        }
-      })
-
-      expect(res.statusCode).toBe(400)
+      expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
-      expect($('.govuk-error-summary__body').text())
-        .toContain('A provided FRN is not in the required format')
+      expect($('h1').text()).toContain('Processing bulk upload')
+      expect(readFileContent).toHaveBeenCalledWith(expect.any(String))
     })
 
     test.each([

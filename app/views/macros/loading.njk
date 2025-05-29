@@ -1,0 +1,142 @@
+{% macro renderLoadingPage(
+  jobId, 
+  checkUrl, 
+  downloadUrl, 
+  redirectUrl, 
+  title="Loading", 
+  statusMessage="Please wait.", 
+  processingMessage="The task is being processed.",
+  completedMessage="The task has been completed successfully.",
+  errorMessage="We were unable to complete the task."
+) %}
+
+  <h1 class="govuk-heading-l">{{ title }}</h1>
+
+  <section id="progress-container" class="govuk-notification-banner govuk-notification-banner--info" aria-labelledby="progress-status-heading">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="progress-status-heading">
+        Please wait
+      </h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-body" id="progress-status-text">{{ statusMessage }}</p>
+      <output class="govuk-spinner" aria-live="polite">
+        <span class="govuk-visually-hidden">Loading</span>
+      </output>
+    </div>
+  </section>
+
+  <div id="error-message" class="govuk-error-summary" hidden>
+    <h2 class="govuk-error-summary__title">
+      There was a problem
+    </h2>
+    <div class="govuk-error-summary__body">
+      <p class="govuk-body">{{ errorMessage }} Please try again later or contact the Payments & Documents Services team.</p>
+    </div>
+  </div>
+
+  <iframe id="download-frame" style="display: none;" title="Report download frame"></iframe>
+
+<script>
+  const state = {
+    downloadStarted: false,
+    config: {
+      jobId: "{{ jobId }}",
+      checkUrl: "{{ checkUrl }}",
+      downloadUrl: "{{ downloadUrl }}",
+      redirectUrl: "{{ redirectUrl }}",
+      processingMessage: "{{ processingMessage }}",
+      completedMessage: "{{ completedMessage }}"
+    },
+    elements: {
+      container: () => document.getElementById('progress-container'),
+      statusText: () => document.getElementById('progress-status-text'),
+      statusHeading: () => document.getElementById('progress-status-heading'),
+      spinner: () => document.querySelector('.govuk-spinner'),
+      downloadFrame: () => document.getElementById('download-frame'),
+      errorMessage: () => document.getElementById('error-message')
+    }
+  }
+
+  const updateElement = (element, updates) => {
+    Object.entries(updates).forEach(([key, value]) => {
+      element[key] = value
+    })
+  }
+
+  const updateClasses = (element, { add = [], remove = [] }) => {
+    remove.forEach(cls => element.classList.remove(cls))
+    add.forEach(cls => element.classList.add(cls))
+  }
+
+  const cleanupCache = async (jobId) => {
+    try {
+      const response = await fetch(`/loading/${jobId}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) {
+        console.error('Failed to cleanup cache')
+      }
+    } catch (error) {
+      console.error('Error cleaning up cache:', error)
+    }
+  }
+
+  const handleDownload = () => {
+    if (!state.downloadStarted) {
+      updateElement(state.elements.statusText(), { textContent: 'The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.'})
+      updateElement(state.elements.downloadFrame(), { src: state.config.downloadUrl })
+      state.downloadStarted = true
+    }
+    setTimeout(checkStatus, 2500)
+  }
+
+  const handleCompletion = async () => {
+    updateElement(state.elements.statusHeading(), { textContent: 'Processing complete'})
+    updateElement(state.elements.statusText(), { textContent: state.config.completedMessage })
+
+    const spinner = state.elements.spinner()
+    if (spinner) {
+      spinner.style.display = 'none'
+    }
+    
+    updateClasses(state.elements.container(), { remove: ['govuk-notification-banner--info'], add: ['govuk-notification-banner--success']})
+
+    await cleanupCache(state.config.jobId)
+
+    if (state.config.redirectUrl) {
+      setTimeout(() => window.location.href = state.config.redirectUrl, 250)
+    }
+  }
+
+  const showError = () => {
+    updateElement(state.elements.container(), { hidden: true })
+    updateElement(state.elements.errorMessage(), { hidden: false })
+  }
+
+  const handleStatus = async (data) => {
+    const statusHandlers = {
+      'download': handleDownload,
+      'completed': handleCompletion,
+      'failed': showError,
+      'default': () => setTimeout(checkStatus, 2500)
+    }
+
+    const handler = statusHandlers[data.status] || statusHandlers.default
+    await handler()
+  }
+
+  const checkStatus = async () => {
+    try {
+      const response = await fetch(state.config.checkUrl)
+      if (!response.ok) throw new Error('Status check failed')
+      const data = await response.json()
+      await handleStatus(data)
+    } catch (error) {
+      showError()
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', checkStatus)
+</script>
+{% endmacro %}
