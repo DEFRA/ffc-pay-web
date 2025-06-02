@@ -4,6 +4,7 @@ const schema = require('./schemas/closure')
 const bulkSchema = require('./schemas/bulk-closure')
 const { post } = require('../api')
 const { processClosureData } = require('../closure')
+const { MAX_BYTES, MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 
 const ROUTES = {
   BASE: '/closure',
@@ -18,10 +19,6 @@ const VIEWS = {
 
 const HTTP = {
   BAD_REQUEST: 400
-}
-
-const CONFIG = {
-  MAX_BYTES: 1048576
 }
 
 module.exports = [
@@ -118,16 +115,29 @@ module.exports = [
       validate: {
         payload: bulkSchema,
         failAction: async (request, h, error) => {
+          const crumb = request.payload?.crumb ?? request.state.crumb
+
           return h
-            .view(VIEWS.BULK, { errors: error })
+            .view(VIEWS.BULK, { errors: error, crumb })
             .code(HTTP.BAD_REQUEST)
             .takeover()
         }
       },
       payload: {
         output: 'file',
-        maxBytes: CONFIG.MAX_BYTES,
-        multipart: true
+        parse: true,
+        allow: 'multipart/form-data',
+        maxBytes: MAX_BYTES,
+        multipart: true,
+        failAction: async (request, h, error) => {
+          const crumb = request.payload?.crumb ?? request.state.crumb
+
+          return h
+            .view(VIEWS.BULK, { errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }] }, crumb })
+            .code(HTTP.BAD_REQUEST)
+            .takeover()
+        }
+
       }
     }
   }

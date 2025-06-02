@@ -3,7 +3,7 @@ const schema = require('./schemas/hold')
 const searchSchema = require('./schemas/hold-search')
 const bulkSchema = require('./schemas/bulk-hold')
 const HTTP_STATUS = require('../constants/http-status')
-const HOLDS_VIEWS = require('../constants/holds-views')
+const { MAX_BYTES } = require('../constants/payload-sizes')
 const { bulkFailAction } = require('../helpers/bulk-fail-action')
 const { post } = require('../api')
 const { holdAdmin } = require('../auth/permissions')
@@ -18,8 +18,11 @@ const ROUTES = {
   REMOVE: '/remove-payment-hold'
 }
 
-const CONFIG = {
-  MAX_BYTES: 1048576
+const VIEWS = {
+  HOLDS: 'payment-holds',
+  ADD: 'add-payment-hold',
+  BULK: 'payment-holds/bulk',
+  REMOVE: 'remove-payment-hold'
 }
 
 module.exports = [
@@ -32,7 +35,7 @@ module.exports = [
         const page = parseInt(request.query.page) || 1
         const perPage = parseInt(request.query.perPage || 100)
         const paymentHolds = await getHolds(page, perPage)
-        return h.view(HOLDS_VIEWS.HOLDS, {
+        return h.view(VIEWS.HOLDS, {
           paymentHolds,
           page,
           perPage,
@@ -51,7 +54,7 @@ module.exports = [
         failAction: async (request, h, error) => {
           const paymentHolds = await getHolds()
           return h
-            .view(HOLDS_VIEWS.HOLDS, {
+            .view(VIEWS.HOLDS, {
               paymentHolds,
               ...new ViewModel(searchLabelText, request.payload.frn, error)
             })
@@ -67,7 +70,7 @@ module.exports = [
         )
 
         if (filteredPaymentHolds.length) {
-          return h.view(HOLDS_VIEWS.HOLDS, {
+          return h.view(VIEWS.HOLDS, {
             paymentHolds: filteredPaymentHolds,
             ...new ViewModel(searchLabelText, frn)
           })
@@ -75,7 +78,7 @@ module.exports = [
 
         return h
           .view(
-            HOLDS_VIEWS.HOLDS,
+            VIEWS.HOLDS,
             new ViewModel(searchLabelText, frn, {
               message: 'No holds match the FRN provided.'
             })
@@ -91,7 +94,7 @@ module.exports = [
       auth: { scope: [holdAdmin] },
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view(HOLDS_VIEWS.ADD, { schemes, paymentHoldCategories })
+        return h.view(VIEWS.ADD, { schemes, paymentHoldCategories })
       }
     }
   },
@@ -102,7 +105,7 @@ module.exports = [
       auth: { scope: [holdAdmin] },
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view(HOLDS_VIEWS.BULK, { schemes, paymentHoldCategories })
+        return h.view(VIEWS.BULK, { schemes, paymentHoldCategories })
       }
     }
   },
@@ -116,7 +119,7 @@ module.exports = [
         failAction: async (request, h, error) => {
           const { schemes, paymentHoldCategories } = await getHoldCategories()
           return h
-            .view(HOLDS_VIEWS.ADD, {
+            .view(VIEWS.ADD, {
               schemes,
               paymentHoldCategories,
               errors: error,
@@ -160,7 +163,7 @@ module.exports = [
         output: 'file',
         parse: true,
         allow: 'multipart/form-data',
-        maxBytes: CONFIG.MAX_BYTES,
+        maxBytes: MAX_BYTES,
         multipart: true,
         failAction: async (request, h, error) => {
           return bulkFailAction(request, h, error)
