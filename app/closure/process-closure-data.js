@@ -1,4 +1,5 @@
 const parsedSchema = require('../routes/schemas/parsed-closure')
+
 const maxClosureDataLength = 3
 const processClosureData = async (data) => {
   const uploadData = []

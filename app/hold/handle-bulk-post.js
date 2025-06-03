@@ -1,4 +1,4 @@
-const { readFileContent } = require('./read-file-content')
+const { readFileContent } = require('../helpers/read-file-content')
 const { handleFileError } = require('./handle-error')
 const { processHoldData } = require('./process-hold-data')
 const { processUpload } = require('./process-upload')
