@@ -52,6 +52,9 @@ container:
   messageQueueHost: namespace.servicebus.windows.net
   dataTopicAddress: ffc-pay-data-request
   dataResponseQueueAddress: ffc-pay-data-request-response
+  redisHostname: redis-host-name
+  redisPort: 6379
+  redisPassword: redis
 
 ingress:
   class: nginx

@@ -1,33 +1,47 @@
 const { addDetailsToFilename } = require('../../../app/helpers/add-details-to-filename')
 
-describe('add detail to filename', () => {
-  test('should throw an error if filename does not end with .csv', () => {
-    expect(() => addDetailsToFilename('report.txt', 1, 2024, 1, 'Revenue', 1234567890))
-      .toThrow('An internal configuration error occurred - filename is not in expected format')
+describe('addDetailsToFilename', () => {
+  test('throws if filename does not end with .csv', () => {
+    expect(() => addDetailsToFilename('report.txt', {}))
+      .toThrow('Filename must end with .csv')
   })
 
-  test('should correctly add schemeId, year, prn, revenueOrCapital, and frn to the filename', () => {
-    const result = addDetailsToFilename('report.csv', 1, 2024, 1, 'Revenue', 1234567890)
-    expect(result).toBe('report_schemeId_1_year_2024_prn_1_revenueOrCapital_Revenue_frn_1234567890.csv')
+  test('uses startDate/endDate when both are present', () => {
+    const q = { startDate: '2024-01-01', endDate: '2024-02-01' }
+    expect(addDetailsToFilename('my.csv', q))
+      .toBe('my_from_2024-01-01_to_2024-02-01.csv')
   })
 
-  test('should correctly add schemeId, prn and year to the filename when revenueOrCapital and frn are not provided', () => {
-    const result = addDetailsToFilename('report.csv', 1, 2024, 1)
-    expect(result).toBe('report_schemeId_1_year_2024_prn_1.csv')
+  test('appends all numeric and string fields when no date range', () => {
+    const q = {
+      schemeId: 1,
+      year: 2024,
+      prn: 2,
+      revenueOrCapital: 'Revenue',
+      frn: 1234567890
+    }
+    expect(addDetailsToFilename('report.csv', q))
+      .toBe('report_schemeId_1_year_2024_Revenue_2_frn_1234567890.csv')
   })
 
-  test('should correctly add schemeId, year, prn, and revenueOrCapital to the filename when frn is not provided', () => {
-    const result = addDetailsToFilename('report.csv', 1, 2024, 1, 'Capital')
-    expect(result).toBe('report_schemeId_1_year_2024_prn_1_revenueOrCapital_Capital.csv')
+  test('defaults revenueOrCapital when blank or missing', () => {
+    const q1 = { schemeId: 1, year: 2024, prn: 3, frn: 555 }
+    expect(addDetailsToFilename('r.csv', q1))
+      .toBe('r_schemeId_1_year_2024_revenueOrCapital_3_frn_555.csv')
+
+    const q2 = { schemeId: 1, year: 2024, prn: 3, revenueOrCapital: '', frn: 2 }
+    expect(addDetailsToFilename('r.csv', q2))
+      .toBe('r_schemeId_1_year_2024_3_frn_2.csv')
   })
 
-  test('should correctly add schemeId, year, and frn to the filename when revenueOrCapital and prn is not provided', () => {
-    const result = addDetailsToFilename('report.csv', 1, 2024, null, null, 9876543210)
-    expect(result).toBe('report_schemeId_1_year_2024_frn_9876543210.csv')
+  test('omits prn and/or frn when they are null', () => {
+    const q = { schemeId: 42, year: 2025, revenueOrCapital: 'Cap' }
+    expect(addDetailsToFilename('f.csv', q))
+      .toBe('f_schemeId_42_year_2025_Cap.csv')
   })
 
-  test('should handle empty values for prn, revenueOrCapital and frn', () => {
-    const result = addDetailsToFilename('report.csv', 1, 2024, '', '', '')
-    expect(result).toBe('report_schemeId_1_year_2024.csv')
+  test('produces base name alone when no query fields given', () => {
+    expect(addDetailsToFilename('empty.csv', {}))
+      .toBe('empty_revenueOrCapital.csv')
   })
 })

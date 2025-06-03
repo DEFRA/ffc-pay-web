@@ -1,10 +1,9 @@
 jest.mock('../../../app/payments/get-data')
 const { getData: mockGetData } = require('../../../app/payments/get-data')
-
 const { DATA } = require('../../mocks/values/data')
-
 const { SCHEME_ID: SCHEME_ID_CATEGORY } = require('../../../app/constants/categories')
-const { SCHEME_VALUE } = require('../../../app/constants/scheme-value')
+
+const SCHEME_VALUE = 'default'
 
 const { getPaymentsByScheme } = require('../../../app/payments')
 

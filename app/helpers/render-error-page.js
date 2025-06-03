@@ -1,18 +1,22 @@
 const { getSchemes } = require('./get-schemes')
-const HTTP_BAD_REQUEST = 400
+const { BAD_REQUEST } = require('../constants/http-status')
 
-const renderErrorPage = async (view, request, h, err) => {
-  request.log(['error', 'validation'], err)
-  const errors = err.details
-    ? err.details.map(detail => {
-        return {
-          text: detail.message,
-          href: '#' + detail.path[0]
-        }
-      })
-    : []
+function mapValidationErrors (details = []) {
+  return details.map(({ message, path = [] }) => ({
+    text: message,
+    href: `#${path[0]}`
+  }))
+}
+
+async function renderErrorPage (viewName, request, h, error) {
+  request.log(['error', 'validation'], error)
+  const errors = mapValidationErrors(error.details)
   const schemes = await getSchemes()
-  return h.view(view, { schemes, errors }).code(HTTP_BAD_REQUEST).takeover()
+
+  return h
+    .view(viewName, { schemes, errors })
+    .code(BAD_REQUEST)
+    .takeover()
 }
 
 module.exports = {

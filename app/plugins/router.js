@@ -10,14 +10,19 @@ const routes = [].concat(
   require('../routes/schemes'),
   require('../routes/monitoring'),
   require('../routes/payment-requests'),
-  require('../routes/report'),
+  require('../routes/report-list/report'),
   require('../routes/dev-auth'),
   require('../routes/view-processed-payment-requests'),
   require('../routes/closure'),
   require('../routes/view-closures'),
   require('../routes/report-list'),
-  require('../routes/ap-ar-listing'),
-  require('../routes/ar-listing')
+  require('../routes/loading'),
+  require('../routes/report-list/ap-ar-report'),
+  require('../routes/report-list/report-generation'),
+  require('../routes/report-list/request-editor-report'),
+  require('../routes/report-list/payment-requests-report-v2'),
+  require('../routes/report-list/claim-level-report'),
+  require('../routes/report-list/transaction-summary-report')
 )
 
 module.exports = {
