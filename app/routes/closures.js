@@ -96,7 +96,7 @@ module.exports = [
         allow: 'multipart/form-data',
         maxBytes: MAX_BYTES,
         multipart: true,
-        failAction: async (request, h, error) => {
+        failAction: async (request, h, _error) => {
           const crumb = request.payload?.crumb ?? request.state.crumb
           return handleBulkClosureError(h, `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`, crumb)
         }
