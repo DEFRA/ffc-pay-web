@@ -1,11 +1,11 @@
 jest.mock('../../../../app/api')
 const { get } = require('../../../../app/api')
 jest.mock('../../../../app/auth')
-jest.mock('../../../../app/hold/read-file-content')
+jest.mock('../../../../app/helpers/read-file-content')
 const cheerio = require('cheerio')
 const { holdAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
-const { readFileContent } = require('../../../../app/hold/read-file-content')
+const { readFileContent } = require('../../../../app/helpers/read-file-content')
 const getCrumbs = require('../../../helpers/get-crumbs')
 jest.mock('../../../../app/helpers/set-loading-status')
 

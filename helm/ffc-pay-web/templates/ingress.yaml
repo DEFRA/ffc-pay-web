@@ -1,3 +1,7 @@
 {{- include "ffc-helm-library.azure-ingress" (list . "ffc-pay-web.ingress") -}}
 {{- define "ffc-pay-web.ingress" -}}
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "20M"
+    nginx.org/client-max-body-size: "4m"
 {{- end -}}

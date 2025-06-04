@@ -4,6 +4,8 @@ const searchSchema = require('./schemas/hold-search')
 const bulkSchema = require('./schemas/bulk-hold')
 const HTTP_STATUS = require('../constants/http-status')
 const HOLDS_VIEWS = require('../constants/holds-views')
+const HOLDS_ROUTES = require('../constants/holds-routes')
+const { MAX_BYTES } = require('../constants/payload-sizes')
 const { bulkFailAction } = require('../helpers/bulk-fail-action')
 const { post } = require('../api')
 const { holdAdmin } = require('../auth/permissions')
@@ -11,21 +13,10 @@ const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost } = require('../hold')
 const searchLabelText = 'Search for a hold by FRN number'
 
-const ROUTES = {
-  HOLDS: '/payment-holds',
-  ADD: '/add-payment-hold',
-  BULK: '/payment-holds/bulk',
-  REMOVE: '/remove-payment-hold'
-}
-
-const CONFIG = {
-  MAX_BYTES: 1048576
-}
-
 module.exports = [
   {
     method: 'GET',
-    path: ROUTES.HOLDS,
+    path: HOLDS_ROUTES.HOLDS,
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (request, h) => {
@@ -43,7 +34,7 @@ module.exports = [
   },
   {
     method: 'POST',
-    path: ROUTES.HOLDS,
+    path: HOLDS_ROUTES.HOLDS,
     options: {
       auth: { scope: [holdAdmin] },
       validate: {
@@ -86,7 +77,7 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: ROUTES.ADD,
+    path: HOLDS_ROUTES.ADD,
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (_request, h) => {
@@ -97,7 +88,7 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: ROUTES.BULK,
+    path: HOLDS_ROUTES.BULK,
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (_request, h) => {
@@ -108,7 +99,7 @@ module.exports = [
   },
   {
     method: 'POST',
-    path: ROUTES.ADD,
+    path: HOLDS_ROUTES.ADD,
     options: {
       auth: { scope: [holdAdmin] },
       validate: {
@@ -128,31 +119,31 @@ module.exports = [
       },
       handler: async (request, h) => {
         await post(
-          ROUTES.ADD,
+          HOLDS_ROUTES.ADD,
           {
             holdCategoryId: request.payload.holdCategoryId,
             frn: request.payload.frn
           },
           null
         )
-        return h.redirect(ROUTES.HOLDS)
+        return h.redirect(HOLDS_ROUTES.HOLDS)
       }
     }
   },
   {
     method: 'POST',
-    path: ROUTES.REMOVE,
+    path: HOLDS_ROUTES.REMOVE,
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (request, h) => {
-        await post(ROUTES.REMOVE, { holdId: request.payload.holdId })
+        await post(HOLDS_ROUTES.REMOVE, { holdId: request.payload.holdId })
         return h.redirect('/')
       }
     }
   },
   {
     method: 'POST',
-    path: ROUTES.BULK,
+    path: HOLDS_ROUTES.BULK,
     handler: handleBulkPost,
     options: {
       auth: { scope: [holdAdmin] },
@@ -160,7 +151,7 @@ module.exports = [
         output: 'file',
         parse: true,
         allow: 'multipart/form-data',
-        maxBytes: CONFIG.MAX_BYTES,
+        maxBytes: MAX_BYTES,
         multipart: true,
         failAction: async (request, h, error) => {
           return bulkFailAction(request, h, error)

@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { readFileContent } = require('../../../app/hold/read-file-content')
+const { readFileContent } = require('../../../app/helpers/read-file-content')
 
 jest.mock('fs')
 
