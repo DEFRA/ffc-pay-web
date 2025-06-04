@@ -13,7 +13,7 @@ const routes = [].concat(
   require('../routes/report-list/report'),
   require('../routes/dev-auth'),
   require('../routes/view-processed-payment-requests'),
-  require('../routes/closure'),
+  require('../routes/closures'),
   require('../routes/view-closures'),
   require('../routes/report-list'),
   require('../routes/loading'),

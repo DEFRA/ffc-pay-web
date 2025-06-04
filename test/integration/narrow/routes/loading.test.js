@@ -75,6 +75,42 @@ describe('Loading routes', () => {
       })
       expect(get).toHaveBeenCalledWith(expect.anything(), jobId)
     })
+
+    test('returns status from cache if present', async () => {
+      get.mockResolvedValue({ status: 'download' })
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/loading/test-job'
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(JSON.parse(res.payload)).toEqual({ status: 'download' })
+    })
+
+    test('returns not-found if cache entry is missing', async () => {
+      get.mockResolvedValue(null)
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/loading/missing-job'
+      })
+
+      expect(res.statusCode).toBe(404)
+      expect(JSON.parse(res.payload)).toEqual({ status: 'not-found' })
+    })
+
+    test('returns failed on cache error', async () => {
+      get.mockRejectedValue(new Error('Redis error'))
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/loading/error-job'
+      })
+
+      expect(res.statusCode).toBe(500)
+      expect(JSON.parse(res.payload)).toEqual({ status: 'failed' })
+    })
   })
 
   describe('DELETE /loading/{jobId}', () => {
