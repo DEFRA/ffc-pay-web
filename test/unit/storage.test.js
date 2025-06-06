@@ -126,4 +126,18 @@ describe('BlobServiceClient initialization', () => {
       })
     )
   })
+
+  test('getDataRequestFile calls blob.delete even if blob.download throws an error', async () => {
+    const filename = 'errorfile.json'
+    const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    mockBlob.getProperties.mockResolvedValue({ contentLength: 123 })
+    mockBlob.download.mockRejectedValue(new Error('Download failed'))
+
+    await expect(storage.getDataRequestFile(filename)).rejects.toThrow('Download failed')
+
+    expect(mockBlob.delete).toHaveBeenCalled()
+
+    mockConsoleError.mockRestore()
+  })
 })

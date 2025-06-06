@@ -44,17 +44,20 @@ const getSuppressedReport = async () => {
 const getDataRequestFile = async (filename) => {
   containersInitialised ?? await initialiseContainers()
   const blob = await dataRequestContainer.getBlockBlobClient(filename)
-  const properties = await blob.getProperties()
 
-  if (properties.contentLength <= EMPTY_CONTENT_LENGTH) {
-    console.warn(`File ${filename} is empty.`)
+  try {
+    const properties = await blob.getProperties()
+
+    if (properties.contentLength <= EMPTY_CONTENT_LENGTH) {
+      console.warn(`File ${filename} is empty.`)
+      throw new Error('No data was found for the selected report criteria. Please review your filters, such as date range or report type, and try again.')
+    }
+
+    const downloadResponse = await blob.download()
+    return downloadResponse
+  } finally {
     await blob.delete()
-    throw new Error('No data was found for the selected report criteria. Please review your filters, such as date range or report type, and try again.')
   }
-
-  const downloadResponse = await blob.download()
-  await blob.delete()
-  return downloadResponse
 }
 
 module.exports = {
