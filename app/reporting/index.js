@@ -21,9 +21,9 @@ const generateReport = async (filename, reportType, onComplete) => {
       .pipe(createTransformStream(csvFields, onComplete))
       .pipe(csvStream)
   } catch (error) {
-    console.error(`Error generating report for ${reportType} with filename ${filename}:`, error)
+    console.error(`Error generating report for ${reportType} with filename ${filename}:`)
     onComplete(error.message)
-    throw error
+    return null
   }
 }
 
