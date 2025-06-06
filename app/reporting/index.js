@@ -22,7 +22,7 @@ const generateReport = async (filename, reportType, onComplete) => {
       .pipe(csvStream)
   } catch (error) {
     console.error(`Error generating report for ${reportType} with filename ${filename}:`, error)
-    onComplete(true, error.message)
+    onComplete(error.message)
     throw error
   }
 }

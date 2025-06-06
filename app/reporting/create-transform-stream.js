@@ -30,7 +30,7 @@ const createTransformStream = (fields, onComplete) => {
 
       console.debug(`Finished processing ${processedRowCount} rows in ${minutes}m ${seconds}s`)
 
-      await onComplete(processedRowCount)
+      await onComplete()
       callback()
     }
   })
