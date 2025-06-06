@@ -19,10 +19,10 @@ const createGetLoadingStatusRoute = () => ({
           return h.response({ status: 'not-found' }).code(HTTP_STATUS.NOT_FOUND)
         }
 
-        return h.response({ status: result.status }).code(HTTP_STATUS.SUCCESS)
+        return h.response({ status: result.status, ...(result.message != null && { message: result.message }) }).code(HTTP_STATUS.SUCCESS)
       } catch (err) {
         console.error(`Error getting ${jobId} from cache:`, err)
-        return h.response({ status: 'failed' }).code(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+        return h.response({ status: 'failed', message: err.message }).code(HTTP_STATUS.INTERNAL_SERVER_ERROR)
       }
     }
   }
