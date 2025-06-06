@@ -29,7 +29,8 @@ const createTransformStream = (fields, onComplete) => {
       const seconds = ((elapsedTime % MILLISECONDS_PER_MINUTE) / MILLISECONDS_PER_SECOND).toFixed(1)
 
       console.debug(`Finished processing ${processedRowCount} rows in ${minutes}m ${seconds}s`)
-      await onComplete()
+
+      await onComplete(processedRowCount)
       callback()
     }
   })

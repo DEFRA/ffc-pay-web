@@ -21,8 +21,15 @@ const createDownloadRoute = () => ({
 
       const { reportType, returnedFilename, reportFilename } = result
 
-      const setStatusCallback = () => {
-        setReportStatus(request, jobId, {
+      const setStatusCallback = (error = false, errorMessage = null) => {
+        if (error) {
+          return setReportStatus(request, jobId, {
+            status: 'failed',
+            message: errorMessage || 'An error occurred while generating the report.'
+          })
+        }
+
+        return setReportStatus(request, jobId, {
           status: 'completed'
         })
       }

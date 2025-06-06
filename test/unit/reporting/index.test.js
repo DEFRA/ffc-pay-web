@@ -44,7 +44,7 @@ describe('generateReport', () => {
 
   test('returns null and warns if fileData has no readableStreamBody', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    getDataRequestFile.mockResolvedValue({})
+    getDataRequestFile.mockResolvedValue({}) // Simulate missing readableStreamBody
     const result = await generateReport('filename', 'AP', onComplete)
     expect(console.warn).toHaveBeenCalledWith(
       expect.stringContaining('No data available for report type: AP with filename: filename')
