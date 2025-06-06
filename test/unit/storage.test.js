@@ -2,7 +2,8 @@ const mockBlobContent = { test: 'test' }
 const mockBlob = {
   download: jest.fn().mockResolvedValue(mockBlobContent),
   downloadToBuffer: jest.fn().mockResolvedValue(Buffer.from(JSON.stringify(mockBlobContent))),
-  delete: jest.fn().mockResolvedValue()
+  delete: jest.fn().mockResolvedValue(),
+  getProperties: jest.fn().mockResolvedValue({ contentLength: 123 }) // Mock getProperties
 }
 const mockGetContainerClient = jest.fn()
 const mockContainer = {
@@ -39,6 +40,19 @@ describe('storage', () => {
     expect(result).toStrictEqual(mockBlobContent)
     expect(mockBlob.download).toHaveBeenCalled()
     expect(mockBlob.delete).toHaveBeenCalled()
+  })
+
+  test('getDataRequestFile throws error and logs warning when file is empty', async () => {
+    const filename = 'emptyfile.json'
+    const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    mockBlob.getProperties.mockResolvedValue({ contentLength: 5 }) // Simulate empty file
+
+    await expect(storage.getDataRequestFile(filename)).rejects.toThrow(
+      'No data was found for the selected report criteria. Please review your filters, such as date range or report type, and try again.'
+    )
+    expect(mockConsoleWarn).toHaveBeenCalledWith(`File ${filename} is empty.`)
+    expect(mockBlob.delete).toHaveBeenCalled()
+    mockConsoleWarn.mockRestore()
   })
 })
 
@@ -111,5 +125,19 @@ describe('BlobServiceClient initialization', () => {
         options: { managedIdentityClientId: config.managedIdentityClientId }
       })
     )
+  })
+
+  test('getDataRequestFile calls blob.delete even if blob.download throws an error', async () => {
+    const filename = 'errorfile.json'
+    const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    mockBlob.getProperties.mockResolvedValue({ contentLength: 123 })
+    mockBlob.download.mockRejectedValue(new Error('Download failed'))
+
+    await expect(storage.getDataRequestFile(filename)).rejects.toThrow('Download failed')
+
+    expect(mockBlob.delete).toHaveBeenCalled()
+
+    mockConsoleError.mockRestore()
   })
 })

@@ -31,7 +31,7 @@
       There was a problem
     </h2>
     <div class="govuk-error-summary__body">
-      <p class="govuk-body">{{ errorMessage }} Please try again later or contact the Payments & Documents Services team.</p>
+      <p id="error-message-text" class="govuk-body">{{ errorMessage }} Please try again later or contact the Payments & Documents Services team.</p>
     </div>
   </div>
 
@@ -54,7 +54,8 @@
       statusHeading: () => document.getElementById('progress-status-heading'),
       spinner: () => document.querySelector('.govuk-spinner'),
       downloadFrame: () => document.getElementById('download-frame'),
-      errorMessage: () => document.getElementById('error-message')
+      errorMessage: () => document.getElementById('error-message'),
+      errorMessageText: () => document.getElementById('error-message-text')
     }
   }
 
@@ -109,16 +110,20 @@
     }
   }
 
-  const showError = () => {
+  const showError = (data) => {
     updateElement(state.elements.container(), { hidden: true })
     updateElement(state.elements.errorMessage(), { hidden: false })
+
+    if(data.message) {
+      updateElement(state.elements.errorMessageText(), { textContent: data.message })
+    }
   }
 
   const handleStatus = async (data) => {
     const statusHandlers = {
       'download': handleDownload,
       'completed': handleCompletion,
-      'failed': showError,
+      'failed': () => showError(data),
       'default': () => setTimeout(checkStatus, 2500)
     }
 

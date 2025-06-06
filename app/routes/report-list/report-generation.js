@@ -1,7 +1,7 @@
 const { get } = require('../../cache')
 const { generateReport } = require('../../reporting')
+const { setStatusCallback } = require('../../reporting/set-status-callback')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
-const setReportStatus = require('../../helpers/set-report-status')
 
 const HTTP_STATUS = require('../../constants/http-status')
 const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
@@ -21,13 +21,12 @@ const createDownloadRoute = () => ({
 
       const { reportType, returnedFilename, reportFilename } = result
 
-      const setStatusCallback = () => {
-        setReportStatus(request, jobId, {
-          status: 'completed'
-        })
-      }
+      const callback = setStatusCallback(request, jobId)
+      const responseStream = await generateReport(returnedFilename, reportType, callback)
 
-      const responseStream = await generateReport(returnedFilename, reportType, setStatusCallback)
+      if (!responseStream) {
+        return h.response('Report generation failed').code(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+      }
 
       console.debug(`Writing response stream to ${reportFilename}.`)
 

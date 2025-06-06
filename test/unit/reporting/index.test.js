@@ -74,4 +74,21 @@ describe('generateReport', () => {
     expect(format).toHaveBeenCalledWith({ headers: true })
     expect(result).toBe(dummyCSVStream)
   })
+
+  test('calls onComplete with error message and returns null if an error occurs', async () => {
+    const errorMessage = 'Test error'
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {}) // Mock console.error
+
+    getDataRequestFile.mockRejectedValue(new Error(errorMessage))
+
+    const result = await generateReport('file.csv', 'AP', onComplete)
+
+    expect(onComplete).toHaveBeenCalledWith(errorMessage)
+    expect(result).toBeNull()
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining('Error generating report for AP with filename file.csv:')
+    )
+
+    consoleErrorSpy.mockRestore() // Restore console.error after the test
+  })
 })

@@ -62,7 +62,8 @@ describe('Loading routes', () => {
     })
 
     test('returns error when get fails', async () => {
-      get.mockRejectedValue(new Error('Cache error'))
+      const ERROR_MESSAGE = 'Cache error'
+      get.mockRejectedValue(new Error(ERROR_MESSAGE))
 
       const res = await server.inject({
         method: 'GET',
@@ -71,7 +72,8 @@ describe('Loading routes', () => {
 
       expect(res.statusCode).toBe(500)
       expect(JSON.parse(res.payload)).toEqual({
-        status: 'failed'
+        status: 'failed',
+        message: ERROR_MESSAGE
       })
       expect(get).toHaveBeenCalledWith(expect.anything(), jobId)
     })
@@ -101,7 +103,9 @@ describe('Loading routes', () => {
     })
 
     test('returns failed on cache error', async () => {
-      get.mockRejectedValue(new Error('Redis error'))
+      const ERROR_MESSAGE = 'Redis error'
+
+      get.mockRejectedValue(new Error(ERROR_MESSAGE))
 
       const res = await server.inject({
         method: 'GET',
@@ -109,7 +113,7 @@ describe('Loading routes', () => {
       })
 
       expect(res.statusCode).toBe(500)
-      expect(JSON.parse(res.payload)).toEqual({ status: 'failed' })
+      expect(JSON.parse(res.payload)).toEqual({ status: 'failed', message: ERROR_MESSAGE })
     })
   })
 
@@ -129,7 +133,8 @@ describe('Loading routes', () => {
     })
 
     test('returns error when drop fails', async () => {
-      drop.mockRejectedValue(new Error('Cache error'))
+      const ERROR_MESSAGE = 'Cache error'
+      drop.mockRejectedValue(new Error(ERROR_MESSAGE))
 
       const res = await server.inject({
         method: 'DELETE',
@@ -138,7 +143,7 @@ describe('Loading routes', () => {
 
       expect(res.statusCode).toBe(500)
       expect(JSON.parse(res.payload)).toEqual({
-        status: 'failed'
+        status: 'failed' // Fix: Remove "message" if it is not part of the actual response
       })
       expect(drop).toHaveBeenCalledWith(expect.anything(), jobId)
     })
