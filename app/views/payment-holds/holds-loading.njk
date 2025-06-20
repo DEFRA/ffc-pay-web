@@ -1,0 +1,30 @@
+{% extends "_layout.njk" %}
+{% from "macros/loading.njk" import renderLoadingPage %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block content %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Payment holds",
+      href: "/payment-holds"
+    },
+    { 
+      text: "Bulk upload", 
+      href: "#", 
+      attributes: { 'aria-disabled': 'true', 'class': 'govuk-breadcrumbs__link--disabled' } 
+    }]
+  })}}
+
+  {{ renderLoadingPage(
+    jobId=jobId,
+    checkUrl="/loading/" + jobId,
+    redirectUrl="/payment-holds",
+    title="Processing bulk upload",
+    statusMessage="We're processing your payment holds. This can take a few minutes for large files.",
+    completedMessage="Your payment holds have been successfully processed. You will be redirected to the payment holds page.",
+    errorMessage="We were unable to process your payment holds. Please try again."
+  ) }}
+{% endblock %}

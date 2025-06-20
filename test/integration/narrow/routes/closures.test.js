@@ -1,7 +1,9 @@
 jest.mock('../../../../app/api')
 jest.mock('../../../../app/auth')
 const cheerio = require('cheerio')
+const fs = require('fs')
 const { closureAdmin } = require('../../../../app/auth/permissions')
+const { MAX_BYTES, MAX_MEGA_BYTES } = require('../../../../app/constants/payload-sizes')
 const createServer = require('../../../../app/server')
 const { FRN } = require('../../../mocks/values/frn')
 const { AGREEMENT_NUMBER } = require('../../../mocks/values/agreement-number')
@@ -167,6 +169,46 @@ describe('Closures', () => {
       })
 
       expect(res.statusCode).toBe(403)
+    })
+  })
+
+  describe('POST /closure/bulk', () => {
+    const method = 'POST'
+    const url = '/closure/bulk'
+    const pageH1 = 'Bulk agreement closure'
+
+    test('returns 400 and error message when file size exceeds maximum bytes (413 error)', async () => {
+      const mockForCrumbs = () => mockGetClosures()
+      const { cookieCrumb, viewCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
+
+      // Create a payload with a file larger than MAX_BYTES (1MB)
+      const largeFileContent = Buffer.alloc(MAX_BYTES + 1).fill('a') // 1MB + 1 byte
+      const payload = {
+        file: {
+          path: '/tmp/large-file.csv',
+          bytes: largeFileContent.length,
+          filename: 'large-file.csv'
+        },
+        crumb: viewCrumb
+      }
+
+      // Mock file system read
+      jest.spyOn(fs, 'readFileSync').mockReturnValue(largeFileContent.toString())
+
+      const res = await server.inject({
+        method,
+        url,
+        auth,
+        payload,
+        headers: { cookie: `crumb=${cookieCrumb}` }
+      })
+
+      expect(res.statusCode).toBe(400)
+      const $ = cheerio.load(res.payload)
+      expect($('h1').text()).toEqual(pageH1)
+      expect($('.govuk-error-summary__title').text()).toMatch('There is a problem')
+      const errorMessage = $('.govuk-error-message')
+      expect(errorMessage.text()).toMatch(`Error: The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`)
     })
   })
 })

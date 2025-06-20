@@ -1,27 +1,32 @@
-const addDetailsToFilename = (reportName, schemeId, year, prn, revenueOrCapital, frn) => {
+const startIndex = 0
+const fileTypeIndex = -4
+
+const addDetailsToFilename = (reportName, query) => {
   if (!reportName.endsWith('.csv')) {
-    throw new Error('An internal configuration error occurred - filename is not in expected format')
+    throw new Error('Filename must end with .csv')
   }
 
-  const csvIndex = reportName.lastIndexOf('.csv')
+  const baseName = reportName.slice(startIndex, fileTypeIndex) // removes .csv
+  const { schemeId, year, prn, revenueOrCapital, frn, startDate, endDate } = query
 
-  const baseName = reportName.slice(0, csvIndex)
-
-  let newReportName = `${baseName}_schemeId_${schemeId}_year_${year}`
-
-  if (prn) {
-    newReportName += `_prn_${prn}`
+  if (startDate && endDate) {
+    return `${baseName}_from_${startDate}_to_${endDate}.csv`
   }
 
-  if (revenueOrCapital) {
-    newReportName += `_revenueOrCapital_${revenueOrCapital}`
-  }
+  const parts = [
+    schemeId && `schemeId_${schemeId}`,
+    year && `year_${year}`,
+    formatRevenueOrCapital(revenueOrCapital),
+    prn || null,
+    frn && `frn_${frn}`
+  ].filter(Boolean)
 
-  if (frn) {
-    newReportName += `_frn_${frn}`
-  }
+  const suffix = parts.length ? `_${parts.join('_')}` : ''
+  return `${baseName}${suffix}.csv`
+}
 
-  return (newReportName + '.csv')
+const formatRevenueOrCapital = (value) => {
+  return value?.trim() ?? 'revenueOrCapital'
 }
 
 module.exports = {

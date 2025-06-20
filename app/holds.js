@@ -12,18 +12,16 @@ const getHolds = async (page = 1, pageSize = 100, usePagination = true) => {
     if (x.holdCategorySchemeName === 'SFI') {
       x.holdCategorySchemeName = 'SFI22'
     }
-    if (!x.marketingYear) {
-      x.marketingYear = 'All'
-      x.canBeRemoved = true
-    }
-    if (!x.agreementNumber) {
-      x.agreementNumber = 'All'
-      x.canBeRemoved = true
-    }
-    if (!x.contractNumber) {
-      x.contractNumber = 'All'
-      x.canBeRemoved = true
-    }
+
+    const fieldsToFormat = ['marketingYear', 'agreementNumber', 'contractNumber']
+    fieldsToFormat.forEach(field => {
+      if (!x[field]) {
+        x[field] = 'All'
+        if (x.holdCategorySchemeName !== 'BPS' || field === 'marketingYear') {
+          x.canBeRemoved = true
+        }
+      }
+    })
     return x
   })
 }

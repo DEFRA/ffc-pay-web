@@ -2,44 +2,28 @@ const ViewModel = require('./models/search')
 const schema = require('./schemas/hold')
 const searchSchema = require('./schemas/hold-search')
 const bulkSchema = require('./schemas/bulk-hold')
+const HTTP_STATUS = require('../constants/http-status')
+const HOLDS_VIEWS = require('../constants/holds-views')
+const HOLDS_ROUTES = require('../constants/holds-routes')
+const { MAX_BYTES } = require('../constants/payload-sizes')
+const { bulkFailAction } = require('../helpers/bulk-fail-action')
 const { post } = require('../api')
 const { holdAdmin } = require('../auth/permissions')
 const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost } = require('../hold')
 const searchLabelText = 'Search for a hold by FRN number'
-const ROUTES = {
-  HOLDS: '/payment-holds',
-  ADD: '/add-payment-hold',
-  BULK: '/payment-holds/bulk',
-  REMOVE: '/remove-payment-hold'
-}
-
-const VIEWS = {
-  HOLDS: 'payment-holds',
-  ADD: 'add-payment-hold',
-  BULK: 'payment-holds/bulk',
-  REMOVE: 'remove-payment-hold'
-}
-
-const HTTP = {
-  BAD_REQUEST: 400
-}
-
-const CONFIG = {
-  MAX_BYTES: 1048576
-}
 
 module.exports = [
   {
     method: 'GET',
-    path: ROUTES.HOLDS,
+    path: HOLDS_ROUTES.HOLDS,
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (request, h) => {
         const page = parseInt(request.query.page) || 1
         const perPage = parseInt(request.query.perPage || 100)
         const paymentHolds = await getHolds(page, perPage)
-        return h.view(VIEWS.HOLDS, {
+        return h.view(HOLDS_VIEWS.HOLDS, {
           paymentHolds,
           page,
           perPage,
@@ -50,7 +34,7 @@ module.exports = [
   },
   {
     method: 'POST',
-    path: ROUTES.HOLDS,
+    path: HOLDS_ROUTES.HOLDS,
     options: {
       auth: { scope: [holdAdmin] },
       validate: {
@@ -58,11 +42,11 @@ module.exports = [
         failAction: async (request, h, error) => {
           const paymentHolds = await getHolds()
           return h
-            .view(VIEWS.HOLDS, {
+            .view(HOLDS_VIEWS.HOLDS, {
               paymentHolds,
               ...new ViewModel(searchLabelText, request.payload.frn, error)
             })
-            .code(HTTP.BAD_REQUEST)
+            .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
         }
       },
@@ -74,7 +58,7 @@ module.exports = [
         )
 
         if (filteredPaymentHolds.length) {
-          return h.view(VIEWS.HOLDS, {
+          return h.view(HOLDS_VIEWS.HOLDS, {
             paymentHolds: filteredPaymentHolds,
             ...new ViewModel(searchLabelText, frn)
           })
@@ -82,40 +66,40 @@ module.exports = [
 
         return h
           .view(
-            VIEWS.HOLDS,
+            HOLDS_VIEWS.HOLDS,
             new ViewModel(searchLabelText, frn, {
               message: 'No holds match the FRN provided.'
             })
           )
-          .code(HTTP.BAD_REQUEST)
+          .code(HTTP_STATUS.BAD_REQUEST)
       }
     }
   },
   {
     method: 'GET',
-    path: ROUTES.ADD,
+    path: HOLDS_ROUTES.ADD,
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view(VIEWS.ADD, { schemes, paymentHoldCategories })
+        return h.view(HOLDS_VIEWS.ADD, { schemes, paymentHoldCategories })
       }
     }
   },
   {
     method: 'GET',
-    path: ROUTES.BULK,
+    path: HOLDS_ROUTES.BULK,
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view(VIEWS.BULK, { schemes, paymentHoldCategories })
+        return h.view(HOLDS_VIEWS.BULK, { schemes, paymentHoldCategories })
       }
     }
   },
   {
     method: 'POST',
-    path: ROUTES.ADD,
+    path: HOLDS_ROUTES.ADD,
     options: {
       auth: { scope: [holdAdmin] },
       validate: {
@@ -123,60 +107,61 @@ module.exports = [
         failAction: async (request, h, error) => {
           const { schemes, paymentHoldCategories } = await getHoldCategories()
           return h
-            .view(VIEWS.ADD, {
+            .view(HOLDS_VIEWS.ADD, {
               schemes,
               paymentHoldCategories,
               errors: error,
               frn: request.payload.frn
             })
-            .code(HTTP.BAD_REQUEST)
+            .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
         }
       },
       handler: async (request, h) => {
         await post(
-          ROUTES.ADD,
+          HOLDS_ROUTES.ADD,
           {
             holdCategoryId: request.payload.holdCategoryId,
             frn: request.payload.frn
           },
           null
         )
-        return h.redirect(ROUTES.HOLDS)
+        return h.redirect(HOLDS_ROUTES.HOLDS)
       }
     }
   },
   {
     method: 'POST',
-    path: ROUTES.REMOVE,
+    path: HOLDS_ROUTES.REMOVE,
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (request, h) => {
-        await post(ROUTES.REMOVE, { holdId: request.payload.holdId })
+        await post(HOLDS_ROUTES.REMOVE, { holdId: request.payload.holdId })
         return h.redirect('/')
       }
     }
   },
   {
     method: 'POST',
-    path: ROUTES.BULK,
+    path: HOLDS_ROUTES.BULK,
     handler: handleBulkPost,
     options: {
       auth: { scope: [holdAdmin] },
+      payload: {
+        output: 'file',
+        parse: true,
+        allow: 'multipart/form-data',
+        maxBytes: MAX_BYTES,
+        multipart: true,
+        failAction: async (request, h, error) => {
+          return bulkFailAction(request, h, error)
+        }
+      },
       validate: {
         payload: bulkSchema,
         failAction: async (request, h, error) => {
-          const { schemes, paymentHoldCategories } = await getHoldCategories()
-          return h
-            .view(VIEWS.BULK, { schemes, paymentHoldCategories, errors: error })
-            .code(HTTP.BAD_REQUEST)
-            .takeover()
+          return bulkFailAction(request, h, error)
         }
-      },
-      payload: {
-        output: 'file',
-        maxBytes: CONFIG.MAX_BYTES,
-        multipart: true
       }
     }
   }

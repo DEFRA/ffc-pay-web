@@ -4,8 +4,16 @@ const { getReportTypes } = require('../../../app/helpers/get-report-types')
 jest.mock('../../../app/config')
 
 describe('getReportTypes', () => {
+  let consoleSpy
+
   beforeEach(() => {
+    consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
     jest.resetModules()
+  })
+
+  afterEach(() => {
+    consoleSpy.mockRestore()
+    delete process.env.LEGACY_REPORTS_ACTIVE
   })
 
   test('should return all report types when legacyReportsActive is true', () => {
@@ -18,7 +26,7 @@ describe('getReportTypes', () => {
       'Payment request statuses v2': 'payment-requests-v2',
       'Combined transaction report': 'transaction-summary',
       'Suppressed payment requests': 'suppressed-payments',
-      'AP-AR listing report': 'ap-ar-listing',
+      'AP-AR listing report': 'ap-ar-report',
       Holds: 'holds',
       'Request Editor report': 'request-editor-report',
       'Claim level report': 'claim-level-report'
@@ -35,5 +43,19 @@ describe('getReportTypes', () => {
       'Suppressed payment requests': 'suppressed-payments',
       Holds: 'holds'
     })
+  })
+
+  test('logs "Legacy reports are active in this environment." when LEGACY_REPORTS_ACTIVE is set', () => {
+    process.env.LEGACY_REPORTS_ACTIVE = 'true'
+    config.legacyReportsActive = true
+    getReportTypes()
+    expect(consoleSpy).toHaveBeenCalledWith('Legacy reports are active in this environment.')
+  })
+
+  test('logs "Legacy reports are not active in this environment." when LEGACY_REPORTS_ACTIVE is not set', () => {
+    delete process.env.LEGACY_REPORTS_ACTIVE
+    config.legacyReportsActive = false
+    getReportTypes()
+    expect(consoleSpy).toHaveBeenCalledWith('Legacy reports are not active in this environment.')
   })
 })

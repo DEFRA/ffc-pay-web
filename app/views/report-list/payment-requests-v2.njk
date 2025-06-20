@@ -1,0 +1,16 @@
+{% extends 'report-list/base-report.njk' %}
+{% from 'macros/report-form-fields.njk' import reportPageTitle, schemeSelect, yearInput, revenueOrCapitalSelect, frnInput, submitButton, prnInput %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% set reportTitle = 'Payment Request Statuses Report' %}
+{% set reportUrl = '/report-list/payment-requests-v2' %}
+{% set formAction = '/report-list/payment-requests-v2/download' %}
+
+{% block reportContent %}
+    {{ reportPageTitle(reportTitle) }}
+    {{ schemeSelect(schemes, selectedSchemeId) }}
+    {{ yearInput(year) }}
+    {{ prnInput(prn) }}
+    {{ revenueOrCapitalSelect(revenueOrCapital) }}
+    {{ frnInput(frn) }}
+{% endblock %}

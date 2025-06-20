@@ -134,4 +134,74 @@ describe('Get holds', () => {
 
     expect(result).toEqual([])
   })
+
+  test('Should not set canBeRemoved if holdCategorySchemeName is "BPS" and field is not "marketingYear"', async () => {
+    const hold = {
+      dateTimeClosed: null,
+      dateTimeAdded: '2024-08-19T12:34:56Z',
+      holdCategorySchemeName: 'BPS',
+      marketingYear: '2024',
+      agreementNumber: null,
+      contractNumber: null
+    }
+    mockGetPaymentHolds([hold])
+
+    const result = await getHolds()
+    expect(result[0].canBeRemoved).toBeUndefined()
+    expect(result[0].agreementNumber).toBe('All')
+    expect(result[0].contractNumber).toBe('All')
+  })
+
+  test('Should set canBeRemoved if holdCategorySchemeName is not "BPS" and agreementNumber is missing', async () => {
+    const hold = {
+      dateTimeClosed: null,
+      dateTimeAdded: '2024-08-19T12:34:56Z',
+      holdCategorySchemeName: 'LNR',
+      marketingYear: '2024',
+      agreementNumber: null,
+      contractNumber: '123'
+    }
+    mockGetPaymentHolds([hold])
+
+    const result = await getHolds()
+    expect(result[0].canBeRemoved).toBe(true)
+    expect(result[0].agreementNumber).toBe('All')
+  })
+
+  test('Should set canBeRemoved if marketingYear is missing, regardless of scheme', async () => {
+    const hold = {
+      dateTimeClosed: null,
+      dateTimeAdded: '2024-08-19T12:34:56Z',
+      holdCategorySchemeName: 'BPS',
+      marketingYear: null,
+      agreementNumber: 'A1',
+      contractNumber: 'C1'
+    }
+    mockGetPaymentHolds([hold])
+
+    const result = await getHolds()
+    expect(result[0].canBeRemoved).toBe(true)
+    expect(result[0].marketingYear).toBe('All')
+  })
+
+  test('Should handle missing fields gracefully', async () => {
+    const hold = {
+      dateTimeClosed: null,
+      dateTimeAdded: '2024-08-19T12:34:56Z',
+      holdCategorySchemeName: 'SFI'
+    }
+    mockGetPaymentHolds([hold])
+
+    const result = await getHolds()
+    expect(result[0].marketingYear).toBe('All')
+    expect(result[0].agreementNumber).toBe('All')
+    expect(result[0].contractNumber).toBe('All')
+    expect(result[0].canBeRemoved).toBe(true)
+  })
+
+  test('Should handle undefined paymentHolds gracefully', async () => {
+    get.mockResolvedValue({ payload: {} })
+    const result = await getHolds()
+    expect(result).toBeUndefined()
+  })
 })
