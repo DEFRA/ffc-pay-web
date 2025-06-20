@@ -26,7 +26,7 @@ const handleBulkPost = async (request, h) => {
             return setLoadingStatus(request, jobId, {
               status: 'failed',
               message: errors._original?.frn
-                ? `There was a problem validating your uploaded data. ${errors.details.map(detail => detail.message).join(', ')}, "${errors._original.frn}" is invalid. Please check your file and try again.`
+                ? `There was a problem validating your uploaded data. The FRN, "${errors._original.frn}" is invalid. Please check your file and try again.`
                 : `There was a problem validating your uploaded data: ${errors.details.map(detail => detail.message).join(', ')}. Please check your file and try again.`
             })
           } else {
