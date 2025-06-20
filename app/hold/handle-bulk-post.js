@@ -21,11 +21,21 @@ const handleBulkPost = async (request, h) => {
     processHoldData(fileContent)
       .then(async ({ uploadData, errors }) => {
         if (errors) {
-          console.error(`Errors processing hold data for job ${jobId}:`, errors)
-          return setLoadingStatus(request, jobId, {
-            status: 'failed',
-            errors
-          })
+          if (errors instanceof Error && errors.name === 'ValidationError') {
+            console.warn(`Validation error for job ${jobId}:`, errors)
+            return setLoadingStatus(request, jobId, {
+              status: 'failed',
+              message: errors._original?.frn
+                ? `There was a problem validating your uploaded data. The FRN, "${errors._original.frn}" is invalid. Please check your file and try again.`
+                : `There was a problem validating your uploaded data: ${errors.details.map(detail => detail.message).join(', ')}. Please check your file and try again.`
+            })
+          } else {
+            console.error(`Errors processing hold data for job ${jobId}:`, errors)
+            return setLoadingStatus(request, jobId, {
+              status: 'failed',
+              message: `An error occurred while processing the data: ${errors.details.map(detail => detail.message).join(', ')}`
+            })
+          }
         }
         return processUpload(request, jobId, uploadData)
       })
@@ -33,9 +43,7 @@ const handleBulkPost = async (request, h) => {
         console.error(`Error generating report ${jobId}:`, err)
         return setLoadingStatus(request, jobId, {
           status: 'failed',
-          errors: [{
-            message: `An error occurred while processing the data: ${err.message}`
-          }]
+          message: `An error occurred while processing the data: ${err.message}`
         })
       })
 

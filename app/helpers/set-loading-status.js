@@ -1,9 +1,9 @@
 const { set } = require('../cache')
 
-const setLoadingStatus = async (request, jobId, { status, errors }) => {
+const setLoadingStatus = async (request, jobId, { status, message }) => {
   const data = {
     status,
-    ...(errors !== undefined && { errors })
+    ...(message !== undefined && { message })
   }
   return set(request, jobId, data)
 }

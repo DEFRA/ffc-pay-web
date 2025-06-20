@@ -140,4 +140,46 @@ describe('handle bulk post', () => {
       holdCategoryId: '124'
     }, null)
   })
+
+  test('should handle validation error with FRN', async () => {
+    const validationError = new Error('Validation error')
+    validationError.name = 'ValidationError'
+    validationError._original = { frn: 'badfrn' }
+    validationError.details = [{ message: 'Invalid FRN' }]
+    processHoldData.mockResolvedValue({ uploadData: null, errors: validationError })
+
+    await handleBulkPost(request, h)
+
+    expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
+      status: 'failed',
+      message: 'There was a problem validating your uploaded data. The FRN, "badfrn" is invalid. Please check your file and try again.'
+    })
+  })
+
+  test('should handle validation error without FRN', async () => {
+    const validationError = new Error('Validation error')
+    validationError.name = 'ValidationError'
+    validationError._original = {}
+    validationError.details = [{ message: 'Missing FRN' }]
+    processHoldData.mockResolvedValue({ uploadData: null, errors: validationError })
+
+    await handleBulkPost(request, h)
+
+    expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
+      status: 'failed',
+      message: 'There was a problem validating your uploaded data: Missing FRN. Please check your file and try again.'
+    })
+  })
+
+  test('should handle other errors from processHoldData', async () => {
+    const otherError = { details: [{ message: 'Other error' }] }
+    processHoldData.mockResolvedValue({ uploadData: null, errors: otherError })
+
+    await handleBulkPost(request, h)
+
+    expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
+      status: 'failed',
+      message: 'An error occurred while processing the data: Other error'
+    })
+  })
 })

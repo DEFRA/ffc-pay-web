@@ -24,20 +24,20 @@ describe('setLoadingStatus', () => {
 
   test('should include errors when defined', async () => {
     const status = 'failed'
-    const errors = [{ message: 'Test error' }]
+    const message = 'Test error'
 
-    await setLoadingStatus(request, jobId, { status, errors })
+    await setLoadingStatus(request, jobId, { status, message })
 
     expect(set).toHaveBeenCalledWith(request, jobId, {
       status,
-      errors
+      message
     })
   })
 
   test('should merge status and errors correctly when both are defined', async () => {
     const args = {
       status: 'failed',
-      errors: [{ message: 'Error 1' }, { message: 'Error 2' }]
+      message: [{ message: 'Error 1' }, { message: 'Error 2' }]
     }
 
     await setLoadingStatus(request, jobId, args)
@@ -48,7 +48,7 @@ describe('setLoadingStatus', () => {
   test('should omit errors when undefined', async () => {
     const args = {
       status: 'completed',
-      errors: undefined
+      message: undefined
     }
     const expectedData = {
       status: 'completed'
@@ -58,10 +58,10 @@ describe('setLoadingStatus', () => {
     expect(set).toHaveBeenCalledWith(request, jobId, expectedData)
   })
 
-  test('should handle empty errors array', async () => {
+  test('should handle empty errors', async () => {
     const args = {
       status: 'failed',
-      errors: []
+      message: ''
     }
 
     await setLoadingStatus(request, jobId, args)
