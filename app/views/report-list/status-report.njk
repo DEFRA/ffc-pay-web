@@ -1,18 +1,50 @@
 {% extends 'report-list/base-report.njk' %}
-{% from 'macros/report-form-fields.njk' import reportPageTitle, reportTypeSelect, startDateInput, endDateInput, submitButton %}
+{% from 'macros/report-form-fields.njk' import reportPageTitle, reportTypeSelect, submitButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
 
 {% set reportTitle = 'Status Report' %}
 {% set reportUrl = '/report-list/status-report' %}
 {% set formAction = '/report-list/status-report/download' %}
 {% set reportTypeItems = [
-  { value: "sfi", text: "SFI" },
-  { value: "delinked", text: "Delinked" }
+  { value: "sustainable-farming-incentive", text: "SFI" },
+  { value: "delinked-payment-statement", text: "Delinked" }
 ] %}
 
 {% block reportContent %}
-    {{ reportPageTitle(reportTitle) }}
-    {{ reportTypeSelect(reportType, reportTypeItems) }}
-    {{ startDateInput(errors, startDate) }}
-    {{ endDateInput(errors, endDate) }}
+  {{ reportPageTitle(reportTitle) }}
+  {{ reportTypeSelect(reportType, reportTypeItems) }}
+
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label-s" for="report-name">
+      Select the report you would like to download
+    </label>
+
+    <select class="govuk-select" id="report-name" name="report-name">
+      {% for report in reports %}
+        <option value="{{ report.name }}" data-type="{{ report.type }}">
+          {{ report.type }} ({{ report.date | date('YYYY-MM-DD') }})
+        </option>
+      {% else %}
+        <option value="" disabled>No reports available</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <script>
+    const reportTypeSelect = document.getElementById('report-type')
+    const reportIdSelect = document.getElementById('report-name')
+
+    function filterReports() {
+      const selectedType = reportTypeSelect.value
+      for (const option of reportIdSelect.options) {
+        if (!option.value) continue
+        option.hidden = option.dataset.type !== selectedType
+      }
+      reportIdSelect.value = ''
+    }
+
+    reportTypeSelect.addEventListener('change', filterReports)
+    filterReports()
+  </script>
 {% endblock %}

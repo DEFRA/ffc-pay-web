@@ -29,9 +29,45 @@ const initialiseContainers = async () => {
   containersInitialised = true
 }
 
-const getStatusReport = async () => {
+const REPORT_TYPE_PREFIXES = [
+  'sustainable-farming-incentive-',
+  'delinked-payment-statement-'
+]
+
+const getRecentStatusReports = async () => {
   containersInitialised ?? await initialiseContainers()
-  const blob = await reportContainer.getBlockBlobClient(config.miReportName)
+  const sixMonthsAgo = new Date()
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+
+  const reports = []
+  for await (const blob of reportContainer.listBlobsFlat()) {
+    // Check if blob name matches one of the prefixes
+    const prefix = REPORT_TYPE_PREFIXES.find(p => blob.name.startsWith(p))
+    if (!prefix) continue
+
+    // Extract date from filename
+    const datePart = blob.name.replace(prefix, '').replace('.csv', '')
+    const reportDate = new Date(datePart)
+    if (isNaN(reportDate.getTime())) continue // skip if date is invalid
+
+    // Only include reports from the last 6 months
+    if (reportDate >= sixMonthsAgo) {
+      // Download the blob
+
+      reports.push({
+        name: blob.name,
+        date: reportDate,
+        type: prefix.replace(/-$/, '')
+      })
+    }
+  }
+
+  return reports
+}
+
+const getStatusReport = async (reportName) => {
+  containersInitialised ?? await initialiseContainers()
+  const blob = await reportContainer.getBlockBlobClient(reportName)
   return blob.download()
 }
 
@@ -71,5 +107,6 @@ module.exports = {
   getMIReport,
   getSuppressedReport,
   getDataRequestFile,
+  getRecentStatusReports,
   getStatusReport
 }
