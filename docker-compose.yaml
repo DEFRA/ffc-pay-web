@@ -1,3 +1,11 @@
+networks:
+  default:
+    external:
+      name: ffc-pay   # your existing pay network
+  docs:
+    external:
+      name: ffc-doc   # the docs network you want to connect to
+
 services:
   ffc-pay-web:
     depends_on: 
@@ -19,7 +27,8 @@ services:
       COOKIE_PASSWORD: cookiecookiecookiecookiecookiecookie
       AZURE_STORAGE_USE_CONNECTION_STRING: "true"
       AZURE_STORAGE_CREATE_CONTAINERS: "true"
-      AZURE_STORAGE_ACCOUNT_NAME: ${AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
+      PAY_AZURE_STORAGE_ACCOUNT_NAME: ${PAY_AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
+      DOCS_AZURE_STORAGE_ACCOUNT_NAME: ${DOCS_AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
       MESSAGE_QUEUE_HOST: ${MESSAGE_QUEUE_HOST}
       MESSAGE_QUEUE_PASSWORD: ${MESSAGE_QUEUE_PASSWORD}
       MESSAGE_QUEUE_USER: ${MESSAGE_QUEUE_USER}
@@ -28,6 +37,9 @@ services:
       LEGACY_REPORTS_ACTIVE: ${LEGACY_REPORTS_ACTIVE:-true}
       REDIS_HOSTNAME: ffc-pay-web-redis
       REDIS_PASSWORD: redis
+    networks:
+      - default
+      - docs      # <-- attach to docs network too
 
   ffc-pay-event-store-azurite:
     image: mcr.microsoft.com/azure-storage/azurite:3.32.0

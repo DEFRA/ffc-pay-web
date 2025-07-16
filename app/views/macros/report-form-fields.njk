@@ -59,8 +59,10 @@
   </div>
 {% endmacro %}
 
-{% macro submitButton(label = "Download report") %}
-  <button class="govuk-button" data-module="govuk-button">{{ label }}</button>
+{% macro submitButton(label = "Download report", showButton = true) %}
+  {% if showButton %}
+    <button class="govuk-button" data-module="govuk-button">{{ label }}</button>
+  {% endif %}
 {% endmacro %}
 
 {% macro prnInput(prnValue = '') %}
@@ -75,12 +77,12 @@
   </div>
 {% endmacro %}
 
-{% macro reportTypeSelect(selectedType = '', items = []) %}
+{% macro typeSelect(selectedType = '', items = [], label = "Report Type") %}
   {{ govukSelect({
-    id: "report-type",
-    name: "report-type",
+    id: "select-type",
+    name: "select-type",
     label: {
-      text: "Report Type"
+      text: label
     },
     items: items
   }) }}

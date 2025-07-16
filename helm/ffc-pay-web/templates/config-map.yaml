@@ -24,10 +24,13 @@ data:
   REDIRECT_URL: https://{{ .Values.ingress.endpoint }}.{{ .Values.ingress.server }}/{{ .Values.azureAppRegistration.redirectUrl }}
   {{- end }}
   AUTHENTICATION_ENABLED: {{ quote .Values.azureAppRegistration.enabled }}
-  AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.azureStorageConnectionString }}
+  PAY_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.payAzureStorageConnectionString }}
+  DOCS_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.docsAzureStorageConnectionString }}
+  AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
   AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
   AZURE_STORAGE_CREATE_CONTAINERS: {{ quote .Values.container.azureStorageCreateContainers }}
-  AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
+  PAY_AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.payAzureStorageAccountName }}
+  DOCS_AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.docAzureStorageAccountName }}
   USE_V2_EVENTS: {{ quote .Values.container.useV2Events }}
   LEGACY_REPORTS_ACTIVE: {{ quote .Values.container.legacyReportsActive }}
   MESSAGE_QUEUE_HOST: {{ quote .Values.container.messageQueueHost }}

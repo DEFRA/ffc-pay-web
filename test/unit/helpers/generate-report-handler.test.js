@@ -112,7 +112,7 @@ describe('generateReportHandler', () => {
 
   test('verifies handler creation using undefined reportType parameter (falling back to query values)', async () => {
     options = { reportUrl: 'http://option-url.com' }
-    request.query['report-type'] = 'QueryDerived'
+    request.query['select-type'] = 'QueryDerived'
     request.query['report-title'] = 'Query Derived Title'
     const handler = generateReportHandler(undefined, generateFinalFilenameFunc, options)
     await handler(request, h)

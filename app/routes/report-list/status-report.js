@@ -1,7 +1,20 @@
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')
 
-const { getStatusReport, getRecentStatusReports } = require('../../storage')
+const { mapStatusReportsToTaskList } = require('../../helpers/mapStatusReportToTaskList')
+
+// const {
+//   getStatusReport,
+//   getReportsByYearAndType,
+//   getValidReportYears
+// } = require('../../storage')
+
+const {
+  getStatusReport,
+  getReportsByYearAndType,
+  getValidReportYears
+} = require('../../storage/docs-reports')
+
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 const { handleStreamResponse } = require('../../helpers')
 
@@ -14,8 +27,28 @@ module.exports = [
     options: {
       auth: authOptions,
       handler: async (_request, h) => {
-        const reports = await getRecentStatusReports()
-        return h.view(REPORT_VIEWS.STATUS, { reports })
+        const years = await getValidReportYears()
+        return h.view(REPORT_VIEWS.STATUS, { years })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: REPORT_LIST.STATUS_SEARCH,
+    options: {
+      auth: authOptions,
+      handler: async (request, h) => {
+        const { 'select-type': type, 'report-year': year } = request.query
+
+        console.log('Status report search:', { type, year })
+
+        const reports = await getReportsByYearAndType(year, type)
+        const govukTaskListData = {
+          idPrefix: 'report-list',
+          items: mapStatusReportsToTaskList(reports)
+        }
+
+        return h.view(REPORT_VIEWS.STATUS, { govukTaskListData })
       }
     }
   },
@@ -25,8 +58,8 @@ module.exports = [
     options: {
       auth: authOptions,
       handler: async (request, h) => {
-        const reportName = request.query['report-name']
-        return handleStreamResponse(() => getStatusReport(reportName), reportName, h)
+        const filename = request.query['file-name']
+        return handleStreamResponse(() => getStatusReport(filename), filename, h)
       }
     }
   }

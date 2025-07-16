@@ -87,7 +87,7 @@ describe('AP‑AR Listing Schema', () => {
     const { error, value } = schema.validate(good)
     expect(error).toBeUndefined()
     expect(value['report-title']).toBe('Foo Report')
-    expect(value['report-type']).toBe(AR)
+    expect(value['select-type']).toBe(AR)
     expect(value['start-date-day']).toBe(1)
     expect(value['end-date-year']).toBe(2022)
   })

@@ -11,6 +11,7 @@ const basePaths = {
   HOLDS: `${reportListPath}/holds`,
   AP_AR: `${reportListPath}/ap-ar-report`,
   STATUS: `${reportListPath}/status-report`,
+  STATUS_SEARCH: `${reportListPath}/status-report/search`,
   REPORT_UNAVAILABLE: '/report-unavailable'
 }
 

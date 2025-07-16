@@ -43,10 +43,12 @@ container:
   paymentsEndpoint: http://ffc-pay-processing.ffc-pay
   trackingEndpoint: http://ffc-pay-tracking.ffc-pay
   cookiePassword: cookiecookiecookiecookiecookiecookie
-  azureStorageConnectionString: dummy
+  payAzureStorageConnectionString: dummy
+  docsAzureStorageConnectionString: dummy
   azureStorageUseConnectionString: false
   azureStorageCreateContainers: false
-  azureStorageAccountName: ffcpay
+  payAzureStorageAccountName: ffcpay
+  docAzureStorageAccountName: ffcdoc
   useV2Events: true
   legacyReportsActive: true
   messageQueueHost: namespace.servicebus.windows.net

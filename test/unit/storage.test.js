@@ -100,12 +100,12 @@ describe('BlobServiceClient initialization', () => {
 
   test('should use connection string when config.useConnectionStr is true', () => {
     config.useConnectionStr = true
-    config.connectionStr = 'fake-connection-string'
+    config.payConnectionStr = 'fake-connection-string'
 
     require('../../app/storage')
 
     expect(consoleLogSpy).toHaveBeenCalledWith('Using connection string for BlobServiceClient')
-    expect(BlobServiceClient.fromConnectionString).toHaveBeenCalledWith(config.connectionStr)
+    expect(BlobServiceClient.fromConnectionString).toHaveBeenCalledWith(config.payConnectionStr)
   })
 
   test('should use DefaultAzureCredential when config.useConnectionStr is false', () => {

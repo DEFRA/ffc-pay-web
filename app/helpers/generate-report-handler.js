@@ -13,7 +13,7 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
     const reportTitle = options.reportTitle ?? query['report-title']
 
     // All other reports will have their report type passed as a param, except AP and AR Reports.
-    const reportType = reportTypeParam ?? query['report-type']
+    const reportType = reportTypeParam ?? query['select-type']
 
     const normalisedQuery = normaliseQuery(query)
 

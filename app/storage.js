@@ -8,10 +8,10 @@ const EMPTY_CONTENT_LENGTH = 5 // Maximum content length to consider a file as e
 
 if (config.useConnectionStr) {
   console.log('Using connection string for BlobServiceClient')
-  blobServiceClient = BlobServiceClient.fromConnectionString(config.connectionStr)
+  blobServiceClient = BlobServiceClient.fromConnectionString(config.payConnectionStr)
 } else {
   console.log('Using DefaultAzureCredential for BlobServiceClient')
-  const uri = `https://${config.storageAccount}.blob.core.windows.net`
+  const uri = `https://${config.payStorageAccount}.blob.core.windows.net`
   blobServiceClient = new BlobServiceClient(uri, new DefaultAzureCredential({ managedIdentityClientId: config.managedIdentityClientId }))
 }
 
@@ -34,32 +34,55 @@ const REPORT_TYPE_PREFIXES = [
   'delinked-payment-statement-'
 ]
 
-const getRecentStatusReports = async () => {
+const getValidReportYears = async () => {
   containersInitialised ?? await initialiseContainers()
-  const sixMonthsAgo = new Date()
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
-  const reports = []
+  const yearTypeSet = new Set()
+
   for await (const blob of reportContainer.listBlobsFlat()) {
-    // Check if blob name matches one of the prefixes
     const prefix = REPORT_TYPE_PREFIXES.find(p => blob.name.startsWith(p))
     if (!prefix) continue
 
-    // Extract date from filename
+    const datePart = blob.name
+      .replace(prefix, '')
+      .replace('.csv', '')
+      .replace(/_/g, ':')
+
+    const reportDate = new Date(datePart)
+    if (isNaN(reportDate.getTime())) continue
+
+    const year = reportDate.getFullYear()
+    const type = prefix.replace(/-$/, '')
+
+    yearTypeSet.add(JSON.stringify({ year, type }))
+  }
+
+  return Array.from(yearTypeSet)
+    .map(entry => JSON.parse(entry))
+    .sort((a, b) => b.year - a.year)
+}
+
+const getReportsByYearAndType = async (year, type) => {
+  containersInitialised ?? await initialiseContainers()
+
+  const prefix = REPORT_TYPE_PREFIXES.find(p => p.startsWith(type))
+  if (!prefix) return []
+
+  const reports = []
+  for await (const blob of reportContainer.listBlobsFlat()) {
+    if (!blob.name.startsWith(prefix)) continue
+
     const datePart = blob.name.replace(prefix, '').replace('.csv', '')
     const reportDate = new Date(datePart)
-    if (isNaN(reportDate.getTime())) continue // skip if date is invalid
 
-    // Only include reports from the last 6 months
-    if (reportDate >= sixMonthsAgo) {
-      // Download the blob
+    if (isNaN(reportDate.getTime())) continue
+    if (reportDate.getFullYear() !== Number(year)) continue
 
-      reports.push({
-        name: blob.name,
-        date: reportDate,
-        type: prefix.replace(/-$/, '')
-      })
-    }
+    reports.push({
+      name: blob.name,
+      date: reportDate,
+      type
+    })
   }
 
   return reports
@@ -104,9 +127,10 @@ const getDataRequestFile = async (filename) => {
 
 module.exports = {
   blobServiceClient,
+  getValidReportYears,
   getMIReport,
   getSuppressedReport,
   getDataRequestFile,
-  getRecentStatusReports,
+  getReportsByYearAndType,
   getStatusReport
 }
