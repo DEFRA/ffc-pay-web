@@ -16,11 +16,11 @@ const storageConfig = require('../../config').storageConfig
 module.exports = [
   createFormRoute(
     REPORT_LIST.PAYMENT_REQUESTS_V2,
-    REPORTS_VIEWS.PAYMENT_REQUESTS
+    REPORTS_VIEWS.PAYMENT_REQUESTS_V2
   ),
   createDownloadRoute(
     REPORT_LIST.PAYMENT_REQUESTS_V2_DOWNLOAD,
-    REPORTS_VIEWS.PAYMENT_REQUESTS,
+    REPORTS_VIEWS.PAYMENT_REQUESTS_V2,
     standardReportSchema,
     generateReportHandler(
       REPORT_TYPES.PAYMENT_REQUEST_STATUSES,

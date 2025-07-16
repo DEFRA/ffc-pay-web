@@ -10,6 +10,7 @@ const basePaths = {
   SUPPRESSED_PAYMENTS: `${reportListPath}/suppressed-payments`,
   HOLDS: `${reportListPath}/holds`,
   AP_AR: `${reportListPath}/ap-ar-report`,
+  STATUS: `${reportListPath}/status-report`,
   REPORT_UNAVAILABLE: '/report-unavailable'
 }
 

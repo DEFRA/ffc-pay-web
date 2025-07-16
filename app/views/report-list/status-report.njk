@@ -2,12 +2,12 @@
 {% from 'macros/report-form-fields.njk' import reportPageTitle, reportTypeSelect, startDateInput, endDateInput, submitButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
-{% set reportTitle = 'AP/AR Listing Report' %}
-{% set reportUrl = '/report-list/ap-ar-report' %}
-{% set formAction = '/report-list/ap-ar-report/download' %}
+{% set reportTitle = 'Status Report' %}
+{% set reportUrl = '/report-list/status-report' %}
+{% set formAction = '/report-list/status-report/download' %}
 {% set reportTypeItems = [
-  { value: "ap-listing-report", text: "AP Listing Report" },
-  { value: "ar-listing-report", text: "AR Listing Report" }
+  { value: "sfi", text: "SFI" },
+  { value: "delinked", text: "Delinked" }
 ] %}
 
 {% block reportContent %}

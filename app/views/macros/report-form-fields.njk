@@ -75,25 +75,14 @@
   </div>
 {% endmacro %}
 
-{% macro reportTypeSelect(selectedType = '') %}
+{% macro reportTypeSelect(selectedType = '', items = []) %}
   {{ govukSelect({
     id: "report-type",
     name: "report-type",
     label: {
       text: "Report Type"
     },
-    items: [
-      {
-        value: "ap-listing-report",
-        text: "AP Listing Report",
-        selected: selectedType == "ap-listing-report"
-      },
-      {
-        value: "ar-listing-report",
-        text: "AR Listing Report",
-        selected: selectedType == "ar-listing-report"
-      }
-    ]
+    items: items
   }) }}
 {% endmacro %}
 
