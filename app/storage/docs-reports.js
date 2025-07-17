@@ -2,11 +2,10 @@ const { getContainerClient } = require('./container-manager')
 const config = require('../config').storageConfig
 
 const REPORT_TYPE_PREFIXES = [
-  'sustainable-farming-incentive-',
-  'delinked-payment-statement-'
+  config.sfiStatusReport.replace('.csv', '-'),
+  config.delinkedStatusReport.replace('.csv', '-')
 ]
 
-// Helper to strip the virtual folder
 const stripReportsFolder = (blobName) =>
   blobName.startsWith('reports/') ? blobName.slice('reports/'.length) : blobName
 
@@ -16,7 +15,6 @@ const getValidReportYears = async () => {
 
   for await (const blob of statementsContainer.listBlobsFlat()) {
     const rawName = stripReportsFolder(blob.name)
-
     const prefix = REPORT_TYPE_PREFIXES.find(p => rawName.startsWith(p))
     if (!prefix) continue
 

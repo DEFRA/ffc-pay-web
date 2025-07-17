@@ -1,4 +1,4 @@
-const { getMIReport, getSuppressedReport } = require('../../storage')
+const { getMIReport, getSuppressedReport } = require('../../storage/pay-reports')
 const { getHolds } = require('../../holds')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 const { formatDateFromString } = require('../../helpers/format-date')

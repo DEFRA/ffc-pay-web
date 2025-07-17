@@ -1,11 +1,3 @@
-networks:
-  default:
-    external:
-      name: ffc-pay   # your existing pay network
-  docs:
-    external:
-      name: ffc-doc   # the docs network you want to connect to
-
 services:
   ffc-pay-web:
     depends_on: 
@@ -39,13 +31,19 @@ services:
       REDIS_PASSWORD: redis
     networks:
       - default
-      - docs      # <-- attach to docs network too
-
+      - docs
   ffc-pay-event-store-azurite:
     image: mcr.microsoft.com/azure-storage/azurite:3.32.0
     command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --loose"
     labels:
       com.docker.compose.pay.role: ffc-pay-event-store-azurite
-  
   ffc-pay-web-redis:
     image: redis:6.2.7
+
+networks:
+  default:
+    external:
+      name: ffc-pay
+  docs:
+    external:
+      name: ffc-doc

@@ -18,8 +18,7 @@ const payBlobClient = createBlobServiceClient(
 )
 
 const docsBlobClient = createBlobServiceClient(
-  // config.docsConnectionStr,
-  'DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://ffc-doc-statement-azurite:10000/devstoreaccount1;',
+  config.docsConnectionStr,
   config.docsStorageAccount,
   config.docsManagedIdentityClientId
 )

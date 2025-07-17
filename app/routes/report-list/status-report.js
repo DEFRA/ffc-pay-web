@@ -1,24 +1,21 @@
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')
-
 const { mapStatusReportsToTaskList } = require('../../helpers/mapStatusReportToTaskList')
-
-// const {
-//   getStatusReport,
-//   getReportsByYearAndType,
-//   getValidReportYears
-// } = require('../../storage')
-
-const {
-  getStatusReport,
-  getReportsByYearAndType,
-  getValidReportYears
-} = require('../../storage/docs-reports')
-
+const { getStatusReport, getReportsByYearAndType, getValidReportYears } = require('../../storage/docs-reports')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 const { handleStreamResponse } = require('../../helpers')
 
 const authOptions = { scope: [schemeAdmin, holdAdmin, dataView] }
+
+const typeDisplayNames = {
+  'sustainable-farming-incentive': 'SFI-23',
+  'delinked-payment-statement': 'Delinked'
+}
+
+const getReportTitle = (type, year) => {
+  const displayName = typeDisplayNames[type] || type
+  return `${displayName} Status Reports - ${year}`
+}
 
 module.exports = [
   {
@@ -39,16 +36,15 @@ module.exports = [
       auth: authOptions,
       handler: async (request, h) => {
         const { 'select-type': type, 'report-year': year } = request.query
-
-        console.log('Status report search:', { type, year })
-
         const reports = await getReportsByYearAndType(year, type)
+
+        const reportTitle = getReportTitle(type, year)
         const govukTaskListData = {
           idPrefix: 'report-list',
           items: mapStatusReportsToTaskList(reports)
         }
 
-        return h.view(REPORT_VIEWS.STATUS, { govukTaskListData })
+        return h.view(REPORT_VIEWS.STATUS_RESULTS, { reportTitle, govukTaskListData })
       }
     }
   },

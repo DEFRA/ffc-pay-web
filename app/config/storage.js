@@ -21,8 +21,8 @@ const schema = Joi.object({
   requestEditorReportName: Joi.string().default('ffc-pay-request-editor-report.csv'),
   claimLevelReportName: Joi.string().default('ffc-pay-claim-level-report.csv'),
   paymentRequestsReportName: Joi.string().default('ffc-pay-requests-statuses-report.csv'),
-  sfiStatusReport: Joi.string().default('sustainable-farming-incentive'),
-  delinkedStatusReport: Joi.string().default('delinked-payment-statement'),
+  sfiStatusReport: Joi.string().default('sustainable-farming-incentive.csv'),
+  delinkedStatusReport: Joi.string().default('delinked-payment-statement.csv'),
   managedIdentityClientId: Joi.string().optional()
 
 })

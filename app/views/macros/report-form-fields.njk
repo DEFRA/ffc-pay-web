@@ -59,10 +59,8 @@
   </div>
 {% endmacro %}
 
-{% macro submitButton(label = "Download report", showButton = true) %}
-  {% if showButton %}
+{% macro submitButton(label = "Download report") %}
     <button class="govuk-button" data-module="govuk-button">{{ label }}</button>
-  {% endif %}
 {% endmacro %}
 
 {% macro prnInput(prnValue = '') %}

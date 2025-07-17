@@ -25,11 +25,6 @@ module.exports = {
             watch: config.isDev
           })
 
-          // Add your custom date filter here
-          env.addFilter('date', function (dateObj) {
-            return new Date(dateObj).toLocaleDateString('en-GB')
-          })
-
           options.compileOptions.environment = env
           return next()
         }

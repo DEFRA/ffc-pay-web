@@ -2,13 +2,12 @@ const config = require('../config').storageConfig
 const { getPayContainerClient, getDocsContainerClient } = require('./blob-service')
 
 const containers = {
-  report: { name: config.reportContainer, source: 'pay', client: null, initialised: false },
-  dataRequest: { name: config.dataRequestContainer, source: 'pay', client: null, initialised: false },
-  statements: { name: config.statementsContainer, source: 'docs', client: null, initialised: false }
+  [config.reportContainer]: { name: config.reportContainer, source: 'pay', client: null, initialised: false },
+  [config.dataRequestContainer]: { name: config.dataRequestContainer, source: 'pay', client: null, initialised: false },
+  [config.statementsContainer]: { name: config.statementsContainer, source: 'docs', client: null, initialised: false }
 }
 
 const initialiseContainer = async (key) => {
-  console.log(`Initialising container for key: ${key}`)
   const container = containers[key]
   if (!container) throw new Error(`Unknown container key: ${key}`)
 
@@ -16,7 +15,6 @@ const initialiseContainer = async (key) => {
     const getClient = container.source === 'docs' ? getDocsContainerClient : getPayContainerClient
     container.client = await getClient(container.name)
     container.initialised = true
-    console.log(`Initialised ${container.source} container: ${container.name}`)
   }
 
   return container.client

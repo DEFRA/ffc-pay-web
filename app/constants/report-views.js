@@ -5,6 +5,7 @@ module.exports = {
   CLAIM_LEVEL_REPORT: 'report-list/claim-level-report',
   AP_AR: 'report-list/ap-ar-report',
   STATUS: 'report-list/status-report',
+  STATUS_RESULTS: 'report-list/status-report-results',
   HOLD_REPORT_UNAVAILABLE: 'hold-report-unavailable',
   REPORT_VALIDATION_ERROR: 'report-list/report-validation-error',
   REPORT_UNAVAILABLE: 'report-unavailable'

@@ -6,5 +6,7 @@ module.exports = {
   REQUEST_EDITOR: 'request-editor-report',
   CLAIM_LEVEL: 'claim-level-report',
   AP: 'ap-listing-report',
-  AR: 'ar-listing-report'
+  AR: 'ar-listing-report',
+  SFI: 'sustainable-farming-incentive',
+  DELINKED: 'delinked-payment-statement'
 }
