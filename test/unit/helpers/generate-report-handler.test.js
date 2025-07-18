@@ -20,7 +20,7 @@ describe('generateReportHandler', () => {
       query: {
         'report-url': 'http://query.url',
         'report-title': 'Query Title',
-        'report-type': 'QReport',
+        'select-type': 'QReport',
         other: 'value'
       }
     }

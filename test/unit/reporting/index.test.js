@@ -1,7 +1,7 @@
 const { PassThrough } = require('stream')
 const { generateReport } = require('../../../app/reporting/index')
 
-jest.mock('../../../app/storage', () => ({
+jest.mock('../../../app/storage/pay-reports.js', () => ({
   getDataRequestFile: jest.fn()
 }))
 const { getDataRequestFile } = require('../../../app/storage')

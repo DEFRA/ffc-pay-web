@@ -5,7 +5,7 @@ describe('AP‑AR Listing Schema', () => {
   test('errors when report‑title is missing', () => {
     const { error } = schema.validate({
       'report-url': '/foo',
-      'report-type': AP
+      'select-type': AP
     })
     expect(error).toBeDefined()
     expect(error.message).toMatch(/"report-title" is required/)
@@ -14,7 +14,7 @@ describe('AP‑AR Listing Schema', () => {
   test('errors when report‑url is missing', () => {
     const { error } = schema.validate({
       'report-title': 'Foo',
-      'report-type': AR
+      'select-type': AR
     })
     expect(error).toBeDefined()
     expect(error.message).toMatch(/"report-url" is required/)
@@ -24,17 +24,17 @@ describe('AP‑AR Listing Schema', () => {
     const { error } = schema.validate({
       'report-title': 'Foo',
       'report-url': '/foo',
-      'report-type': 'INVALID'
+      'select-type': 'INVALID'
     })
     expect(error).toBeDefined()
-    expect(error.message).toMatch(/"report-type" must be one of/)
+    expect(error.message).toMatch(/"select-type" must be one of/)
   })
 
   test('errors when start date is partially provided', () => {
     const { error } = schema.validate({
       'report-title': 'Foo',
       'report-url': '/foo',
-      'report-type': AP,
+      'select-type': AP,
       'start-date-day': 1,
       'start-date-month': '',
       'start-date-year': 2022
@@ -47,7 +47,7 @@ describe('AP‑AR Listing Schema', () => {
     const { error } = schema.validate({
       'report-title': 'Foo',
       'report-url': '/foo',
-      'report-type': AR,
+      'select-type': AR,
       'end-date-day': 5,
       'end-date-month': 6,
       'end-date-year': ''
@@ -60,7 +60,7 @@ describe('AP‑AR Listing Schema', () => {
     const { error } = schema.validate({
       'report-title': 'Foo',
       'report-url': '/foo',
-      'report-type': AP,
+      'select-type': AP,
       'start-date-day': 10,
       'start-date-month': 3,
       'start-date-year': 2022,
@@ -76,7 +76,7 @@ describe('AP‑AR Listing Schema', () => {
     const good = {
       'report-title': 'Foo Report',
       'report-url': '/foo',
-      'report-type': AR,
+      'select-type': AR,
       'start-date-day': 1,
       'start-date-month': 1,
       'start-date-year': 2022,
