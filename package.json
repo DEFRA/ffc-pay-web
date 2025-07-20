@@ -31,7 +31,7 @@
   "dependencies": {
     "@azure/identity": "4.4.1",
     "@azure/msal-node": "2.9.2",
-    "@azure/storage-blob": "12.13.0",
+    "@azure/storage-blob": "12.27.0",
     "@fast-csv/format": "5.0.2",
     "@hapi/boom": "9.1.1",
     "@hapi/catbox-memory": "6.0.2",
