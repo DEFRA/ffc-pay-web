@@ -42,7 +42,8 @@ services:
 
 networks:
   default:
-      name: ffc-pay
+    name: ffc-pay
+    external: true
   docs:
-    external:
-      name: ffc-doc
+    name: ffc-doc
+    external: true
