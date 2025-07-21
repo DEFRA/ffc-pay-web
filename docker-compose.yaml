@@ -43,5 +43,4 @@ services:
 
 networks:
   docs:
-    external: true
     name: ffc-doc
