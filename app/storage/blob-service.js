@@ -4,12 +4,10 @@ const config = require('../config').storageConfig
 
 const createBlobServiceClient = (connectionString, storageAccount, managedIdentityClientId) =>
   config.useConnectionStr
-    ? (console.log('Using connection string for BlobServiceClient'), BlobServiceClient.fromConnectionString(connectionString))
-    : (console.log('Using DefaultAzureCredential for BlobServiceClient'),
-      new BlobServiceClient(
-        `https://${storageAccount}.blob.core.windows.net`,
-        new DefaultAzureCredential({ managedIdentityClientId })
-      ))
+    ? (console.log('Using connection string for BlobServiceClient'),
+      BlobServiceClient.fromConnectionString(connectionString))
+    : (console.log('Using DefaultAzureCredential for BlobServiceClient ' + storageAccount),
+      new BlobServiceClient(`https://${storageAccount}.blob.core.windows.net`, new DefaultAzureCredential({ managedIdentityClientId })))
 
 const payBlobClient = createBlobServiceClient(
   config.payConnectionStr,
