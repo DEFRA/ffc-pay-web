@@ -22,16 +22,16 @@
     "Steve Dickinson steve.dickinson@defra.gov.uk",
     "Simon Dunn simon.dunn1@defra.gov.uk",
     "Marc Templeton m.templeton@kainos.com",
-    "Sam Plackett samuel.plackett@eviden.com",
+    "Sam Plackett samuel.plackett@atos.net",
     "Amirs Ishmuhametovs amirs.ishmuhametovs@defra.gov.uk",
-    "Leigh Godson leigh.godson@eviden.com",
-    "Oliver Lewington oliver.lewington@eviden.com"
+    "Leigh Godson leigh.godson@atos.net",
+    "Oliver Lewington oliver.lewington@atos.net"
   ],
   "license": "OGL-UK-3.0",
   "dependencies": {
     "@azure/identity": "4.4.1",
     "@azure/msal-node": "2.9.2",
-    "@azure/storage-blob": "12.27.0",
+    "@azure/storage-blob": "^12.15.0",
     "@fast-csv/format": "5.0.2",
     "@hapi/boom": "9.1.1",
     "@hapi/catbox-memory": "6.0.2",
