@@ -2,7 +2,7 @@ const Hapi = require('@hapi/hapi')
 const routes = require('../../../../../app/routes/report-list/status-report')
 const REPORT_LIST = require('../../../../../app/constants/report-list')
 const { getValidReportYears, getReportsByYearAndType } = require('../../../../../app/storage/docs-reports')
-const { mapStatusReportsToTaskList } = require('../../../../../app/helpers/mapStatusReportToTaskList')
+const { mapStatusReportsToTaskList } = require('../../../../../app/helpers/map-status-report-to-task-list')
 const { handleStreamResponse } = require('../../../../../app/helpers')
 
 jest.mock('../../../../../app/storage/docs-reports', () => ({
@@ -11,7 +11,7 @@ jest.mock('../../../../../app/storage/docs-reports', () => ({
   getStatusReport: jest.fn()
 }))
 
-jest.mock('../../../../../app/helpers/mapStatusReportToTaskList')
+jest.mock('../../../../../app/helpers/map-status-report-to-task-list')
 jest.mock('../../../../../app/helpers')
 
 describe('Status Report Integration Tests', () => {

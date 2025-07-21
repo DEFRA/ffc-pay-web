@@ -1,72 +1,121 @@
-jest.mock('../../../app/config', () => ({
-  storageConfig: {
-    reportContainer: 'report-container',
-    dataRequestContainer: 'data-request-container',
-    statementsContainer: 'statements-container'
+const mockCreateIfNotExists = jest.fn()
+const mockGetContainerClient = jest.fn(() => ({
+  createIfNotExists: mockCreateIfNotExists
+}))
+const mockFromConnectionString = jest.fn(() => ({
+  getContainerClient: mockGetContainerClient
+}))
+
+jest.mock('@azure/storage-blob', () => {
+  const actual = jest.requireActual('@azure/storage-blob')
+
+  const instance = {
+    getContainerClient: mockGetContainerClient
   }
+
+  return {
+    ...actual,
+    BlobServiceClient: Object.assign(
+      jest.fn(() => instance),
+      {
+        fromConnectionString: mockFromConnectionString
+      }
+    )
+  }
+})
+
+jest.mock('@azure/identity', () => ({
+  DefaultAzureCredential: jest.fn(() => 'mocked-default-credential')
 }))
 
-jest.mock('../../../app/storage/blob-service', () => ({
-  getPayContainerClient: jest.fn(),
-  getDocsContainerClient: jest.fn()
-}))
+let config
+let getPayContainerClient
+let getDocsContainerClient
 
-const { getPayContainerClient, getDocsContainerClient } = require('../../../app/storage/blob-service')
-const { getContainerClient } = require('../../../app/storage/container-manager')
-
-describe('getContainerClient', () => {
+describe('blob-service tests', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  test('returns pay container client for report-container', async () => {
-    const mockClient = { name: 'report-container-client' }
-    getPayContainerClient.mockResolvedValue(mockClient)
-
-    const result = await getContainerClient('report-container')
-
-    expect(getPayContainerClient).toHaveBeenCalledWith('report-container')
-    expect(result).toBe(mockClient)
-  })
-
-  test('returns pay container client for data-request-container', async () => {
-    const mockClient = { name: 'data-request-container-client' }
-    getPayContainerClient.mockResolvedValue(mockClient)
-
-    const result = await getContainerClient('data-request-container')
-
-    expect(getPayContainerClient).toHaveBeenCalledWith('data-request-container')
-    expect(result).toBe(mockClient)
-  })
-
-  test('returns docs container client for statements-container', async () => {
-    const mockClient = { name: 'statements-container-client' }
-    getDocsContainerClient.mockResolvedValue(mockClient)
-
-    const result = await getContainerClient('statements-container')
-
-    expect(getDocsContainerClient).toHaveBeenCalledWith('statements-container')
-    expect(result).toBe(mockClient)
-  })
-
-  test('throws error for unknown container key', async () => {
-    await expect(getContainerClient('invalid-container'))
-      .rejects
-      .toThrow("Container key 'invalid-container' not configured")
-  })
-
-  test('reuses already initialised container', async () => {
     jest.resetModules()
+    jest.clearAllMocks()
+
+    jest.doMock('../../../app/config', () => ({
+      storageConfig: {
+        useConnectionStr: true,
+        createContainers: true,
+        payConnectionStr: 'fake-pay-connection',
+        payStorageAccount: 'pay-account',
+        payManagedIdentityClientId: 'pay-id',
+        docsConnectionStr: 'fake-docs-connection',
+        docsStorageAccount: 'docs-account',
+        docsManagedIdentityClientId: 'docs-id'
+      }
+    }))
+
+    config = require('../../../app/config').storageConfig
+    const blobService = require('../../../app/storage/blob-service')
+    getPayContainerClient = blobService.getPayContainerClient
+    getDocsContainerClient = blobService.getDocsContainerClient
+  })
+
+  test('getPayContainerClient creates container when createContainers is true', async () => {
+    mockCreateIfNotExists.mockResolvedValue({ succeeded: true })
+
+    const client = await getPayContainerClient('pay-container')
+
+    expect(mockFromConnectionString).toHaveBeenCalled()
+    expect(mockGetContainerClient).toHaveBeenCalledWith('pay-container')
+    expect(mockCreateIfNotExists).toHaveBeenCalled()
+    expect(client).toBeDefined()
+  })
+
+  test('getDocsContainerClient creates container when createContainers is true', async () => {
+    mockCreateIfNotExists.mockResolvedValue({ succeeded: false })
+
+    const client = await getDocsContainerClient('docs-container')
+
+    expect(mockFromConnectionString).toHaveBeenCalled()
+    expect(mockGetContainerClient).toHaveBeenCalledWith('docs-container')
+    expect(mockCreateIfNotExists).toHaveBeenCalled()
+    expect(client).toBeDefined()
+  })
+
+  test('getPayContainerClient skips createIfNotExists when createContainers is false', async () => {
+    config.createContainers = false
+
+    const client = await getPayContainerClient('pay-container')
+
+    expect(mockCreateIfNotExists).not.toHaveBeenCalled()
+    expect(mockGetContainerClient).toHaveBeenCalledWith('pay-container')
+    expect(client).toBeDefined()
+  })
+
+  test('getDocsContainerClient skips createIfNotExists when createContainers is false', async () => {
+    config.createContainers = false
+
+    const client = await getDocsContainerClient('docs-container')
+
+    expect(mockCreateIfNotExists).not.toHaveBeenCalled()
+    expect(mockGetContainerClient).toHaveBeenCalledWith('docs-container')
+    expect(client).toBeDefined()
+  })
+
+  test('uses DefaultAzureCredential when useConnectionStr is false', async () => {
+    config.useConnectionStr = false
+
+    jest.resetModules()
+
+    jest.doMock('../../../app/config', () => ({
+      storageConfig: config
+    }))
+
+    const { BlobServiceClient } = require('@azure/storage-blob')
+    BlobServiceClient.fromConnectionString.mockClear()
+
     const { getPayContainerClient } = require('../../../app/storage/blob-service')
-    const { getContainerClient } = require('../../../app/storage/container-manager')
 
-    const mockClient = { name: 'report-container-client' }
-    getPayContainerClient.mockResolvedValue(mockClient)
+    const client = await getPayContainerClient('pay-container')
 
-    const firstCall = await getContainerClient('report-container')
-    const secondCall = await getContainerClient('report-container')
-
-    expect(getPayContainerClient).toHaveBeenCalledTimes(1)
-    expect(firstCall).toBe(secondCall)
+    expect(BlobServiceClient.fromConnectionString).not.toHaveBeenCalled()
+    expect(mockGetContainerClient).toHaveBeenCalledWith('pay-container')
+    expect(client).toBeDefined()
   })
 })

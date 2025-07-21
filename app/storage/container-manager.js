@@ -9,7 +9,9 @@ const containers = {
 
 const initialiseContainer = async (key) => {
   const container = containers[key]
-  if (!container) throw new Error(`Unknown container key: ${key}`)
+  if (!container) {
+    throw new Error(`Unknown container key: ${key}`)
+  }
 
   if (!container.initialised) {
     const getClient = container.source === 'docs' ? getDocsContainerClient : getPayContainerClient
@@ -21,7 +23,10 @@ const initialiseContainer = async (key) => {
 }
 
 const getContainerClient = async (key) => {
-  if (!containers[key]) throw new Error(`Container key '${key}' not configured`)
+  if (!containers[key]) {
+    throw new Error(`Container key '${key}' not configured`)
+  }
+
   return initialiseContainer(key)
 }
 
