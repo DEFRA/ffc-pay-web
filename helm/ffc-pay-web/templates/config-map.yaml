@@ -27,7 +27,6 @@ data:
   PAY_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.payAzureStorageConnectionString }}
   DOCS_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.docsAzureStorageConnectionString }}
   AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
-  AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
   AZURE_STORAGE_CREATE_CONTAINERS: {{ quote .Values.container.azureStorageCreateContainers }}
   PAY_AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.payAzureStorageAccountName }}
   DOCS_AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.docAzureStorageAccountName }}
