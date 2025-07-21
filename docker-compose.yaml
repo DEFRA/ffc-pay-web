@@ -29,9 +29,7 @@ services:
       LEGACY_REPORTS_ACTIVE: ${LEGACY_REPORTS_ACTIVE:-true}
       REDIS_HOSTNAME: ffc-pay-web-redis
       REDIS_PASSWORD: redis
-    networks:
-      - default
-      - docs
+
   ffc-pay-event-store-azurite:
     image: mcr.microsoft.com/azure-storage/azurite:3.32.0
     command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --loose"
@@ -39,11 +37,3 @@ services:
       com.docker.compose.pay.role: ffc-pay-event-store-azurite
   ffc-pay-web-redis:
     image: redis:6.2.7
-
-networks:
-  default:
-    name: ffc-pay
-    external: true
-  docs:
-    name: ffc-doc
-    external: true
