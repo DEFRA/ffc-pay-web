@@ -43,10 +43,10 @@ container:
   paymentsEndpoint: http://ffc-pay-processing.ffc-pay
   trackingEndpoint: http://ffc-pay-tracking.ffc-pay
   cookiePassword: cookiecookiecookiecookiecookiecookie
-  azureStorageConnectionString: dummy
-  docsAzureStorageConnectionString: dummy
   azureStorageUseConnectionString: false
   azureStorageCreateContainers: false
+  azureStorageConnectionString: dummy
+  docAzureStorageConnectionString: dummy
   payAzureStorageAccountName: ffcpay
   docAzureStorageAccountName: ffcdoc
   useV2Events: true

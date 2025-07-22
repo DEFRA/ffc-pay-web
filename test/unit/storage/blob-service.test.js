@@ -44,8 +44,8 @@ describe('blob-service tests', () => {
         payConnectionStr: 'fake-pay-connection',
         payStorageAccount: 'pay-account',
         payManagedIdentityClientId: 'pay-id',
-        docsConnectionStr: 'fake-docs-connection',
-        docsStorageAccount: 'docs-account',
+        docConnectionStr: 'fake-docs-connection',
+        docStorageAccount: 'docs-account',
         docsManagedIdentityClientId: 'docs-id'
       }
     }))

@@ -16,8 +16,8 @@ const payBlobClient = createBlobServiceClient(
 )
 
 const docsBlobClient = createBlobServiceClient(
-  config.docsConnectionStr,
-  config.docsStorageAccount,
+  config.docConnectionStr,
+  config.docStorageAccount,
   config.docsManagedIdentityClientId
 )
 
