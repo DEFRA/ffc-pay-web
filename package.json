@@ -1,6 +1,6 @@
 {
   "name": "ffc-pay-web",
-  "version": "1.21.16",
+  "version": "1.21.17",
   "description": "FFC payment management service",
   "homepage": "https://github.com/DEFRA/ffc-pay-web",
   "main": "app/index.js",
@@ -22,10 +22,10 @@
     "Steve Dickinson steve.dickinson@defra.gov.uk",
     "Simon Dunn simon.dunn1@defra.gov.uk",
     "Marc Templeton m.templeton@kainos.com",
-    "Sam Plackett samuel.plackett@eviden.com",
+    "Sam Plackett samuel.plackett@atos.net",
     "Amirs Ishmuhametovs amirs.ishmuhametovs@defra.gov.uk",
-    "Leigh Godson leigh.godson@eviden.com",
-    "Oliver Lewington oliver.lewington@eviden.com"
+    "Leigh Godson leigh.godson@atos.net",
+    "Oliver Lewington oliver.lewington@atos.net"
   ],
   "license": "OGL-UK-3.0",
   "dependencies": {
