@@ -5,15 +5,23 @@ const { getStatusReport, getReportsByYearAndType, getValidReportYears } = requir
 const { statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
 const { handleStreamResponse } = require('../../helpers')
 
-const authOptions = { scope: [statusReportSfi23, statusReportsDelinked] }
+const authOptions = {
+  scope: [statusReportSfi23, statusReportsDelinked]
+}
 
-const typeDisplayNames = {
-  'sustainable-farming-incentive': 'SFI-23',
-  'delinked-payment-statement': 'Delinked'
+const reportTypes = {
+  'sustainable-farming-incentive': {
+    display: 'SFI-23',
+    scope: statusReportSfi23
+  },
+  'delinked-payment-statement': {
+    display: 'Delinked',
+    scope: statusReportsDelinked
+  }
 }
 
 const getReportTitle = (type, year) => {
-  const displayName = typeDisplayNames[type] || type
+  const displayName = reportTypes[type]?.display || type
   return `${displayName} Status Reports - ${year}`
 }
 
@@ -23,9 +31,23 @@ module.exports = [
     path: REPORT_LIST.STATUS,
     options: {
       auth: authOptions,
-      handler: async (_request, h) => {
+      handler: async (request, h) => {
         const years = await getValidReportYears()
-        return h.view(REPORT_VIEWS.STATUS, { years })
+        const userScopes = request.auth.credentials.scope || []
+
+        console.log('User scopes:', userScopes)
+
+        const reportTypeItems = Object.entries(reportTypes)
+          .filter(([_, { scope }]) => userScopes.includes(scope))
+          .map(([value, { display }]) => ({
+            value,
+            text: display
+          }))
+
+        return h.view(REPORT_VIEWS.STATUS, {
+          reportTypeItems,
+          years
+        })
       }
     }
   },

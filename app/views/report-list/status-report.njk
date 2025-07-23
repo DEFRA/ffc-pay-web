@@ -10,11 +10,6 @@
 {% set formAction = '/report-list/status-report/search' %}
 {% set pdfDownloadLink = '/report-list/status-report/download?file-name=' + 'reports/DS1-Statement Status Report-170725-100746.pdf' | urlencode %}
 
-{% set reportTypeItems = [
-  { value: "sustainable-farming-incentive", text: "SFI-23" },
-  { value: "delinked-payment-statement", text: "Delinked" }
-] %}
-
 {% block reportContent %}
   {{ reportPageTitle(reportTitle) }}
 
