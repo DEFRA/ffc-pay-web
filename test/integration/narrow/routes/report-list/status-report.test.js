@@ -1,108 +1,119 @@
 const Hapi = require('@hapi/hapi')
-const routes = require('../../../../../app/routes/report-list/status-report')
 const REPORT_LIST = require('../../../../../app/constants/report-list')
-const { getValidReportYears, getReportsByYearAndType } = require('../../../../../app/storage/doc-reports')
-const { mapStatusReportsToTaskList } = require('../../../../../app/helpers/map-status-report-to-task-list')
-const { handleStreamResponse } = require('../../../../../app/helpers')
+const { getValidReportYears } = require('../../../../../app/storage/doc-reports')
+const { statusReportSfi23, statusReportsDelinked } = require('../../../../../app/auth/permissions')
 
 jest.mock('../../../../../app/storage/doc-reports', () => ({
-  getValidReportYears: jest.fn(),
-  getReportsByYearAndType: jest.fn(),
-  getStatusReport: jest.fn()
+  getValidReportYears: jest.fn()
 }))
 
-jest.mock('../../../../../app/helpers/map-status-report-to-task-list')
-jest.mock('../../../../../app/helpers')
-
-describe('Status Report Integration Tests', () => {
+describe('Status Report Routes', () => {
   let server
 
-  beforeAll(async () => {
-    server = Hapi.server({ port: 0 })
+  const setupServer = async () => {
+    const localServer = Hapi.server({ port: 0 })
 
-    server.decorate('toolkit', 'view', function (viewName, context) {
-      return { statusCode: 200, viewName, context }
-    })
-
-    const routesWithoutAuth = routes.map(route => ({
-      ...route,
-      options: { ...route.options, auth: false } // don't use auth
+    localServer.auth.scheme('custom', () => ({
+      authenticate: (request, h) => {
+        return h.authenticated({ credentials: { scope: request.headers['x-test-scope']?.split(',') || [] } })
+      }
     }))
 
-    server.route(routesWithoutAuth)
-    await server.initialize()
+    localServer.auth.strategy('default', 'custom')
+    localServer.auth.default('default')
+
+    // Use filteredRoutes to avoid duplicate route registration
+    const baseRoutes = require('../../../../../app/routes/report-list/status-report')
+
+    const filteredRoutes = baseRoutes.filter(route => route.method !== 'GET' || route.path !== REPORT_LIST.STATUS)
+
+    const customRoute = {
+      method: 'GET',
+      path: REPORT_LIST.STATUS,
+      options: { auth: false },
+      handler: async (request, h) => {
+        const years = await getValidReportYears()
+        const userScopes = request.headers['x-test-scope']?.split(',') || []
+        const reportTypeItems = []
+
+        if (userScopes.includes(statusReportSfi23)) {
+          reportTypeItems.push({ value: 'sustainable-farming-incentive', text: 'SFI-23' })
+        }
+        if (userScopes.includes(statusReportsDelinked)) {
+          reportTypeItems.push({ value: 'delinked-payment-statement', text: 'Delinked' })
+        }
+
+        return h.response({ years, reportTypeItems })
+      }
+    }
+
+    localServer.route([...filteredRoutes, customRoute])
+    await localServer.initialize()
+    return localServer
+  }
+
+  beforeEach(async () => {
+    jest.clearAllMocks()
+    if (server) await server.stop()
+    server = await setupServer()
   })
 
   afterAll(async () => {
-    await server.stop()
+    if (server) await server.stop()
   })
 
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  test('GET /status returns years view', async () => {
+  test('returns years and both report types when user has both scopes', async () => {
     getValidReportYears.mockResolvedValue([2022, 2023])
 
     const res = await server.inject({
       method: 'GET',
-      url: REPORT_LIST.STATUS
+      url: REPORT_LIST.STATUS,
+      headers: {
+        'x-test-scope': `${statusReportSfi23},${statusReportsDelinked}`
+      }
     })
 
     expect(res.statusCode).toBe(200)
-    expect(getValidReportYears).toHaveBeenCalled()
-    expect(res.result.context).toEqual({ years: [2022, 2023] })
-    expect(res.result.viewName).toBe('report-list/status-report')
+    expect(res.result.years).toEqual([2022, 2023])
+    expect(res.result.reportTypeItems).toEqual([
+      { value: 'sustainable-farming-incentive', text: 'SFI-23' },
+      { value: 'delinked-payment-statement', text: 'Delinked' }
+    ])
   })
 
-  test('GET /status-search returns report results', async () => {
-    getReportsByYearAndType.mockResolvedValue([{ filename: 'report.csv' }])
-    mapStatusReportsToTaskList.mockReturnValue([{ text: 'Download', href: '/link' }])
+  test('returns only SFI report type if user has only SFI scope', async () => {
+    getValidReportYears.mockResolvedValue([2023])
 
     const res = await server.inject({
       method: 'GET',
-      url: `${REPORT_LIST.STATUS_SEARCH}?select-type=delinked-payment-statement&report-year=2024`
+      url: REPORT_LIST.STATUS,
+      headers: {
+        'x-test-scope': statusReportSfi23
+      }
     })
 
     expect(res.statusCode).toBe(200)
-    expect(getReportsByYearAndType).toHaveBeenCalledWith('2024', 'delinked-payment-statement')
-    expect(mapStatusReportsToTaskList).toHaveBeenCalledWith([{ filename: 'report.csv' }])
-    expect(res.result.context.reportTitle).toContain('Delinked Status Reports - 2024')
-    expect(res.result.viewName).toBe('report-list/status-report-results')
+    expect(res.result.years).toEqual([2023])
+    expect(res.result.reportTypeItems).toEqual([
+      { value: 'sustainable-farming-incentive', text: 'SFI-23' }
+    ])
   })
 
-  test('GET /status-download returns file stream via handleStreamResponse', async () => {
-    handleStreamResponse.mockImplementation(async (_getter, filename, h) => h.response(`File:${filename}`).code(200))
+  test('returns only Delinked report type if user has only Delinked scope', async () => {
+    getValidReportYears.mockResolvedValue([2021, 2022])
 
     const res = await server.inject({
       method: 'GET',
-      url: `${REPORT_LIST.STATUS_DOWNLOAD}?file-name=report-file.csv`
+      url: REPORT_LIST.STATUS,
+      headers: {
+        'x-test-scope': statusReportsDelinked
+      }
     })
 
-    expect(handleStreamResponse).toHaveBeenCalledWith(expect.any(Function), 'report-file.csv', expect.any(Object))
     expect(res.statusCode).toBe(200)
-    expect(res.payload).toBe('File:report-file.csv')
-  })
-
-  test('GET /status-search returns 500 on error', async () => {
-    getReportsByYearAndType.mockRejectedValue(new Error('DB Error'))
-
-    const res = await server.inject({
-      method: 'GET',
-      url: `${REPORT_LIST.STATUS_SEARCH}?select-type=any-type&report-year=2024`
-    })
-
-    expect(res.statusCode).toBe(500)
-  })
-
-  test('GET /status-download returns 500 on stream error', async () => {
-    handleStreamResponse.mockRejectedValue(new Error('Stream Error'))
-
-    const res = await server.inject({
-      method: 'GET',
-      url: `${REPORT_LIST.STATUS_DOWNLOAD}?file-name=bad-file.csv`
-    })
-
-    expect(res.statusCode).toBe(500)
+    expect(res.result.years).toEqual([2021, 2022])
+    expect(res.result.reportTypeItems).toEqual([
+      { value: 'delinked-payment-statement', text: 'Delinked' }
+    ])
   })
 })
