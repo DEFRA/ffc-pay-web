@@ -1,7 +1,7 @@
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')
 const { mapStatusReportsToTaskList } = require('../../helpers/map-status-report-to-task-list')
-const { getStatusReport, getReportsByYearAndType, getValidReportYears } = require('../../storage/docs-reports')
+const { getStatusReport, getReportsByYearAndType, getValidReportYears } = require('../../storage/doc-reports')
 const { statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
 const { handleStreamResponse } = require('../../helpers')
 

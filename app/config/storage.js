@@ -5,7 +5,7 @@ const schema = Joi.object({
   payConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
   docConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
   payStorageAccount: Joi.string().required(),
-  docStorageAccount: Joi.string().required(),
+  doctorageAccount: Joi.string().required(),
   projectionContainer: Joi.string().default('payeventstore'),
   reportContainer: Joi.string().default('reports'),
   dataRequestContainer: Joi.string().default('data-requests'),
@@ -24,7 +24,6 @@ const schema = Joi.object({
   sfiStatusReport: Joi.string().default('sustainable-farming-incentive.csv'),
   delinkedStatusReport: Joi.string().default('delinked-payment-statement.csv'),
   managedIdentityClientId: Joi.string().optional()
-
 })
 
 // Build config
@@ -32,7 +31,7 @@ const config = {
   payConnectionStr: process.env.PAY_AZURE_STORAGE_CONNECTION_STRING,
   docConnectionStr: process.env.DOC_AZURE_STORAGE_CONNECTION_STRING,
   payStorageAccount: process.env.PAY_AZURE_STORAGE_ACCOUNT_NAME,
-  docStorageAccount: process.env.DOC_AZURE_STORAGE_ACCOUNT_NAME,
+  doctorageAccount: process.env.DOC_AZURE_STORAGE_ACCOUNT_NAME,
   projectionContainer: process.env.AZURE_STORAGE_CONTAINER_PROJECTION,
   dataRequestContainer: process.env.AZURE_STORAGE_DATA_REQUEST_CONTAINER,
   statementsContainer: process.env.AZURE_STORAGE_STATEMENTS_CONTAINER,

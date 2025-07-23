@@ -30,7 +30,7 @@ jest.mock('@azure/identity', () => ({
 
 let config
 let getPayContainerClient
-let getDocsContainerClient
+let getDocContainerClient
 
 describe('blob-service tests', () => {
   beforeEach(() => {
@@ -44,16 +44,16 @@ describe('blob-service tests', () => {
         payConnectionStr: 'fake-pay-connection',
         payStorageAccount: 'pay-account',
         payManagedIdentityClientId: 'pay-id',
-        docConnectionStr: 'fake-docs-connection',
-        docStorageAccount: 'docs-account',
-        docsManagedIdentityClientId: 'docs-id'
+        docConnectionStr: 'fake-doc-connection',
+        docStorageAccount: 'doc-account',
+        docManagedIdentityClientId: 'doc-id'
       }
     }))
 
     config = require('../../../app/config').storageConfig
     const blobService = require('../../../app/storage/blob-service')
     getPayContainerClient = blobService.getPayContainerClient
-    getDocsContainerClient = blobService.getDocsContainerClient
+    getDocContainerClient = blobService.getDocContainerClient
   })
 
   test('getPayContainerClient creates container when createContainers is true', async () => {
@@ -67,13 +67,13 @@ describe('blob-service tests', () => {
     expect(client).toBeDefined()
   })
 
-  test('getDocsContainerClient creates container when createContainers is true', async () => {
+  test('getDocContainerClient creates container when createContainers is true', async () => {
     mockCreateIfNotExists.mockResolvedValue({ succeeded: false })
 
-    const client = await getDocsContainerClient('docs-container')
+    const client = await getDocContainerClient('doc-container')
 
     expect(mockFromConnectionString).toHaveBeenCalled()
-    expect(mockGetContainerClient).toHaveBeenCalledWith('docs-container')
+    expect(mockGetContainerClient).toHaveBeenCalledWith('doc-container')
     expect(mockCreateIfNotExists).toHaveBeenCalled()
     expect(client).toBeDefined()
   })
@@ -88,13 +88,13 @@ describe('blob-service tests', () => {
     expect(client).toBeDefined()
   })
 
-  test('getDocsContainerClient skips createIfNotExists when createContainers is false', async () => {
+  test('getDocContainerClient skips createIfNotExists when createContainers is false', async () => {
     config.createContainers = false
 
-    const client = await getDocsContainerClient('docs-container')
+    const client = await getDocContainerClient('doc-container')
 
     expect(mockCreateIfNotExists).not.toHaveBeenCalled()
-    expect(mockGetContainerClient).toHaveBeenCalledWith('docs-container')
+    expect(mockGetContainerClient).toHaveBeenCalledWith('doc-container')
     expect(client).toBeDefined()
   })
 

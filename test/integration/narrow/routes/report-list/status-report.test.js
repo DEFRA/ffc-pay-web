@@ -1,11 +1,11 @@
 const Hapi = require('@hapi/hapi')
 const routes = require('../../../../../app/routes/report-list/status-report')
 const REPORT_LIST = require('../../../../../app/constants/report-list')
-const { getValidReportYears, getReportsByYearAndType } = require('../../../../../app/storage/docs-reports')
+const { getValidReportYears, getReportsByYearAndType } = require('../../../../../app/storage/doc-reports')
 const { mapStatusReportsToTaskList } = require('../../../../../app/helpers/map-status-report-to-task-list')
 const { handleStreamResponse } = require('../../../../../app/helpers')
 
-jest.mock('../../../../../app/storage/docs-reports', () => ({
+jest.mock('../../../../../app/storage/doc-reports', () => ({
   getValidReportYears: jest.fn(),
   getReportsByYearAndType: jest.fn(),
   getStatusReport: jest.fn()

@@ -8,18 +8,18 @@ jest.mock('../../../app/config', () => ({
 
 jest.mock('../../../app/storage/blob-service', () => ({
   getPayContainerClient: jest.fn(),
-  getDocsContainerClient: jest.fn()
+  getDocContainerClient: jest.fn()
 }))
 
 describe('getContainerClient', () => {
   let getPayContainerClient
-  let getDocsContainerClient
+  let getDocContainerClient
   let getContainerClient
 
   beforeEach(() => {
     jest.resetModules()
     getPayContainerClient = require('../../../app/storage/blob-service').getPayContainerClient
-    getDocsContainerClient = require('../../../app/storage/blob-service').getDocsContainerClient
+    getDocContainerClient = require('../../../app/storage/blob-service').getDocContainerClient
     getContainerClient = require('../../../app/storage/container-manager').getContainerClient
   })
 
@@ -43,13 +43,13 @@ describe('getContainerClient', () => {
     expect(client).toBe(mockClient)
   })
 
-  test('returns docs client for statements-container', async () => {
+  test('returns doc client for statements-container', async () => {
     const mockClient = { name: 'statements-client' }
-    getDocsContainerClient.mockResolvedValue(mockClient)
+    getDocContainerClient.mockResolvedValue(mockClient)
 
     const client = await getContainerClient('statements-container')
 
-    expect(getDocsContainerClient).toHaveBeenCalledWith('statements-container')
+    expect(getDocContainerClient).toHaveBeenCalledWith('statements-container')
     expect(client).toBe(mockClient)
   })
 

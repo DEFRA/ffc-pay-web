@@ -1,4 +1,4 @@
-const { getValidReportYears, getReportsByYearAndType, getStatusReport } = require('../../../app/storage/docs-reports')
+const { getValidReportYears, getReportsByYearAndType, getStatusReport } = require('../../../app/storage/doc-reports')
 const { getContainerClient } = require('../../../app/storage/container-manager')
 
 jest.mock('../../../app/config', () => ({

@@ -12,13 +12,13 @@ const createBlobServiceClient = (connectionString, storageAccount, managedIdenti
 const payBlobClient = createBlobServiceClient(
   config.payConnectionStr,
   config.payStorageAccount,
-  config.payManagedIdentityClientId
+  config.managedIdentityClientId
 )
 
-const docsBlobClient = createBlobServiceClient(
+const docBlobClient = createBlobServiceClient(
   config.docConnectionStr,
-  config.docStorageAccount,
-  config.docsManagedIdentityClientId
+  config.doctorageAccount,
+  config.managedIdentityClientId
 )
 
 const getPayContainerClient = async (containerName) => {
@@ -32,12 +32,11 @@ const getPayContainerClient = async (containerName) => {
   return containerClient
 }
 
-const getDocsContainerClient = async (containerName) => {
-  const containerClient = docsBlobClient.getContainerClient(containerName)
+const getDocContainerClient = async (containerName) => {
+  const containerClient = docBlobClient.getContainerClient(containerName)
 
   if (config.createContainers) {
-    const { succeeded } = await containerClient.createIfNotExists()
-    console.log(`DOCS container '${containerName}': ${succeeded ? 'created' : 'already exists'}`)
+    await containerClient.createIfNotExists()
   }
 
   return containerClient
@@ -45,5 +44,5 @@ const getDocsContainerClient = async (containerName) => {
 
 module.exports = {
   getPayContainerClient,
-  getDocsContainerClient
+  getDocContainerClient
 }

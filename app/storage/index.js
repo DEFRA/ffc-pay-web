@@ -8,7 +8,7 @@ const {
   getValidReportYears,
   getReportsByYearAndType,
   getStatusReport
-} = require('./docs-reports')
+} = require('./doc-reports')
 
 module.exports = {
   getMIReport,
