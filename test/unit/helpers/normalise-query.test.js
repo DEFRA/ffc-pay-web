@@ -15,7 +15,7 @@ const DEFAULT_START_DATE = '2015-01-01'
 describe('normaliseQuery', () => {
   test('should set startDate and endDate when schemeId is absent (AP-AR report) with complete valid date parts', () => {
     const query = {
-      'report-type': 'summary',
+      'select-type': 'summary',
       'start-date-day': '1',
       'start-date-month': '2',
       'start-date-year': '2020',
@@ -38,7 +38,7 @@ describe('normaliseQuery', () => {
 
   test('should set startDate and endDate when schemeId is present and all date parts provided (valid date range)', () => {
     const query = {
-      'report-type': 'detailed',
+      'select-type': 'detailed',
       'start-date-day': '5',
       'start-date-month': '6',
       'start-date-year': '2019',
@@ -61,7 +61,7 @@ describe('normaliseQuery', () => {
 
   test('should leave startDate and endDate as null when schemeId is present and date parts are incomplete', () => {
     const query = {
-      'report-type': 'detailed',
+      'select-type': 'detailed',
       'start-date-month': '6',
       'start-date-year': '2019',
       'end-date-day': '15',
@@ -95,7 +95,7 @@ describe('normaliseQuery', () => {
     }
 
     const query = {
-      'report-type': 'overview',
+      'select-type': 'overview',
       'start-date-day': '',
       'start-date-month': '',
       'start-date-year': '',
@@ -116,7 +116,7 @@ describe('normaliseQuery', () => {
 
   test('should forward other properties unchanged', () => {
     const query = {
-      'report-type': 'test',
+      'select-type': 'test',
       schemeId: 'S999',
       year: '2022',
       prn: 'PRN005',

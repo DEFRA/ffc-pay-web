@@ -31,7 +31,7 @@ jest.mock('@azure/storage-blob', () => {
 })
 jest.mock('../../../../../app/holds')
 jest.mock('../../../../../app/api')
-jest.mock('../../../../../app/storage')
+jest.mock('../../../../../app/storage/pay-reports')
 jest.mock('../../../../../app/helpers/get-schemes')
 
 describe('Report test', () => {

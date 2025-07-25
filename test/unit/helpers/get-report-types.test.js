@@ -29,7 +29,8 @@ describe('getReportTypes', () => {
       'AP-AR listing report': 'ap-ar-report',
       Holds: 'holds',
       'Request Editor report': 'request-editor-report',
-      'Claim level report': 'claim-level-report'
+      'Claim level report': 'claim-level-report',
+      'Status Report': 'status-report'
     })
   })
 

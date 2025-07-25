@@ -15,8 +15,8 @@ const { VALUE } = require('../../mocks/values/value')
 const { CATEGORY } = require('../../mocks/values/category')
 
 const { getData } = require('../../../app/payments/get-data')
-const { getDataRequestFile } = require('../../../app/storage')
-jest.mock('../../../app/storage')
+const { getDataRequestFile } = require('../../../app/storage/pay-reports')
+jest.mock('../../../app/storage/pay-reports')
 
 describe('get data', () => {
   beforeEach(() => {

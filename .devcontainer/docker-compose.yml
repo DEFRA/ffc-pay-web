@@ -11,7 +11,8 @@ services:
       - ../.gitignore:/workspaces:cached/.gitignore
       - ..:/workspaces:cached
     environment:
-      AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://ffc-pay-event-store-azurite:10000/devstoreaccount1;TableEndpoint=http://ffc-pay-event-store-azurite:10002/devstoreaccount1;
+      PAY_WEB_AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://ffc-pay-event-store-azurite:10000/devstoreaccount1;TableEndpoint=http://ffc-pay-event-store-azurite:10002/devstoreaccount1;
+      DOC_PUBLISHING_AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://ffc-pay-event-store-azurite:10000/devstoreaccount1;TableEndpoint=http://ffc-pay-event-store-azurite:10002/devstoreaccount1;
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk
   
   ffc-pay-event-store-azurite:

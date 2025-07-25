@@ -16,7 +16,7 @@ module.exports = {
           }
         },
         prepare: (options, next) => {
-          options.compileOptions.environment = nunjucks.configure([
+          const env = nunjucks.configure([
             path.join(options.relativeTo || process.cwd(), ...options.path),
             'app/views',
             'node_modules/govuk-frontend/dist'
@@ -25,6 +25,7 @@ module.exports = {
             watch: config.isDev
           })
 
+          options.compileOptions.environment = env
           return next()
         }
       }

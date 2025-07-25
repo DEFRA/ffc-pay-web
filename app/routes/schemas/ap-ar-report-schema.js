@@ -67,7 +67,7 @@ const getSchema = () => {
   return Joi.object({
     'report-title': Joi.string().required(),
     'report-url': Joi.string().required(),
-    'report-type': Joi.string().valid(...allowedReportTypes),
+    'select-type': Joi.string().valid(...allowedReportTypes),
 
     'start-date-day': createDatePartSchema(minDate, maxDateDay),
     'start-date-month': createDatePartSchema(minDate, maxDateMonth),

@@ -10,6 +10,8 @@ const basePaths = {
   SUPPRESSED_PAYMENTS: `${reportListPath}/suppressed-payments`,
   HOLDS: `${reportListPath}/holds`,
   AP_AR: `${reportListPath}/ap-ar-report`,
+  STATUS: `${reportListPath}/status-report`,
+  STATUS_SEARCH: `${reportListPath}/status-report/search`,
   REPORT_UNAVAILABLE: '/report-unavailable'
 }
 
@@ -18,5 +20,6 @@ module.exports = {
   PAYMENT_REQUESTS_V2_DOWNLOAD: buildDownload(basePaths.PAYMENT_REQUESTS_V2),
   TRANSACTION_SUMMARY_DOWNLOAD: buildDownload(basePaths.TRANSACTION_SUMMARY),
   CLAIM_LEVEL_REPORT_DOWNLOAD: buildDownload(basePaths.CLAIM_LEVEL_REPORT),
-  AP_AR_DOWNLOAD: buildDownload(basePaths.AP_AR)
+  AP_AR_DOWNLOAD: buildDownload(basePaths.AP_AR),
+  STATUS_DOWNLOAD: buildDownload(basePaths.STATUS)
 }

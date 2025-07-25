@@ -2,11 +2,14 @@ const Joi = require('joi')
 
 // Define config schema
 const schema = Joi.object({
-  connectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
-  storageAccount: Joi.string().required(),
+  payConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
+  docConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
+  payStorageAccount: Joi.string().required(),
+  docStorageAccount: Joi.string().required(),
   projectionContainer: Joi.string().default('payeventstore'),
   reportContainer: Joi.string().default('reports'),
   dataRequestContainer: Joi.string().default('data-requests'),
+  statementsContainer: Joi.string().default('statements'),
   useConnectionStr: Joi.boolean().default(false),
   createContainers: Joi.boolean().default(true),
   holdReportName: Joi.boolean().default('ffc-pay-hold-report.csv'),
@@ -18,16 +21,20 @@ const schema = Joi.object({
   requestEditorReportName: Joi.string().default('ffc-pay-request-editor-report.csv'),
   claimLevelReportName: Joi.string().default('ffc-pay-claim-level-report.csv'),
   paymentRequestsReportName: Joi.string().default('ffc-pay-requests-statuses-report.csv'),
+  sfiStatusReport: Joi.string().default('sustainable-farming-incentive.csv'),
+  delinkedStatusReport: Joi.string().default('delinked-payment-statement.csv'),
   managedIdentityClientId: Joi.string().optional()
-
 })
 
 // Build config
 const config = {
-  connectionStr: process.env.AZURE_STORAGE_CONNECTION_STRING,
-  storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME,
+  payConnectionStr: process.env.PAY_AZURE_STORAGE_CONNECTION_STRING,
+  docConnectionStr: process.env.DOC_AZURE_STORAGE_CONNECTION_STRING,
+  payStorageAccount: process.env.PAY_AZURE_STORAGE_ACCOUNT_NAME,
+  docStorageAccount: process.env.DOC_AZURE_STORAGE_ACCOUNT_NAME,
   projectionContainer: process.env.AZURE_STORAGE_CONTAINER_PROJECTION,
   dataRequestContainer: process.env.AZURE_STORAGE_DATA_REQUEST_CONTAINER,
+  statementsContainer: process.env.AZURE_STORAGE_STATEMENTS_CONTAINER,
   reportContainer: process.env.AZURE_STORAGE_CONTAINER_REPORT,
   useConnectionStr: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,
   createContainers: process.env.AZURE_STORAGE_CREATE_CONTAINERS,
@@ -41,7 +48,6 @@ const config = {
   claimLevelReportName: process.env.CLAIM_LEVEL_REPORT_NAME,
   paymentRequestsReportName: process.env.PAYMENT_REQUESTS_REPORT_NAME,
   managedIdentityClientId: process.env.AZURE_CLIENT_ID
-
 }
 
 // Validate config

@@ -1,4 +1,7 @@
 networks:
   default:
-    external:
-      name: ffc-pay
+    name: ffc-pay
+    external: true
+  docs:
+    name: ffc-doc
+    external: true

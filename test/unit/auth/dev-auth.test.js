@@ -1,5 +1,5 @@
 const devAuth = require('../../../app/auth/dev-auth')
-const { schemeAdmin, holdAdmin, dataView, closureAdmin } = require('../../../app/auth/permissions')
+const { schemeAdmin, holdAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked } = require('../../../app/auth/permissions')
 const devAccount = require('../../../app/auth/dev-account')
 let mockCookieAuth
 
@@ -23,7 +23,7 @@ describe('dev authentication', () => {
 
   test('authenticate should set scopes in cookieAuth', async () => {
     await devAuth.authenticate('redirectCode', mockCookieAuth)
-    expect(mockCookieAuth.set.mock.calls[0][0].scope).toStrictEqual([holdAdmin, schemeAdmin, dataView, closureAdmin])
+    expect(mockCookieAuth.set.mock.calls[0][0].scope).toStrictEqual([holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked])
   })
 
   test('authenticate should set account in cookieAuth', async () => {
@@ -38,7 +38,7 @@ describe('dev authentication', () => {
 
   test('refresh should set scopes in cookieAuth', async () => {
     await devAuth.refresh(devAccount, mockCookieAuth)
-    expect(mockCookieAuth.set.mock.calls[0][0].scope).toStrictEqual([holdAdmin, schemeAdmin, dataView, closureAdmin])
+    expect(mockCookieAuth.set.mock.calls[0][0].scope).toStrictEqual([holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked])
   })
 
   test('refresh should set account in cookieAuth', async () => {
@@ -48,7 +48,7 @@ describe('dev authentication', () => {
 
   test('refresh should return roles', async () => {
     const result = await devAuth.refresh(devAccount, mockCookieAuth)
-    expect(result).toStrictEqual([holdAdmin, schemeAdmin, dataView, closureAdmin])
+    expect(result).toStrictEqual([holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked])
   })
 
   test('logout should update homeAccountId', async () => {

@@ -60,7 +60,7 @@
 {% endmacro %}
 
 {% macro submitButton(label = "Download report") %}
-  <button class="govuk-button" data-module="govuk-button">{{ label }}</button>
+    <button class="govuk-button" data-module="govuk-button">{{ label }}</button>
 {% endmacro %}
 
 {% macro prnInput(prnValue = '') %}
@@ -75,25 +75,16 @@
   </div>
 {% endmacro %}
 
-{% macro reportTypeSelect(selectedType = '') %}
+{% macro typeSelect(selectedType = '', items = [], label = "Report Type") %}
   {{ govukSelect({
-    id: "report-type",
-    name: "report-type",
+    id: "select-type",
+    name: "select-type",
     label: {
-      text: "Report Type"
+      text: label
     },
-    items: [
-      {
-        value: "ap-listing-report",
-        text: "AP Listing Report",
-        selected: selectedType == "ap-listing-report"
-      },
-      {
-        value: "ar-listing-report",
-        text: "AR Listing Report",
-        selected: selectedType == "ar-listing-report"
-      }
-    ]
+    items: items,
+    value: selectedType,
+    disabled: items | length == 1
   }) }}
 {% endmacro %}
 

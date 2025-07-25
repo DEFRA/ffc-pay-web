@@ -3,7 +3,7 @@ const util = require('util')
 const { TYPE } = require('../constants/type')
 const config = require('../config')
 const { sendMessage, receiveMessage } = require('../messaging')
-const { getDataRequestFile } = require('../storage')
+const { getDataRequestFile } = require('../storage/pay-reports')
 
 const streamToString = async (readableStream) => {
   return new Promise((resolve, reject) => {

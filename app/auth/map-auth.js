@@ -1,5 +1,5 @@
 const isInRole = require('./is-in-role')
-const { schemeAdmin, holdAdmin, dataView, closureAdmin } = require('./permissions')
+const { schemeAdmin, holdAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked } = require('./permissions')
 
 const mapAuth = (request) => {
   return {
@@ -8,7 +8,8 @@ const mapAuth = (request) => {
     isSchemeAdminUser: request.auth.isAuthenticated && isInRole(request.auth.credentials, schemeAdmin),
     isHoldAdminUser: request.auth.isAuthenticated && isInRole(request.auth.credentials, holdAdmin),
     isDataViewUser: request.auth.isAuthenticated && isInRole(request.auth.credentials, dataView),
-    isClosureAdminUser: request.auth.isAuthenticated && isInRole(request.auth.credentials, closureAdmin)
+    isClosureAdminUser: request.auth.isAuthenticated && isInRole(request.auth.credentials, closureAdmin),
+    isStatusReportUser: request.auth.isAuthenticated && (isInRole(request.auth.credentials, statusReportSfi23) || isInRole(request.auth.credentials, statusReportsDelinked))
   }
 }
 

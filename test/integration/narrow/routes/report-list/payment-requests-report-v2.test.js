@@ -74,7 +74,7 @@ describe('Payment Requests V2 Report Routes', () => {
 
     expect(res.statusCode).toBe(200)
     expect(res.payload).toBe('<html>payment-requests form</html>')
-    expect(getView).toHaveBeenCalledWith(REPORT_VIEWS.PAYMENT_REQUESTS, expect.any(Object))
+    expect(getView).toHaveBeenCalledWith(REPORT_VIEWS.PAYMENT_REQUESTS_V2, expect.any(Object))
   })
 
   test('GET download route with valid params returns CSV', async () => {

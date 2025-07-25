@@ -1,24 +1,14 @@
-const { getMIReport, getSuppressedReport } = require('../../storage')
+const { getMIReport, getSuppressedReport } = require('../../storage/pay-reports')
 const { getHolds } = require('../../holds')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 const { formatDateFromString } = require('../../helpers/format-date')
 const storageConfig = require('../../config/storage')
+const REPORT_LIST = require('../../constants/report-list')
+const REPORT_VIEWS = require('../../constants/report-views')
 const {
   handleCSVResponse,
   handleStreamResponse
 } = require('../../helpers')
-
-const REPORT_LIST = {
-  PAYMENT_REQUESTS: '/report-list/payment-requests',
-  SUPPRESSED_PAYMENTS: '/report-list/suppressed-payments',
-  HOLDS: '/report-list/holds',
-  REPORT_UNAVAILABLE: '/report-unavailable'
-}
-const REPORTS_VIEWS = {
-  PAYMENT_REQUESTS: 'reports-list/payment-requests',
-  HOLD_REPORT_UNAVAILABLE: 'hold-report-unavailable',
-  REPORT_UNAVAILABLE: 'report-unavailable'
-}
 
 const authOptions = { scope: [schemeAdmin, holdAdmin, dataView] }
 
@@ -55,7 +45,7 @@ module.exports = [
           const paymentHolds = await getHolds(undefined, undefined, false)
 
           if (!paymentHolds) {
-            return h.view(REPORTS_VIEWS.HOLD_REPORT_UNAVAILABLE)
+            return h.view(REPORT_VIEWS.HOLD_REPORT_UNAVAILABLE)
           }
 
           const paymentHoldsData = paymentHolds.map(hold => ({
@@ -72,7 +62,7 @@ module.exports = [
           )(h)
         } catch (error) {
           console.error('Holds report generation failed.', error)
-          return h.view(REPORTS_VIEWS.HOLD_REPORT_UNAVAILABLE)
+          return h.view(REPORT_VIEWS.HOLD_REPORT_UNAVAILABLE)
         }
       }
     }
@@ -83,7 +73,7 @@ module.exports = [
     options: {
       auth: authOptions,
       handler: async (_request, h) => {
-        return h.view(REPORTS_VIEWS.REPORT_UNAVAILABLE)
+        return h.view(REPORT_VIEWS.REPORT_UNAVAILABLE)
       }
     }
   }

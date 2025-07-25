@@ -7,26 +7,28 @@
     items: [{
       text: "Home",
       href: "/"
-    },
-    {
+    }, {
       text: "Report List",
       href: "/report-list"
-    },{
+    }, {
       text: reportTitle,
       href: reportUrl
     }]
-  })}}
+  }) }}
+
   {% if errors %}
     {{ govukErrorSummary({
       titleText: "There is a problem",
       errorList: errors
-    }) 
-  }}
+    }) }}
   {% endif %}
+
   <form id="reportForm" method="get" action="{{ formAction }}">
     <input type="hidden" name="report-url" value="{{ reportUrl }}">
-    <input type="hidden" name="report-title" value="{{ reportTitle }}">  
+    <input type="hidden" name="report-title" value="{{ reportTitle }}">
+    
     {% block reportContent %}{% endblock %}
-    {{ submitButton() }}
+    
+    {{ submitButton(reportSubmitLabel or "Download report") }}
   </form>
 {% endblock %}

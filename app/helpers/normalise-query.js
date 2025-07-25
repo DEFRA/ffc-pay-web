@@ -12,7 +12,7 @@ const getDateOrDefault = (day, month, year, defaultValue) =>
 
 const normaliseQuery = (query) => {
   const {
-    'report-type': reportType,
+    'select-type': reportType,
     'start-date-day': startDay,
     'start-date-month': startMonth,
     'start-date-year': startYear,
