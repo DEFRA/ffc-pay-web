@@ -47,7 +47,7 @@ container:
   azureStorageCreateContainers: false
   azureStorageConnectionString: dummy
   docAzureStorageConnectionString: dummy
-  payAzureStorageAccountName: ffcpay
+  azureStorageAccountName: ffcpay
   docAzureStorageAccountName: ffcdoc
   useV2Events: true
   legacyReportsActive: true
