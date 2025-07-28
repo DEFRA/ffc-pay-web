@@ -6,7 +6,7 @@ const createBlobServiceClient = (connectionString, storageAccount, managedIdenti
   config.useConnectionStr
     ? (console.log('Using connection string for BlobServiceClient'),
       BlobServiceClient.fromConnectionString(connectionString))
-    : (console.log('Using DefaultAzureCredential for BlobServiceClient'),
+    : (console.log(`Using DefaultAzureCredential for ${storageAccount} BlobServiceClient`),
       new BlobServiceClient(`https://${storageAccount}.blob.core.windows.net`, new DefaultAzureCredential({ managedIdentityClientId })))
 
 const payBlobClient = createBlobServiceClient(
@@ -25,8 +25,7 @@ const getPayContainerClient = async (containerName) => {
   const containerClient = payBlobClient.getContainerClient(containerName)
 
   if (config.createContainers) {
-    const { succeeded } = await containerClient.createIfNotExists()
-    console.log(`PAY container '${containerName}': ${succeeded ? 'created' : 'already exists'}`)
+    await containerClient.createIfNotExists()
   }
 
   return containerClient

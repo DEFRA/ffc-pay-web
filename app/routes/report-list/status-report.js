@@ -35,8 +35,6 @@ module.exports = [
         const years = await getValidReportYears()
         const userScopes = request.auth.credentials.scope || []
 
-        console.log('User scopes:', userScopes)
-
         const reportTypeItems = Object.entries(reportTypes)
           .filter(([_, { scope }]) => userScopes.includes(scope))
           .map(([value, { display }]) => ({
