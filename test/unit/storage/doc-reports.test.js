@@ -3,7 +3,7 @@ const { getContainerClient } = require('../../../app/storage/container-manager')
 
 jest.mock('../../../app/config', () => ({
   storageConfig: {
-    reportsFolder: 'reports/',
+    statusReportsFolder: 'reports',
     sfiStatusReport: 'sfi-status.csv',
     delinkedStatusReport: 'delinked-status.csv',
     statementsContainer: 'mock-container'
