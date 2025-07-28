@@ -7,13 +7,13 @@ const REPORT_TYPE_PREFIXES = [
 ]
 
 const stripReportsFolder = (blobName) =>
-  blobName.startsWith(config.reportsFolder) ? blobName.slice(config.reportsFolder.length) : blobName
+  blobName.startsWith(config.statusReportsFolder) ? blobName.replace(`${config.statusReportsFolder}/`, '') : blobName
 
 const getValidReportYears = async () => {
   const statementsContainer = await getContainerClient(config.statementsContainer)
   const yearTypeSet = new Set()
 
-  for await (const blob of statementsContainer.listBlobsFlat({ prefix: config.reportsFolder })) {
+  for await (const blob of statementsContainer.listBlobsFlat({ prefix: config.statusReportsFolder })) {
     const rawName = stripReportsFolder(blob.name)
     const prefix = REPORT_TYPE_PREFIXES.find(p => rawName.startsWith(p))
 
