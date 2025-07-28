@@ -10,6 +10,7 @@ const schema = Joi.object({
   reportContainer: Joi.string().default('reports'),
   dataRequestContainer: Joi.string().default('data-requests'),
   statementsContainer: Joi.string().default('statements'),
+  reportsFolder: Joi.string().default('reports/'),
   useConnectionStr: Joi.boolean().default(false),
   createContainers: Joi.boolean().default(true),
   holdReportName: Joi.boolean().default('ffc-pay-hold-report.csv'),
