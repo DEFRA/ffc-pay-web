@@ -13,8 +13,8 @@ const getValidReportYears = async () => {
   const statementsContainer = await getContainerClient(config.statementsContainer)
   const yearTypeSet = new Set()
 
-  for await (const blob of statementsContainer.listBlobsFlat({ prefix: config.statusReportsFolder })) {
-    const rawName = stripReportsFolder(blob.name)
+  for await (const { name } of statementsContainer.listBlobsFlat({ prefix: config.statusReportsFolder })) {
+    const rawName = stripReportsFolder(name)
     const prefix = REPORT_TYPE_PREFIXES.find(p => rawName.startsWith(p))
 
     if (prefix) {
@@ -47,8 +47,8 @@ const getReportsByYearAndType = async (year, type) => {
   }
 
   const reports = []
-  for await (const blob of statementsContainer.listBlobsFlat()) {
-    const rawName = stripReportsFolder(blob.name)
+  for await (const { name } of statementsContainer.listBlobsFlat({ prefix: config.statusReportsFolder })) {
+    const rawName = stripReportsFolder(name)
 
     if (rawName.startsWith(rawPrefix)) {
       const datePart = rawName.replace(rawPrefix, '').replace('.csv', '')
@@ -56,7 +56,7 @@ const getReportsByYearAndType = async (year, type) => {
 
       if (!isNaN(reportDate.getTime()) && reportDate.getFullYear() === Number(year)) {
         reports.push({
-          name: blob.name,
+          name: name,
           date: reportDate,
           type
         })
