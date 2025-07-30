@@ -56,7 +56,7 @@ const getReportsByYearAndType = async (year, type) => {
 
       if (!isNaN(reportDate.getTime()) && reportDate.getFullYear() === Number(year)) {
         reports.push({
-          name: name,
+          name,
           date: reportDate,
           type
         })

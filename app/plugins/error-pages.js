@@ -1,7 +1,10 @@
-const HTTP_NOT_AUTHORIZED = 401
-const HTTP_FORBIDDEN = 403
-const HTTP_NOT_FOUND = 404
-const HTTP_SERVER_ERROR = 500
+const ERROR_VIEWS = require('../constants/error-views')
+const {
+  NOT_AUTHORIZED,
+  FORBIDDEN,
+  NOT_FOUND,
+  INTERNAL_SERVER_ERROR
+} = require('../constants/http-status-codes')
 
 module.exports = {
   plugin: {
@@ -10,32 +13,31 @@ module.exports = {
       server.ext('onPreResponse', (request, h) => {
         const response = request.response
 
-        if (response.isBoom) {
-          const statusCode = response.output.statusCode
-
-          if (
-            statusCode === HTTP_NOT_AUTHORIZED ||
-            statusCode === HTTP_FORBIDDEN
-          ) {
-            return h.view('unauthorized').code(statusCode)
-          }
-
-          if (statusCode === HTTP_NOT_FOUND) {
-            return h.view('404').code(statusCode)
-          }
-
-          request.log('error', {
-            statusCode,
-            data: response.data,
-            message: response.message
-          })
-
-          if (statusCode >= HTTP_SERVER_ERROR) {
-            return h.view('500').code(statusCode)
-          }
-
+        if (!response.isBoom) {
           return h.continue
         }
+
+        const statusCode = response.output.statusCode
+        const message = response.message || 'An unexpected error occurred'
+
+        if (statusCode === NOT_AUTHORIZED || statusCode === FORBIDDEN) {
+          return h.view(ERROR_VIEWS.NOT_AUTHORIZED, { message }).code(statusCode)
+        }
+
+        if (statusCode === NOT_FOUND) {
+          return h.view(ERROR_VIEWS.NOT_FOUND, { message }).code(statusCode)
+        }
+
+        if (statusCode === INTERNAL_SERVER_ERROR) {
+          return h.view(ERROR_VIEWS.INTERNAL_SERVER_ERROR, { message }).code(statusCode)
+        }
+
+        request.log('error', {
+          statusCode,
+          data: response.data,
+          message: response.message
+        })
+
         return h.continue
       })
     }

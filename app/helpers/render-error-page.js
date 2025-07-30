@@ -1,5 +1,5 @@
 const { getSchemes } = require('./get-schemes')
-const { BAD_REQUEST } = require('../constants/http-status')
+const { BAD_REQUEST } = require('../constants/http-status-codes')
 
 function mapValidationErrors (details = []) {
   return details.map(({ message, path = [] }) => ({

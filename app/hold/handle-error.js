@@ -1,4 +1,4 @@
-const { BAD_REQUEST } = require('../constants/http-status')
+const { BAD_REQUEST } = require('../constants/http-status-codes')
 const HOLDS_VIEWS = require('../constants/holds-views')
 const { getHoldCategories } = require('../holds')
 
