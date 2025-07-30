@@ -1,11 +1,10 @@
-const Boom = require('@hapi/boom');
+const Boom = require('@hapi/boom')
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')
 const { mapStatusReportsToTaskList } = require('../../helpers/map-status-report-to-task-list')
 const { getStatusReport, getReportsByYearAndType, getValidReportYearsByType } = require('../../storage/doc-reports')
 const { statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
 const { handleStreamResponse } = require('../../helpers')
-const { INTERNAL_SERVER_ERROR } = require('../../constants/http-status-codes')
 
 const authOptions = {
   scope: [statusReportSfi23, statusReportsDelinked]

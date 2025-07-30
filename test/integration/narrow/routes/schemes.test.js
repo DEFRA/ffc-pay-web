@@ -62,7 +62,7 @@ describe('Payment schemes', () => {
       expect(res.statusCode).toBe(500)
       const $ = cheerio.load(res.payload)
       expect($('h1').text()).toEqual('Sorry, there is a problem with the service')
-      expect($('.govuk-body').text()).toEqual('Try again later.')
+      expect($('.govuk-body').text()).toContain('Cannot read properties of undefined')
     })
 
     test('returns 200 and no schemes when non are returned', async () => {

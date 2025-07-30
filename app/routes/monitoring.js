@@ -6,7 +6,8 @@ const {
   getPaymentsByBatch
 } = require('../payments')
 const ViewModel = require('./models/monitoring')
-const HTTP_NOT_FOUND = 404
+const HTTP_STATUS = require('../constants/http-status-codes')
+const ERROR_VIEWS = require('../constants/error-views')
 
 module.exports = [
   {
@@ -17,7 +18,7 @@ module.exports = [
     },
     handler: async (_request, h) => {
       if (!config.useV2Events) {
-        return h.view('404').code(HTTP_NOT_FOUND)
+        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
       }
       return h.view('monitoring/monitoring', new ViewModel())
     }
@@ -30,7 +31,7 @@ module.exports = [
     },
     handler: async (request, h) => {
       if (!config.useV2Events) {
-        return h.view('404').code(HTTP_NOT_FOUND)
+        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
       }
       const frn = request.query.frn
       const payments = await getPaymentsByFrn(frn)
@@ -45,7 +46,7 @@ module.exports = [
     },
     handler: async (request, h) => {
       if (!config.useV2Events) {
-        return h.view('404').code(HTTP_NOT_FOUND)
+        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
       }
       const correlationId = request.query.correlationId
       const events = await getPaymentsByCorrelationId(correlationId)
@@ -60,7 +61,7 @@ module.exports = [
     },
     handler: async (request, h) => {
       if (!config.useV2Events) {
-        return h.view('404').code(HTTP_NOT_FOUND)
+        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
       }
       const batch = request.query.batch
       const payments = await getPaymentsByBatch(batch)
