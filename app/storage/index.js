@@ -5,7 +5,7 @@ const {
 } = require('./pay-reports')
 
 const {
-  getValidReportYears,
+  getValidReportYearsByType,
   getReportsByYearAndType,
   getStatusReport
 } = require('./doc-reports')
@@ -14,7 +14,7 @@ module.exports = {
   getMIReport,
   getSuppressedReport,
   getDataRequestFile,
-  getValidReportYears,
+  getValidReportYearsByType,
   getReportsByYearAndType,
   getStatusReport
 }

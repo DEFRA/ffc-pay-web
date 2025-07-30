@@ -1,10 +1,10 @@
 const Hapi = require('@hapi/hapi')
 const REPORT_LIST = require('../../../../../app/constants/report-list')
-const { getValidReportYears } = require('../../../../../app/storage/doc-reports')
+const { getValidReportYearsByType } = require('../../../../../app/storage/doc-reports')
 const { statusReportSfi23, statusReportsDelinked } = require('../../../../../app/auth/permissions')
 
 jest.mock('../../../../../app/storage/doc-reports', () => ({
-  getValidReportYears: jest.fn()
+  getValidReportYearsByType: jest.fn()
 }))
 
 describe('Status Report Routes', () => {
@@ -32,7 +32,7 @@ describe('Status Report Routes', () => {
       path: REPORT_LIST.STATUS,
       options: { auth: false },
       handler: async (request, h) => {
-        const years = await getValidReportYears()
+        const years = await getValidReportYearsByType()
         const userScopes = request.headers['x-test-scope']?.split(',') || []
         const reportTypeItems = []
 
@@ -63,7 +63,7 @@ describe('Status Report Routes', () => {
   })
 
   test('returns years and both report types when user has both scopes', async () => {
-    getValidReportYears.mockResolvedValue([2022, 2023])
+    getValidReportYearsByType.mockResolvedValue([2022, 2023])
 
     const res = await server.inject({
       method: 'GET',
@@ -82,7 +82,7 @@ describe('Status Report Routes', () => {
   })
 
   test('returns only SFI report type if user has only SFI scope', async () => {
-    getValidReportYears.mockResolvedValue([2023])
+    getValidReportYearsByType.mockResolvedValue([2023])
 
     const res = await server.inject({
       method: 'GET',
@@ -100,7 +100,7 @@ describe('Status Report Routes', () => {
   })
 
   test('returns only Delinked report type if user has only Delinked scope', async () => {
-    getValidReportYears.mockResolvedValue([2021, 2022])
+    getValidReportYearsByType.mockResolvedValue([2021, 2022])
 
     const res = await server.inject({
       method: 'GET',

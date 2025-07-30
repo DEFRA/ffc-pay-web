@@ -21,11 +21,11 @@ module.exports = {
         const message = response.message || 'An unexpected error occurred'
 
         if (statusCode === NOT_AUTHORIZED || statusCode === FORBIDDEN) {
-          return h.view(ERROR_VIEWS.NOT_AUTHORIZED, { message }).code(statusCode)
+          return h.view(ERROR_VIEWS.NOT_AUTHORIZED).code(statusCode)
         }
 
         if (statusCode === NOT_FOUND) {
-          return h.view(ERROR_VIEWS.NOT_FOUND, { message }).code(statusCode)
+          return h.view(ERROR_VIEWS.NOT_FOUND).code(statusCode)
         }
 
         if (statusCode === INTERNAL_SERVER_ERROR) {

@@ -9,7 +9,7 @@ const REPORT_TYPE_PREFIXES = [
 const stripReportsFolder = (blobName) =>
   blobName.startsWith(config.statusReportsFolder) ? blobName.replace(`${config.statusReportsFolder}/`, '') : blobName
 
-const getValidReportYears = async () => {
+const getValidReportYearsByType = async () => {
   const statementsContainer = await getContainerClient(config.statementsContainer)
   const yearTypeSet = new Set()
 
@@ -24,7 +24,7 @@ const getValidReportYears = async () => {
         .replace(/_/g, ':')
 
       const reportDate = new Date(datePart)
-
+      console.log('reportDate', reportDate, 'datePart', datePart)
       if (!isNaN(reportDate.getTime())) {
         const year = reportDate.getFullYear()
         const type = prefix.replace(/-$/, '')
@@ -74,7 +74,7 @@ const getStatusReport = async (reportName) => {
 }
 
 module.exports = {
-  getValidReportYears,
+  getValidReportYearsByType,
   getReportsByYearAndType,
   getStatusReport
 }

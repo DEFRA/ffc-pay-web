@@ -28,8 +28,8 @@
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label-s" for="report-year">Select the year</label>
       <select class="govuk-select" id="report-year" name="report-year">
-        {% for year in years %}
-          <option value="{{ year.year }}" data-type="{{ year.type }}">{{ year.year }}</option>
+        {% for item in yearTypeItems %}
+          <option value="{{ item.year }}" data-type="{{ item.type }}">{{ item.year }}</option>
         {% else %}
           <option value="" disabled>No reports available</option>
         {% endfor %}
@@ -37,21 +37,46 @@
     </div>
 
 <script>
-  const typeSelect = document.getElementById('select-type');
-  const reportYearSelect = document.getElementById('report-year');
-  function filterYears() {
-    const selectedType = typeSelect.value;
-    for (const option of reportYearSelect.options) {
-      if (!option.value) continue;
-      option.hidden = option.dataset.type !== selectedType;
+  document.addEventListener('DOMContentLoaded', function () {
+    const typeSelect = document.getElementById('select-type')
+    const reportYearSelect = document.getElementById('report-year')
+    const reportSubmit = document.getElementById('report-submit')
+
+    function filterYears() {
+      const selectedType = typeSelect.value
+      let hasVisibleOption = false
+
+      for (const option of reportYearSelect.options) {
+        if (!option.value) continue
+        const match = option.dataset.type === selectedType
+        option.hidden = !match
+        if (match) hasVisibleOption = true
+      }
+
+      const placeholderOption = reportYearSelect.querySelector('option.no-reports')
+      if (placeholderOption) {
+        reportYearSelect.removeChild(placeholderOption)
+      }
+
+      if (hasVisibleOption) {
+        const firstVisible = Array.from(reportYearSelect.options).find(opt => !opt.hidden && opt.value)
+        reportYearSelect.value = firstVisible?.value || ''
+        reportYearSelect.disabled = false
+        reportSubmit.disabled = false
+      } else {
+        const noReportsOption = document.createElement('option')
+        noReportsOption.text = 'No reports available'
+        noReportsOption.selected = true
+        noReportsOption.classList.add('no-reports')
+        reportYearSelect.appendChild(noReportsOption)
+        reportSubmit.disabled = true
+      }
     }
-    reportYearSelect.value = '';
-    const firstVisible = Array.from(reportYearSelect.options).find(opt => !opt.hidden && opt.value);
-    if (firstVisible) reportYearSelect.value = firstVisible.value;
-  }
-  if (typeSelect) {
-    typeSelect.addEventListener('change', filterYears);
-    filterYears();
-  }
+
+    if (typeSelect && reportYearSelect) {
+      typeSelect.addEventListener('change', filterYears)
+      filterYears()
+    }
+  })
 </script>
 {% endblock %}
