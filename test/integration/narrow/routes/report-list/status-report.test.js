@@ -116,4 +116,47 @@ describe('Status Report Routes', () => {
       { value: 'delinked-payment-statement', text: 'Delinked' }
     ])
   })
+
+  test('returns 500 when getValidReportYearsByType throws an error', async () => {
+    getValidReportYearsByType.mockRejectedValue(new Error('DB error'))
+
+    const res = await server.inject({
+      method: 'GET',
+      url: REPORT_LIST.STATUS,
+      headers: {
+        'x-test-scope': `${statusReportSfi23},${statusReportsDelinked}`
+      }
+    })
+
+    expect(res.statusCode).toBe(500)
+    expect(res.result.message).toBe('An internal server error occurred')
+  })
+
+  test('returns no report types when user has no relevant scopes', async () => {
+    getValidReportYearsByType.mockResolvedValue([2023])
+
+    const res = await server.inject({
+      method: 'GET',
+      url: REPORT_LIST.STATUS,
+      headers: {
+        'x-test-scope': ''
+      }
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.result.years).toEqual([2023])
+    expect(res.result.reportTypeItems).toEqual([])
+  })
+
+  test('handles missing x-test-scope gracefully', async () => {
+    getValidReportYearsByType.mockResolvedValue([2023])
+
+    const res = await server.inject({
+      method: 'GET',
+      url: REPORT_LIST.STATUS
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.result.reportTypeItems).toEqual([])
+  })
 })
