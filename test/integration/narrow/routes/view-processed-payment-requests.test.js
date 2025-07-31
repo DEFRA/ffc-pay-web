@@ -1,11 +1,20 @@
+jest.mock('../../../../app/config', () => {
+  const actualConfig = jest.requireActual('../../../../app/config')
+  return {
+    ...actualConfig,
+    useV2Events: true
+  }
+})
+
 jest.mock('../../../../app/api')
 jest.mock('../../../../app/auth')
-jest.mock('../../../../app/payments')
+jest.mock('../../../../app/payments/get-payments-by-scheme')
+
 const cheerio = require('cheerio')
 const { schemeAdmin, holdAdmin, dataView } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
 const { get } = require('../../../../app/api')
-const { getPaymentsByScheme } = require('../../../../app/payments')
+const { getPaymentsByScheme } = require('../../../../app/payments/get-payments-by-scheme')
 
 let server
 let auth
@@ -134,6 +143,34 @@ describe('Monitoring Schemes and Processed Payments', () => {
       const $ = cheerio.load(res.payload)
       expect($('.govuk-error-summary__title').text().trim()).toEqual('There is a problem')
       expect($('.govuk-error-message').text()).toContain('Error: Failed to load processed payments')
+    })
+
+    describe('when useV2Events is false', () => {
+      beforeAll(() => {
+        jest.resetModules()
+        jest.mock('../../../../app/config', () => {
+          const actualConfig = jest.requireActual('../../../../app/config')
+          return {
+            ...actualConfig,
+            useV2Events: false
+          }
+        })
+      })
+
+      beforeEach(async () => {
+        server = await createServer()
+      })
+
+      afterEach(async () => {
+        await server.stop()
+      })
+
+      test('returns 404 Not Found view', async () => {
+        const res = await server.inject({ method, url, auth })
+        expect(res.statusCode).toBe(404)
+        const $ = cheerio.load(res.payload)
+        expect($('h1').text().trim()).toEqual('Page not found')
+      })
     })
   })
 })
