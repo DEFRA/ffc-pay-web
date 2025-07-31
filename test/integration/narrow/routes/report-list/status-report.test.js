@@ -1,162 +1,153 @@
-const Hapi = require('@hapi/hapi')
+const cheerio = require('cheerio')
 const REPORT_LIST = require('../../../../../app/constants/report-list')
-const { getValidReportYearsByType } = require('../../../../../app/storage/doc-reports')
-const { statusReportSfi23, statusReportsDelinked } = require('../../../../../app/auth/permissions')
+const {
+  getValidReportYearsByType
+} = require('../../../../../app/storage/doc-reports')
+const {
+  statusReportSfi23,
+  statusReportsDelinked,
+  dataView
+} = require('../../../../../app/auth/permissions')
+
+const createServer = require('../../../../../app/server')
 
 jest.mock('../../../../../app/storage/doc-reports', () => ({
   getValidReportYearsByType: jest.fn()
 }))
+jest.mock('../../../../../app/auth')
 
 describe('Status Report Routes', () => {
   let server
 
-  const setupServer = async () => {
-    const localServer = Hapi.server({ port: 0 })
-
-    localServer.auth.scheme('custom', () => ({
-      authenticate: (request, h) => {
-        return h.authenticated({ credentials: { scope: request.headers['x-test-scope']?.split(',') || [] } })
-      }
-    }))
-
-    localServer.auth.strategy('default', 'custom')
-    localServer.auth.default('default')
-
-    // Use filteredRoutes to avoid duplicate route registration
-    const baseRoutes = require('../../../../../app/routes/report-list/status-report')
-
-    const filteredRoutes = baseRoutes.filter(route => route.method !== 'GET' || route.path !== REPORT_LIST.STATUS)
-
-    const customRoute = {
-      method: 'GET',
-      path: REPORT_LIST.STATUS,
-      options: { auth: false },
-      handler: async (request, h) => {
-        const years = await getValidReportYearsByType()
-        const userScopes = request.headers['x-test-scope']?.split(',') || []
-        const reportTypeItems = []
-
-        if (userScopes.includes(statusReportSfi23)) {
-          reportTypeItems.push({ value: 'sustainable-farming-incentive', text: 'SFI-23' })
+  const emulateVisibleYearOptions = ($, selectedType) => {
+    return $('#report-year option')
+      .filter((_, el) => {
+        const $el = $(el)
+        return $el.attr('value') && $el.attr('data-type') === selectedType
+      })
+      .map((_, el) => {
+        const $el = $(el)
+        return {
+          value: $el.attr('value'),
+          type: $el.attr('data-type')
         }
-        if (userScopes.includes(statusReportsDelinked)) {
-          reportTypeItems.push({ value: 'delinked-payment-statement', text: 'Delinked' })
-        }
-
-        return h.response({ years, reportTypeItems })
-      }
-    }
-
-    localServer.route([...filteredRoutes, customRoute])
-    await localServer.initialize()
-    return localServer
+      })
+      .get()
   }
 
-  beforeEach(async () => {
-    jest.clearAllMocks()
-    if (server) await server.stop()
-    server = await setupServer()
-  })
-
-  afterAll(async () => {
-    if (server) await server.stop()
-  })
-
-  test('returns years and both report types when user has both scopes', async () => {
-    getValidReportYearsByType.mockResolvedValue([2022, 2023])
-
-    const res = await server.inject({
+  const injectGetStatus = async (auth) => {
+    return server.inject({
       method: 'GET',
       url: REPORT_LIST.STATUS,
-      headers: {
-        'x-test-scope': `${statusReportSfi23},${statusReportsDelinked}`
-      }
+      auth
     })
+  }
 
+  const extractReportTypes = ($) =>
+    $('#select-type option').filter((_, el) => !$(el).attr('hidden')).map((_, el) => ({
+      value: $(el).attr('value'),
+      text: $(el).text().trim()
+    })).get()
+
+  const extractYearOptions = ($) =>
+    $('#report-year option').map((_, el) => ({
+      value: $(el).attr('value'),
+      type: $(el).attr('data-type')
+    })).get()
+
+  const getAuth = (scopes) => ({
+    strategy: 'session-auth',
+    credentials: { scope: scopes }
+  })
+
+  beforeEach(async () => {
+    server = await createServer()
+    await server.initialize()
+  })
+
+  afterEach(async () => {
+    await server.stop()
+    jest.clearAllMocks()
+  })
+
+  test('renders correct years and report types in the select elements', async () => {
+    getValidReportYearsByType.mockResolvedValue([
+      { year: 2022, type: 'SFI-23' },
+      { year: 2023, type: 'SFI-23' }
+    ])
+
+    const res = await injectGetStatus(getAuth([statusReportSfi23, statusReportsDelinked]))
     expect(res.statusCode).toBe(200)
-    expect(res.result.years).toEqual([2022, 2023])
-    expect(res.result.reportTypeItems).toEqual([
+
+    const $ = cheerio.load(res.payload)
+
+    expect(extractReportTypes($)).toEqual([
       { value: 'sustainable-farming-incentive', text: 'SFI-23' },
       { value: 'delinked-payment-statement', text: 'Delinked' }
+    ])
+
+    expect(extractYearOptions($)).toEqual([
+      { value: '2022', type: 'SFI-23' },
+      { value: '2023', type: 'SFI-23' }
     ])
   })
 
   test('returns only SFI report type if user has only SFI scope', async () => {
-    getValidReportYearsByType.mockResolvedValue([2023])
+    getValidReportYearsByType.mockResolvedValue([
+      { year: 2023, type: 'SFI-23' }
+    ])
 
-    const res = await server.inject({
-      method: 'GET',
-      url: REPORT_LIST.STATUS,
-      headers: {
-        'x-test-scope': statusReportSfi23
-      }
-    })
-
+    const res = await injectGetStatus(getAuth([statusReportSfi23]))
     expect(res.statusCode).toBe(200)
-    expect(res.result.years).toEqual([2023])
-    expect(res.result.reportTypeItems).toEqual([
+
+    const $ = cheerio.load(res.payload)
+
+    expect(extractReportTypes($)).toEqual([
       { value: 'sustainable-farming-incentive', text: 'SFI-23' }
+    ])
+
+    expect(extractYearOptions($)).toEqual([
+      { value: '2023', type: 'SFI-23' }
     ])
   })
 
   test('returns only Delinked report type if user has only Delinked scope', async () => {
-    getValidReportYearsByType.mockResolvedValue([2021, 2022])
+    getValidReportYearsByType.mockResolvedValue([
+      { year: 2022, type: 'Delinked' },
+      { year: 2023, type: 'SFI-23' }
+    ])
 
-    const res = await server.inject({
-      method: 'GET',
-      url: REPORT_LIST.STATUS,
-      headers: {
-        'x-test-scope': statusReportsDelinked
-      }
-    })
-
+    const res = await injectGetStatus(getAuth([statusReportsDelinked]))
     expect(res.statusCode).toBe(200)
-    expect(res.result.years).toEqual([2021, 2022])
-    expect(res.result.reportTypeItems).toEqual([
+
+    const $ = cheerio.load(res.payload)
+
+    const reportTypes = extractReportTypes($)
+    expect(reportTypes).toEqual([
       { value: 'delinked-payment-statement', text: 'Delinked' }
+    ])
+
+    const visibleYears = emulateVisibleYearOptions($, 'Delinked')
+    expect(visibleYears).toEqual([
+      { value: '2022', type: 'Delinked' }
     ])
   })
 
   test('returns 500 when getValidReportYearsByType throws an error', async () => {
     getValidReportYearsByType.mockRejectedValue(new Error('DB error'))
 
-    const res = await server.inject({
-      method: 'GET',
-      url: REPORT_LIST.STATUS,
-      headers: {
-        'x-test-scope': `${statusReportSfi23},${statusReportsDelinked}`
-      }
-    })
-
+    const res = await injectGetStatus(getAuth([statusReportSfi23, statusReportsDelinked]))
     expect(res.statusCode).toBe(500)
-    expect(res.result.message).toBe('An internal server error occurred')
+    expect(res.result).toContain('Unable to retrieve the report data from the server. Please try again later.')
   })
 
-  test('returns no report types when user has no relevant scopes', async () => {
-    getValidReportYearsByType.mockResolvedValue([2023])
+  test('returns not authorised when user has no relevant auth scopes', async () => {
+    getValidReportYearsByType.mockResolvedValue([
+      { year: 2023, type: 'SFI-23' }
+    ])
 
-    const res = await server.inject({
-      method: 'GET',
-      url: REPORT_LIST.STATUS,
-      headers: {
-        'x-test-scope': ''
-      }
-    })
-
-    expect(res.statusCode).toBe(200)
-    expect(res.result.years).toEqual([2023])
-    expect(res.result.reportTypeItems).toEqual([])
-  })
-
-  test('handles missing x-test-scope gracefully', async () => {
-    getValidReportYearsByType.mockResolvedValue([2023])
-
-    const res = await server.inject({
-      method: 'GET',
-      url: REPORT_LIST.STATUS
-    })
-
-    expect(res.statusCode).toBe(200)
-    expect(res.result.reportTypeItems).toEqual([])
+    const res = await injectGetStatus(getAuth([dataView])) // Invalid scope
+    expect(res.statusCode).toBe(403)
+    expect(res.result).toContain('Sorry, you are not authorised to perform this action')
   })
 })

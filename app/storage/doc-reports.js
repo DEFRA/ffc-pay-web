@@ -18,13 +18,11 @@ const getValidReportYearsByType = async () => {
     const prefix = REPORT_TYPE_PREFIXES.find(p => rawName.startsWith(p))
 
     if (prefix) {
-      const datePart = rawName
-        .replace(prefix, '')
-        .replace('.csv', '')
-        .replace(/_/g, ':')
+      const datePart = decodeURIComponent(rawName.replace(prefix, '').replace('.csv', ''))
 
       const reportDate = new Date(datePart)
-      console.log('reportDate', reportDate, 'datePart', datePart)
+
+      console.log(`Processing report: ${rawName}, Date: ${reportDate}`)
       if (!isNaN(reportDate.getTime())) {
         const year = reportDate.getFullYear()
         const type = prefix.replace(/-$/, '')
