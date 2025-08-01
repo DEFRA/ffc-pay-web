@@ -181,6 +181,23 @@ describe('Monitoring Schemes and Processed Payments', () => {
         await server.stop()
       })
 
+      test('logs a warning when useV2Events is false', async () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+        const res = await server.inject({
+          method: 'GET',
+          url: '/monitoring/view-processed-payment-requests?schemeId=1',
+          auth
+        })
+
+        expect(res.statusCode).toBe(404)
+        expect(warnSpy).toHaveBeenCalledWith(
+          'V2 events are not enabled, cannot view processed payment requests'
+        )
+
+        warnSpy.mockRestore()
+      })
+
       test('returns 404 Not Found view', async () => {
         const res = await server.inject({ method, url, auth })
         expect(res.statusCode).toBe(404)

@@ -30,6 +30,7 @@ module.exports = [
     },
     handler: async (request, h) => {
       if (!config.useV2Events) {
+        console.warn('V2 events are not enabled, cannot view processed payment requests')
         return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
       }
       const { schemeId } = request.query
