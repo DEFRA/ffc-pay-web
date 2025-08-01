@@ -1,7 +1,3 @@
-jest.mock('../../../../app/config', () => {
-  const actual = jest.requireActual('../../../../app/config')
-  return { ...actual, useV2Events: true }
-})
 jest.mock('../../../../app/api')
 jest.mock('../../../../app/auth')
 jest.mock('../../../../app/payments/get-payments-by-scheme')
@@ -43,31 +39,33 @@ describe('Monitoring Schemes and Processed Payments', () => {
   describe('GET /monitoring/schemes', () => {
     const method = 'GET'
     const url = '/monitoring/schemes'
+    const pageH1 = 'Monitoring'
 
-    test('200 when schemes load', async () => {
+    test('returns 200 when schemes load successfully', async () => {
       mockGetSchemes(mockSchemes)
       const res = await server.inject({ method, url, auth })
-      const $ = cheerio.load(res.payload)
       expect(res.statusCode).toBe(200)
-      expect($('h1').text()).toContain('Monitoring')
+      const $ = cheerio.load(res.payload)
+      expect($('h1').text()).toEqual(pageH1)
       expect($('#schemeId').children().length).toBe(mockSchemes.length)
     })
 
-    test('200 and "No schemes were found." if empty', async () => {
+    test('returns 200 and shows "No schemes were found." if no schemes', async () => {
       mockGetSchemes([])
       const res = await server.inject({ method, url, auth })
-      const $ = cheerio.load(res.payload)
       expect(res.statusCode).toBe(200)
-      expect($('#no-schemes').text()).toContain('No schemes were found.')
+      const $ = cheerio.load(res.payload)
+      expect($('h1').text()).toEqual(pageH1)
+      expect($('#no-schemes').text()).toEqual('No schemes were found.')
     })
 
-    test('403 if no permission', async () => {
+    test('returns 403 if no permission', async () => {
       auth.credentials.scope = []
       const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(403)
     })
 
-    test('302 to login if unauthenticated', async () => {
+    test('returns 302 and redirects to login if not authenticated', async () => {
       const res = await server.inject({ method, url })
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toEqual('/login')
@@ -76,88 +74,157 @@ describe('Monitoring Schemes and Processed Payments', () => {
 
   describe('GET /monitoring/view-processed-payment-requests', () => {
     const method = 'GET'
-    const baseUrl = '/monitoring/view-processed-payment-requests'
-    const fullUrl = `${baseUrl}?schemeId=1`
+    const url = '/monitoring/view-processed-payment-requests?schemeId=1'
+    const pageH1 = 'Processed payment requests'
 
-    const mockGetProcessed = () => {
+    const mockGetProcessedPayments = () => {
       getPaymentsByScheme.mockResolvedValue(mockProcessedPayments)
     }
 
-    test('200 when data loads successfully', async () => {
-      mockGetProcessed()
-      const res = await server.inject({ method, url: fullUrl, auth })
-      const $ = cheerio.load(res.payload)
+    test('returns 200 when processed payments load successfully', async () => {
+      mockGetProcessedPayments()
+      const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(200)
-      expect($('caption').text()).toContain('Processed payment requests')
-      expect($('tbody tr').length).toBe(mockProcessedPayments.length)
+      const $ = cheerio.load(res.payload)
+      expect($('caption').text()).toEqual(pageH1)
+      expect($('tbody').children().length).toBe(mockProcessedPayments.length)
     })
 
-    test('200 and message if no data', async () => {
+    test('returns 200 and shows "No processed payment requests found." if no processed payments', async () => {
       getPaymentsByScheme.mockResolvedValue([])
-      const res = await server.inject({ method, url: fullUrl, auth })
-      const $ = cheerio.load(res.payload)
+      const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(200)
-      expect($('#no-hold-text').text()).toContain('No processed payment requests found.')
-    })
-
-    test('412 and error shown if processing fails', async () => {
-      getPaymentsByScheme.mockRejectedValue(new Error('fail'))
-      const res = await server.inject({ method, url: fullUrl, auth })
       const $ = cheerio.load(res.payload)
-      expect(res.statusCode).toBe(412)
-      expect($('.govuk-error-summary__title').text().trim()).toEqual('There is a problem')
-      expect($('.govuk-error-message').text()).toContain('Error: fail')
+      expect($('#no-hold-text').text()).toEqual('No processed payment requests found.')
     })
 
-    test('403 if no permission', async () => {
+    test('returns 403 if no permission', async () => {
       auth.credentials.scope = []
-      const res = await server.inject({ method, url: fullUrl, auth })
+      const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(403)
     })
 
-    test('302 to login if unauthenticated', async () => {
-      const res = await server.inject({ method, url: fullUrl })
+    test('returns 302 and redirects to login if not authenticated', async () => {
+      const res = await server.inject({ method, url })
       expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toBe('/login')
+      expect(res.headers.location).toEqual('/login')
     })
 
-    test('412 if no schemeId in query', async () => {
-      const res = await server.inject({ method, url: baseUrl, auth })
+    test('returns 412 and shows error message if processing fails', async () => {
+      getPaymentsByScheme.mockRejectedValue(new Error('Failed to load processed payments'))
+      const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(412)
+      const $ = cheerio.load(res.payload)
+      expect($('.govuk-error-summary__title').text().trim()).toEqual('There is a problem')
+      expect($('.govuk-error-message').text()).toContain('Error: Failed to load processed payments')
     })
 
-    describe('when useV2Events is false', () => {
-      let originalWarn
-      beforeAll(() => {
-        jest.resetModules()
-        jest.mock('../../../../app/config', () => {
-          const actual = jest.requireActual('../../../../app/config')
-          return { ...actual, useV2Events: false }
+    test('returns 200 and ignores unknown fields in processed payments', async () => {
+      getPaymentsByScheme.mockResolvedValue([
+        { scheme: 'Extra Scheme', paymentRequests: 1, value: '£10.00', extra: 'ignored' }
+      ])
+      const res = await server.inject({ method, url, auth })
+      expect(res.statusCode).toBe(200)
+      const $ = cheerio.load(res.payload)
+      expect($('tbody').children().length).toBe(1)
+    })
+
+    test('returns 200 and handles empty schemeId gracefully', async () => {
+      getPaymentsByScheme.mockResolvedValue([])
+      const res = await server.inject({
+        method,
+        url: '/monitoring/view-processed-payment-requests?schemeId=',
+        auth
+      })
+      expect(res.statusCode).toBe(200)
+      const $ = cheerio.load(res.payload)
+      expect($('#no-hold-text').text()).toContain('No processed payment requests found.')
+    })
+
+    test('returns 200 and shows no results for invalid schemeId', async () => {
+      getPaymentsByScheme.mockResolvedValue([])
+      const res = await server.inject({
+        method,
+        url: '/monitoring/view-processed-payment-requests?schemeId=999',
+        auth
+      })
+      expect(res.statusCode).toBe(200)
+      const $ = cheerio.load(res.payload)
+      expect($('#no-hold-text').text()).toContain('No processed payment requests found.')
+    })
+  })
+
+  describe('when useV2Events is false', () => {
+    beforeAll(() => {
+      jest.resetModules()
+      jest.mock('../../../../app/config', () => {
+        const actualConfig = jest.requireActual('../../../../app/config')
+        return {
+          ...actualConfig,
+          useV2Events: false
+        }
+      })
+    })
+
+    beforeEach(async () => {
+      server = await createServer()
+    })
+
+    afterEach(async () => {
+      await server.stop()
+    })
+
+    describe('GET /monitoring/schemes', () => {
+      test('returns 404 Not Found view', async () => {
+        const res = await server.inject({
+          method: 'GET',
+          url: '/monitoring/schemes',
+          auth
         })
-        originalWarn = console.warn
-        console.warn = jest.fn()
-      })
-
-      afterAll(() => {
-        console.warn = originalWarn
-      })
-
-      beforeEach(async () => {
-        server = await createServer()
-      })
-
-      afterEach(async () => {
-        await server.stop()
-      })
-
-      test('returns 404 and logs warning if feature disabled', async () => {
-        const res = await server.inject({ method, url: fullUrl, auth })
-        const $ = cheerio.load(res.payload)
         expect(res.statusCode).toBe(404)
+        const $ = cheerio.load(res.payload)
         expect($('h1').text().trim()).toEqual('Page not found')
-        expect(console.warn).toHaveBeenCalledWith(
+      })
+    })
+
+    describe('GET /monitoring/view-processed-payment-requests', () => {
+      test('logs a warning when useV2Events is false', async () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+        const res = await server.inject({
+          method: 'GET',
+          url: '/monitoring/view-processed-payment-requests?schemeId=1',
+          auth
+        })
+
+        expect(res.statusCode).toBe(404)
+        expect(warnSpy).toHaveBeenCalledWith(
           'V2 events are not enabled, cannot view processed payment requests'
         )
+
+        warnSpy.mockRestore()
+      })
+
+      test('returns 404 Not Found view with query string', async () => {
+        const res = await server.inject({
+          method: 'GET',
+          url: '/monitoring/view-processed-payment-requests?schemeId=1',
+          auth
+        })
+        expect(res.statusCode).toBe(404)
+        const $ = cheerio.load(res.payload)
+        expect($('h1').text().trim()).toEqual('Page not found')
+      })
+
+      test('returns 404 Not Found view without query string', async () => {
+        const res = await server.inject({
+          method: 'GET',
+          url: '/monitoring/view-processed-payment-requests',
+          auth
+        })
+        expect(res.statusCode).toBe(404)
+        const $ = cheerio.load(res.payload)
+        expect($('h1').text().trim()).toEqual('Page not found')
       })
     })
   })
