@@ -1,4 +1,5 @@
 const Boom = require('@hapi/boom')
+const Path = require('path')
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')
 const { mapStatusReportsToTaskList } = require('../../helpers/map-status-report-to-task-list')
@@ -80,8 +81,9 @@ module.exports = [
     options: {
       auth: authOptions,
       handler: async (request, h) => {
-        const filename = request.query['file-name']
-        return handleStreamResponse(() => getStatusReport(filename), filename, h)
+        const fullPath = request.query['file-name']
+        const filename = Path.basename(fullPath)
+        return handleStreamResponse(() => getStatusReport(fullPath), filename, h)
       }
     }
   }

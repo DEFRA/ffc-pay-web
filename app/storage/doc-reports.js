@@ -22,7 +22,6 @@ const getValidReportYearsByType = async () => {
 
       const reportDate = new Date(datePart)
 
-      console.log(`Processing report: ${rawName}, Date: ${reportDate}`)
       if (!isNaN(reportDate.getTime())) {
         const year = reportDate.getFullYear()
         const type = prefix.replace(/-$/, '')
