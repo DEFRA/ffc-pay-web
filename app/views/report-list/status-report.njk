@@ -8,7 +8,7 @@
 {% set reportSubmitLabel = 'Find Reports' %}
 {% set reportUrl = '/report-list/status-report' %}
 {% set formAction = '/report-list/status-report/search' %}
-{% set pdfDownloadLink = '/report-list/status-report/download?file-name=' + 'reports/DS1-Statement Status Report-170725-100746.pdf' | urlencode %}
+{% set pdfDownloadLink = '/report-list/status-report/download?file-name=reports/DS1-Statement Status Report-170725-100746.pdf' | urlencode %}
 
 {% block reportContent %}
   {{ reportPageTitle(reportTitle) }}
@@ -28,8 +28,8 @@
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label-s" for="report-year">Select the year</label>
       <select class="govuk-select" id="report-year" name="report-year">
-        {% for year in years %}
-          <option value="{{ year.year }}" data-type="{{ year.type }}">{{ year.year }}</option>
+        {% for item in yearTypeItems %}
+          <option value="{{ item.year }}" data-type="{{ item.type }}">{{ item.year }}</option>
         {% else %}
           <option value="" disabled>No reports available</option>
         {% endfor %}
@@ -37,21 +37,49 @@
     </div>
 
 <script>
-  const typeSelect = document.getElementById('select-type');
-  const reportYearSelect = document.getElementById('report-year');
-  function filterYears() {
-    const selectedType = typeSelect.value;
-    for (const option of reportYearSelect.options) {
-      if (!option.value) continue;
-      option.hidden = option.dataset.type !== selectedType;
+  document.addEventListener('DOMContentLoaded', function () {
+    const typeSelect = document.getElementById('select-type')
+    const reportYearSelect = document.getElementById('report-year')
+    const reportSubmit = document.getElementById('report-submit')
+
+    function filterYears() {
+      const selectedType = typeSelect.value
+      let hasVisibleOption = false
+
+      // Filter reportYear options based on selected report type
+      for (const option of reportYearSelect.options) {
+        if (!option.value) continue
+        const match = option.dataset.type === selectedType
+        option.hidden = !match
+        if (match) hasVisibleOption = true
+      }
+
+      // Remove all existing 'no-reports' placeholder options
+      const existingPlaceholders = reportYearSelect.querySelectorAll('option.no-reports')
+      existingPlaceholders.forEach(opt => reportYearSelect.removeChild(opt))
+
+      if (hasVisibleOption) {
+        // Select first visible option
+        const firstVisible = Array.from(reportYearSelect.options).find(opt => !opt.hidden && opt.value)
+        reportYearSelect.value = firstVisible?.value || ''
+        reportYearSelect.disabled = false
+        reportSubmit.disabled = false
+      } else {
+        // Add 'No reports available' option
+        const noReportsOption = document.createElement('option')
+        noReportsOption.text = 'No reports available'
+        noReportsOption.selected = true
+        noReportsOption.classList.add('no-reports')
+        reportYearSelect.appendChild(noReportsOption)
+        reportYearSelect.disabled = true
+        reportSubmit.disabled = true
+      }
     }
-    reportYearSelect.value = '';
-    const firstVisible = Array.from(reportYearSelect.options).find(opt => !opt.hidden && opt.value);
-    if (firstVisible) reportYearSelect.value = firstVisible.value;
-  }
-  if (typeSelect) {
-    typeSelect.addEventListener('change', filterYears);
-    filterYears();
-  }
+
+    if (typeSelect && reportYearSelect && reportSubmit) {
+      typeSelect.addEventListener('change', filterYears)
+      filterYears()
+    }
+  })
 </script>
 {% endblock %}

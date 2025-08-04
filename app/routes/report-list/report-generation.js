@@ -3,7 +3,7 @@ const { generateReport } = require('../../reporting')
 const { setStatusCallback } = require('../../reporting/set-status-callback')
 const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 
-const HTTP_STATUS = require('../../constants/http-status')
+const HTTP_STATUS = require('../../constants/http-status-codes')
 const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
 
 const createDownloadRoute = () => ({

@@ -1,6 +1,6 @@
 const { handleFileError } = require('../../../app/hold/handle-error')
 const { getHoldCategories } = require('../../../app/holds')
-const { BAD_REQUEST } = require('../../../app/constants/http-status')
+const { BAD_REQUEST } = require('../../../app/constants/http-status-codes')
 
 jest.mock('../../../app/holds')
 

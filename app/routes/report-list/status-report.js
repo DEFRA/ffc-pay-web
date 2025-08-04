@@ -1,7 +1,8 @@
+const Boom = require('@hapi/boom')
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')
 const { mapStatusReportsToTaskList } = require('../../helpers/map-status-report-to-task-list')
-const { getStatusReport, getReportsByYearAndType, getValidReportYears } = require('../../storage/doc-reports')
+const { getStatusReport, getReportsByYearAndType, getValidReportYearsByType } = require('../../storage/doc-reports')
 const { statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
 const { handleStreamResponse } = require('../../helpers')
 
@@ -32,20 +33,25 @@ module.exports = [
     options: {
       auth: authOptions,
       handler: async (request, h) => {
-        const years = await getValidReportYears()
-        const userScopes = request.auth.credentials.scope || []
+        try {
+          const yearTypeItems = await getValidReportYearsByType()
+          const userScopes = request.auth.credentials.scope || []
 
-        const reportTypeItems = Object.entries(reportTypes)
-          .filter(([_, { scope }]) => userScopes.includes(scope))
-          .map(([value, { display }]) => ({
-            value,
-            text: display
-          }))
+          const reportTypeItems = Object.entries(reportTypes)
+            .filter(([_, { scope }]) => userScopes.includes(scope))
+            .map(([value, { display }]) => ({
+              value,
+              text: display
+            }))
 
-        return h.view(REPORT_VIEWS.STATUS, {
-          reportTypeItems,
-          years
-        })
+          return h.view(REPORT_VIEWS.STATUS, {
+            reportTypeItems,
+            yearTypeItems
+          })
+        } catch (error) {
+          console.error('Error fetching reports', error)
+          throw Boom.internal('Unable to retrieve the report data from the server. Please try again later.')
+        }
       }
     }
   },

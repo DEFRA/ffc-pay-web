@@ -1,4 +1,4 @@
-const { getValidReportYears, getReportsByYearAndType, getStatusReport } = require('../../../app/storage/doc-reports')
+const { getValidReportYearsByType, getReportsByYearAndType, getStatusReport } = require('../../../app/storage/doc-reports')
 const { getContainerClient } = require('../../../app/storage/container-manager')
 
 jest.mock('../../../app/config', () => ({
@@ -29,7 +29,7 @@ describe('status-reports', () => {
 
   afterEach(() => jest.clearAllMocks())
 
-  describe('getValidReportYears', () => {
+  describe('getValidReportYearsByType', () => {
     test('returns sorted list of valid years and types', async () => {
       const blobNames = [
         'reports/sfi-status-2022-01-01.csv',
@@ -42,7 +42,7 @@ describe('status-reports', () => {
         for (const name of blobNames) yield { name }
       })())
 
-      const result = await getValidReportYears()
+      const result = await getValidReportYearsByType()
 
       expect(result).toEqual([
         { year: 2023, type: 'sfi-status' },

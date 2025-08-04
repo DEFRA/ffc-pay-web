@@ -1,5 +1,5 @@
 const { BULK } = require('../constants/closures-views')
-const { BAD_REQUEST } = require('../constants/http-status')
+const { BAD_REQUEST } = require('../constants/http-status-codes')
 
 const handleBulkClosureError = (h, error, crumb) => {
   const errorDetails = typeof error === 'string'

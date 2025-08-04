@@ -1,6 +1,6 @@
 const { getHoldCategories } = require('../holds')
 const { MAX_MEGA_BYTES } = require('../constants/payload-sizes')
-const HTTP_STATUS = require('../constants/http-status')
+const HTTP_STATUS = require('../constants/http-status-codes')
 const BULK = 'payment-holds/bulk'
 
 const bulkFailAction = async (request, h, error) => {

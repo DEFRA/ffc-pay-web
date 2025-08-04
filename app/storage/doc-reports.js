@@ -9,7 +9,7 @@ const REPORT_TYPE_PREFIXES = [
 const stripReportsFolder = (blobName) =>
   blobName.startsWith(config.statusReportsFolder) ? blobName.replace(`${config.statusReportsFolder}/`, '') : blobName
 
-const getValidReportYears = async () => {
+const getValidReportYearsByType = async () => {
   const statementsContainer = await getContainerClient(config.statementsContainer)
   const yearTypeSet = new Set()
 
@@ -18,13 +18,11 @@ const getValidReportYears = async () => {
     const prefix = REPORT_TYPE_PREFIXES.find(p => rawName.startsWith(p))
 
     if (prefix) {
-      const datePart = rawName
-        .replace(prefix, '')
-        .replace('.csv', '')
-        .replace(/_/g, ':')
+      const datePart = decodeURIComponent(rawName.replace(prefix, '').replace('.csv', ''))
 
       const reportDate = new Date(datePart)
 
+      console.log(`Processing report: ${rawName}, Date: ${reportDate}`)
       if (!isNaN(reportDate.getTime())) {
         const year = reportDate.getFullYear()
         const type = prefix.replace(/-$/, '')
@@ -56,7 +54,7 @@ const getReportsByYearAndType = async (year, type) => {
 
       if (!isNaN(reportDate.getTime()) && reportDate.getFullYear() === Number(year)) {
         reports.push({
-          name: name,
+          name,
           date: reportDate,
           type
         })
@@ -74,7 +72,7 @@ const getStatusReport = async (reportName) => {
 }
 
 module.exports = {
-  getValidReportYears,
+  getValidReportYearsByType,
   getReportsByYearAndType,
   getStatusReport
 }
