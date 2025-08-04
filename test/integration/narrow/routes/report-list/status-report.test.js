@@ -98,7 +98,7 @@ describe('Status Report List Integration Tests', () => {
 
       expect(extractReportTypes($)).toEqual([
         { value: 'sustainable-farming-incentive', text: 'SFI-23' },
-        { value: 'delinked-payment-statement', text: 'Delinked' }
+        { value: 'delinked-payment-statement', text: 'De-linked' }
       ])
 
       expect(extractYearOptions($)).toEqual([
@@ -126,9 +126,9 @@ describe('Status Report List Integration Tests', () => {
       ])
     })
 
-    test('returns only Delinked report type if user has only Delinked scope', async () => {
+    test('returns only De-linked report type if user has only De-linked scope', async () => {
       getValidReportYearsByType.mockResolvedValue([
-        { year: 2022, type: 'Delinked' },
+        { year: 2022, type: 'De-linked' },
         { year: 2023, type: 'SFI-23' }
       ])
 
@@ -139,12 +139,12 @@ describe('Status Report List Integration Tests', () => {
 
       const reportTypes = extractReportTypes($)
       expect(reportTypes).toEqual([
-        { value: 'delinked-payment-statement', text: 'Delinked' }
+        { value: 'delinked-payment-statement', text: 'De-linked' }
       ])
 
-      const visibleYears = emulateVisibleYearOptions($, 'Delinked')
+      const visibleYears = emulateVisibleYearOptions($, 'De-linked')
       expect(visibleYears).toEqual([
-        { value: '2022', type: 'Delinked' }
+        { value: '2022', type: 'De-linked' }
       ])
     })
 
@@ -188,7 +188,7 @@ describe('Status Report List Integration Tests', () => {
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
 
-      expect($('h1').text()).toContain('SFI-23 Status Reports - 2025')
+      expect($('h1').text()).toContain('SFI-23 Payment Status Reports - 2025')
       expect($('.govuk-task-list__item').length).toBe(1)
     })
   })

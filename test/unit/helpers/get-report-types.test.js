@@ -30,7 +30,7 @@ describe('getReportTypes', () => {
       Holds: 'holds',
       'Request Editor report': 'request-editor-report',
       'Claim level report': 'claim-level-report',
-      'Status Report': 'status-report'
+      'Payment Statement Status Report': 'status-report'
     })
   })
 
