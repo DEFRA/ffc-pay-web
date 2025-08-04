@@ -17,14 +17,14 @@ const reportTypes = {
     scope: statusReportSfi23
   },
   'delinked-payment-statement': {
-    display: 'Delinked',
+    display: 'De-linked',
     scope: statusReportsDelinked
   }
 }
 
 const getReportTitle = (type, year) => {
   const displayName = reportTypes[type]?.display || type
-  return `${displayName} Status Reports - ${year}`
+  return `${displayName} Payment Status Reports - ${year}`
 }
 
 module.exports = [
