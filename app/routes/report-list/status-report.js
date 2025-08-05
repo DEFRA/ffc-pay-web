@@ -17,7 +17,7 @@ const reportTypes = {
     scope: statusReportSfi23
   },
   'delinked-payment-statement': {
-    display: 'De-linked',
+    display: 'Delinked',
     scope: statusReportsDelinked
   }
 }

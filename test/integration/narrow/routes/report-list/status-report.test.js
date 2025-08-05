@@ -98,7 +98,7 @@ describe('Status Report List Integration Tests', () => {
 
       expect(extractReportTypes($)).toEqual([
         { value: 'sustainable-farming-incentive', text: 'SFI-23' },
-        { value: 'delinked-payment-statement', text: 'De-linked' }
+        { value: 'delinked-payment-statement', text: 'Delinked' }
       ])
 
       expect(extractYearOptions($)).toEqual([
@@ -126,9 +126,9 @@ describe('Status Report List Integration Tests', () => {
       ])
     })
 
-    test('returns only De-linked report type if user has only De-linked scope', async () => {
+    test('returns only Delinked report type if user has only Delinked scope', async () => {
       getValidReportYearsByType.mockResolvedValue([
-        { year: 2022, type: 'De-linked' },
+        { year: 2022, type: 'Delinked' },
         { year: 2023, type: 'SFI-23' }
       ])
 
@@ -139,12 +139,12 @@ describe('Status Report List Integration Tests', () => {
 
       const reportTypes = extractReportTypes($)
       expect(reportTypes).toEqual([
-        { value: 'delinked-payment-statement', text: 'De-linked' }
+        { value: 'delinked-payment-statement', text: 'Delinked' }
       ])
 
-      const visibleYears = emulateVisibleYearOptions($, 'De-linked')
+      const visibleYears = emulateVisibleYearOptions($, 'Delinked')
       expect(visibleYears).toEqual([
-        { value: '2022', type: 'De-linked' }
+        { value: '2022', type: 'Delinked' }
       ])
     })
 
