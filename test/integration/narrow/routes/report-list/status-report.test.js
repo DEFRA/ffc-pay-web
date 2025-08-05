@@ -188,7 +188,7 @@ describe('Status Report List Integration Tests', () => {
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
 
-      expect($('h1').text()).toContain('SFI-23 Status Reports - 2025')
+      expect($('h1').text()).toContain('SFI-23 Payment Status Reports - 2025')
       expect($('.govuk-task-list__item').length).toBe(1)
     })
   })
