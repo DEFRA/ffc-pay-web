@@ -12,7 +12,7 @@ const getReportTypes = () => {
       Holds: 'holds',
       'Request Editor report': 'request-editor-report',
       'Claim level report': 'claim-level-report',
-      'Payment Statement Status Report': 'status-report'
+      'Payment statement status report': 'status-report'
     }
   }
   return {
