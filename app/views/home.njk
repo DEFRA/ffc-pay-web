@@ -13,8 +13,19 @@
   .govuk-cards--2__item {
     flex: 1 1;
   }
-</style>
 
+  /* Mobile layout: stack cards vertically */
+  @media (max-width: 640px) {
+    .govuk-cards {
+      flex-direction: column;
+      flex-wrap: nowrap;
+    }
+
+    .govuk-cards--2__item {
+      flex: 1 1 100%;
+    }
+  }
+</style>
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
