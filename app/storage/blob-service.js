@@ -9,9 +9,15 @@ const createBlobServiceClient = (connectionString, storageAccount, managedIdenti
     : (console.log(`Using DefaultAzureCredential for ${storageAccount} BlobServiceClient`),
       new BlobServiceClient(`https://${storageAccount}.blob.core.windows.net`, new DefaultAzureCredential({ managedIdentityClientId })))
 
-const payBlobClient = createBlobServiceClient(
-  config.payConnectionStr,
-  config.payStorageAccount,
+const payEventStoreBlobClient = createBlobServiceClient(
+  config.payEventStoreBlobClient,
+  config.payEventStoreStorageAccount,
+  config.managedIdentityClientId
+)
+
+const payInjectionBlobClient = createBlobServiceClient(
+  config.payInjectionBlobClient,
+  config.payInjectionStorageAccount,
   config.managedIdentityClientId
 )
 
@@ -21,8 +27,18 @@ const docBlobClient = createBlobServiceClient(
   config.managedIdentityClientId
 )
 
-const getPayContainerClient = async (containerName) => {
-  const containerClient = payBlobClient.getContainerClient(containerName)
+const getPayEventStoreContainerClient = async (containerName) => {
+  const containerClient = payEventStoreBlobClient.getContainerClient(containerName)
+
+  if (config.createContainers) {
+    await containerClient.createIfNotExists()
+  }
+
+  return containerClient
+}
+
+const getPayInjectionContainerClient = async (containerName) => {
+  const containerClient = payInjectionBlobClient.getContainerClient(containerName)
 
   if (config.createContainers) {
     await containerClient.createIfNotExists()
@@ -32,6 +48,7 @@ const getPayContainerClient = async (containerName) => {
 }
 
 const getDocContainerClient = async (containerName) => {
+  console.log(`Getting document container client for ${containerName}`)
   const containerClient = docBlobClient.getContainerClient(containerName)
 
   if (config.createContainers) {
@@ -42,6 +59,7 @@ const getDocContainerClient = async (containerName) => {
 }
 
 module.exports = {
-  getPayContainerClient,
+  getPayInjectionContainerClient,
+  getPayEventStoreContainerClient,
   getDocContainerClient
 }
