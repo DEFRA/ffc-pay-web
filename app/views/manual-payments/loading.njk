@@ -1,0 +1,29 @@
+{% extends "_layout.njk" %}
+{% from "macros/loading.njk" import renderLoadingPage %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block content %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }, {
+      text: "Manual payments",
+      href: "/manual-payments"
+    }, { 
+      text: "Upload", 
+      href: "#", 
+      attributes: { 'aria-disabled': 'true', 'class': 'govuk-breadcrumbs__link--disabled' } 
+    }]
+  }) }}
+
+  {{ renderLoadingPage(
+    jobId=jobId,
+    checkUrl="/loading/" + jobId,
+    redirectUrl="/manual-payments",
+    title="Processing manual payment upload",
+    statusMessage="We're processing your manual payment file. This may take a few minutes for large files.",
+    completedMessage="Your manual payment file has been successfully processed. You will be redirected to the manual payments page.",
+    errorMessage="We were unable to process your manual payment file."
+  ) }}
+{% endblock %}

@@ -106,7 +106,7 @@
     await cleanupCache(state.config.jobId)
 
     if (state.config.redirectUrl) {
-      setTimeout(() => window.location.href = state.config.redirectUrl, 250)
+      setTimeout(() => window.location.href = state.config.redirectUrl, 500)
     }
   }
 

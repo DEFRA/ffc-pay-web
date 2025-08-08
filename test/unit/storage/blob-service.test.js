@@ -29,7 +29,7 @@ jest.mock('@azure/identity', () => ({
 }))
 
 let config
-let getPayContainerClient
+let getPayEventStoreContainerClient
 let getDocContainerClient
 
 describe('blob-service tests', () => {
@@ -41,8 +41,8 @@ describe('blob-service tests', () => {
       storageConfig: {
         useConnectionStr: true,
         createContainers: true,
-        payConnectionStr: 'fake-pay-connection',
-        payStorageAccount: 'pay-account',
+        payEventStoreBlobClient: 'fake-pay-connection',
+        payEventStoreStorageAccount: 'pay-account',
         payManagedIdentityClientId: 'pay-id',
         docConnectionStr: 'fake-doc-connection',
         docStorageAccount: 'doc-account',
@@ -52,14 +52,14 @@ describe('blob-service tests', () => {
 
     config = require('../../../app/config').storageConfig
     const blobService = require('../../../app/storage/blob-service')
-    getPayContainerClient = blobService.getPayContainerClient
+    getPayEventStoreContainerClient = blobService.getPayEventStoreContainerClient
     getDocContainerClient = blobService.getDocContainerClient
   })
 
-  test('getPayContainerClient creates container when createContainers is true', async () => {
+  test('getPayEventStoreContainerClient creates container when createContainers is true', async () => {
     mockCreateIfNotExists.mockResolvedValue({ succeeded: true })
 
-    const client = await getPayContainerClient('pay-container')
+    const client = await getPayEventStoreContainerClient('pay-container')
 
     expect(mockFromConnectionString).toHaveBeenCalled()
     expect(mockGetContainerClient).toHaveBeenCalledWith('pay-container')
@@ -78,10 +78,10 @@ describe('blob-service tests', () => {
     expect(client).toBeDefined()
   })
 
-  test('getPayContainerClient skips createIfNotExists when createContainers is false', async () => {
+  test('getPayEventStoreContainerClient skips createIfNotExists when createContainers is false', async () => {
     config.createContainers = false
 
-    const client = await getPayContainerClient('pay-container')
+    const client = await getPayEventStoreContainerClient('pay-container')
 
     expect(mockCreateIfNotExists).not.toHaveBeenCalled()
     expect(mockGetContainerClient).toHaveBeenCalledWith('pay-container')
@@ -110,9 +110,9 @@ describe('blob-service tests', () => {
     const { BlobServiceClient } = require('@azure/storage-blob')
     BlobServiceClient.fromConnectionString.mockClear()
 
-    const { getPayContainerClient } = require('../../../app/storage/blob-service')
+    const { getPayEventStoreContainerClient } = require('../../../app/storage/blob-service')
 
-    const client = await getPayContainerClient('pay-container')
+    const client = await getPayEventStoreContainerClient('pay-container')
 
     expect(BlobServiceClient.fromConnectionString).not.toHaveBeenCalled()
     expect(mockGetContainerClient).toHaveBeenCalledWith('pay-container')

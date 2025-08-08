@@ -7,39 +7,39 @@ jest.mock('../../../app/config', () => ({
 }))
 
 jest.mock('../../../app/storage/blob-service', () => ({
-  getPayContainerClient: jest.fn(),
+  getPayEventStoreContainerClient: jest.fn(),
   getDocContainerClient: jest.fn()
 }))
 
 describe('getContainerClient', () => {
-  let getPayContainerClient
+  let getPayEventStoreContainerClient
   let getDocContainerClient
   let getContainerClient
 
   beforeEach(() => {
     jest.resetModules()
-    getPayContainerClient = require('../../../app/storage/blob-service').getPayContainerClient
+    getPayEventStoreContainerClient = require('../../../app/storage/blob-service').getPayEventStoreContainerClient
     getDocContainerClient = require('../../../app/storage/blob-service').getDocContainerClient
     getContainerClient = require('../../../app/storage/container-manager').getContainerClient
   })
 
   test('returns pay client for report-container', async () => {
     const mockClient = { name: 'report-client' }
-    getPayContainerClient.mockResolvedValue(mockClient)
+    getPayEventStoreContainerClient.mockResolvedValue(mockClient)
 
     const client = await getContainerClient('report-container')
 
-    expect(getPayContainerClient).toHaveBeenCalledWith('report-container')
+    expect(getPayEventStoreContainerClient).toHaveBeenCalledWith('report-container')
     expect(client).toBe(mockClient)
   })
 
   test('returns pay client for data-request-container', async () => {
     const mockClient = { name: 'data-request-client' }
-    getPayContainerClient.mockResolvedValue(mockClient)
+    getPayEventStoreContainerClient.mockResolvedValue(mockClient)
 
     const client = await getContainerClient('data-request-container')
 
-    expect(getPayContainerClient).toHaveBeenCalledWith('data-request-container')
+    expect(getPayEventStoreContainerClient).toHaveBeenCalledWith('data-request-container')
     expect(client).toBe(mockClient)
   })
 
@@ -59,12 +59,12 @@ describe('getContainerClient', () => {
 
   test('reuses already initialised container (only calls client once)', async () => {
     const mockClient = { name: 'report-client' }
-    getPayContainerClient.mockResolvedValue(mockClient)
+    getPayEventStoreContainerClient.mockResolvedValue(mockClient)
 
     const first = await getContainerClient('report-container')
     const second = await getContainerClient('report-container')
 
-    expect(getPayContainerClient).toHaveBeenCalledTimes(1)
+    expect(getPayEventStoreContainerClient).toHaveBeenCalledTimes(1)
     expect(first).toBe(second)
   })
 })

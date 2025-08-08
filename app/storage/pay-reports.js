@@ -3,6 +3,15 @@ const config = require('../config').storageConfig
 
 const EMPTY_CONTENT_LENGTH = 5
 
+const uploadManualPaymentFile = async (filePath, fileName) => {
+  const manualPaymentsContainer = await getContainerClient(config.manualPaymentsContainer)
+
+  const blobName = `${config.inboundFolderName}/${fileName}`
+  const blobClient = manualPaymentsContainer.getBlockBlobClient(blobName)
+
+  await blobClient.uploadFile(filePath)
+}
+
 const getMIReport = async () => {
   const reportContainer = await getContainerClient(config.reportContainer)
   return reportContainer.getBlockBlobClient(config.miReportName).download()
@@ -30,6 +39,7 @@ const getDataRequestFile = async (filename) => {
 }
 
 module.exports = {
+  uploadManualPaymentFile,
   getMIReport,
   getSuppressedReport,
   getDataRequestFile

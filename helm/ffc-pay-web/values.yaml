@@ -45,7 +45,8 @@ container:
   cookiePassword: cookiecookiecookiecookiecookiecookie
   azureStorageUseConnectionString: false
   azureStorageCreateContainers: false
-  azureStorageConnectionString: dummy
+  payEventStoreAzureStorageConnectionString: dummy
+  payInjectionAzureStorageConnectionString: dummy
   docAzureStorageConnectionString: dummy
   azureStorageAccountName: ffcpay
   docAzureStorageAccountName: ffcdoc
