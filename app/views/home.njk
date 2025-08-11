@@ -18,8 +18,9 @@
             </ul>
           </div>
         {% endif %}
-        {% if auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard">
+
+        {% if auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser or auth.isStatusReportUser %}
+          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Reports</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
               {{ totalReportTypes }}
