@@ -45,11 +45,7 @@
           </div>
         {% endif %}
 
-<<<<<<< HEAD
-        {% if auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser %}
-=======
         {% if auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser or auth.isStatusReportUser %}
->>>>>>> origin/main
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Reports</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
@@ -59,13 +55,6 @@
               <a href="/report-list" class="govuk-link">Report List</a>
             </p>
           </div>
-        {% endif %}
-
-        {% if auth.isHoldAdminUser and not (auth.isSchemeAdminUser or auth.isDataViewUser) %}
-          <div class="govuk-cards--2__item govuk-card--dashboard" style="visibility: hidden;"></div>
-        {% endif %}
-        {% if not auth.isHoldAdminUser and (auth.isSchemeAdminUser or auth.isDataViewUser) %}
-          <div class="govuk-cards--2__item govuk-card--dashboard" style="visibility: hidden;"></div>
         {% endif %}
       </div>
 
@@ -109,12 +98,6 @@
             </ul>
           </div>
         {% endif %}
-        {% if auth.isSchemeAdminUser and not (auth.isHoldAdminUser or auth.isDataViewUser) %}
-          <div class="govuk-cards--2__item govuk-card--dashboard" style="visibility: hidden;"></div>
-        {% endif %}
-        {% if not auth.isSchemeAdminUser and (auth.isHoldAdminUser or auth.isDataViewUser) %}
-          <div class="govuk-cards--2__item govuk-card--dashboard" style="visibility: hidden;"></div>
-        {% endif %}
       </div>
 
       <!-- Row 3: Agreement closures + Manual Payments -->
@@ -136,17 +119,19 @@
             </ul>
           </div>
         {% endif %}
-        <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Manual Payments</h2>
+        {% if auth.isManualPaymentsUser %}
+          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Manual Payments</h2>
 
-          <p class="govuk-body govuk-!-margin-bottom-8">
-            Upload a manual payment for an agreement number
-          </p>
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              Upload a manual payment for an agreement number
+            </p>
 
-          <p class="govuk-body govuk-!-margin-bottom-8">
-            <a href="/manual-payments" class="govuk-link">Upload manual payment</a>
-          </p>
-        </div>
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              <a href="/manual-payments" class="govuk-link">Upload manual payment</a>
+            </p>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
