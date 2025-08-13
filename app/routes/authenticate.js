@@ -1,5 +1,6 @@
 const auth = require('../auth')
-const HTTP_SERVER_ERROR = 500
+const HTTP_STATUS = require('../constants/http-status-codes')
+const ERROR_VIEWS = require('../constants/error-views')
 
 module.exports = {
   method: 'GET',
@@ -15,6 +16,6 @@ module.exports = {
       console.error('Error authenticating:', err)
     }
 
-    return h.view('500').code(HTTP_SERVER_ERROR)
+    return h.view(ERROR_VIEWS.INTERNAL_SERVER_ERROR).code(HTTP_STATUS.INTERNAL_SERVER_ERROR)
   }
 }
