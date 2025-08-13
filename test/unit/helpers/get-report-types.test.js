@@ -42,7 +42,9 @@ describe('getReportTypes', () => {
     expect(reportTypes).toEqual({
       'Payment request statuses': 'payment-requests',
       'Suppressed payment requests': 'suppressed-payments',
-      Holds: 'holds'
+      Holds: 'holds',
+      'Payment statement status report': 'status-report'
+
     })
   })
 

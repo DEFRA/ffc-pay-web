@@ -1,12 +1,12 @@
 const { get } = require('../api')
-const { holdAdmin, schemeAdmin, dataView, closureAdmin } = require('../auth/permissions')
+const { holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked } = require('../auth/permissions')
 const { getReportTypes } = require('../helpers/get-report-types')
 
 module.exports = {
   method: 'GET',
   path: '/',
   options: {
-    auth: { scope: [holdAdmin, schemeAdmin, dataView, closureAdmin] },
+    auth: { scope: [holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked] },
     handler: async (_request, h) => {
       const paymentHoldsResponse = await get('/payment-holds')
       const schemes = await get('/payment-schemes')
