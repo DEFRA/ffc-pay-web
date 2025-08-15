@@ -19,7 +19,8 @@ services:
       COOKIE_PASSWORD: cookiecookiecookiecookiecookiecookie
       AZURE_STORAGE_USE_CONNECTION_STRING: "true"
       AZURE_STORAGE_CREATE_CONTAINERS: "true"
-      PAY_AZURE_STORAGE_ACCOUNT_NAME: ${PAY_AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
+      PAY_EVENT_STORE_AZURE_STORAGE_ACCOUNT_NAME: ${PAY_EVENT_STORE_AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
+      PAY_INJECTION_AZURE_STORAGE_ACCOUNT_NAME: ${PAY_INJECTION_AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
       DOC_AZURE_STORAGE_ACCOUNT_NAME: ${DOC_AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
       MESSAGE_QUEUE_HOST: ${MESSAGE_QUEUE_HOST}
       MESSAGE_QUEUE_PASSWORD: ${MESSAGE_QUEUE_PASSWORD}
@@ -42,5 +43,8 @@ services:
     image: redis:6.2.7
 
 networks:
+  default:
+    name: ffc-pay
   docs:
     name: ffc-doc
+    external: true
