@@ -5,7 +5,7 @@ const permissions = {
   closureAdmin: 'Payment.Closure.Admin',
   statusReportSfi23: 'Statements.Status-Reports.SFI-23',
   statusReportsDelinked: 'Statements.Status-Reports.Delinked',
-  manaulPaymentsAdmin: 'Payment.Manual-Payments.Admin'
+  manualPaymentsAdmin: 'Payment.Manual-Payments.Admin'
 }
 
 module.exports = permissions

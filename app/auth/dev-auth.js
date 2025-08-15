@@ -1,7 +1,7 @@
-const { holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manaulPaymentsAdmin } = require('./permissions')
+const { holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin } = require('./permissions')
 const { v4: uuidv4 } = require('uuid')
 const devAccount = require('./dev-account')
-const devAuthRoles = [holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manaulPaymentsAdmin]
+const devAuthRoles = [holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin]
 
 const getAuthenticationUrl = () => {
   return '/dev-auth'
