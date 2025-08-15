@@ -7,7 +7,8 @@
   statusMessage="Please wait.", 
   processingMessage="The task is being processed.",
   completedMessage="The task has been completed successfully.",
-  errorMessage="We were unable to complete the task."
+  errorMessage="We were unable to complete the task.",
+  autoRedirect=true
 ) %}
 
   <h1 class="govuk-heading-l">{{ title }}</h1>
@@ -20,6 +21,9 @@
     </div>
     <div class="govuk-notification-banner__content">
       <p class="govuk-body" id="progress-status-text">{{ statusMessage }}</p>
+      <div id="redirect-link" class="govuk-body" hidden>
+        <a href="{{ redirectUrl }}" class="govuk-link">Return</a>
+      </div>
       <output class="govuk-spinner" aria-live="polite">
         <span class="govuk-visually-hidden">Loading</span>
       </output>
@@ -45,6 +49,7 @@
       checkUrl: "{{ checkUrl }}",
       downloadUrl: "{{ downloadUrl }}",
       redirectUrl: "{{ redirectUrl }}",
+      autoRedirect: Boolean("{{ autoRedirect|lower }}"),
       processingMessage: "{{ processingMessage }}",
       completedMessage: "{{ completedMessage }}"
     },
@@ -55,7 +60,8 @@
       spinner: () => document.querySelector('.govuk-spinner'),
       downloadFrame: () => document.getElementById('download-frame'),
       errorMessage: () => document.getElementById('error-message'),
-      errorMessageText: () => document.getElementById('error-message-text')
+      errorMessageText: () => document.getElementById('error-message-text'),
+      redirectLink: () => document.getElementById('redirect-link')
     }
   }
 
@@ -72,9 +78,7 @@
 
   const cleanupCache = async (jobId) => {
     try {
-      const response = await fetch(`/loading/${jobId}`, {
-        method: 'DELETE'
-      })
+      const response = await fetch(`/loading/${jobId}`, { method: 'DELETE' })
       if (!response.ok) {
         console.error('Failed to cleanup cache')
       }
@@ -85,7 +89,7 @@
 
   const handleDownload = () => {
     if (!state.downloadStarted) {
-      updateElement(state.elements.statusText(), { textContent: 'The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.'})
+      updateElement(state.elements.statusText(), { textContent: 'The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.' })
       updateElement(state.elements.downloadFrame(), { src: state.config.downloadUrl })
       state.downloadStarted = true
     }
@@ -93,7 +97,7 @@
   }
 
   const handleCompletion = async () => {
-    updateElement(state.elements.statusHeading(), { textContent: 'Processing complete'})
+    updateElement(state.elements.statusHeading(), { textContent: 'Processing complete' })
     updateElement(state.elements.statusText(), { textContent: state.config.completedMessage })
 
     const spinner = state.elements.spinner()
@@ -101,12 +105,14 @@
       spinner.style.display = 'none'
     }
     
-    updateClasses(state.elements.container(), { remove: ['govuk-notification-banner--info'], add: ['govuk-notification-banner--success']})
+    updateClasses(state.elements.container(), { remove: ['govuk-notification-banner--info'], add: ['govuk-notification-banner--success'] })
 
     await cleanupCache(state.config.jobId)
 
-    if (state.config.redirectUrl) {
+    if (state.config.redirectUrl && state.config.autoRedirect) {
       setTimeout(() => window.location.href = state.config.redirectUrl, 500)
+    } else if (state.config.redirectUrl && !state.config.autoRedirect) {
+      state.elements.redirectLink().hidden = false
     }
   }
 
@@ -114,7 +120,7 @@
     updateElement(state.elements.container(), { hidden: true })
     updateElement(state.elements.errorMessage(), { hidden: false })
 
-    if(data.message) {
+    if (data && data.message) {
       updateElement(state.elements.errorMessageText(), { textContent: data.message })
     }
   }
