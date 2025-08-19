@@ -185,4 +185,32 @@ describe('Report test', () => {
     expect(response.statusCode).toBe(403)
     expect(response.payload).toContain('Sorry, you are not authorised to perform this action')
   })
+
+  test('GET /report-list/holds returns correct data with default values', async () => {
+    getHolds.mockResolvedValue([
+      {
+        frn: '456',
+        holdCategorySchemeName: 'Scheme 2',
+        marketingYear: undefined,
+        agreementNumber: undefined,
+        contractNumber: undefined,
+        holdCategoryName: 'Category 2',
+        dateTimeAdded: new Date()
+      }
+    ])
+
+    const options = {
+      method: 'GET',
+      url: '/report-list/holds',
+      auth
+    }
+
+    const response = await server.inject(options)
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toBe('text/csv; charset=utf-8')
+
+    expect(response.payload).toContain('All')
+    expect(response.payload).toContain('All')
+    expect(response.payload).toContain('All')
+  })
 })
