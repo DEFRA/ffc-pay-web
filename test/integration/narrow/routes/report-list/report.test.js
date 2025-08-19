@@ -94,6 +94,9 @@ describe('Report test', () => {
       {
         frn: '123',
         holdCategorySchemeName: 'Scheme 1',
+        marketingYear: 2023,
+        agreementNumber: 'AG123',
+        contractNumber: 'CON123',
         holdCategoryName: 'Category 1',
         dateTimeAdded: new Date()
       }
