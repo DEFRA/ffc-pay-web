@@ -29,7 +29,7 @@ const handleBulkClosure = async (request, h) => {
     return handleBulkClosureError(h, errors, request.payload?.crumb ?? request.state.crumb)
   }
 
-  await post(BULK, { data: uploadData }, null)
+  await postProcessing(BULK, { data: uploadData }, null)
   return h.redirect(BASE)
 }
 

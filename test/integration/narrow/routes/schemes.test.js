@@ -2,7 +2,7 @@ jest.mock('../../../../app/auth')
 const cheerio = require('cheerio')
 const createServer = require('../../../../app/server')
 jest.mock('../../../../app/api')
-const { get } = require('../../../../app/api')
+const { getProcessingData } = require('../../../../app/api')
 const { schemeAdmin } = require('../../../../app/auth/permissions')
 const getCrumbs = require('../../../helpers/get-crumbs')
 
@@ -36,12 +36,12 @@ describe('Payment schemes', () => {
   ]
 
   function mockGetPaymentSchemes (paymentSchemes) {
-    get.mockResolvedValueOnce({ payload: { paymentSchemes } })
+    getProcessingData.mockResolvedValueOnce({ payload: { paymentSchemes } })
   }
 
   function expectRequestForPaymentSchemes (timesCalled = 1) {
-    expect(get).toHaveBeenCalledTimes(timesCalled)
-    expect(get).toHaveBeenCalledWith('/payment-schemes')
+    expect(getProcessingData).toHaveBeenCalledTimes(timesCalled)
+    expect(getProcessingData).toHaveBeenCalledWith('/payment-schemes')
   }
 
   describe('GET requests', () => {
@@ -54,7 +54,7 @@ describe('Payment schemes', () => {
       { holdResponse: 0 },
       { holdResponse: false }
     ])('returns 500 and no response view when falsy value returned from getting payment schemes', async ({ holdResponse }) => {
-      get.mockResolvedValueOnce(holdResponse)
+      getProcessingData.mockResolvedValueOnce(holdResponse)
 
       const res = await server.inject({ method, url, auth })
 

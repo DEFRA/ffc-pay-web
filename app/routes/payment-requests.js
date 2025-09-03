@@ -45,7 +45,7 @@ module.exports = [
       handler: async (request, h) => {
         const { invoiceNumber } = request.payload
         try {
-          await post(ROUTES.RESET, { invoiceNumber })
+          await postProcessing(ROUTES.RESET, { invoiceNumber })
           return h.redirect(
             `/payment-request/reset-success?invoiceNumber=${invoiceNumber}`
           )

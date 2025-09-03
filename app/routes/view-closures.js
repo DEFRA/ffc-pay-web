@@ -19,7 +19,7 @@ module.exports = [{
   options: {
     auth: { scope: [closureAdmin] },
     handler: async (request, h) => {
-      await post('/closure/remove', { closedId: request.payload.closedId })
+      await postProcessing('/closure/remove', { closedId: request.payload.closedId })
       return h.redirect('/closure')
     }
   }

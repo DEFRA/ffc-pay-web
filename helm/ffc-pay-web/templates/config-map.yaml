@@ -10,13 +10,16 @@ data:
     {{- if ne .Values.environmentCode "snd" }}
   PAYMENTS_SERVICE_ENDPOINT: {{ .Values.container.paymentsEndpoint }}-{{ .Values.environmentCode }}
   TRACKING_SERVICE_ENDPOINT: {{ .Values.container.trackingEndpoint }}-{{ .Values.environmentCode }}
+  INJECTION_SERVICE_ENDPOINT: {{ .Values.container.injectionEndpoint }}-{{ .Values.environmentCode }}
     {{ else }}
   PAYMENTS_SERVICE_ENDPOINT: {{ quote .Values.container.paymentsEndpoint }}
   TRACKING_SERVICE_ENDPOINT: {{ quote .Values.container.trackingEndpoint }}
+  INJECTION_SERVICE_ENDPOINT: {{ quote .Values.container.injectionEndpoint }}
     {{- end }}
   {{ else }}
   PAYMENTS_SERVICE_ENDPOINT: {{ quote .Values.container.paymentsEndpoint }}
   TRACKING_SERVICE_ENDPOINT: {{ quote .Values.container.trackingEndpoint }}
+  INJECTION_SERVICE_ENDPOINT: {{ quote .Values.container.injectionEndpoint }}
   {{- end }}
   {{- if .Values.pr }}
   REDIRECT_URL: https://{{ .Values.ingress.endpoint }}-{{ .Values.pr }}.{{ .Values.ingress.server }}/{{ .Values.azureAppRegistration.redirectUrl }}

@@ -7,14 +7,14 @@ const { MAX_BYTES, MAX_MEGA_BYTES } = require('../../../../app/constants/payload
 const createServer = require('../../../../app/server')
 const { FRN } = require('../../../mocks/values/frn')
 const { AGREEMENT_NUMBER } = require('../../../mocks/values/agreement-number')
-const { get, post } = require('../../../../app/api')
+const { getProcessingData, post } = require('../../../../app/api')
 const getCrumbs = require('../../../helpers/get-crumbs')
 
 let server
 let auth
 
 const mockGetClosures = () => {
-  get.mockResolvedValue(
+  getProcessingData.mockResolvedValue(
     {
       payload: {
         closures: [{

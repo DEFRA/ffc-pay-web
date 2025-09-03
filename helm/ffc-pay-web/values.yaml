@@ -42,6 +42,7 @@ container:
   port: 3007
   paymentsEndpoint: http://ffc-pay-processing.ffc-pay
   trackingEndpoint: http://ffc-pay-tracking.ffc-pay
+  injectionEndpoint: http://ffc-pay-injection.ffc-pay
   cookiePassword: cookiecookiecookiecookiecookiecookie
   azureStorageUseConnectionString: false
   azureStorageCreateContainers: false

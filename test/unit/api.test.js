@@ -20,7 +20,7 @@ describe('API', () => {
     const responseMock = { payload: 'something' }
     wreck.get.mockResolvedValueOnce(responseMock)
 
-    const response = await api.get(url, token)
+    const response = await api.getProcessingData(url, token)
 
     expect(wreck.get).toHaveBeenCalledTimes(1)
     expect(wreck.get).toHaveBeenCalledWith(`${paymentsEndpoint}${url}`, { headers: { Authorization: expectedAuthVal }, json: true })
@@ -36,7 +36,7 @@ describe('API', () => {
     wreck.post.mockResolvedValueOnce(responseMock)
     const data = { hi: 'world' }
 
-    const response = await api.post(url, data, token)
+    const response = await api.postProcessing(url, data, token)
 
     expect(wreck.post).toHaveBeenCalledTimes(1)
     expect(wreck.post).toHaveBeenCalledWith(`${paymentsEndpoint}${url}`, {

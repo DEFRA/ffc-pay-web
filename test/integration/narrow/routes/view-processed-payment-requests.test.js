@@ -5,7 +5,7 @@ jest.mock('../../../../app/payments/get-payments-by-scheme')
 const cheerio = require('cheerio')
 const { schemeAdmin, holdAdmin, dataView } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
-const { get } = require('../../../../app/api')
+const { getProcessingData } = require('../../../../app/api')
 const { getPaymentsByScheme } = require('../../../../app/payments/get-payments-by-scheme')
 
 let server
@@ -22,7 +22,7 @@ const mockProcessedPayments = [
 ]
 
 const mockGetSchemes = (schemes) => {
-  get.mockResolvedValue({ payload: { paymentSchemes: schemes } })
+  getProcessingData.mockResolvedValue({ payload: { paymentSchemes: schemes } })
 }
 
 describe('Monitoring Schemes and Processed Payments', () => {

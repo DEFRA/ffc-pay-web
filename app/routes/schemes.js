@@ -1,4 +1,4 @@
-const { get, post } = require('../api')
+const { getProcessingData, post } = require('../api')
 const Joi = require('joi')
 const ViewModel = require('./models/update-scheme')
 const { schemeAdmin } = require('../auth/permissions')
@@ -13,7 +13,7 @@ module.exports = [
     options: {
       auth: { scope: [schemeAdmin] },
       handler: async (_request, h) => {
-        const schemes = await get(PAYMENT_SCHEMES)
+        const schemes = await getProcessingData(PAYMENT_SCHEMES)
         const schemesPayload = schemes.payload.paymentSchemes
         for (const scheme of schemesPayload) {
           if (scheme.name === 'SFI') {
@@ -80,7 +80,7 @@ module.exports = [
       },
       handler: async (request, h) => {
         if (request.payload.confirm) {
-          await post('/change-payment-status', {
+          await postProcessing('/change-payment-status', {
             schemeId: request.payload.schemeId,
             active: !request.payload.active
           })

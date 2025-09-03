@@ -1,8 +1,8 @@
 const moment = require('moment')
-const { get } = require('../api')
+const { getProcessingData } = require('../api')
 
 const getClosures = async () => {
-  const { payload } = await get('/closure')
+  const { payload } = await getProcessingData('/closure')
   return payload.closures?.map(x => {
     x.closureDate = moment(x.closureDate).format('DD/MM/YYYY')
     if (x.schemeName === 'SFI') {

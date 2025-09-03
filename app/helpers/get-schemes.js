@@ -1,7 +1,7 @@
 const api = require('../api')
 
 const getSchemes = async () => {
-  const schemes = await api.get('/payment-schemes')
+  const schemes = await api.getProcessingData('/payment-schemes')
   const schemesPayload = schemes.payload.paymentSchemes
   schemesPayload.forEach(scheme => {
     if (scheme.name === 'SFI') {

@@ -1,4 +1,4 @@
-const { get, post } = require('../../../app/api')
+const { getProcessingData, post } = require('../../../app/api')
 const routes = require('../../../app/routes/schemes')
 const ViewModel = require('../../../app/routes/models/update-scheme')
 
@@ -7,7 +7,7 @@ jest.mock('../../../app/api')
 describe('payment-schemes routes', () => {
   test('GET /payment-schemes should change the name of any scheme named "SFI" to "SFI22"', async () => {
     const handler = routes.find(route => route.path === '/payment-schemes' && route.method === 'GET').options.handler
-    get.mockResolvedValue({
+    getProcessingData.mockResolvedValue({
       payload: {
         paymentSchemes: [
           { name: 'SFI' },

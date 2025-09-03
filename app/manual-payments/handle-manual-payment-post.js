@@ -20,6 +20,8 @@ const handleManualPaymentPost = async (request, h) => {
 
     await setLoadingStatus(request, jobId, { status: 'processing' })
 
+    
+
     uploadManualPaymentFile(filePath, fileName).then(() => {
       setLoadingStatus(request, jobId, { status: 'completed' })
     }).catch((err) => {

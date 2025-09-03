@@ -118,7 +118,7 @@ module.exports = [
         }
       },
       handler: async (request, h) => {
-        await post(
+        await postProcessing(
           HOLDS_ROUTES.ADD,
           {
             holdCategoryId: request.payload.holdCategoryId,
@@ -136,7 +136,7 @@ module.exports = [
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (request, h) => {
-        await post(HOLDS_ROUTES.REMOVE, { holdId: request.payload.holdId })
+        await postProcessing(HOLDS_ROUTES.REMOVE, { holdId: request.payload.holdId })
         return h.redirect('/')
       }
     }

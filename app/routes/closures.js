@@ -64,7 +64,7 @@ module.exports = [
           month = `0${request.payload.month}`
         }
         const date = `${request.payload.year}-${month}-${day}T00:00:00`
-        await post(
+        await postProcessing(
           CLOSURES_ROUTES.ADD,
           {
             frn: request.payload.frn,
