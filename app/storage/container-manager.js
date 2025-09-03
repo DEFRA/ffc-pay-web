@@ -28,13 +28,13 @@ const initialiseContainer = async (key) => {
     throw new Error(`Unknown container key: ${key}`)
   }
 
-  console.log(`Initialising container: ${container.name} from source: ${container.source}`)
+  console.log(`Initialising container: '${container.name}' from source: '${container.source}'`)
 
   if (!container.initialised) {
     container.client = await getClient(container)
     container.initialised = true
   }
-  console.log(`Container ${container.name} initialised successfully`, container)
+  console.log(`Container '${container.name}' initialised successfully`)
 
   return container.client
 }

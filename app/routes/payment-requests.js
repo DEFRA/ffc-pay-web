@@ -1,4 +1,4 @@
-const { post } = require('../api')
+const { postProcessing } = require('../api')
 const schema = require('./schemas/invoice-number')
 const { schemeAdmin } = require('../auth/permissions')
 const ROUTES = {

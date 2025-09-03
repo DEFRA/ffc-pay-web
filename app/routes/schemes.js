@@ -1,4 +1,4 @@
-const { getProcessingData, post } = require('../api')
+const { getProcessingData, postProcessing } = require('../api')
 const Joi = require('joi')
 const ViewModel = require('./models/update-scheme')
 const { schemeAdmin } = require('../auth/permissions')

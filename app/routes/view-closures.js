@@ -1,4 +1,4 @@
-const { post } = require('../api')
+const { postProcessing } = require('../api')
 const { closureAdmin } = require('../auth/permissions')
 const { getClosures } = require('../closure')
 

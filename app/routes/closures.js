@@ -1,7 +1,7 @@
 const { closureAdmin } = require('../auth/permissions')
 const schema = require('./schemas/closure')
 const bulkSchema = require('./schemas/bulk-closure')
-const { post } = require('../api')
+const { postProcessing } = require('../api')
 const { MAX_BYTES, MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 const { handleBulkClosureError } = require('../closure/handle-bulk-closure-error')
 const { handleBulkClosure } = require('../closure/handle-bulk-closure')

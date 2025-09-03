@@ -6,7 +6,7 @@ const EMPTY_CONTENT_LENGTH = 5
 const uploadManualPaymentFile = async (filePath, fileName) => {
   const manualPaymentsContainer = await getContainerClient(config.manualPaymentsContainer)
 
-  const blobName = `${config.inboundFolderName}/${fileName}`
+  const blobName = `${config.stagingFolderName}/${fileName}`
   const blobClient = manualPaymentsContainer.getBlockBlobClient(blobName)
 
   await blobClient.uploadFile(filePath)

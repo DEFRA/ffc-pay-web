@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { post } = require('../api')
+const { postProcessing } = require('../api')
 const { processClosureData } = require('../closure')
 const { handleBulkClosureError } = require('./handle-bulk-closure-error')
 const { BULK, BASE } = require('../constants/closures-routes')

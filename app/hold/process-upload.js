@@ -1,4 +1,4 @@
-const { post } = require('../api')
+const { postProcessing } = require('../api')
 const { setLoadingStatus } = require('../helpers/set-loading-status')
 
 const ENDPOINTS = {
