@@ -52,6 +52,8 @@ module.exports = [
             frn: hold.frn,
             scheme: hold.holdCategorySchemeName,
             marketingYear: hold.marketingYear ?? 'All',
+            agreementNumber: hold.agreementNumber ?? 'All',
+            contractNumber: hold.contractNumber ?? 'All',
             holdCategory: hold.holdCategoryName,
             dateAdded: formatDateFromString(hold.dateTimeAdded)
           }))
