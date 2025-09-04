@@ -34,7 +34,7 @@ const handleManualPaymentPost = async (request, h) => {
       if (err.data && err.data.isResponseError && err.data.res) {
         try {
           const parsed = err.data.payload || JSON.parse(err.data.body || '{}')
-          message = parsed.error || JSON.stringify(parsed)
+          message = parsed.message || JSON.stringify(parsed)
         } catch (parseErr) {
           message = err.message
         }
