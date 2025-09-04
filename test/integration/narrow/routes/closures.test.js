@@ -7,7 +7,7 @@ const { MAX_BYTES, MAX_MEGA_BYTES } = require('../../../../app/constants/payload
 const createServer = require('../../../../app/server')
 const { FRN } = require('../../../mocks/values/frn')
 const { AGREEMENT_NUMBER } = require('../../../mocks/values/agreement-number')
-const { getProcessingData, post } = require('../../../../app/api')
+const { getProcessingData, postProcessing } = require('../../../../app/api')
 const getCrumbs = require('../../../helpers/get-crumbs')
 
 let server
@@ -105,8 +105,8 @@ describe('Closures', () => {
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
 
-      expect(post).toHaveBeenCalledTimes(1)
-      expect(post).toHaveBeenCalledWith('/closure/add', { frn: FRN, agreement: AGREEMENT_NUMBER, date: '2023-08-12T00:00:00' }, null)
+      expect(postProcessing).toHaveBeenCalledTimes(1)
+      expect(postProcessing).toHaveBeenCalledWith('/closure/add', { frn: FRN, agreement: AGREEMENT_NUMBER, date: '2023-08-12T00:00:00' }, null)
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toEqual('/closure')
     })

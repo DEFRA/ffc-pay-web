@@ -1,4 +1,4 @@
-const { getProcessingData, post } = require('../../../app/api')
+const { getProcessingData, postProcessing } = require('../../../app/api')
 const routes = require('../../../app/routes/schemes')
 const ViewModel = require('../../../app/routes/models/update-scheme')
 
@@ -53,7 +53,7 @@ describe('payment-schemes routes', () => {
     }
     const payload = { confirm: true, schemeId: 1, name: 'Test', active: true }
     await handler({ payload }, hapi)
-    expect(post).toHaveBeenCalledWith('/change-payment-status', { schemeId: 1, active: false })
+    expect(postProcessing).toHaveBeenCalledWith('/change-payment-status', { schemeId: 1, active: false })
     expect(hapi.redirect).toHaveBeenCalledWith('/payment-schemes')
   })
 })

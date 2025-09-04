@@ -1,7 +1,9 @@
 const { v4: uuidv4 } = require('uuid')
 
-const MANUAL_PAYMENT_VIEWS = require('../constants/manual-payment-views')
 const { MANUAL_UPLOAD } = require('../constants/injection-routes')
+const { SUCCESS } = require('../constants/http-status-codes')
+const MANUAL_PAYMENT_VIEWS = require('../constants/manual-payment-views')
+const MANUAL_UPLOAD_RESPONSE_MESSAGES = require('../constants/manual-upload-response-messages')
 
 const { readFileContent } = require('../helpers/read-file-content')
 const { setLoadingStatus } = require('../helpers/set-loading-status')
@@ -23,27 +25,25 @@ const handleManualPaymentPost = async (request, h) => {
     return manualUploadFailAction(h)
   }
 
-  setLoadingStatus(request, jobId, { status: 'processing' })
-    .then(() => uploadManualPaymentFile(filePath, filename))
-    .then(() => postInjection(MANUAL_UPLOAD, { uploader: uploaderNameOrEmail, filename }, null))
-    .then(() => setLoadingStatus(request, jobId, { status: 'completed' }))
-    .catch((err) => {
-      console.error('Error processing manual payment file:', err)
+  try {
+    await setLoadingStatus(request, jobId, { status: 'processing' })
+    await uploadManualPaymentFile(filePath, filename)
 
-      let message = 'Unknown error'
-      if (err.data && err.data.isResponseError && err.data.res) {
-        try {
-          const parsed = err.data.payload || JSON.parse(err.data.body || '{}')
-          message = parsed.message || JSON.stringify(parsed)
-        } catch (parseErr) {
-          message = err.message
-        }
-      } else {
-        message = err.message
-      }
+    const response = await postInjection(MANUAL_UPLOAD, { uploader: uploaderNameOrEmail, filename }, null)
 
-      setLoadingStatus(request, jobId, { status: 'failed', message })
-    })
+    const statusCode = response?.code || 'UNKNOWN_ERROR'
+    const message = MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] || response?.message || 'Unknown error occurred'
+    const status = statusCode === SUCCESS ? 'completed' : 'failed'
+
+    await setLoadingStatus(request, jobId, { status, message })
+  } catch (err) {
+    console.error('Error processing manual payment file:', err?.data?.payload || err)
+
+    const statusCode = err?.data?.res?.statusCode || 'UNKNOWN_ERROR'
+    const message = MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] || err?.data?.payload?.message || err.message || 'Unknown error occurred'
+
+    await setLoadingStatus(request, jobId, { status: 'failed', message })
+  }
 
   return h.view(MANUAL_PAYMENT_VIEWS.LOADING, { jobId })
 }

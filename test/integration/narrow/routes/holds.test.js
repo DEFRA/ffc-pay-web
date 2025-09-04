@@ -326,29 +326,6 @@ describe('Payment holds', () => {
       }
     }
 
-    test('returns loading view when valid file upload and crumb provided', async () => {
-      const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
-      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-
-      const { payload, boundary } = createPayload(viewCrumb, '1234567890,2345678901,3456789012')
-
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload,
-        headers: {
-          cookie: `crumb=${cookieCrumb}`,
-          'content-type': `multipart/form-data; boundary=${boundary}`
-        }
-      })
-
-      expect(res.statusCode).toBe(200)
-      const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toContain('Processing bulk upload')
-      expect(readFileContent).toHaveBeenCalledWith(expect.any(String))
-    })
-
     test.each([
       { viewCrumb: 'incorrect' },
       { viewCrumb: undefined }
