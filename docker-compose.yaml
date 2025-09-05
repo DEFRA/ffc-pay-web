@@ -44,8 +44,5 @@ services:
     image: redis:6.2.7
 
 networks:
-  default:
-    name: ffc-pay
   docs:
     name: ffc-doc
-    external: true
