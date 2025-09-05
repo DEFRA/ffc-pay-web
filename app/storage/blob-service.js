@@ -11,13 +11,13 @@ const createBlobServiceClient = (connectionString, storageAccount, managedIdenti
 
 const payEventStoreBlobClient = createBlobServiceClient(
   config.payEventStoreBlobClient,
-  config.payEventStoreStorageAccount,
+  config.payStorageAccount,
   config.managedIdentityClientId
 )
 
 const payInjectionBlobClient = createBlobServiceClient(
   config.payInjectionBlobClient,
-  config.payInjectionStorageAccount,
+  config.payStorageAccount,
   config.managedIdentityClientId
 )
 

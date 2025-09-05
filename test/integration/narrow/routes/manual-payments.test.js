@@ -1,6 +1,3 @@
-// test/integration/narrow/routes/manual-payments.test.js
-
-/* --- MOCKS: must be before server require --- */
 jest.mock('../../../../app/api')
 jest.mock('../../../../app/storage')
 jest.mock('../../../../app/helpers/read-file-content')
@@ -11,12 +8,13 @@ const { postInjection } = require('../../../../app/api')
 const { uploadManualPaymentFile } = require('../../../../app/storage')
 const { readFileContent } = require('../../../../app/helpers/read-file-content')
 const cheerio = require('cheerio')
+const createServer = require('../../../../app/server')
+
 const { manualPaymentsAdmin } = require('../../../../app/auth/permissions')
 const getCrumbs = require('../../../helpers/get-crumbs')
 
 let server
 
-// helper to build a raw multipart body (Hapi expects raw multipart for server.inject)
 function buildMultipartPayload ({ fields = {}, fileFieldName = 'file', filename = 'test-file.txt', fileContent = 'test content', boundary = '----WebKitFormBoundaryPovBlTQYGDYVuINo' } = {}) {
   const parts = []
 
@@ -39,14 +37,11 @@ describe('Manual Payments Routes', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
 
-    // sensible defaults - individual tests override where needed
     readFileContent.mockReturnValue('file-contents')
     uploadManualPaymentFile.mockResolvedValue()
     postInjection.mockResolvedValue({ jobId: '12345' })
 
-    // create server AFTER mocks are set up
-    const createSrv = require('../../../../app/server')
-    server = await createSrv()
+    server = await createServer()
     if (typeof server.initialize === 'function') await server.initialize()
   })
 
@@ -60,7 +55,6 @@ describe('Manual Payments Routes', () => {
 
     expect(res.statusCode).toBe(200)
     const $ = cheerio.load(res.payload)
-    // your app uses "Manual payment upload" heading - assert that text exists
     expect($('h1').text()).toContain('Manual payment upload')
   })
 
