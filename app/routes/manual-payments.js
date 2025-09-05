@@ -6,14 +6,14 @@ const { manualUploadFailAction } = require('../manual-payments/manual-upload-fai
 const { handleManualPaymentPost } = require('../manual-payments')
 
 const { MAX_BYTES } = require('../constants/payload-sizes')
-const { holdAdmin } = require('../auth/permissions')
+const { manualPaymentsAdmin } = require('../auth/permissions')
 
 module.exports = [
   {
     method: 'GET',
     path: MANUAL_PAYMENT_ROUTES.MANUAL_PAYMENTS,
     options: {
-      auth: { scope: [holdAdmin] },
+      auth: { scope: [manualPaymentsAdmin] },
       handler: async (_request, h) => {
         return h.view(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS)
       }
@@ -24,7 +24,7 @@ module.exports = [
     path: MANUAL_PAYMENT_ROUTES.UPLOAD,
     handler: handleManualPaymentPost,
     options: {
-      auth: { scope: [holdAdmin] },
+      auth: { scope: [manualPaymentsAdmin] },
       payload: {
         output: 'file',
         parse: true,
