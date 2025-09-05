@@ -9,14 +9,14 @@ const createBlobServiceClient = (connectionString, storageAccount, managedIdenti
     : (console.log(`Using DefaultAzureCredential for ${storageAccount} BlobServiceClient`),
       new BlobServiceClient(`https://${storageAccount}.blob.core.windows.net`, new DefaultAzureCredential({ managedIdentityClientId })))
 
-const payEventStoreBlobClient = createBlobServiceClient(
-  config.payEventStoreBlobClient,
+const payEventStoreConnectionStr = createBlobServiceClient(
+  config.payEventStoreConnectionStr,
   config.payStorageAccount,
   config.managedIdentityClientId
 )
 
-const payInjectionBlobClient = createBlobServiceClient(
-  config.payInjectionBlobClient,
+const payInjectionConnectionStr = createBlobServiceClient(
+  config.payInjectionConnectionStr,
   config.payStorageAccount,
   config.managedIdentityClientId
 )
@@ -28,7 +28,7 @@ const docBlobClient = createBlobServiceClient(
 )
 
 const getPayEventStoreContainerClient = async (containerName) => {
-  const containerClient = payEventStoreBlobClient.getContainerClient(containerName)
+  const containerClient = payEventStoreConnectionStr.getContainerClient(containerName)
 
   if (config.createContainers) {
     await containerClient.createIfNotExists()
@@ -38,7 +38,7 @@ const getPayEventStoreContainerClient = async (containerName) => {
 }
 
 const getPayInjectionContainerClient = async (containerName) => {
-  const containerClient = payInjectionBlobClient.getContainerClient(containerName)
+  const containerClient = payInjectionConnectionStr.getContainerClient(containerName)
 
   if (config.createContainers) {
     await containerClient.createIfNotExists()

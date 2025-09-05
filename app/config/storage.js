@@ -2,8 +2,8 @@ const Joi = require('joi')
 
 // Define config schema
 const schema = Joi.object({
-  payEventStoreBlobClient: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
-  payInjectionBlobClient: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
+  payEventStoreConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
+  payInjectionConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
   docConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
   payStorageAccount: Joi.string().required(),
   docStorageAccount: Joi.string().required(),
@@ -32,8 +32,8 @@ const schema = Joi.object({
 
 // Build config
 const config = {
-  payEventStoreBlobClient: process.env.PAY_EVENT_STORE_AZURE_STORAGE_CONNECTION_STRING,
-  payInjectionBlobClient: process.env.PAY_INJECTION_AZURE_STORAGE_CONNECTION_STRING,
+  payEventStoreConnectionStr: process.env.PAY_EVENT_STORE_AZURE_STORAGE_CONNECTION_STRING,
+  payInjectionConnectionStr: process.env.PAY_INJECTION_AZURE_STORAGE_CONNECTION_STRING,
   docConnectionStr: process.env.DOC_AZURE_STORAGE_CONNECTION_STRING,
   payStorageAccount: process.env.PAY_AZURE_STORAGE_ACCOUNT_NAME,
   docStorageAccount: process.env.DOC_AZURE_STORAGE_ACCOUNT_NAME,

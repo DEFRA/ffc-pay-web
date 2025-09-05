@@ -41,7 +41,7 @@ describe('blob-service tests', () => {
       storageConfig: {
         useConnectionStr: true,
         createContainers: true,
-        payEventStoreBlobClient: 'fake-pay-connection',
+        payEventStoreConnectionStr: 'fake-pay-connection',
         payStorageAccount: 'pay-account',
         payManagedIdentityClientId: 'pay-id',
         docConnectionStr: 'fake-doc-connection',
