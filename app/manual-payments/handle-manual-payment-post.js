@@ -13,24 +13,30 @@ const { postInjection } = require('../api')
 
 const handleManualPaymentPost = async (request, h) => {
   const jobId = uuidv4()
-
-  const filePath = request.payload.file.path
-  const filename = request.payload.file.filename
+  const { path: filePath, filename } = request.payload.file
   const user = request.auth?.credentials
   const uploaderNameOrEmail = user?.name || user?.email || 'Unknown User'
 
   const fileContent = readFileContent(filePath)
+
   if (!fileContent) {
-    await setLoadingStatus(request, jobId, { status: 'failed', message: 'File empty' })
+    await setLoadingStatus(request, jobId, {
+      status: 'failed',
+      message: 'File empty'
+    })
     return manualUploadFailAction(h)
   }
 
+  return processManualPaymentFile(request, h, { filePath, filename, uploaderNameOrEmail, jobId })
+}
+
+async function processManualPaymentFile (request, h, { filePath, filename, uploaderNameOrEmail, jobId }) {
   try {
     await setLoadingStatus(request, jobId, { status: 'processing' })
+
     await uploadManualPaymentFile(filePath, filename)
 
     const response = await postInjection(MANUAL_UPLOAD, { uploader: uploaderNameOrEmail, filename }, null)
-
     const statusCode = response?.code || 'UNKNOWN_ERROR'
     const message = MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] || response?.message || 'Unknown error occurred'
     const status = statusCode === SUCCESS ? 'completed' : 'failed'
@@ -40,7 +46,11 @@ const handleManualPaymentPost = async (request, h) => {
     console.error('Error processing manual payment file:', err?.data?.payload || err)
 
     const statusCode = err?.data?.res?.statusCode || 'UNKNOWN_ERROR'
-    const message = MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] || err?.data?.payload?.message || err.message || 'Unknown error occurred'
+    const message =
+      MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] ||
+      err?.data?.payload?.message ||
+      err.message ||
+      'Unknown error occurred'
 
     await setLoadingStatus(request, jobId, { status: 'failed', message })
   }
