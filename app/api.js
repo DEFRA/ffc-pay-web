@@ -19,11 +19,11 @@ const postProcessing = async (url, data, token) => {
 }
 
 const postInjection = async (url, data, token) => {
-  const { payload } = await wreck.post(`${config.injectionEndpoint}${url}`, {
+  const { res, payload } = await wreck.post(`${config.injectionEndpoint}${url}`, {
     payload: data,
     ...getConfiguration(token)
   })
-  return payload
+  return { statusCode: res.statusCode, payload }
 }
 
 const getProcessingData = async (url, token) => {

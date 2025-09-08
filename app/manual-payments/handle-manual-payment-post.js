@@ -37,8 +37,9 @@ async function processManualPaymentFile (request, h, { filePath, filename, uploa
     await uploadManualPaymentFile(filePath, filename)
 
     const response = await postInjection(MANUAL_UPLOAD, { uploader: uploaderNameOrEmail, filename }, null)
-    const statusCode = response?.code || 'UNKNOWN_ERROR'
-    const message = MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] || response?.message || 'Unknown error occurred'
+
+    const statusCode = response?.statusCode
+    const message = MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] || response?.payload.message || 'Unknown error occurred'
     const status = statusCode === SUCCESS ? 'completed' : 'failed'
 
     await setLoadingStatus(request, jobId, { status, message })
