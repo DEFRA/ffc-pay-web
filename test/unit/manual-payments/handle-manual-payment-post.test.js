@@ -49,7 +49,7 @@ describe('handleManualPaymentPost', () => {
   test('should complete successfully when upload works', async () => {
     readFileContent.mockReturnValue('data')
     uploadManualPaymentFile.mockResolvedValue()
-    postInjection.mockResolvedValue({ code: SUCCESS })
+    postInjection.mockResolvedValue({ statusCode: 200, payload: { code: SUCCESS } })
 
     await handleManualPaymentPost(request, h)
 

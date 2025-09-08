@@ -28,9 +28,9 @@ describe('API', () => {
     { token: 'token', expectedAuthVal: 'token' },
     { token: null, expectedAuthVal: '' },
     { token: undefined, expectedAuthVal: '' }
-  ])('postProcessing makes request with auth header and returns payload', async ({ token, expectedAuthVal }) => {
-    const responseMock = { payload: 'something' }
-    wreck.post.mockResolvedValueOnce(responseMock)
+  ])('postProcessing makes request with auth header and returns payload only', async ({ token, expectedAuthVal }) => {
+    const wreckResponseMock = { res: { statusCode: 200 }, payload: { message: 'something' } }
+    wreck.post.mockResolvedValueOnce(wreckResponseMock)
     const data = { hi: 'world' }
 
     const response = await api.postProcessing('url', data, token)
@@ -41,16 +41,16 @@ describe('API', () => {
       headers: { Authorization: expectedAuthVal },
       json: true
     })
-    expect(response).toEqual(responseMock.payload)
+    expect(response).toEqual(wreckResponseMock.payload)
   })
 
   test.each([
     { token: 'token', expectedAuthVal: 'token' },
     { token: null, expectedAuthVal: '' },
     { token: undefined, expectedAuthVal: '' }
-  ])('postInjection makes request with auth header and returns payload', async ({ token, expectedAuthVal }) => {
-    const responseMock = { payload: { success: true } }
-    wreck.post.mockResolvedValueOnce(responseMock)
+  ])('postInjection makes request with auth header and returns { statusCode, payload }', async ({ token, expectedAuthVal }) => {
+    const wreckResponseMock = { res: { statusCode: 200 }, payload: { success: true } }
+    wreck.post.mockResolvedValueOnce(wreckResponseMock)
     const data = { uploader: 'user', filename: 'file.txt' }
 
     const response = await api.postInjection('injection-url', data, token)
@@ -61,7 +61,7 @@ describe('API', () => {
       headers: { Authorization: expectedAuthVal },
       json: true
     })
-    expect(response).toEqual(responseMock.payload)
+    expect(response).toEqual({ statusCode: 200, payload: wreckResponseMock.payload })
   })
 
   test('getTrackingData makes request with auth header and returns response', async () => {
