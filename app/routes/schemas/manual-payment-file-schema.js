@@ -18,7 +18,7 @@ const manualPayamentFileSchema = Joi.object({
 
     if (key === 'filename') {
       err.message =
-        'Filename must match FFC_Manual_Batch_<scheme>_<timestamp> (e.g. FFC_Manual_Batch_SFI23_20250626091445)'
+        'Filename must match FFC_Manual_Batch_<scheme>_<timestamp>.csv (e.g. FFC_Manual_Batch_SFI23_20250626091445.csv)'
     } else if (key === 'headers') {
       err.message = 'File must be a CSV (content-type: text/csv)'
     } else {
