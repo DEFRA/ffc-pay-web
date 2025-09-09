@@ -1,4 +1,4 @@
-const { post } = require('../api')
+const { postProcessing } = require('../api')
 const { closureAdmin } = require('../auth/permissions')
 const { getClosures } = require('../closure')
 
@@ -19,7 +19,7 @@ module.exports = [{
   options: {
     auth: { scope: [closureAdmin] },
     handler: async (request, h) => {
-      await post('/closure/remove', { closedId: request.payload.closedId })
+      await postProcessing('/closure/remove', { closedId: request.payload.closedId })
       return h.redirect('/closure')
     }
   }

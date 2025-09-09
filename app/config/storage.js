@@ -2,7 +2,8 @@ const Joi = require('joi')
 
 // Define config schema
 const schema = Joi.object({
-  payConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
+  payEventStoreConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
+  payInjectionConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
   docConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
   payStorageAccount: Joi.string().required(),
   docStorageAccount: Joi.string().required(),
@@ -10,9 +11,11 @@ const schema = Joi.object({
   reportContainer: Joi.string().default('reports'),
   dataRequestContainer: Joi.string().default('data-requests'),
   statementsContainer: Joi.string().default('statements'),
+  manualPaymentsContainer: Joi.string().default('manual'),
   statusReportsFolder: Joi.string().default('reports'),
   useConnectionStr: Joi.boolean().default(false),
   createContainers: Joi.boolean().default(true),
+  stagingFolderName: Joi.boolean().default('staging'),
   holdReportName: Joi.boolean().default('ffc-pay-hold-report.csv'),
   miReportName: Joi.string().default('ffc-pay-mi-report-v2.csv'),
   suppressedReportName: Joi.string().default('ffc-pay-suppressed-report.csv'),
@@ -29,13 +32,16 @@ const schema = Joi.object({
 
 // Build config
 const config = {
-  payConnectionStr: process.env.PAY_AZURE_STORAGE_CONNECTION_STRING,
+  payEventStoreConnectionStr: process.env.PAY_EVENT_STORE_AZURE_STORAGE_CONNECTION_STRING,
+  payInjectionConnectionStr: process.env.PAY_INJECTION_AZURE_STORAGE_CONNECTION_STRING,
   docConnectionStr: process.env.DOC_AZURE_STORAGE_CONNECTION_STRING,
   payStorageAccount: process.env.PAY_AZURE_STORAGE_ACCOUNT_NAME,
   docStorageAccount: process.env.DOC_AZURE_STORAGE_ACCOUNT_NAME,
   projectionContainer: process.env.AZURE_STORAGE_CONTAINER_PROJECTION,
   dataRequestContainer: process.env.AZURE_STORAGE_DATA_REQUEST_CONTAINER,
   statementsContainer: process.env.AZURE_STORAGE_STATEMENTS_CONTAINER,
+  manualPaymentsContainer: process.env.AZURE_STORAGE_MANUAL_PAYMENTS_CONTAINER,
+  stagingFolderName: process.env.AZURE_STORAGE_STAGING_FOLDER_NAME,
   statusReportsFolder: process.env.STATUS_REPORTS_FOLDER,
   reportContainer: process.env.AZURE_STORAGE_CONTAINER_REPORT,
   useConnectionStr: process.env.AZURE_STORAGE_USE_CONNECTION_STRING,

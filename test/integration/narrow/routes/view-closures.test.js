@@ -5,7 +5,7 @@ const { closureAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
 const { FRN } = require('../../../mocks/values/frn')
 const { AGREEMENT_NUMBER } = require('../../../mocks/values/agreement-number')
-const { get } = require('../../../../app/api')
+const { getProcessingData } = require('../../../../app/api')
 const getCrumbs = require('../../../helpers/get-crumbs')
 
 let server
@@ -18,7 +18,7 @@ const mockClosures = [{
   closureDate: '2023-09-12'
 }]
 const mockGetClosures = (closures) => {
-  get.mockResolvedValue({ payload: { closures } })
+  getProcessingData.mockResolvedValue({ payload: { closures } })
 }
 
 describe('View and remove closures', () => {

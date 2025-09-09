@@ -1,5 +1,5 @@
 jest.mock('../../../../app/api')
-const { get, post } = require('../../../../app/api')
+const { getProcessingData, postProcessing } = require('../../../../app/api')
 jest.mock('../../../../app/auth')
 const cheerio = require('cheerio')
 const createServer = require('../../../../app/server')
@@ -30,12 +30,12 @@ describe('Payment holds', () => {
   }]
 
   const mockGetPaymentHoldCategories = (paymentHoldCategories) => {
-    get.mockResolvedValue({ payload: { paymentHoldCategories } })
+    getProcessingData.mockResolvedValue({ payload: { paymentHoldCategories } })
   }
 
   const expectRequestForPaymentHoldCategories = (timesCalled = 1) => {
-    expect(get).toHaveBeenCalledTimes(timesCalled)
-    expect(get).toHaveBeenCalledWith('/payment-hold-categories')
+    expect(getProcessingData).toHaveBeenCalledTimes(timesCalled)
+    expect(getProcessingData).toHaveBeenCalledWith('/payment-hold-categories')
   }
 
   describe('GET requests', () => {
@@ -96,8 +96,8 @@ describe('Payment holds', () => {
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
 
-      expect(post).toHaveBeenCalledTimes(1)
-      expect(post).toHaveBeenCalledWith('/add-payment-hold', { frn: validFrn, holdCategoryId }, null)
+      expect(postProcessing).toHaveBeenCalledTimes(1)
+      expect(postProcessing).toHaveBeenCalledWith('/add-payment-hold', { frn: validFrn, holdCategoryId }, null)
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toEqual('/payment-holds')
     })

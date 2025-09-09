@@ -7,7 +7,7 @@ const HOLDS_VIEWS = require('../constants/holds-views')
 const HOLDS_ROUTES = require('../constants/holds-routes')
 const { MAX_BYTES } = require('../constants/payload-sizes')
 const { bulkFailAction } = require('../helpers/bulk-fail-action')
-const { post } = require('../api')
+const { postProcessing } = require('../api')
 const { holdAdmin } = require('../auth/permissions')
 const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost } = require('../hold')
@@ -118,7 +118,7 @@ module.exports = [
         }
       },
       handler: async (request, h) => {
-        await post(
+        await postProcessing(
           HOLDS_ROUTES.ADD,
           {
             holdCategoryId: request.payload.holdCategoryId,
@@ -136,7 +136,7 @@ module.exports = [
     options: {
       auth: { scope: [holdAdmin] },
       handler: async (request, h) => {
-        await post(HOLDS_ROUTES.REMOVE, { holdId: request.payload.holdId })
+        await postProcessing(HOLDS_ROUTES.REMOVE, { holdId: request.payload.holdId })
         return h.redirect('/')
       }
     }

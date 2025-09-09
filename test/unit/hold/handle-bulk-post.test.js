@@ -1,5 +1,5 @@
 const { handleBulkPost } = require('../../../app/hold/handle-bulk-post')
-const { post } = require('../../../app/api')
+const { postProcessing } = require('../../../app/api')
 const { getHoldCategories } = require('../../../app/holds')
 const { readFileContent } = require('../../../app/helpers/read-file-content')
 const { processHoldData } = require('../../../app/hold/process-hold-data')
@@ -77,7 +77,7 @@ describe('handle bulk post', () => {
 
     await handleBulkPost(request, h)
 
-    expect(post).toHaveBeenCalledWith('/payment-holds/bulk/add', {
+    expect(postProcessing).toHaveBeenCalledWith('/payment-holds/bulk/add', {
       data: uploadData,
       holdCategoryId: '124'
     }, null)
@@ -135,7 +135,7 @@ describe('handle bulk post', () => {
 
     await handleBulkPost(request, h)
 
-    expect(post).toHaveBeenCalledWith('/payment-holds/bulk/remove', {
+    expect(postProcessing).toHaveBeenCalledWith('/payment-holds/bulk/remove', {
       data: uploadData,
       holdCategoryId: '124'
     }, null)

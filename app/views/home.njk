@@ -1,21 +1,47 @@
 {% extends '_layout.njk' %}
 {% from "./macros/logout.njk" import logout %}
 {% block content %}
+<style>
+  .govuk-cards {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .govuk-cards--2__item {
+    flex: 1 1;
+  }
+
+  /* Mobile layout: stack cards vertically */
+  @media (max-width: 640px) {
+    .govuk-cards {
+      flex-direction: column;
+      flex-wrap: nowrap;
+    }
+
+    .govuk-cards--2__item {
+      flex: 1 1 100%;
+    }
+  }
+</style>
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{ serviceName }}</h1>
-        <div class="govuk-cards govuk-cards--2">
+
+      <!-- Row 1: Payment holds + Reports -->
+      <div class="govuk-cards govuk-cards--2">
         {% if auth.isHoldAdminUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard">
+          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Payment holds</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
               {{ totalHolds }}
             </p>
-            <ul class="govuk-list">
-              <li>
-                <a href="/payment-holds" class="govuk-link">Manage holds</a>
-              </li>
-            </ul>
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              <a href="/payment-holds" class="govuk-link">Manage holds</a>
+            </p>
           </div>
         {% endif %}
 
@@ -30,10 +56,12 @@
             </p>
           </div>
         {% endif %}
-        </div>
-        <div class="govuk-cards govuk-cards--2">
+      </div>
+
+      <!-- Row 2: Schemes + Monitoring -->
+      <div class="govuk-cards govuk-cards--2">
         {% if auth.isSchemeAdminUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard">
+          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Schemes</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
               {{ totalSchemes }}
@@ -48,26 +76,8 @@
             </ul>
           </div>
         {% endif %}
-        {% if auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Monitoring</h2>
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              View payment events
-            </p>
-            <ul class="govuk-list">
-              <li>
-                <a href="/monitoring" class="govuk-link">View events</a>
-              </li>
-              <li>
-                <a href="/monitoring/schemes" class="govuk-link">View processed payment requests</a>
-              </li>
-            </ul>
-          </div>
-        {% endif %}
-      </div>
-      <div class="govuk-cards govuk-cards--2">
         {% if auth.isClosureAdminUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard">
+          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Agreement closures</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
               {{ totalClosures }}
@@ -86,6 +96,40 @@
                 <a href="/closure/bulk" class="govuk-link">Add bulk closures</a>
               </li>
             </ul>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Row 3: Agreement closures + Manual Payments -->
+      <div class="govuk-cards govuk-cards--2">
+        {% if auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser %}
+          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Monitoring</h2>
+
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              View payment events
+            </p>
+            <ul class="govuk-list">
+              <li>
+                <a href="/monitoring" class="govuk-link">View events</a>
+              </li>
+              <li>
+                <a href="/monitoring/schemes" class="govuk-link">View processed payment requests</a>
+              </li>
+            </ul>
+          </div>
+        {% endif %}
+        {% if auth.isManualPaymentsUser %}
+          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Manual Payments</h2>
+
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              Upload a manual payment for an agreement number
+            </p>
+
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              <a href="/manual-payments" class="govuk-link">Upload manual payment</a>
+            </p>
           </div>
         {% endif %}
       </div>

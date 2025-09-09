@@ -1,4 +1,4 @@
-const { get } = require('../api')
+const { getProcessingData } = require('../api')
 const { holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked } = require('../auth/permissions')
 const { getReportTypes } = require('../helpers/get-report-types')
 
@@ -8,9 +8,9 @@ module.exports = {
   options: {
     auth: { scope: [holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked] },
     handler: async (_request, h) => {
-      const paymentHoldsResponse = await get('/payment-holds')
-      const schemes = await get('/payment-schemes')
-      const closures = await get('/closures')
+      const paymentHoldsResponse = await getProcessingData('/payment-holds')
+      const schemes = await getProcessingData('/payment-schemes')
+      const closures = await getProcessingData('/closures')
       const reportTypes = Object.keys(getReportTypes())
       return h.view('home', {
         totalReportTypes: reportTypes.length,

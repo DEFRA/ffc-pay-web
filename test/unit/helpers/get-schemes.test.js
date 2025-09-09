@@ -15,7 +15,7 @@ describe('get schemes', () => {
       { name: 'Scheme B' }
     ]
 
-    api.get.mockResolvedValue({
+    api.getProcessingData.mockResolvedValue({
       payload: {
         paymentSchemes: mockSchemes
       }
@@ -23,7 +23,7 @@ describe('get schemes', () => {
 
     const result = await getSchemes()
 
-    expect(api.get).toHaveBeenCalledWith('/payment-schemes')
+    expect(api.getProcessingData).toHaveBeenCalledWith('/payment-schemes')
     expect(result).toEqual([
       { name: 'Scheme A' },
       { name: 'Scheme B' },
@@ -38,7 +38,7 @@ describe('get schemes', () => {
       { name: 'Non-SFI' }
     ]
 
-    api.get.mockResolvedValue({
+    api.getProcessingData.mockResolvedValue({
       payload: {
         paymentSchemes: mockSchemes
       }
@@ -54,7 +54,7 @@ describe('get schemes', () => {
   })
 
   test('should return an empty array if no schemes are available', async () => {
-    api.get.mockResolvedValue({
+    api.getProcessingData.mockResolvedValue({
       payload: {
         paymentSchemes: []
       }
@@ -66,7 +66,7 @@ describe('get schemes', () => {
   })
 
   test('should handle API errors gracefully', async () => {
-    api.get.mockRejectedValue(new Error('API error'))
+    api.getProcessingData.mockRejectedValue(new Error('API error'))
 
     await expect(getSchemes()).rejects.toThrow('API error')
   })

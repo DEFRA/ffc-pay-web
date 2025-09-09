@@ -1,6 +1,6 @@
 const { getHoldCategories, getHolds } = require('../../app/holds')
 jest.mock('../../app/api.js')
-const { get } = require('../../app/api')
+const { getProcessingData } = require('../../app/api')
 
 describe('Get holds categories', () => {
   const mockPaymentHoldCategories = [{
@@ -10,7 +10,7 @@ describe('Get holds categories', () => {
   }]
 
   const mockGetPaymentHoldCategories = (paymentHoldCategories) => {
-    get.mockResolvedValue({ payload: { paymentHoldCategories } })
+    getProcessingData.mockResolvedValue({ payload: { paymentHoldCategories } })
   }
 
   afterEach(() => {
@@ -90,7 +90,7 @@ describe('Get holds', () => {
   }]
 
   const mockGetPaymentHolds = (paymentHolds) => {
-    get.mockResolvedValue({ payload: { paymentHolds } })
+    getProcessingData.mockResolvedValue({ payload: { paymentHolds } })
   }
 
   afterEach(() => {
@@ -110,12 +110,12 @@ describe('Get holds', () => {
 
   test('Should use pagination parameters when usePagination is true', async () => {
     await getHolds(2, 50, true)
-    expect(get).toHaveBeenCalledWith('/payment-holds?page=2&pageSize=50')
+    expect(getProcessingData).toHaveBeenCalledWith('/payment-holds?page=2&pageSize=50')
   })
 
   test('Should omit pagination parameters when usePagination is false', async () => {
     await getHolds(2, 50, false)
-    expect(get).toHaveBeenCalledWith('/payment-holds')
+    expect(getProcessingData).toHaveBeenCalledWith('/payment-holds')
   })
 
   test('Should handle empty paymentHolds array', async () => {
@@ -200,7 +200,7 @@ describe('Get holds', () => {
   })
 
   test('Should handle undefined paymentHolds gracefully', async () => {
-    get.mockResolvedValue({ payload: {} })
+    getProcessingData.mockResolvedValue({ payload: {} })
     const result = await getHolds()
     expect(result).toBeUndefined()
   })

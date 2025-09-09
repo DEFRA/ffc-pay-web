@@ -1,12 +1,12 @@
 const moment = require('moment')
-const { get } = require('./api')
+const { getProcessingData } = require('./api')
 
 const getHolds = async (page = 1, pageSize = 100, usePagination = true) => {
   let url = '/payment-holds'
   if (usePagination) {
     url += `?page=${page}&pageSize=${pageSize}`
   }
-  const { payload } = await get(url)
+  const { payload } = await getProcessingData(url)
   return payload.paymentHolds?.filter(x => x.dateTimeClosed == null).map(x => {
     x.dateTimeAdded = moment(x.dateTimeAdded).format('DD/MM/YYYY HH:mm')
     if (x.holdCategorySchemeName === 'SFI') {
@@ -27,7 +27,7 @@ const getHolds = async (page = 1, pageSize = 100, usePagination = true) => {
 }
 
 const getHoldCategories = async () => {
-  const { payload } = await get('/payment-hold-categories')
+  const { payload } = await getProcessingData('/payment-hold-categories')
   const schemes = [...new Set(payload.paymentHoldCategories.map(mapScheme))]
   return { schemes, paymentHoldCategories: payload.paymentHoldCategories }
 }

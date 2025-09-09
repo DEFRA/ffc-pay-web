@@ -1,18 +1,6 @@
 const wreck = require('@hapi/wreck')
 const config = require('./config')
 
-const get = async (url, token) => {
-  return wreck.get(`${config.paymentsEndpoint}${url}`, getConfiguration(token))
-}
-
-const post = async (url, data, token) => {
-  const { payload } = await wreck.post(`${config.paymentsEndpoint}${url}`, {
-    payload: data,
-    ...getConfiguration(token)
-  })
-  return payload
-}
-
 const getConfiguration = (token) => {
   return {
     headers: {
@@ -22,12 +10,33 @@ const getConfiguration = (token) => {
   }
 }
 
+const postProcessing = async (url, data, token) => {
+  const { payload } = await wreck.post(`${config.paymentsEndpoint}${url}`, {
+    payload: data,
+    ...getConfiguration(token)
+  })
+  return payload
+}
+
+const postInjection = async (url, data, token) => {
+  const { res, payload } = await wreck.post(`${config.injectionEndpoint}${url}`, {
+    payload: data,
+    ...getConfiguration(token)
+  })
+  return { statusCode: res.statusCode, payload }
+}
+
+const getProcessingData = async (url, token) => {
+  return wreck.get(`${config.paymentsEndpoint}${url}`, getConfiguration(token))
+}
+
 const getTrackingData = async (url, token) => {
   return wreck.get(`${config.trackingEndpoint}${url}`, getConfiguration(token))
 }
 
 module.exports = {
-  get,
-  post,
+  postProcessing,
+  postInjection,
+  getProcessingData,
   getTrackingData
 }

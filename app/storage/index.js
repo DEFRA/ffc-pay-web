@@ -1,4 +1,5 @@
 const {
+  uploadManualPaymentFile,
   getMIReport,
   getSuppressedReport,
   getDataRequestFile
@@ -11,6 +12,7 @@ const {
 } = require('./doc-reports')
 
 module.exports = {
+  uploadManualPaymentFile,
   getMIReport,
   getSuppressedReport,
   getDataRequestFile,

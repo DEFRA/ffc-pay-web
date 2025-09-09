@@ -1,5 +1,5 @@
 const { processUpload } = require('../../../app/hold/process-upload')
-const { post } = require('../../../app/api')
+const { postProcessing } = require('../../../app/api')
 const { setLoadingStatus } = require('../../../app/helpers/set-loading-status')
 
 jest.mock('../../../app/api')
@@ -18,14 +18,14 @@ describe('processUpload', () => {
         holdCategoryId: '124'
       }
     }
-    post.mockResolvedValue({})
+    postProcessing.mockResolvedValue({})
     setLoadingStatus.mockResolvedValue({ status: 'completed' })
   })
 
-  test('should call post with add endpoint when remove is false', async () => {
+  test('should call postProcessing with add endpoint when remove is false', async () => {
     await processUpload(request, jobId, uploadData)
 
-    expect(post).toHaveBeenCalledWith(
+    expect(postProcessing).toHaveBeenCalledWith(
       '/payment-holds/bulk/add',
       {
         data: uploadData,
@@ -35,12 +35,12 @@ describe('processUpload', () => {
     )
   })
 
-  test('should call post with remove endpoint when remove is true', async () => {
+  test('should call postProcessing with remove endpoint when remove is true', async () => {
     request.payload.remove = true
 
     await processUpload(request, jobId, uploadData)
 
-    expect(post).toHaveBeenCalledWith(
+    expect(postProcessing).toHaveBeenCalledWith(
       '/payment-holds/bulk/remove',
       {
         data: uploadData,
@@ -60,9 +60,9 @@ describe('processUpload', () => {
     )
   })
 
-  test('should throw error when post fails', async () => {
+  test('should throw error when postProcessing fails', async () => {
     const error = new Error('API error')
-    post.mockRejectedValue(error)
+    postProcessing.mockRejectedValue(error)
 
     await expect(processUpload(request, jobId, uploadData))
       .rejects
@@ -86,7 +86,7 @@ describe('processUpload', () => {
 
     await processUpload(request, jobId, uploadData)
 
-    expect(post).toHaveBeenCalledWith(
+    expect(postProcessing).toHaveBeenCalledWith(
       expect.any(String),
       expectedPayload,
       null

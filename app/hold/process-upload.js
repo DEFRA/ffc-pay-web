@@ -1,4 +1,4 @@
-const { post } = require('../api')
+const { postProcessing } = require('../api')
 const { setLoadingStatus } = require('../helpers/set-loading-status')
 
 const ENDPOINTS = {
@@ -13,7 +13,7 @@ const processUpload = async (request, jobId, uploadData) => {
     holdCategoryId: request.payload.holdCategoryId
   }
 
-  await post(endpoint, payload, null)
+  await postProcessing(endpoint, payload, null)
   return setLoadingStatus(request, jobId, { status: 'completed' })
 }
 

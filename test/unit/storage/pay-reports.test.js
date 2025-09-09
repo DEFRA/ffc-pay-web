@@ -1,4 +1,4 @@
-const { getMIReport, getSuppressedReport, getDataRequestFile } = require('../../../app/storage/pay-reports')
+const { getMIReport, getSuppressedReport, getDataRequestFile, uploadManualPaymentFile } = require('../../../app/storage/pay-reports')
 const { getContainerClient } = require('../../../app/storage/container-manager')
 const config = require('../../../app/config').storageConfig
 
@@ -8,9 +8,47 @@ jest.mock('../../../app/config', () => ({
     reportContainer: 'mock-report-container',
     dataRequestContainer: 'mock-data-request-container',
     miReportName: 'mock-mi-report',
-    suppressedReportName: 'mock-suppressed-report'
+    suppressedReportName: 'mock-suppressed-report',
+    manualPaymentsContainer: 'mock-manual-container',
+    stagingFolderName: 'staging-folder'
   }
 }))
+
+describe('uploadManualPaymentFile', () => {
+  let mockBlob, mockContainer
+
+  beforeEach(() => {
+    mockBlob = {
+      uploadFile: jest.fn().mockResolvedValue()
+    }
+
+    mockContainer = {
+      getBlockBlobClient: jest.fn(() => mockBlob)
+    }
+
+    getContainerClient.mockResolvedValue(mockContainer)
+    jest.clearAllMocks()
+  })
+
+  test('uploads file to the correct blob path', async () => {
+    const filePath = '/tmp/test-file.csv'
+    const fileName = 'test-file.csv'
+
+    await uploadManualPaymentFile(filePath, fileName)
+
+    expect(getContainerClient).toHaveBeenCalledWith(config.manualPaymentsContainer)
+    expect(mockContainer.getBlockBlobClient).toHaveBeenCalledWith(`${config.stagingFolderName}/${fileName}`)
+    expect(mockBlob.uploadFile).toHaveBeenCalledWith(filePath)
+  })
+
+  test('propagates errors from blob upload', async () => {
+    mockBlob.uploadFile.mockRejectedValue(new Error('upload failed'))
+    const filePath = '/tmp/test-file.csv'
+    const fileName = 'test-file.csv'
+
+    await expect(uploadManualPaymentFile(filePath, fileName)).rejects.toThrow('upload failed')
+  })
+})
 
 describe('report-service', () => {
   let mockBlob, mockContainer

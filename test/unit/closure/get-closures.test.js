@@ -1,6 +1,6 @@
 const { getClosures } = require('../../../app/closure')
 jest.mock('../../../app/api.js')
-const { get } = require('../../../app/api')
+const { getProcessingData } = require('../../../app/api')
 const { AGREEMENT_NUMBER } = require('../../mocks/values/agreement-number')
 const { FRN } = require('../../mocks/values/frn')
 
@@ -13,7 +13,7 @@ describe('Get closures', () => {
   }]
 
   const mockGetClosures = (closures) => {
-    get.mockResolvedValue({ payload: { closures } })
+    getProcessingData.mockResolvedValue({ payload: { closures } })
   }
 
   beforeEach(async () => {

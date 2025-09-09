@@ -1,7 +1,7 @@
 const config = require('../config')
 const { schemeAdmin, holdAdmin, dataView } = require('../auth/permissions')
 const { getPaymentsByScheme } = require('../payments')
-const { get } = require('../api')
+const { getProcessingData } = require('../api')
 const HTTP_STATUS = require('../constants/http-status-codes')
 const ERROR_VIEWS = require('../constants/error-views')
 
@@ -17,7 +17,7 @@ module.exports = [
         console.warn('V2 events are not enabled, cannot view processed payment requests')
         return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
       }
-      const schemes = await get('/payment-schemes')
+      const schemes = await getProcessingData('/payment-schemes')
       return h.view('monitoring/schemes', {
         data: schemes?.payload?.paymentSchemes
       })

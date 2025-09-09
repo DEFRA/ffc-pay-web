@@ -1,7 +1,7 @@
 const fs = require('fs')
 const { handleBulkClosure } = require('../../../app/closure/handle-bulk-closure')
 const { handleBulkClosureError } = require('../../../app/closure/handle-bulk-closure-error')
-const { post } = require('../../../app/api')
+const { postProcessing } = require('../../../app/api')
 const { processClosureData } = require('../../../app/closure')
 
 jest.mock('fs', () => ({
@@ -11,7 +11,7 @@ jest.mock('../../../app/closure/handle-bulk-closure-error', () => ({
   handleBulkClosureError: jest.fn()
 }))
 jest.mock('../../../app/api', () => ({
-  post: jest.fn()
+  postProcessing: jest.fn()
 }))
 jest.mock('../../../app/closure', () => ({
   processClosureData: jest.fn()
@@ -68,7 +68,7 @@ describe('handleBulkClosure', () => {
 
     expect(fs.readFileSync).toHaveBeenCalledWith('/tmp/test-file.csv', 'utf8')
     expect(processClosureData).toHaveBeenCalledWith('file content')
-    expect(post).toHaveBeenCalledWith('/closure/bulk', { data: mockUploadData }, null)
+    expect(postProcessing).toHaveBeenCalledWith('/closure/bulk', { data: mockUploadData }, null)
     expect(h.redirect).toHaveBeenCalledWith('/closure')
   })
 
@@ -105,7 +105,7 @@ describe('handleBulkClosure', () => {
 
     await handleBulkClosure(request, h)
 
-    expect(post).toHaveBeenCalledWith('/closure/bulk', { data: mockUploadData }, null)
+    expect(postProcessing).toHaveBeenCalledWith('/closure/bulk', { data: mockUploadData }, null)
     expect(h.redirect).toHaveBeenCalledWith('/closure')
   })
 })

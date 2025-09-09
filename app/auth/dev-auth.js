@@ -1,6 +1,7 @@
-const { holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked } = require('./permissions')
+const { holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin } = require('./permissions')
 const { v4: uuidv4 } = require('uuid')
 const devAccount = require('./dev-account')
+const devAuthRoles = [holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin]
 
 const getAuthenticationUrl = () => {
   return '/dev-auth'
@@ -8,18 +9,18 @@ const getAuthenticationUrl = () => {
 
 const authenticate = async (_redirectCode, cookieAuth) => {
   cookieAuth.set({
-    scope: [holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked],
+    scope: devAuthRoles,
     account: devAccount
   })
 }
 
 const refresh = async (_account, cookieAuth, _forceRefresh = true) => {
   cookieAuth.set({
-    scope: [holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked],
+    scope: devAuthRoles,
     account: devAccount
   })
 
-  return [holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked]
+  return devAuthRoles
 }
 
 const logout = async (_account) => {

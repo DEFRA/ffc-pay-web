@@ -1,6 +1,6 @@
 jest.mock('../../../../app/plugins/crumb')
 jest.mock('../../../../app/api')
-const { post } = require('../../../../app/api')
+const { postProcessing } = require('../../../../app/api')
 jest.mock('../../../../app/auth')
 const createServer = require('../../../../app/server')
 const { schemeAdmin } = require('../../../../app/auth/permissions')
@@ -61,7 +61,7 @@ describe('Reset payment request', () => {
   })
 
   test('returns error if rejected request', async () => {
-    post.mockImplementation(() => { throw Boom.preconditionFailed('Rejected') })
+    postProcessing.mockImplementation(() => { throw Boom.preconditionFailed('Rejected') })
     const res = await server.inject({ method: 'POST', url, auth, payload: { invoiceNumber: validInvoiceNumber } })
     expect(res.statusCode).toBe(412)
     expect(res.request.response.source.context.error).toBe('Rejected')

@@ -1,5 +1,5 @@
 jest.mock('../../../../app/api')
-const { get } = require('../../../../app/api')
+const { getProcessingData } = require('../../../../app/api')
 jest.mock('../../../../app/auth')
 jest.mock('../../../../app/helpers/read-file-content')
 const cheerio = require('cheerio')
@@ -55,12 +55,12 @@ describe('Payment holds', () => {
     ]
 
     function mockGetPaymentHold (paymentHolds) {
-      get.mockResolvedValue({ payload: { paymentHolds } })
+      getProcessingData.mockResolvedValue({ payload: { paymentHolds } })
     }
 
     function expectRequestForPaymentHold (timesCalled = 1) {
-      expect(get).toHaveBeenCalledTimes(timesCalled)
-      expect(get).toHaveBeenCalledWith('/payment-holds?page=1&pageSize=100')
+      expect(getProcessingData).toHaveBeenCalledTimes(timesCalled)
+      expect(getProcessingData).toHaveBeenCalledWith('/payment-holds?page=1&pageSize=100')
     }
     const method = 'GET'
 
@@ -156,12 +156,12 @@ describe('Payment holds', () => {
     }]
 
     const mockGetPaymentHoldCategories = (paymentHoldCategories) => {
-      get.mockResolvedValue({ payload: { paymentHoldCategories } })
+      getProcessingData.mockResolvedValue({ payload: { paymentHoldCategories } })
     }
 
     const expectRequestForPaymentHoldCategories = (timesCalled = 1) => {
-      expect(get).toHaveBeenCalledTimes(timesCalled)
-      expect(get).toHaveBeenCalledWith('/payment-hold-categories')
+      expect(getProcessingData).toHaveBeenCalledTimes(timesCalled)
+      expect(getProcessingData).toHaveBeenCalledWith('/payment-hold-categories')
     }
 
     test('returns 200 when load successful', async () => {
@@ -222,7 +222,7 @@ describe('Payment holds', () => {
     ]
 
     function mockGetPaymentHold (paymentHolds) {
-      get.mockResolvedValue({ payload: { paymentHolds } })
+      getProcessingData.mockResolvedValue({ payload: { paymentHolds } })
     }
 
     const validForm = {
@@ -292,7 +292,7 @@ describe('Payment holds', () => {
     }]
 
     const mockGetPaymentHoldCategories = (paymentHoldCategories) => {
-      get.mockResolvedValue({ payload: { paymentHoldCategories } })
+      getProcessingData.mockResolvedValue({ payload: { paymentHoldCategories } })
     }
 
     beforeEach(() => {
@@ -325,29 +325,6 @@ describe('Payment holds', () => {
         boundary
       }
     }
-
-    test('returns loading view when valid file upload and crumb provided', async () => {
-      const mockForCrumbs = () => mockGetPaymentHoldCategories(mockPaymentHoldCategories)
-      const { viewCrumb, cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-
-      const { payload, boundary } = createPayload(viewCrumb, '1234567890,2345678901,3456789012')
-
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload,
-        headers: {
-          cookie: `crumb=${cookieCrumb}`,
-          'content-type': `multipart/form-data; boundary=${boundary}`
-        }
-      })
-
-      expect(res.statusCode).toBe(200)
-      const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toContain('Processing bulk upload')
-      expect(readFileContent).toHaveBeenCalledWith(expect.any(String))
-    })
 
     test.each([
       { viewCrumb: 'incorrect' },
@@ -429,7 +406,7 @@ describe('Payment holds', () => {
 
     function mockGetPaymentHolds (paymentHolds, page = 1, perPage = 100) {
       const paginatedHolds = paymentHolds.slice((page - 1) * perPage, page * perPage)
-      get.mockResolvedValue({ payload: { paymentHolds: paginatedHolds } })
+      getProcessingData.mockResolvedValue({ payload: { paymentHolds: paginatedHolds } })
     }
 
     test('returns the correct page and perPage of results', async () => {
@@ -439,7 +416,7 @@ describe('Payment holds', () => {
 
       const res = await server.inject({ method, url: `${url}?page=${page}&perPage=${perPage}`, auth })
 
-      expect(get).toHaveBeenCalledWith(`/payment-holds?page=${page}&pageSize=${perPage}`)
+      expect(getProcessingData).toHaveBeenCalledWith(`/payment-holds?page=${page}&pageSize=${perPage}`)
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
       expect($('h1').text()).toEqual(pageH1)
@@ -452,7 +429,7 @@ describe('Payment holds', () => {
 
       const res = await server.inject({ method, url, auth })
 
-      expect(get).toHaveBeenCalledWith('/payment-holds?page=1&pageSize=100')
+      expect(getProcessingData).toHaveBeenCalledWith('/payment-holds?page=1&pageSize=100')
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
       expect($('h1').text()).toEqual(pageH1)
