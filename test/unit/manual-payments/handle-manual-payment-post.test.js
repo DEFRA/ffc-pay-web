@@ -1,7 +1,7 @@
-const { handleManualPaymentPost } = require('../../../app/manual-payments/handle-manual-payment-post')
+const { handleManualPaymentUploadPost } = require('../../../app/manual-payments/handle-manual-payment-post')
 const { SUCCESS, CONFLICT } = require('../../../app/constants/http-status-codes')
 const MANUAL_PAYMENT_VIEWS = require('../../../app/constants/manual-payment-views')
-const MANUAL_UPLOAD_RESPONSE_MESSAGES = require('../../../app/constants/manual-upload-response-messages')
+const MANUAL_UPLOAD_RESPONSE_MESSAGES = require('../../../app/constants/manual-payment-response-messages')
 
 jest.mock('../../../app/helpers/read-file-content')
 jest.mock('../../../app/helpers/set-loading-status')
@@ -13,9 +13,9 @@ const { readFileContent } = require('../../../app/helpers/read-file-content')
 const { setLoadingStatus } = require('../../../app/helpers/set-loading-status')
 const { uploadManualPaymentFile } = require('../../../app/storage')
 const { postInjection } = require('../../../app/api')
-const { manualUploadFailAction } = require('../../../app//manual-payments/manual-upload-fail-action')
+const { manualPaymentUploadFailAction } = require('../../../app/manual-payments/manual-payment-fail-action')
 
-describe('handleManualPaymentPost', () => {
+describe('handleManualPaymentUploadPost', () => {
   let request
   let h
 
@@ -29,21 +29,21 @@ describe('handleManualPaymentPost', () => {
     setLoadingStatus.mockReset()
     uploadManualPaymentFile.mockReset()
     postInjection.mockReset()
-    manualUploadFailAction.mockReset()
+    manualPaymentUploadFailAction.mockReset()
   })
 
   test('should fail if file content is empty', async () => {
     readFileContent.mockReturnValue(null)
-    manualUploadFailAction.mockReturnValue('fail-response')
+    manualPaymentUploadFailAction.mockReturnValue('fail-response')
 
-    const result = await handleManualPaymentPost(request, h)
+    const result = await handleManualPaymentUploadPost(request, h)
 
     expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
       status: 'failed',
       message: 'File empty'
     })
     expect(result).toBe('fail-response')
-    expect(manualUploadFailAction).toHaveBeenCalledWith(h)
+    expect(manualPaymentUploadFailAction).toHaveBeenCalledWith(h)
   })
 
   test('should complete successfully when upload works', async () => {
@@ -51,7 +51,7 @@ describe('handleManualPaymentPost', () => {
     uploadManualPaymentFile.mockResolvedValue()
     postInjection.mockResolvedValue({ statusCode: 200, payload: { code: SUCCESS } })
 
-    await handleManualPaymentPost(request, h)
+    await handleManualPaymentUploadPost(request, h)
 
     expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
       status: 'processing',
@@ -70,7 +70,7 @@ describe('handleManualPaymentPost', () => {
     const mockError = { data: { res: { statusCode: CONFLICT } } }
     postInjection.mockRejectedValue(mockError)
 
-    await handleManualPaymentPost(request, h)
+    await handleManualPaymentUploadPost(request, h)
 
     expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
       status: 'failed',
@@ -84,7 +84,7 @@ describe('handleManualPaymentPost', () => {
     const mockError = { data: { payload: { code: 'UNKNOWN_CODE', message: 'Short backend msg' } } }
     postInjection.mockRejectedValue(mockError)
 
-    await handleManualPaymentPost(request, h)
+    await handleManualPaymentUploadPost(request, h)
 
     expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
       status: 'failed',
@@ -97,7 +97,7 @@ describe('handleManualPaymentPost', () => {
     uploadManualPaymentFile.mockResolvedValue()
     postInjection.mockRejectedValue(new Error('Network error'))
 
-    await handleManualPaymentPost(request, h)
+    await handleManualPaymentUploadPost(request, h)
 
     expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
       status: 'failed',

@@ -2,7 +2,7 @@ const MANUAL_PAYMENT_VIEWS = require('../constants/manual-payment-views')
 const { MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 const HTTP_STATUS = require('../constants/http-status-codes')
 
-const manualUploadFailAction = async (request, h, error) => {
+const manualPaymentUploadFailAction = async (request, h, error) => {
   const crumb = request.payload?.crumb ?? request.state.crumb
 
   if (error?.output?.statusCode === HTTP_STATUS.CONTENT_TOO_LARGE) {
@@ -24,4 +24,4 @@ const manualUploadFailAction = async (request, h, error) => {
     .takeover()
 }
 
-module.exports = { manualUploadFailAction }
+module.exports = { manualPaymentUploadFailAction }

@@ -1,5 +1,5 @@
-const { handleManualPaymentPost } = require('./handle-manual-payment-post')
+const { handleManualPaymentUploadPost } = require('./handle-manual-payment-post')
 
 module.exports = {
-  handleManualPaymentPost
+  handleManualPaymentUploadPost
 }

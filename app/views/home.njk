@@ -100,7 +100,7 @@
         {% endif %}
       </div>
 
-      <!-- Row 3: Agreement closures + Manual Payments -->
+      <!-- Row 3: Agreement closures + Manual Payment Portal -->
       <div class="govuk-cards govuk-cards--2">
         {% if auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
@@ -121,7 +121,7 @@
         {% endif %}
         {% if auth.isManualPaymentsUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Manual Payments</h2>
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Manual payment portal</h2>
 
             <p class="govuk-body govuk-!-margin-bottom-8">
               Upload a manual payment for an agreement number

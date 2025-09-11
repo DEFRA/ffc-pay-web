@@ -1,9 +1,9 @@
-const { manualUploadFailAction } = require('../../../app/manual-payments/manual-upload-fail-action')
+const { manualPaymentUploadFailAction } = require('../../../app/manual-payments/manual-payment-fail-action')
 const MANUAL_PAYMENT_VIEWS = require('../../../app/constants/manual-payment-views')
 const HTTP_STATUS = require('../../../app/constants/http-status-codes')
 const { MAX_MEGA_BYTES } = require('../../../app/constants/payload-sizes')
 
-describe('manualUploadFailAction', () => {
+describe('manualPaymentUploadFailAction', () => {
   let request
   let h
 
@@ -29,7 +29,7 @@ describe('manualUploadFailAction', () => {
       }
     }
 
-    await manualUploadFailAction(request, h, error)
+    await manualPaymentUploadFailAction(request, h, error)
 
     expect(h.view).toHaveBeenCalledWith(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
       errors: {
@@ -46,7 +46,7 @@ describe('manualUploadFailAction', () => {
   test('should handle generic error and return correct view', async () => {
     const error = { message: 'Some error' }
 
-    await manualUploadFailAction(request, h, error)
+    await manualPaymentUploadFailAction(request, h, error)
 
     expect(h.view).toHaveBeenCalledWith(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
       errors: error,
@@ -62,7 +62,7 @@ describe('manualUploadFailAction', () => {
     }
     const error = { message: 'Test error' }
 
-    await manualUploadFailAction(requestWithoutPayloadCrumb, h, error)
+    await manualPaymentUploadFailAction(requestWithoutPayloadCrumb, h, error)
 
     expect(h.view).toHaveBeenCalledWith(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
       errors: error,

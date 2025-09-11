@@ -3,15 +3,15 @@ const { v4: uuidv4 } = require('uuid')
 const { MANUAL_UPLOAD } = require('../constants/injection-routes')
 const { SUCCESS } = require('../constants/http-status-codes')
 const MANUAL_PAYMENT_VIEWS = require('../constants/manual-payment-views')
-const MANUAL_UPLOAD_RESPONSE_MESSAGES = require('../constants/manual-upload-response-messages')
+const MANUAL_UPLOAD_RESPONSE_MESSAGES = require('../constants/manual-payment-response-messages')
 
 const { readFileContent } = require('../helpers/read-file-content')
 const { setLoadingStatus } = require('../helpers/set-loading-status')
-const { manualUploadFailAction } = require('./manual-upload-fail-action')
+const { manualPaymentUploadFailAction } = require('./manual-payment-fail-action')
 const { uploadManualPaymentFile } = require('../storage')
 const { postInjection } = require('../api')
 
-const handleManualPaymentPost = async (request, h) => {
+const handleManualPaymentUploadPost = async (request, h) => {
   const jobId = uuidv4()
   const { path: filePath, filename } = request.payload.file
   const user = request.auth?.credentials
@@ -24,7 +24,7 @@ const handleManualPaymentPost = async (request, h) => {
       status: 'failed',
       message: 'File empty'
     })
-    return manualUploadFailAction(h)
+    return manualPaymentUploadFailAction(h)
   }
 
   return processManualPaymentFile(request, h, { filePath, filename, uploaderNameOrEmail, jobId })
@@ -60,5 +60,5 @@ async function processManualPaymentFile (request, h, { filePath, filename, uploa
 }
 
 module.exports = {
-  handleManualPaymentPost
+  handleManualPaymentUploadPost
 }
