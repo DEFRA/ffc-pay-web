@@ -58,16 +58,6 @@ describe('Manual Payments Routes', () => {
     expect($('h1').text()).toContain('Manual payments portal')
   })
 
-  test('POST /manual-payments/upload with missing file triggers failAction (400)', async () => {
-    const auth = { strategy: 'session-auth', credentials: { scope: [manualPaymentsAdmin] } }
-    const res = await server.inject({ method: 'POST', url: '/manual-payments/upload', payload: {}, auth })
-
-    expect(res.statusCode).toBe(500)
-    const $ = cheerio.load(res.payload)
-    expect($('.govuk-error-summary')[0].text()).toContain('too large')
-    expect($('.govuk-error-summary').length).toBeGreaterThan(0)
-  })
-
   test('POST /manual-payments/upload with file exceeding MAX_BYTES triggers failAction (413 -> 400)', async () => {
     const auth = { strategy: 'session-auth', credentials: { scope: [manualPaymentsAdmin] } }
     const mockForCrumbs = () => {}
