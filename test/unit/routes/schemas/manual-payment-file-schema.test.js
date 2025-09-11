@@ -34,7 +34,7 @@ describe('Manual File Upload Schema', () => {
 
     const { error } = manualPayamentFileSchema.validate(invalidFile)
     expect(error).toBeDefined()
-    expect(error.details[0].message).toMatch(/Filename must match FFC_Manual_Batch/)
+    expect(error.details[0].message).toBe('We were unable to upload your manual payment file. Your filename does not follow the required naming convention. Filename must match the agreed format, e.g. FFC_Manual_Batch_SFI23_20250626091445.csv')
   })
 
   test('invalid headers fails validation', () => {
@@ -52,14 +52,14 @@ describe('Manual File Upload Schema', () => {
 
     const { error } = manualPayamentFileSchema.validate(invalidFile)
     expect(error).toBeDefined()
-    expect(error.details[0].message).toBe('File must be a CSV (content-type: text/csv)')
+    expect(error.details[0].message).toBe('We were unable to upload your manual payment file as the uploaded file is not a .CSV file. Only .CSV files are permitted.')
   })
 
   test('missing file object fails validation', () => {
     const invalidPayload = {}
     const { error } = manualPayamentFileSchema.validate(invalidPayload)
     expect(error).toBeDefined()
-    expect(error.details[0].message).toBe('Unknown validation error')
+    expect(error.details[0].message).toBe('We were unable to upload your manual payment file. This could be a temporary issue. Please try again later and if the problem persists, contact the Payment & Document Services Team.')
   })
 
   test('missing bytes fails validation', () => {
@@ -76,6 +76,6 @@ describe('Manual File Upload Schema', () => {
 
     const { error } = manualPayamentFileSchema.validate(invalidFile)
     expect(error).toBeDefined()
-    expect(error.details[0].message).toBe('Unknown validation error')
+    expect(error.details[0].message).toBe('We were unable to upload your manual payment file. This could be a temporary issue. Please try again later and if the problem persists, contact the Payment & Document Services Team.')
   })
 })

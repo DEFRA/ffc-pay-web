@@ -7,7 +7,7 @@ jest.mock('../../../app/helpers/read-file-content')
 jest.mock('../../../app/helpers/set-loading-status')
 jest.mock('../../../app/storage')
 jest.mock('../../../app/api')
-jest.mock('../../../app/manual-payments/manual-upload-fail-action')
+jest.mock('../../../app/manual-payments/manual-payment-fail-action')
 
 const { readFileContent } = require('../../../app/helpers/read-file-content')
 const { setLoadingStatus } = require('../../../app/helpers/set-loading-status')

@@ -38,7 +38,9 @@
               {% if "filename" in firstError.path %}
                 Invalid filename
               {% elseif "headers" in firstError.path %}
-                Unknown error
+                 Invalid file type
+              {% elseif "payload" in firstError.path %}
+                 File too large
               {% else %}
                 Unknown error
               {% endif %}

@@ -34,7 +34,7 @@ describe('manualPaymentUploadFailAction', () => {
     expect(h.view).toHaveBeenCalledWith(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
       errors: {
         details: [
-          { message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }
+          { path: 'payload', message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }
         ]
       },
       crumb: 'payload-crumb'

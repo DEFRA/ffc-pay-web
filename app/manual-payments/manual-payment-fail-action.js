@@ -1,4 +1,4 @@
-const MANUAL_PAYMENT_VIEWS = require('../constants/manual-payment-views')
+const { MANUAL_PAYMENTS } = require('../constants/manual-payment-views')
 const { MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 const HTTP_STATUS = require('../constants/http-status-codes')
 
@@ -7,8 +7,8 @@ const manualPaymentUploadFailAction = async (request, h, error) => {
 
   if (error?.output?.statusCode === HTTP_STATUS.CONTENT_TOO_LARGE) {
     return h
-      .view(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
-        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }] },
+      .view(MANUAL_PAYMENTS, {
+        errors: { details: [{ path: 'payload', message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }] },
         crumb
       })
       .code(HTTP_STATUS.BAD_REQUEST)
@@ -16,7 +16,7 @@ const manualPaymentUploadFailAction = async (request, h, error) => {
   }
 
   return h
-    .view(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
+    .view(MANUAL_PAYMENTS, {
       errors: error,
       crumb
     })
