@@ -44,14 +44,14 @@ async function processManualPaymentFile (request, h, { filePath, filename, uploa
 
     await setLoadingStatus(request, jobId, { status, message })
   } catch (err) {
-    console.error('Error processing manual payment file:', err?.data?.payload || err)
+    console.error('Error uploading manual payment file:', err?.data?.payload || err)
 
-    const statusCode = err?.data?.res?.statusCode || 'UNKNOWN_ERROR'
+    const statusCode = err?.output?.statusCode || err?.output?.payload.statusCode || 500
+
     const message =
       MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] ||
       err?.data?.payload?.message ||
-      err.message ||
-      'Unknown error occurred'
+      err.message || 'Unknown error occurred'
 
     await setLoadingStatus(request, jobId, { status: 'failed', message })
   }
