@@ -15,6 +15,16 @@ const manualPaymentUploadFailAction = async (request, h, error) => {
       .takeover()
   }
 
+  if (error?.output?.statusCode === HTTP_STATUS.UNPROCESSABLE_CONTENT) {
+    return h
+      .view(MANUAL_PAYMENTS, {
+        errors: { details: [{ path: 'file-empty', message: 'We couldn’t process your upload because the file is empty. Please upload a file that contains data.' }] },
+        crumb
+      })
+      .code(HTTP_STATUS.BAD_REQUEST)
+      .takeover()
+  }
+
   return h
     .view(MANUAL_PAYMENTS, {
       errors: error,

@@ -41,6 +41,8 @@
                  Invalid file type
               {% elseif "payload" in firstError.path %}
                  File too large
+              {% elseif "file-empty" in firstError.path %}
+                 File is empty
               {% else %}
                 Unknown error
               {% endif %}
