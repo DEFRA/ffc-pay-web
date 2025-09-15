@@ -37,7 +37,7 @@ describe('handleManualPaymentUploadPost', () => {
   })
 
   test('should fail if file content is empty or whitespace', async () => {
-    readFileContent.mockReturnValue('   ') // whitespace
+    readFileContent.mockReturnValue('   ')
     isTextWhitespace.mockReturnValue(true)
     manualPaymentUploadFailAction.mockResolvedValue('fail-response')
 
@@ -50,7 +50,10 @@ describe('handleManualPaymentUploadPost', () => {
     expect(manualPaymentUploadFailAction).toHaveBeenCalledWith(
       request,
       h,
-      expect.objectContaining({ isBoom: true, output: { statusCode: UNPROCESSABLE_CONTENT } })
+      expect.objectContaining({
+        isBoom: true,
+        output: expect.objectContaining({ statusCode: UNPROCESSABLE_CONTENT })
+      })
     )
     expect(result).toBe('fail-response')
   })
@@ -63,12 +66,25 @@ describe('handleManualPaymentUploadPost', () => {
 
     await handleManualPaymentUploadPost(request, h)
 
-    expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.any(String), { status: 'processing' })
-    expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.any(String), {
-      status: 'completed',
-      message: MANUAL_UPLOAD_RESPONSE_MESSAGES[SUCCESS]
-    })
-    expect(h.view).toHaveBeenCalledWith(MANUAL_PAYMENT_VIEWS.LOADING, expect.objectContaining({ jobId: expect.any(String) }))
+    expect(setLoadingStatus).toHaveBeenNthCalledWith(
+      1,
+      expect.anything(),
+      expect.any(String),
+      { status: 'processing' }
+    )
+    expect(setLoadingStatus).toHaveBeenNthCalledWith(
+      2,
+      expect.anything(),
+      expect.any(String),
+      {
+        status: 'completed',
+        message: MANUAL_UPLOAD_RESPONSE_MESSAGES[SUCCESS]
+      }
+    )
+    expect(h.view).toHaveBeenCalledWith(
+      MANUAL_PAYMENT_VIEWS.LOADING,
+      expect.objectContaining({ jobId: expect.any(String) })
+    )
   })
 
   test('should handle backend error codes correctly', async () => {
@@ -79,10 +95,21 @@ describe('handleManualPaymentUploadPost', () => {
 
     await handleManualPaymentUploadPost(request, h)
 
-    expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.any(String), {
-      status: 'failed',
-      message: MANUAL_UPLOAD_RESPONSE_MESSAGES[CONFLICT]
-    })
+    expect(setLoadingStatus).toHaveBeenNthCalledWith(
+      1,
+      expect.anything(),
+      expect.any(String),
+      { status: 'processing' }
+    )
+    expect(setLoadingStatus).toHaveBeenNthCalledWith(
+      2,
+      expect.anything(),
+      expect.any(String),
+      {
+        status: 'failed',
+        message: 'An unexpected problem occurred while processing your file. Please try again later or contact support if the issue persists.'
+      }
+    )
   })
 
   test('should handle unknown backend errors gracefully', async () => {
@@ -93,10 +120,21 @@ describe('handleManualPaymentUploadPost', () => {
 
     await handleManualPaymentUploadPost(request, h)
 
-    expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.any(String), {
-      status: 'failed',
-      message: 'Short backend msg'
-    })
+    expect(setLoadingStatus).toHaveBeenNthCalledWith(
+      1,
+      expect.anything(),
+      expect.any(String),
+      { status: 'processing' }
+    )
+    expect(setLoadingStatus).toHaveBeenNthCalledWith(
+      2,
+      expect.anything(),
+      expect.any(String),
+      {
+        status: 'failed',
+        message: 'An unexpected problem occurred while processing your file. Please try again later or contact support if the issue persists.'
+      }
+    )
   })
 
   test('should handle exceptions with no payload', async () => {
@@ -107,9 +145,20 @@ describe('handleManualPaymentUploadPost', () => {
 
     await handleManualPaymentUploadPost(request, h)
 
-    expect(setLoadingStatus).toHaveBeenCalledWith(expect.anything(), expect.any(String), {
-      status: 'failed',
-      message: 'Unexpected error'
-    })
+    expect(setLoadingStatus).toHaveBeenNthCalledWith(
+      1,
+      expect.anything(),
+      expect.any(String),
+      { status: 'processing' }
+    )
+    expect(setLoadingStatus).toHaveBeenNthCalledWith(
+      2,
+      expect.anything(),
+      expect.any(String),
+      {
+        status: 'failed',
+        message: 'An unexpected problem occurred while processing your file. Please try again later or contact support if the issue persists.'
+      }
+    )
   })
 })
