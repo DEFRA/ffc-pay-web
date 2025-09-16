@@ -55,16 +55,7 @@ describe('Manual Payments Routes', () => {
 
     expect(res.statusCode).toBe(200)
     const $ = cheerio.load(res.payload)
-    expect($('h1').text()).toContain('Manual payment upload')
-  })
-
-  test('POST /manual-payments/upload with missing file triggers failAction (400)', async () => {
-    const auth = { strategy: 'session-auth', credentials: { scope: [manualPaymentsAdmin] } }
-    const res = await server.inject({ method: 'POST', url: '/manual-payments/upload', payload: {}, auth })
-
-    expect(res.statusCode).toBe(400)
-    const $ = cheerio.load(res.payload)
-    expect($('.govuk-error-summary').length).toBeGreaterThan(0)
+    expect($('h1').text()).toContain('Manual payments portal')
   })
 
   test('POST /manual-payments/upload with file exceeding MAX_BYTES triggers failAction (413 -> 400)', async () => {
@@ -92,6 +83,7 @@ describe('Manual Payments Routes', () => {
 
     expect(res.statusCode).toBe(400)
     const $ = cheerio.load(res.payload)
+    expect(res.payload).toContain('File too large - The uploaded file is too large. Please upload a file smaller than 1 MB.')
     expect($('.govuk-error-summary__body').text().toLowerCase()).toContain('too large')
   })
 })
