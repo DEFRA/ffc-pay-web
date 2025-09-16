@@ -83,7 +83,7 @@ describe('Manual Payments Routes', () => {
 
     expect(res.statusCode).toBe(400)
     const $ = cheerio.load(res.payload)
-    expect(res.payload).toContain('The uploaded file is too large. Please upload a file smaller than 1 MB.')
+    expect(res.payload).toContain('File too large - The uploaded file is too large. Please upload a file smaller than 1 MB.')
     expect($('.govuk-error-summary__body').text().toLowerCase()).toContain('too large')
   })
 })
