@@ -21,13 +21,13 @@ const manualPaymentFileSchema = Joi.object({
 
     if (key === 'headers') {
       csvError = err
-      err.message = 'We were unable to upload your manual payment file as the uploaded file is not a .CSV file. Only .CSV files are permitted.'
+      err.message = 'Invalid file type - We were unable to upload your manual payment file as the uploaded file is not a .CSV file. Only .CSV files are permitted.'
     } else if (key === 'filename') {
       filenameError = err
       err.message =
-        'We were unable to upload your manual payment file. Your filename does not follow the required naming convention. Filename must match the agreed format, e.g. FFC_Manual_Batch_SFI23_20250626091445.csv'
+        'Invalid filename - We were unable to upload your manual payment file. Your filename does not follow the required naming convention. Filename must match the agreed format, e.g. FFC_Manual_Batch_SFI23_20250626091445.csv'
     } else {
-      err.message = 'We were unable to upload your manual payment file. This could be a temporary issue. Please try again later and if the problem persists, contact the Payment & Document Services Team.'
+      err.message = 'Unknown error - We were unable to upload your manual payment file. This could be a temporary issue. Please try again later and if the problem persists, contact the Payment & Document Services Team.'
     }
   })
 

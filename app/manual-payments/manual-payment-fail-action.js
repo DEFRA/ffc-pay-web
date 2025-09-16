@@ -8,7 +8,7 @@ const manualPaymentUploadFailAction = async (request, h, error) => {
   if (error?.output?.statusCode === HTTP_STATUS.CONTENT_TOO_LARGE) {
     return h
       .view(MANUAL_PAYMENTS, {
-        errors: { details: [{ path: 'payload', message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }] },
+        errors: { details: [{ path: 'payload', message: `File too large - The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }] },
         crumb
       })
       .code(HTTP_STATUS.BAD_REQUEST)
@@ -18,7 +18,7 @@ const manualPaymentUploadFailAction = async (request, h, error) => {
   if (error?.output?.statusCode === HTTP_STATUS.UNPROCESSABLE_CONTENT) {
     return h
       .view(MANUAL_PAYMENTS, {
-        errors: { details: [{ path: 'file-empty', message: 'We couldn’t process your upload because the file is empty. Please upload a file that contains data.' }] },
+        errors: { details: [{ path: 'file-empty', message: 'File is empty - We couldn’t process your upload because the file is empty. Please upload a file that contains data.' }] },
         crumb
       })
       .code(HTTP_STATUS.BAD_REQUEST)
