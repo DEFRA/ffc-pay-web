@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require('uuid')
 const Boom = require('@hapi/boom')
 
 const { MANUAL_UPLOAD } = require('../constants/injection-routes')
-const { SUCCESS, UNPROCESSABLE_CONTENT } = require('../constants/http-status-codes')
+const { SUCCESS, INTERNAL_SERVER_ERROR, UNPROCESSABLE_CONTENT } = require('../constants/http-status-codes')
 const MANUAL_PAYMENT_VIEWS = require('../constants/manual-payment-views')
 const MANUAL_UPLOAD_RESPONSE_MESSAGES = require('../constants/manual-payment-response-messages')
 
@@ -51,7 +51,7 @@ async function processManualPaymentFile (request, h, { filePath, filename, uploa
   } catch (err) {
     console.error('Error uploading manual payment file:', err?.data?.payload || err)
 
-    const statusCode = err?.output?.statusCode || err?.output?.payload.statusCode || 500
+    const statusCode = err?.output?.statusCode || err?.output?.payload.statusCode || INTERNAL_SERVER_ERROR
 
     const message =
       MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] ||
