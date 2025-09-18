@@ -14,7 +14,11 @@ module.exports = [
     path: MANUAL_PAYMENT_ROUTES.MANUAL_PAYMENTS,
     options: {
       auth: { scope: [manualPaymentsAdmin] },
-      handler: async (_request, h) => {
+      handler: async (request, h) => {
+        const user = request.auth?.credentials.account
+        const uploaderNameOrEmail = user?.name || user?.username || user?.email
+        console.log(`User ${uploaderNameOrEmail} has accessed the manual payments upload page.`)
+
         return h.view(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS)
       }
     }

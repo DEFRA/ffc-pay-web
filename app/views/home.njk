@@ -119,7 +119,7 @@
             </ul>
           </div>
         {% endif %}
-        {% if auth.isManualPaymentsUser %}
+        {% if auth.isManualPaymentsUser and manualPaymentsActive %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Manual payment portal</h2>
 
