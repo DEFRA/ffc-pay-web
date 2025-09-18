@@ -53,6 +53,7 @@ container:
   docAzureStorageAccountName: ffcdoc
   useV2Events: true
   legacyReportsActive: true
+  manualPaymentsActive: true
   messageQueueHost: namespace.servicebus.windows.net
   dataTopicAddress: ffc-pay-data-request
   dataResponseQueueAddress: ffc-pay-data-request-response

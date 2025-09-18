@@ -36,6 +36,7 @@ data:
   DOC_AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.docAzureStorageAccountName }}  
   USE_V2_EVENTS: {{ quote .Values.container.useV2Events }}
   LEGACY_REPORTS_ACTIVE: {{ quote .Values.container.legacyReportsActive }}
+  MANUAL_PAYMENTS_ACTIVE: {{ quote .Values.container.manualPaymentsActive }}
   MESSAGE_QUEUE_HOST: {{ quote .Values.container.messageQueueHost }}
   {{- if and (.Values.environmentCode) (not .Values.pr) }}
   DATA_TOPIC_ADDRESS: {{ .Values.container.dataTopicAddress }}-{{ .Values.environmentCode }}

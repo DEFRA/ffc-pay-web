@@ -1,3 +1,4 @@
+const config = require('../config')
 const { getProcessingData } = require('../api')
 const { holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin } = require('../auth/permissions')
 const { getReportTypes } = require('../helpers/get-report-types')
@@ -16,7 +17,8 @@ module.exports = {
         totalReportTypes: reportTypes.length,
         totalHolds: paymentHoldsResponse?.payload?.paymentHolds?.filter(x => x.dateTimeClosed == null).length ?? 0,
         totalSchemes: schemes?.payload?.paymentSchemes?.length ?? 0,
-        totalClosures: closures?.payload?.closures?.length ?? 0
+        totalClosures: closures?.payload?.closures?.length ?? 0,
+        manualPaymentsActive: config.manualPaymentsActive
       })
     }
   }
