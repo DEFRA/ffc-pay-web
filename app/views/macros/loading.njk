@@ -21,7 +21,7 @@
     </div>
     <div class="govuk-notification-banner__content">
       <p class="govuk-body" id="progress-status-text">{{ statusMessage }}</p>
-      <div id="redirect-link" class="govuk-body" hidden>
+      <div class="redirect-link" class="govuk-body" hidden>
         <a href="{{ redirectUrl }}" class="govuk-link">Return</a>
       </div>
       <output class="govuk-spinner" aria-live="polite">
@@ -36,6 +36,10 @@
     </h2>
     <div class="govuk-error-summary__body">
       <p id="error-message-text" class="govuk-body">{{ errorMessage }} Please try again later or contact the Payments & Documents Services team.</p>
+    </div>
+    <br/>
+    <div class="redirect-link" class="govuk-body" hidden>
+      <a href="{{ redirectUrl }}" class="govuk-link">Return</a>
     </div>
   </div>
 
@@ -61,7 +65,7 @@
       downloadFrame: () => document.getElementById('download-frame'),
       errorMessage: () => document.getElementById('error-message'),
       errorMessageText: () => document.getElementById('error-message-text'),
-      redirectLink: () => document.getElementById('redirect-link')
+      redirectLink: () => Array.from(document.getElementsByClassName('redirect-link'))
     }
   }
 
@@ -108,11 +112,11 @@
     updateClasses(state.elements.container(), { remove: ['govuk-notification-banner--info'], add: ['govuk-notification-banner--success'] })
 
     await cleanupCache(state.config.jobId)
-
+    console.log('Here', state.config)
     if (state.config.redirectUrl && state.config.autoRedirect) {
       setTimeout(() => window.location.href = state.config.redirectUrl, 500)
     } else if (state.config.redirectUrl && !state.config.autoRedirect) {
-      state.elements.redirectLink().hidden = false
+      state.elements.redirectLink().forEach((el)=> el.hidden = false)
     }
   }
 
@@ -122,6 +126,9 @@
 
     if (data && data.message) {
       updateElement(state.elements.errorMessageText(), { textContent: data.message })
+    }
+    if (state.config.redirectUrl && !state.config.autoRedirect) {
+      state.elements.redirectLink().forEach((el)=> el.hidden = false)
     }
   }
 
