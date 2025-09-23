@@ -1,6 +1,7 @@
 const { postProcessing } = require('../api')
 const schema = require('./schemas/invoice-number')
-const { schemeAdmin } = require('../auth/permissions')
+const { BAD_REQUEST, PRECONDITION_FAILED } = require('../constants/http-status-codes')
+const { applicationAdmin, schemeAdmin } = require('../auth/permissions')
 const ROUTES = {
   RESET: '/payment-request/reset',
   RESET_SUCCESS: '/payment-request/reset-success'
@@ -9,17 +10,15 @@ const VIEWS = {
   RESET: 'reset-payment-request',
   RESET_SUCCESS: 'reset-payment-request-success'
 }
-const HTTP = {
-  BAD_REQUEST: 400,
-  PRECONDITION_FAILED: 412
-}
+
+const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin] }
 
 module.exports = [
   {
     method: 'GET',
     path: ROUTES.RESET,
     options: {
-      auth: { scope: [applicationAdmin, schemeAdmin] },
+      auth: AUTH_SCOPE,
       handler: async (_request, h) => {
         return h.view(VIEWS.RESET)
       }
@@ -29,7 +28,7 @@ module.exports = [
     method: 'POST',
     path: ROUTES.RESET,
     options: {
-      auth: { scope: [applicationAdmin, schemeAdmin] },
+      auth: AUTH_SCOPE,
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
@@ -38,7 +37,7 @@ module.exports = [
               error,
               invoiceNumber: request.payload.invoiceNumber
             })
-            .code(HTTP.BAD_REQUEST)
+            .code(BAD_REQUEST)
             .takeover()
         }
       },
@@ -55,7 +54,7 @@ module.exports = [
               error: err.data?.payload?.message ?? err.message,
               invoiceNumber
             })
-            .code(HTTP.PRECONDITION_FAILED)
+            .code(PRECONDITION_FAILED)
             .takeover()
         }
       }
@@ -65,7 +64,7 @@ module.exports = [
     method: 'GET',
     path: ROUTES.RESET_SUCCESS,
     options: {
-      auth: { scope: [applicationAdmin, schemeAdmin] },
+      auth: AUTH_SCOPE,
       handler: async (request, h) => {
         return h.view(VIEWS.RESET_SUCCESS, {
           invoiceNumber: request.query.invoiceNumber

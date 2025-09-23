@@ -1,16 +1,18 @@
 const config = require('../config')
-const { schemeAdmin, holdAdmin, dataView } = require('../auth/permissions')
+const { applicationAdmin, schemeAdmin, holdAdmin, dataView } = require('../auth/permissions')
 const { getPaymentsByScheme } = require('../payments')
 const { getProcessingData } = require('../api')
+
 const HTTP_STATUS = require('../constants/http-status-codes')
 const ERROR_VIEWS = require('../constants/error-views')
+const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 
 module.exports = [
   {
     method: 'GET',
     path: '/monitoring/schemes',
     options: {
-      auth: { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
+      auth: AUTH_SCOPE
     },
     handler: async (_request, h) => {
       if (!config.useV2Events) {
@@ -27,7 +29,7 @@ module.exports = [
     method: 'GET',
     path: '/monitoring/view-processed-payment-requests',
     options: {
-      auth: { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
+      auth: AUTH_SCOPE
     },
     handler: async (request, h) => {
       if (!config.useV2Events) {

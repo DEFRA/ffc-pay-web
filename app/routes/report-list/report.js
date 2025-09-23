@@ -1,6 +1,6 @@
 const { getMIReport, getSuppressedReport } = require('../../storage/pay-reports')
 const { getHolds } = require('../../holds')
-const { holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
+const { applicationAdmin, holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 const { formatDateFromString } = require('../../helpers/format-date')
 const storageConfig = require('../../config/storage')
 const REPORT_LIST = require('../../constants/report-list')
@@ -10,14 +10,14 @@ const {
   handleStreamResponse
 } = require('../../helpers')
 
-const authOptions = { scope: [schemeAdmin, holdAdmin, dataView] }
+const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 
 module.exports = [
   {
     method: 'GET',
     path: REPORT_LIST.PAYMENT_REQUESTS,
     options: {
-      auth: authOptions,
+      auth: AUTH_SCOPE,
       handler: async (_request, h) =>
         handleStreamResponse(getMIReport, storageConfig.miReportName, h)
     }
@@ -26,7 +26,7 @@ module.exports = [
     method: 'GET',
     path: REPORT_LIST.SUPPRESSED_PAYMENTS,
     options: {
-      auth: authOptions,
+      auth: AUTH_SCOPE,
       handler: async (_request, h) =>
         handleStreamResponse(
           getSuppressedReport,
@@ -39,7 +39,7 @@ module.exports = [
     method: 'GET',
     path: REPORT_LIST.HOLDS,
     options: {
-      auth: authOptions,
+      auth: AUTH_SCOPE,
       handler: async (_request, h) => {
         try {
           const paymentHolds = await getHolds(undefined, undefined, false)
@@ -73,7 +73,7 @@ module.exports = [
     method: 'GET',
     path: REPORT_LIST.REPORT_UNAVAILABLE,
     options: {
-      auth: authOptions,
+      auth: AUTH_SCOPE,
       handler: async (_request, h) => {
         return h.view(REPORT_VIEWS.REPORT_UNAVAILABLE)
       }

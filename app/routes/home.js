@@ -1,13 +1,15 @@
 const config = require('../config')
 const { getProcessingData } = require('../api')
-const { holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin } = require('../auth/permissions')
+const { applicationAdmin, holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin } = require('../auth/permissions')
 const { getReportTypes } = require('../helpers/get-report-types')
+
+const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin] }
 
 module.exports = {
   method: 'GET',
   path: '/',
   options: {
-    auth: { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin] },
+    auth: AUTH_SCOPE,
     handler: async (_request, h) => {
       const paymentHoldsResponse = await getProcessingData('/payment-holds')
       const schemes = await getProcessingData('/payment-schemes')

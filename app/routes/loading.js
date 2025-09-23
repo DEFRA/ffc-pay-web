@@ -1,8 +1,8 @@
 const { get, drop } = require('../cache')
-const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
+const { applicationAdmin, holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
 
 const HTTP_STATUS = require('../constants/http-status-codes')
-const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
+const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView] }
 
 const createGetLoadingStatusRoute = () => ({
   method: 'GET',
