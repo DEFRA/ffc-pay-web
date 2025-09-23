@@ -22,8 +22,8 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
-        const page = parseInt(request.query.page) || 1
-        const perPage = parseInt(request.query.perPage || 100)
+        const page = Number.parseInt(request.query.page) || 1
+        const perPage = Number.parseInt(request.query.perPage || 100)
         const paymentHolds = await getHolds(page, perPage)
         return h.view(HOLDS_VIEWS.HOLDS, {
           paymentHolds,

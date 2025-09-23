@@ -1,5 +1,5 @@
 const Boom = require('@hapi/boom')
-const Path = require('path')
+const Path = require('node:path')
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')
 const { mapStatusReportsToTaskList } = require('../../helpers/map-status-report-to-task-list')
