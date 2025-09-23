@@ -1,5 +1,5 @@
 const mapAuth = require('../../../app/auth/map-auth')
-const { holdAdmin, schemeAdmin, closureAdmin } = require('../../../app/auth/permissions')
+const { holdAdmin, schemeAdmin, closureAdmin, applicationAdmin } = require('../../../app/auth/permissions')
 let request
 
 describe('is in role', () => {
@@ -36,6 +36,11 @@ describe('is in role', () => {
     expect(result.isAnonymous).not.toBeTruthy()
   })
 
+  test('should not return isApplicationAdmin if no roles', () => {
+    const result = mapAuth(request)
+    expect(result.isApplicationAdmin).not.toBeTruthy()
+  })
+
   test('should not return isHoldAdminUser if no roles', () => {
     const result = mapAuth(request)
     expect(result.isHoldAdminUser).not.toBeTruthy()
@@ -67,6 +72,12 @@ describe('is in role', () => {
     request.auth.credentials.scope = [schemeAdmin]
     const result = mapAuth(request)
     expect(result.isClosureAdminUser).not.toBeTruthy()
+  })
+
+  test('should return isApplicationAdmin if in role', () => {
+    request.auth.credentials.scope = [applicationAdmin]
+    const result = mapAuth(request)
+    expect(result.isApplicationAdmin).toBeTruthy()
   })
 
   test('should return isHoldAdminUser if in role', () => {
