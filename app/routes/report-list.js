@@ -6,7 +6,7 @@ module.exports = {
   method: 'GET',
   path: '/report-list',
   options: {
-    auth: { scope: [holdAdmin, schemeAdmin, dataView, statusReportSfi23, statusReportsDelinked] },
+    auth: { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView, statusReportSfi23, statusReportsDelinked] },
     handler: async (_request, h) => {
       const reportTypes = getReportTypes()
       const reportTypesKeys = Object.keys(reportTypes)

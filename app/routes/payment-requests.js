@@ -19,7 +19,7 @@ module.exports = [
     method: 'GET',
     path: ROUTES.RESET,
     options: {
-      auth: { scope: [schemeAdmin] },
+      auth: { scope: [applicationAdmin, schemeAdmin] },
       handler: async (_request, h) => {
         return h.view(VIEWS.RESET)
       }
@@ -29,7 +29,7 @@ module.exports = [
     method: 'POST',
     path: ROUTES.RESET,
     options: {
-      auth: { scope: [schemeAdmin] },
+      auth: { scope: [applicationAdmin, schemeAdmin] },
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
@@ -65,7 +65,7 @@ module.exports = [
     method: 'GET',
     path: ROUTES.RESET_SUCCESS,
     options: {
-      auth: { scope: [schemeAdmin] },
+      auth: { scope: [applicationAdmin, schemeAdmin] },
       handler: async (request, h) => {
         return h.view(VIEWS.RESET_SUCCESS, {
           invoiceNumber: request.query.invoiceNumber

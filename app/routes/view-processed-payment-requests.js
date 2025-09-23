@@ -10,7 +10,7 @@ module.exports = [
     method: 'GET',
     path: '/monitoring/schemes',
     options: {
-      auth: { scope: [schemeAdmin, holdAdmin, dataView] }
+      auth: { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
     },
     handler: async (_request, h) => {
       if (!config.useV2Events) {
@@ -27,7 +27,7 @@ module.exports = [
     method: 'GET',
     path: '/monitoring/view-processed-payment-requests',
     options: {
-      auth: { scope: [schemeAdmin, holdAdmin, dataView] }
+      auth: { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
     },
     handler: async (request, h) => {
       if (!config.useV2Events) {

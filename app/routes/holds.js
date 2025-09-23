@@ -18,7 +18,7 @@ module.exports = [
     method: 'GET',
     path: HOLDS_ROUTES.HOLDS,
     options: {
-      auth: { scope: [holdAdmin] },
+      auth: { scope: [applicationAdmin, holdAdmin] },
       handler: async (request, h) => {
         const page = parseInt(request.query.page) || 1
         const perPage = parseInt(request.query.perPage || 100)
@@ -36,7 +36,7 @@ module.exports = [
     method: 'POST',
     path: HOLDS_ROUTES.HOLDS,
     options: {
-      auth: { scope: [holdAdmin] },
+      auth: { scope: [applicationAdmin, holdAdmin] },
       validate: {
         payload: searchSchema,
         failAction: async (request, h, error) => {
@@ -79,7 +79,7 @@ module.exports = [
     method: 'GET',
     path: HOLDS_ROUTES.ADD,
     options: {
-      auth: { scope: [holdAdmin] },
+      auth: { scope: [applicationAdmin, holdAdmin] },
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
         return h.view(HOLDS_VIEWS.ADD, { schemes, paymentHoldCategories })
@@ -90,7 +90,7 @@ module.exports = [
     method: 'GET',
     path: HOLDS_ROUTES.BULK,
     options: {
-      auth: { scope: [holdAdmin] },
+      auth: { scope: [applicationAdmin, holdAdmin] },
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
         return h.view(HOLDS_VIEWS.BULK, { schemes, paymentHoldCategories })
@@ -101,7 +101,7 @@ module.exports = [
     method: 'POST',
     path: HOLDS_ROUTES.ADD,
     options: {
-      auth: { scope: [holdAdmin] },
+      auth: { scope: [applicationAdmin, holdAdmin] },
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
@@ -134,7 +134,7 @@ module.exports = [
     method: 'POST',
     path: HOLDS_ROUTES.REMOVE,
     options: {
-      auth: { scope: [holdAdmin] },
+      auth: { scope: [applicationAdmin, holdAdmin] },
       handler: async (request, h) => {
         await postProcessing(HOLDS_ROUTES.REMOVE, { holdId: request.payload.holdId })
         return h.redirect('/')
@@ -146,7 +146,7 @@ module.exports = [
     path: HOLDS_ROUTES.BULK,
     handler: handleBulkPost,
     options: {
-      auth: { scope: [holdAdmin] },
+      auth: { scope: [applicationAdmin, holdAdmin] },
       payload: {
         output: 'file',
         parse: true,

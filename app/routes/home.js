@@ -7,7 +7,7 @@ module.exports = {
   method: 'GET',
   path: '/',
   options: {
-    auth: { scope: [holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin] },
+    auth: { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView, closureAdmin, statusReportSfi23, statusReportsDelinked, manualPaymentsAdmin] },
     handler: async (_request, h) => {
       const paymentHoldsResponse = await getProcessingData('/payment-holds')
       const schemes = await getProcessingData('/payment-schemes')

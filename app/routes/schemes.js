@@ -11,7 +11,7 @@ module.exports = [
     method: 'GET',
     path: PAYMENT_SCHEMES,
     options: {
-      auth: { scope: [schemeAdmin] },
+      auth: { scope: [applicationAdmin, schemeAdmin] },
       handler: async (_request, h) => {
         const schemes = await getProcessingData(PAYMENT_SCHEMES)
         const schemesPayload = schemes.payload.paymentSchemes
@@ -28,7 +28,7 @@ module.exports = [
     method: 'POST',
     path: PAYMENT_SCHEMES,
     options: {
-      auth: { scope: [schemeAdmin] },
+      auth: { scope: [applicationAdmin, schemeAdmin] },
       handler: async (request, h) => {
         const active = request.payload.active
         const schemeId = request.payload.schemeId
@@ -43,7 +43,7 @@ module.exports = [
     method: 'GET',
     path: UPDATE_PAYMENT_SCHEME,
     options: {
-      auth: { scope: [schemeAdmin] },
+      auth: { scope: [applicationAdmin, schemeAdmin] },
       validate: {
         query: Joi.object({
           schemeId: Joi.number().required(),
@@ -60,7 +60,7 @@ module.exports = [
     method: 'POST',
     path: UPDATE_PAYMENT_SCHEME,
     options: {
-      auth: { scope: [schemeAdmin] },
+      auth: { scope: [applicationAdmin, schemeAdmin] },
       validate: {
         payload: Joi.object({
           confirm: Joi.boolean().required(),

@@ -13,7 +13,7 @@ module.exports = [
     method: 'GET',
     path: MANUAL_PAYMENT_ROUTES.MANUAL_PAYMENTS,
     options: {
-      auth: { scope: [manualPaymentsAdmin] },
+      auth: { scope: [applicationAdmin, manualPaymentsAdmin] },
       handler: async (request, h) => {
         const user = request.auth?.credentials.account
         const uploaderNameOrEmail = user?.name || user?.username || user?.email
@@ -28,7 +28,7 @@ module.exports = [
     path: MANUAL_PAYMENT_ROUTES.UPLOAD,
     handler: handleManualPaymentUploadPost,
     options: {
-      auth: { scope: [manualPaymentsAdmin] },
+      auth: { scope: [applicationAdmin, manualPaymentsAdmin] },
       payload: {
         output: 'file',
         parse: true,

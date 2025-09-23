@@ -17,7 +17,7 @@ module.exports = [
     method: 'GET',
     path: CLOSURES_ROUTES.ADD,
     options: {
-      auth: { scope: [closureAdmin] },
+      auth: { scope: [applicationAdmin, closureAdmin] },
       handler: async (_request, h) => {
         return h.view(CLOSURES_VIEWS.ADD)
       }
@@ -27,7 +27,7 @@ module.exports = [
     method: 'GET',
     path: CLOSURES_ROUTES.BULK,
     options: {
-      auth: { scope: [closureAdmin] },
+      auth: { scope: [applicationAdmin, closureAdmin] },
       handler: async (_request, h) => {
         return h.view(CLOSURES_VIEWS.BULK)
       }
@@ -37,7 +37,7 @@ module.exports = [
     method: 'POST',
     path: CLOSURES_ROUTES.ADD,
     options: {
-      auth: { scope: [closureAdmin] },
+      auth: { scope: [applicationAdmin, closureAdmin] },
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
@@ -82,7 +82,7 @@ module.exports = [
     path: CLOSURES_ROUTES.BULK,
     handler: handleBulkClosure,
     options: {
-      auth: { scope: [closureAdmin] },
+      auth: { scope: [applicationAdmin, closureAdmin] },
       validate: {
         payload: bulkSchema,
         failAction: async (request, h, error) => {
