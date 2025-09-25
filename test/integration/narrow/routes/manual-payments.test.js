@@ -55,7 +55,7 @@ describe('Manual Payments Routes', () => {
 
     expect(res.statusCode).toBe(200)
     const $ = cheerio.load(res.payload)
-    expect($('h1').text()).toContain('Manual payments portal')
+    expect($('h1').text()).toContain('Manual payment upload')
   })
 
   test('POST /manual-payments/upload with file exceeding MAX_BYTES triggers failAction (413 -> 400)', async () => {

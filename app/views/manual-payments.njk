@@ -3,7 +3,7 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% set title = "Manual payments portal" %}
+{% set title = "Manual payment upload" %}
 
 {% block content %}
   {{ govukBreadcrumbs({
@@ -15,7 +15,7 @@
       href: "/manual-payments"
     }]
   }) }}
-{% set pdfDownloadLink = '/report-list/status-report/download?file-name=' ~ 'reports/DS1-Manual Payments Portal - service design.pdf' | urlencode %}
+{% set pdfDownloadLink = '/report-list/status-report/download?file-name=' ~ 'reports/DS1-Manual payment upload - service design.pdf' | urlencode %}
 
 
   <div class="govuk-grid-row">
