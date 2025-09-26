@@ -1,5 +1,5 @@
 const { handleManualPaymentUploadPost } = require('../../../app/manual-payments/handle-manual-payment-post')
-const { SUCCESS, CONFLICT, UNPROCESSABLE_CONTENT } = require('../../../app/constants/http-status-codes')
+const { SUCCESS, CONFLICT, INTERNAL_SERVER_ERROR, UNPROCESSABLE_CONTENT } = require('../../../app/constants/http-status-codes')
 const MANUAL_PAYMENT_VIEWS = require('../../../app/constants/manual-payment-views')
 const MANUAL_UPLOAD_RESPONSE_MESSAGES = require('../../../app/constants/manual-payment-response-messages')
 
@@ -160,5 +160,41 @@ describe('handleManualPaymentUploadPost', () => {
         message: 'An unexpected problem occurred while processing your file. Please try again later or contact support if the issue persists.'
       }
     )
+  })
+
+  test('finalizeStatus logs success message on completed upload', async () => {
+    readFileContent.mockReturnValue('data')
+    isTextWhitespace.mockReturnValue(false)
+    uploadManualPaymentFile.mockResolvedValue()
+    postInjection.mockResolvedValue({ statusCode: SUCCESS, payload: {} })
+
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+    await handleManualPaymentUploadPost(request, h)
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      'Manual payment file uploaded successfully',
+      MANUAL_UPLOAD_RESPONSE_MESSAGES[SUCCESS]
+    )
+
+    consoleLogSpy.mockRestore()
+  })
+
+  test('finalizeStatus logs failure message on failed upload', async () => {
+    readFileContent.mockReturnValue('data')
+    isTextWhitespace.mockReturnValue(false)
+    uploadManualPaymentFile.mockResolvedValue()
+    postInjection.mockRejectedValue({ data: { payload: { statusCode: INTERNAL_SERVER_ERROR } } })
+
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+    await handleManualPaymentUploadPost(request, h)
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+    `Manual payment file upload failed with code ${INTERNAL_SERVER_ERROR}`,
+    expect.any(String)
+    )
+
+    consoleLogSpy.mockRestore()
   })
 })
