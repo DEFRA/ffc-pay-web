@@ -35,6 +35,40 @@ const handleManualPaymentUploadPost = async (request, h) => {
   return processManualPaymentFile(request, h, { filePath, filename, uploaderNameOrEmail, jobId })
 }
 
+// Helper: derive status and message from a successful injection response
+function getStatusAndMessageFromResponse (response) {
+  const statusCode = response?.statusCode
+  const message =
+    MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] ||
+    response?.payload?.message ||
+    'Unknown error occurred'
+  const status = statusCode === SUCCESS ? 'completed' : 'failed'
+  return { statusCode, message, status }
+}
+
+// Helper: derive status and message from an error
+function getStatusAndMessageFromError (err) {
+  const statusCode =
+    err?.output?.statusCode ||
+    err?.output?.payload?.statusCode ||
+    INTERNAL_SERVER_ERROR
+  const message =
+    MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] ||
+    err?.data?.payload?.message ||
+    err?.message ||
+    'Unknown error occurred'
+  return { statusCode, message, status: 'failed' }
+}
+
+async function finalizeStatus (request, jobId, { status, message, isSuccess = false, statusCode }) {
+  await setLoadingStatus(request, jobId, { status, message })
+  if (isSuccess) {
+    console.log('Manual payment file uploaded successfully', message)
+  } else {
+    console.log(`Manual payment file upload failed with code ${statusCode}`, message)
+  }
+}
+
 async function processManualPaymentFile (request, h, { filePath, filename, uploaderNameOrEmail, jobId }) {
   try {
     await setLoadingStatus(request, jobId, { status: 'processing' })
@@ -43,23 +77,15 @@ async function processManualPaymentFile (request, h, { filePath, filename, uploa
 
     const response = await postInjection(MANUAL_UPLOAD, { uploader: uploaderNameOrEmail, filename }, null)
 
-    const statusCode = response?.statusCode
-    const message = MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] || response?.payload.message || 'Unknown error occurred'
-    const status = statusCode === SUCCESS ? 'completed' : 'failed'
+    const { statusCode, message, status } = getStatusAndMessageFromResponse(response)
 
-    await setLoadingStatus(request, jobId, { status, message })
-    console.log(statusCode === SUCCESS ? 'Manual payment file uploaded successfully' : `Manual payment file upload failed with code ${statusCode}`, message)
+    await finalizeStatus(request, jobId, { status, message, isSuccess: status === 'completed', statusCode })
   } catch (err) {
     console.error('Error uploading manual payment file:', err?.data?.payload || err)
 
-    const statusCode = err?.output?.statusCode || err?.output?.payload.statusCode || INTERNAL_SERVER_ERROR
+    const { statusCode, message, status } = getStatusAndMessageFromError(err)
 
-    const message =
-      MANUAL_UPLOAD_RESPONSE_MESSAGES[statusCode] ||
-      err?.data?.payload?.message ||
-      err.message || 'Unknown error occurred'
-
-    await setLoadingStatus(request, jobId, { status: 'failed', message })
+    await finalizeStatus(request, jobId, { status, message, isSuccess: false, statusCode })
   }
 
   return h.view(MANUAL_PAYMENT_VIEWS.LOADING, { jobId })
