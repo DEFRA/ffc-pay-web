@@ -1,8 +1,8 @@
 const { get, drop } = require('../cache')
-const { applicationAdmin, holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
+const { applicationAdmin, holdAdmin, schemeAdmin, dataView, manualPaymentsAdmin } = require('../auth/permissions')
 
 const HTTP_STATUS = require('../constants/http-status-codes')
-const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView] }
+const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView, manualPaymentsAdmin] }
 
 const createGetLoadingStatusRoute = () => ({
   method: 'GET',
@@ -16,6 +16,7 @@ const createGetLoadingStatusRoute = () => ({
         const result = await get(request, jobId)
 
         if (!result) {
+          console.error(`No loading status found for jobId: ${jobId}`)
           return h.response({ status: 'not-found' }).code(HTTP_STATUS.NOT_FOUND)
         }
 

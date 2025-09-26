@@ -55,6 +55,7 @@
       redirectUrl: "{{ redirectUrl }}",
       autoRedirect: Boolean("{{ autoRedirect|lower }}"),
       processingMessage: "{{ processingMessage }}",
+      errorMessage: "{{ errorMessage }}",
       completedMessage: "{{ completedMessage }}"
     },
     elements: {
@@ -120,12 +121,12 @@
     }
   }
 
-  const showError = (data) => {
+  const showError = (message) => {
     updateElement(state.elements.container(), { hidden: true })
     updateElement(state.elements.errorMessage(), { hidden: false })
 
-    if (data && data.message) {
-      updateElement(state.elements.errorMessageText(), { textContent: data.message })
+    if (message) {
+      updateElement(state.elements.errorMessageText(), { textContent: message })
     }
     if (state.config.redirectUrl && !state.config.autoRedirect) {
       state.elements.redirectLink().forEach((el)=> el.hidden = false)
@@ -136,7 +137,7 @@
     const statusHandlers = {
       'download': handleDownload,
       'completed': handleCompletion,
-      'failed': () => showError(data),
+      'failed': () => showError(data?.message),
       'default': () => setTimeout(checkStatus, 2500)
     }
 
@@ -147,11 +148,19 @@
   const checkStatus = async () => {
     try {
       const response = await fetch(state.config.checkUrl)
-      if (!response.ok) throw new Error('Status check failed')
+
+      if (response.status === 403) {
+        throw new Error("Failed to authenticate with loading endpoint.")
+      }
+
+      if (!response.ok) {
+        throw new Error("Status check failed, non-200 response.")
+      }
+
       const data = await response.json()
       await handleStatus(data)
     } catch (error) {
-      showError()
+      showError(`${state.config.errorMessage ?? 'There has been a problem.'} ${error.message}`)
     }
   }
 
