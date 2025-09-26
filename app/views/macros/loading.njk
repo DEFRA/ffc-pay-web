@@ -137,7 +137,7 @@
     const statusHandlers = {
       'download': handleDownload,
       'completed': handleCompletion,
-      'failed': () => showError(data.message),
+      'failed': () => showError(data?.message),
       'default': () => setTimeout(checkStatus, 2500)
     }
 
