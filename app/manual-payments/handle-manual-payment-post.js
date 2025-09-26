@@ -48,6 +48,7 @@ async function processManualPaymentFile (request, h, { filePath, filename, uploa
     const status = statusCode === SUCCESS ? 'completed' : 'failed'
 
     await setLoadingStatus(request, jobId, { status, message })
+    console.log(statusCode === SUCCESS ? 'Manual payment file uploaded successfully' : `Manual payment file upload failed with code ${statusCode}`, message)
   } catch (err) {
     console.error('Error uploading manual payment file:', err?.data?.payload || err)
 
