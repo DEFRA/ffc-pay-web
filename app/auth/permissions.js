@@ -1,4 +1,5 @@
 const permissions = {
+  applicationAdmin: 'Payment.Application.Admin',
   schemeAdmin: 'Payment.Scheme.Admin',
   holdAdmin: 'Payment.Hold.Admin',
   dataView: 'Payment.Data.View',

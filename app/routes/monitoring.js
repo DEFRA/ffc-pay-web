@@ -1,20 +1,22 @@
 const config = require('../config')
-const { schemeAdmin, holdAdmin, dataView } = require('../auth/permissions')
+const { applicationAdmin, schemeAdmin, holdAdmin, dataView } = require('../auth/permissions')
 const {
   getPaymentsByFrn,
   getPaymentsByCorrelationId,
   getPaymentsByBatch
 } = require('../payments')
 const ViewModel = require('./models/monitoring')
+
 const HTTP_STATUS = require('../constants/http-status-codes')
 const ERROR_VIEWS = require('../constants/error-views')
+const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 
 module.exports = [
   {
     method: 'GET',
     path: '/monitoring',
     options: {
-      auth: { scope: [schemeAdmin, holdAdmin, dataView] }
+      auth: AUTH_SCOPE
     },
     handler: async (_request, h) => {
       if (!config.useV2Events) {
@@ -27,7 +29,7 @@ module.exports = [
     method: 'GET',
     path: '/monitoring/payments/frn',
     options: {
-      auth: { scope: [schemeAdmin, holdAdmin, dataView] }
+      auth: AUTH_SCOPE
     },
     handler: async (request, h) => {
       if (!config.useV2Events) {
@@ -42,7 +44,7 @@ module.exports = [
     method: 'GET',
     path: '/monitoring/payments/correlation-id',
     options: {
-      auth: { scope: [schemeAdmin, holdAdmin, dataView] }
+      auth: AUTH_SCOPE
     },
     handler: async (request, h) => {
       if (!config.useV2Events) {
@@ -57,7 +59,7 @@ module.exports = [
     method: 'GET',
     path: '/monitoring/batch/name',
     options: {
-      auth: { scope: [schemeAdmin, holdAdmin, dataView] }
+      auth: AUTH_SCOPE
     },
     handler: async (request, h) => {
       if (!config.useV2Events) {

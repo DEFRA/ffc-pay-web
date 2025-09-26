@@ -1,15 +1,13 @@
 const Boom = require('@hapi/boom')
-const Path = require('path')
+const Path = require('node:path')
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')
 const { mapStatusReportsToTaskList } = require('../../helpers/map-status-report-to-task-list')
 const { getStatusReport, getReportsByYearAndType, getValidReportYearsByType } = require('../../storage/doc-reports')
-const { statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
+const { applicationAdmin, statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
 const { handleStreamResponse } = require('../../helpers')
 
-const authOptions = {
-  scope: [statusReportSfi23, statusReportsDelinked]
-}
+const AUTH_SCOPE = { scope: [applicationAdmin, statusReportSfi23, statusReportsDelinked] }
 
 const reportTypes = {
   'sustainable-farming-incentive': {
@@ -32,7 +30,7 @@ module.exports = [
     method: 'GET',
     path: REPORT_LIST.STATUS,
     options: {
-      auth: authOptions,
+      auth: AUTH_SCOPE,
       handler: async (request, h) => {
         try {
           const yearTypeItems = await getValidReportYearsByType()
@@ -60,7 +58,7 @@ module.exports = [
     method: 'GET',
     path: REPORT_LIST.STATUS_SEARCH,
     options: {
-      auth: authOptions,
+      auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const { 'select-type': type, 'report-year': year } = request.query
         const reports = await getReportsByYearAndType(year, type)
@@ -79,7 +77,7 @@ module.exports = [
     method: 'GET',
     path: REPORT_LIST.STATUS_DOWNLOAD,
     options: {
-      auth: authOptions,
+      auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const fullPath = request.query['file-name']
         const filename = Path.basename(fullPath)

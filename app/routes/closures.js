@@ -1,23 +1,22 @@
-const { closureAdmin } = require('../auth/permissions')
+const { applicationAdmin, closureAdmin } = require('../auth/permissions')
 const schema = require('./schemas/closure')
 const bulkSchema = require('./schemas/bulk-closure')
 const { postProcessing } = require('../api')
 const { MAX_BYTES, MAX_MEGA_BYTES } = require('../constants/payload-sizes')
+const { BAD_REQUEST } = require('../constants/http-status-codes')
 const { handleBulkClosureError } = require('../closure/handle-bulk-closure-error')
 const { handleBulkClosure } = require('../closure/handle-bulk-closure')
+
 const CLOSURES_VIEWS = require('../constants/closures-views')
 const CLOSURES_ROUTES = require('../constants/closures-routes')
-
-const HTTP = {
-  BAD_REQUEST: 400
-}
+const AUTH_SCOPE = { scope: [applicationAdmin, closureAdmin] }
 
 module.exports = [
   {
     method: 'GET',
     path: CLOSURES_ROUTES.ADD,
     options: {
-      auth: { scope: [closureAdmin] },
+      auth: AUTH_SCOPE,
       handler: async (_request, h) => {
         return h.view(CLOSURES_VIEWS.ADD)
       }
@@ -27,7 +26,7 @@ module.exports = [
     method: 'GET',
     path: CLOSURES_ROUTES.BULK,
     options: {
-      auth: { scope: [closureAdmin] },
+      auth: AUTH_SCOPE,
       handler: async (_request, h) => {
         return h.view(CLOSURES_VIEWS.BULK)
       }
@@ -37,7 +36,7 @@ module.exports = [
     method: 'POST',
     path: CLOSURES_ROUTES.ADD,
     options: {
-      auth: { scope: [closureAdmin] },
+      auth: AUTH_SCOPE,
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
@@ -50,7 +49,7 @@ module.exports = [
               month: request.payload.month,
               year: request.payload.year
             })
-            .code(HTTP.BAD_REQUEST)
+            .code(BAD_REQUEST)
             .takeover()
         }
       },
@@ -82,7 +81,7 @@ module.exports = [
     path: CLOSURES_ROUTES.BULK,
     handler: handleBulkClosure,
     options: {
-      auth: { scope: [closureAdmin] },
+      auth: AUTH_SCOPE,
       validate: {
         payload: bulkSchema,
         failAction: async (request, h, error) => {

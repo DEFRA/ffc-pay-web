@@ -33,7 +33,7 @@
 
       <!-- Row 1: Payment holds + Reports -->
       <div class="govuk-cards govuk-cards--2">
-        {% if auth.isHoldAdminUser %}
+        {% if auth.isApplicationAdmin or auth.isHoldAdminUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Payment holds</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
@@ -45,7 +45,7 @@
           </div>
         {% endif %}
 
-        {% if auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser or auth.isStatusReportUser %}
+        {% if auth.isApplicationAdmin or auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser or auth.isStatusReportUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Reports</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
@@ -60,7 +60,7 @@
 
       <!-- Row 2: Schemes + Monitoring -->
       <div class="govuk-cards govuk-cards--2">
-        {% if auth.isSchemeAdminUser %}
+        {% if auth.isApplicationAdmin or auth.isSchemeAdminUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Schemes</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
@@ -76,7 +76,7 @@
             </ul>
           </div>
         {% endif %}
-        {% if auth.isClosureAdminUser %}
+        {% if auth.isApplicationAdmin or auth.isClosureAdminUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Agreement closures</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
@@ -102,7 +102,7 @@
 
       <!-- Row 3: Agreement closures + Manual payment upload -->
       <div class="govuk-cards govuk-cards--2">
-        {% if auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser %}
+        {% if auth.isApplicationAdmin or auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Monitoring</h2>
 
@@ -119,7 +119,7 @@
             </ul>
           </div>
         {% endif %}
-        {% if auth.isManualPaymentsUser and manualPaymentsActive %}
+        {% if auth.isApplicationAdmin or auth.isManualPaymentsUser and manualPaymentsActive %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Manual payment upload</h2>
 

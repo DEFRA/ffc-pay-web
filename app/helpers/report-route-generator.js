@@ -1,5 +1,5 @@
-const { holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
-const AUTH_SCOPE = { scope: [holdAdmin, schemeAdmin, dataView] }
+const { applicationAdmin, holdAdmin, schemeAdmin, dataView } = require('../auth/permissions')
+const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView] }
 
 const { getView } = require('./get-view')
 const { renderErrorPage } = require('./render-error-page')
