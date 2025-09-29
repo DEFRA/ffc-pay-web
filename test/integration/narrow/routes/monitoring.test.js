@@ -1,8 +1,5 @@
 jest.mock('../../../../app/auth')
 
-jest.mock('../../../../app/config')
-const config = require('../../../../app/config')
-
 jest.mock('../../../../app/payments')
 const { getPaymentsByFrn: mockGetPaymentsByFrn, getPaymentsByCorrelationId: mockGetPaymentsByCorrelationId, getPaymentsByBatch: mockGetPaymentsByBatch, getPaymentsByScheme: mockGetPaymentsByScheme } = require('../../../../app/payments')
 
@@ -17,9 +14,6 @@ let auth
 
 describe('monitoring test', () => {
   beforeEach(async () => {
-    config.useV1Events = true
-    config.useV2Events = true
-
     auth = { strategy: 'session-auth', credentials: { scope: [holdAdmin] } }
 
     mockGetPaymentsByCorrelationId.mockResolvedValue(DATA)
@@ -80,18 +74,6 @@ describe('monitoring test', () => {
     expect(response.payload).toContain('Monitoring')
   })
 
-  test('GET /monitoring route returns 404 if V2 events disabled', async () => {
-    config.useV2Events = false
-    const options = {
-      method: 'GET',
-      url: '/monitoring',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(404)
-  })
-
   test('GET /monitoring/payments/frn route returns 403 if user not in role', async () => {
     auth.credentials.scope = []
     const options = {
@@ -135,18 +117,6 @@ describe('monitoring test', () => {
 
     const response = await server.inject(options)
     expect(response.payload).toContain('Monitoring')
-  })
-
-  test('GET /monitoring/payments/frn route returns 404 if V2 events disabled', async () => {
-    config.useV2Events = false
-    const options = {
-      method: 'GET',
-      url: '/monitoring/payments/correlation-id',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(404)
   })
 
   test('GET /monitoring/payments/correlation-id route returns 403 if user not in role', async () => {
@@ -194,18 +164,6 @@ describe('monitoring test', () => {
     expect(response.payload).toContain('Monitoring')
   })
 
-  test('GET /monitoring/payments/correlation-id route returns 404 if V2 events disabled', async () => {
-    config.useV2Events = false
-    const options = {
-      method: 'GET',
-      url: '/monitoring/payments/correlation-id',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(404)
-  })
-
   test('GET /monitoring/batch/name route returns 403 if user not in role', async () => {
     auth.credentials.scope = []
     const options = {
@@ -251,18 +209,6 @@ describe('monitoring test', () => {
     expect(response.payload).toContain('Monitoring')
   })
 
-  test('GET /monitoring/batch/name route returns 404 if V2 events disabled', async () => {
-    config.useV2Events = false
-    const options = {
-      method: 'GET',
-      url: '/monitoring/batch/name',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(404)
-  })
-
   test('GET /monitoring/view-processed-payment-requests route returns 403 if user not in role', async () => {
     auth.credentials.scope = []
     const options = {
@@ -306,17 +252,5 @@ describe('monitoring test', () => {
 
     const response = await server.inject(options)
     expect(response.payload).toContain('processed payment requests')
-  })
-
-  test('GET /monitoring/view-processed-payment-requests route returns 404 if V2 events disabled', async () => {
-    config.useV2Events = false
-    const options = {
-      method: 'GET',
-      url: '/monitoring/view-processed-payment-requests',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(404)
   })
 })

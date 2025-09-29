@@ -51,7 +51,6 @@ container:
   docAzureStorageConnectionString: dummy
   azureStorageAccountName: ffcpay
   docAzureStorageAccountName: ffcdoc
-  useV2Events: true
   legacyReportsActive: true
   manualPaymentsActive: true
   messageQueueHost: namespace.servicebus.windows.net
