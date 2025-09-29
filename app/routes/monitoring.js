@@ -1,4 +1,3 @@
-const config = require('../config')
 const { applicationAdmin, schemeAdmin, holdAdmin, dataView } = require('../auth/permissions')
 const {
   getPaymentsByFrn,
@@ -7,8 +6,6 @@ const {
 } = require('../payments')
 const ViewModel = require('./models/monitoring')
 
-const HTTP_STATUS = require('../constants/http-status-codes')
-const ERROR_VIEWS = require('../constants/error-views')
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 
 module.exports = [
