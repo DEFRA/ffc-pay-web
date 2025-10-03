@@ -38,16 +38,28 @@ jest.mock('@azure/msal-node', () => {
     }
   }
 })
-const azureAuth = require('../../../app/auth/azure-auth')
-const { authConfig } = require('../../../app/config')
-let mockCookieAuth
 
-describe('azure authentication', () => {
+let mockCookieAuth
+let azureAuth
+let msal
+let authConfig
+
+describe('azure-auth in non-prod / non-test mode (logging verbose)', () => {
   beforeEach(() => {
+    jest.resetModules()
     jest.clearAllMocks()
-    mockCookieAuth = {
-      set: jest.fn()
-    }
+
+    jest.doMock('../../../app/config', () => ({
+      authConfig: { redirectUrl: 'my-redirect-url', azure: {} },
+      isProd: false,
+      isTest: false
+    }))
+
+    mockCookieAuth = { set: jest.fn() }
+
+    azureAuth = require('../../../app/auth/azure-auth')
+    msal = require('@azure/msal-node')
+    authConfig = require('../../../app/config').authConfig
   })
 
   test('getAuthenticationUrl should call getAuthCodeUrl once', () => {
@@ -55,97 +67,109 @@ describe('azure authentication', () => {
     expect(mockGetAuthCodeUrl).toHaveBeenCalledTimes(1)
   })
 
-  test('getAuthenticationUrl should call getAuthCodeUrl forcing account select prompt', () => {
+  test('getAuthenticationUrl should pass prompt and redirectUri', () => {
     azureAuth.getAuthenticationUrl()
-    expect(mockGetAuthCodeUrl.mock.calls[0][0].prompt).toBe('select_account')
+    const params = mockGetAuthCodeUrl.mock.calls[0][0]
+    expect(params.prompt).toBe('select_account')
+    expect(params.redirectUri).toBe(authConfig.redirectUrl)
   })
 
-  test('getAuthenticationUrl should call getAuthCodeUrl with redirect url from config', () => {
-    azureAuth.getAuthenticationUrl()
-    expect(mockGetAuthCodeUrl.mock.calls[0][0].redirectUri).toBe(authConfig.redirectUrl)
-  })
-
-  test('authenticate should call acquireTokenByCode once', async () => {
+  test('authenticate calls acquireTokenByCode and sets cookieAuth', async () => {
     await azureAuth.authenticate('redirectCode', mockCookieAuth)
     expect(mockAcquireTokenByCode).toHaveBeenCalledTimes(1)
-  })
-
-  test('authenticate should call acquireTokenByCode with redirect code', async () => {
-    await azureAuth.authenticate('redirectCode', mockCookieAuth)
-    expect(mockAcquireTokenByCode.mock.calls[0][0].code).toBe('redirectCode')
-  })
-
-  test('authenticate should call acquireTokenByCode with redirect url from config', async () => {
-    await azureAuth.authenticate('redirectCode', mockCookieAuth)
-    expect(mockAcquireTokenByCode.mock.calls[0][0].redirectUri).toBe(authConfig.redirectUrl)
-  })
-
-  test('authenticate call cookieAuth.set once', async () => {
-    await azureAuth.authenticate('redirectCode', mockCookieAuth)
+    const args = mockAcquireTokenByCode.mock.calls[0][0]
+    expect(args.code).toBe('redirectCode')
+    expect(args.redirectUri).toBe(authConfig.redirectUrl)
     expect(mockCookieAuth.set).toHaveBeenCalledTimes(1)
-  })
-
-  test('authenticate should set scopes in cookieAuth', async () => {
-    await azureAuth.authenticate('redirectCode', mockCookieAuth)
     expect(mockCookieAuth.set.mock.calls[0][0].scope).toBe(mockRoles)
-  })
-
-  test('authenticate should set account in cookieAuth', async () => {
-    await azureAuth.authenticate('redirectCode', mockCookieAuth)
     expect(mockCookieAuth.set.mock.calls[0][0].account).toBe(mockAccount)
   })
 
-  test('refresh should call acquireTokenSilent once', async () => {
-    await azureAuth.refresh(mockAccount, mockCookieAuth)
-    expect(mockAcquireTokenSilent).toHaveBeenCalledTimes(1)
-  })
-
-  test('refresh should call mockAcquireTokenSilent with account', async () => {
-    await azureAuth.refresh(mockAccount, mockCookieAuth)
-    expect(mockAcquireTokenSilent.mock.calls[0][0].account).toBe(mockAccount)
-  })
-
-  test('refresh should call mockAcquireTokenSilent with force refresh true when not provided', async () => {
-    await azureAuth.refresh(mockAccount, mockCookieAuth)
-    expect(mockAcquireTokenSilent.mock.calls[0][0].forceRefresh).toBeTruthy()
-  })
-
-  test('refresh should call mockAcquireTokenSilent with force refresh true when true', async () => {
-    await azureAuth.refresh(mockAccount, mockCookieAuth, true)
-    expect(mockAcquireTokenSilent.mock.calls[0][0].forceRefresh).toBeTruthy()
-  })
-
-  test('refresh should call mockAcquireTokenSilent with force refresh false when false', async () => {
-    await azureAuth.refresh(mockAccount, mockCookieAuth, false)
-    expect(mockAcquireTokenSilent.mock.calls[0][0].forceRefresh).not.toBeTruthy()
-  })
-
-  test('refresh should call cookieAuth.set once', async () => {
-    await azureAuth.refresh(mockAccount, mockCookieAuth)
-    expect(mockCookieAuth.set).toHaveBeenCalledTimes(1)
-  })
-
-  test('refresh should set scopes in cookieAuth', async () => {
-    await azureAuth.refresh(mockAccount, mockCookieAuth)
-    expect(mockCookieAuth.set.mock.calls[0][0].scope).toBe(mockRoles)
-  })
-
-  test('refresh should set account in cookieAuth', async () => {
-    await azureAuth.refresh(mockAccount, mockCookieAuth)
-    expect(mockCookieAuth.set.mock.calls[0][0].account).toBe(mockAccount)
-  })
-
-  test('refresh should return roles', async () => {
+  test('refresh calls acquireTokenSilent, sets cookieAuth, returns roles', async () => {
     const result = await azureAuth.refresh(mockAccount, mockCookieAuth)
+    expect(mockAcquireTokenSilent).toHaveBeenCalledTimes(1)
+    const args = mockAcquireTokenSilent.mock.calls[0][0]
+    expect(args.account).toBe(mockAccount)
+    expect(args.forceRefresh).toBeTruthy()
+    expect(mockCookieAuth.set).toHaveBeenCalledTimes(1)
+    expect(mockCookieAuth.set.mock.calls[0][0].scope).toBe(mockRoles)
+    expect(mockCookieAuth.set.mock.calls[0][0].account).toBe(mockAccount)
     expect(result).toBe(mockRoles)
   })
 
-  test('logout should call removeAccount once', async () => {
-    await azureAuth.logout(mockAccount)
-    expect(mockRemoveAccount).toHaveBeenCalledTimes(1)
+  test('refresh with forceRefresh = false uses false', async () => {
+    await azureAuth.refresh(mockAccount, mockCookieAuth, false)
+    const args = mockAcquireTokenSilent.mock.calls[0][0]
+    expect(args.forceRefresh).not.toBeTruthy()
   })
 
-  test('logout should call removeAccount with account', async () => {
+  test('logout calls removeAccount with account', async () => {
+    await azureAuth.logout(mockAccount)
+    expect(mockRemoveAccount).toHaveBeenCalledTimes(1)
+    expect(mockRemoveAccount).toHaveBeenCalledWith(mockAccount)
+  })
+
+  test('msalLogging should be verbose loggerOptions object', () => {
+    expect(msal.ConfidentialClientApplication).toHaveBeenCalledWith(
+      expect.objectContaining({
+        system: expect.objectContaining({
+          loggerOptions: expect.objectContaining({
+            loggerCallback: expect.any(Function),
+            piiLoggingEnabled: false,
+            logLevel: msal.LogLevel.Verbose
+          })
+        })
+      })
+    )
+  })
+})
+
+describe('azure-auth in prod or test mode (logging turned off)', () => {
+  beforeEach(() => {
+    jest.resetModules()
+    jest.clearAllMocks()
+
+    jest.doMock('../../../app/config', () => ({
+      authConfig: { redirectUrl: 'my-redirect-url', azure: {} },
+      isProd: true,
+      isTest: false
+    }))
+
+    mockCookieAuth = { set: jest.fn() }
+
+    azureAuth = require('../../../app/auth/azure-auth')
+    msal = require('@azure/msal-node')
+  })
+
+  test('msalLogging should be empty object', () => {
+    expect(msal.ConfidentialClientApplication).toHaveBeenCalledWith(
+      expect.objectContaining({
+        system: expect.objectContaining({
+          loggerOptions: {}
+        })
+      })
+    )
+  })
+
+  test('getAuthenticationUrl still calls getAuthCodeUrl', () => {
+    azureAuth.getAuthenticationUrl()
+    expect(mockGetAuthCodeUrl).toHaveBeenCalledTimes(1)
+  })
+
+  test('authenticate still sets cookieAuth', async () => {
+    await azureAuth.authenticate('code', mockCookieAuth)
+    expect(mockCookieAuth.set).toHaveBeenCalledTimes(1)
+    expect(mockCookieAuth.set.mock.calls[0][0].scope).toBe(mockRoles)
+    expect(mockCookieAuth.set.mock.calls[0][0].account).toBe(mockAccount)
+  })
+
+  test('refresh still works', async () => {
+    const result = await azureAuth.refresh(mockAccount, mockCookieAuth)
+    expect(result).toBe(mockRoles)
+    expect(mockCookieAuth.set).toHaveBeenCalledTimes(1)
+  })
+
+  test('logout still calls removeAccount', async () => {
     await azureAuth.logout(mockAccount)
     expect(mockRemoveAccount).toHaveBeenCalledWith(mockAccount)
   })
