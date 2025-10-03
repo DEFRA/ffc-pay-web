@@ -1,9 +1,7 @@
 const config = require('../config')
 const msal = require('@azure/msal-node')
 
-const msalLogging = config.isProd
-  ? {}
-  : {
+const msalLogging = config.isProd || config.isTest ? {} : {
       loggerCallback (_loglevel, message, _containsPii) {
         console.log(message)
       },
