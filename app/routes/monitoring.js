@@ -1,4 +1,3 @@
-const config = require('../config')
 const { applicationAdmin, schemeAdmin, holdAdmin, dataView } = require('../auth/permissions')
 const {
   getPaymentsByFrn,
@@ -7,8 +6,6 @@ const {
 } = require('../payments')
 const ViewModel = require('./models/monitoring')
 
-const HTTP_STATUS = require('../constants/http-status-codes')
-const ERROR_VIEWS = require('../constants/error-views')
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 
 module.exports = [
@@ -19,9 +16,6 @@ module.exports = [
       auth: AUTH_SCOPE
     },
     handler: async (_request, h) => {
-      if (!config.useV2Events) {
-        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
-      }
       return h.view('monitoring/monitoring', new ViewModel())
     }
   },
@@ -32,9 +26,6 @@ module.exports = [
       auth: AUTH_SCOPE
     },
     handler: async (request, h) => {
-      if (!config.useV2Events) {
-        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
-      }
       const frn = request.query.frn
       const payments = await getPaymentsByFrn(frn)
       return h.view('monitoring/frn', { frn, payments })
@@ -47,9 +38,6 @@ module.exports = [
       auth: AUTH_SCOPE
     },
     handler: async (request, h) => {
-      if (!config.useV2Events) {
-        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
-      }
       const correlationId = request.query.correlationId
       const events = await getPaymentsByCorrelationId(correlationId)
       return h.view('monitoring/correlation-id', { correlationId, events })
@@ -62,9 +50,6 @@ module.exports = [
       auth: AUTH_SCOPE
     },
     handler: async (request, h) => {
-      if (!config.useV2Events) {
-        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
-      }
       const batch = request.query.batch
       const payments = await getPaymentsByBatch(batch)
       return h.view('monitoring/batch', { batch, payments })

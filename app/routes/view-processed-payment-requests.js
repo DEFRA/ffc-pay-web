@@ -1,10 +1,8 @@
-const config = require('../config')
 const { applicationAdmin, schemeAdmin, holdAdmin, dataView } = require('../auth/permissions')
 const { getPaymentsByScheme } = require('../payments')
 const { getProcessingData } = require('../api')
 
 const HTTP_STATUS = require('../constants/http-status-codes')
-const ERROR_VIEWS = require('../constants/error-views')
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 
 module.exports = [
@@ -15,10 +13,6 @@ module.exports = [
       auth: AUTH_SCOPE
     },
     handler: async (_request, h) => {
-      if (!config.useV2Events) {
-        console.warn('V2 events are not enabled, cannot view processed payment requests')
-        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
-      }
       const schemes = await getProcessingData('/payment-schemes')
       return h.view('monitoring/schemes', {
         data: schemes?.payload?.paymentSchemes
@@ -32,10 +26,6 @@ module.exports = [
       auth: AUTH_SCOPE
     },
     handler: async (request, h) => {
-      if (!config.useV2Events) {
-        console.warn('V2 events are not enabled, cannot view processed payment requests')
-        return h.view(ERROR_VIEWS.NOT_FOUND).code(HTTP_STATUS.NOT_FOUND)
-      }
       const { schemeId } = request.query
       try {
         const processedPaymentRequests = await getPaymentsByScheme(schemeId)
