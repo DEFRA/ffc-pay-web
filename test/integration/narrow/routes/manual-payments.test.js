@@ -58,7 +58,6 @@ describe('Manual Payments Routes', () => {
     const auth = { strategy: 'session-auth', credentials: { scope: [manualPaymentsAdmin] } }
 
     test('returns 200 and renders upload history correctly', async () => {
-      // Mock happy path for upload history
       getHistoricalInjectionData.mockResolvedValue({
         payload: [
           { id: 1, filename: 'example.csv', timeStamp: '2025-01-01T12:00:00Z' }
