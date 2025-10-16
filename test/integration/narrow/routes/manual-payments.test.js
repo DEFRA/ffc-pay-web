@@ -3,35 +3,40 @@ jest.mock('../../../../app/storage')
 jest.mock('../../../../app/helpers/read-file-content')
 jest.mock('../../../../app/helpers/set-loading-status')
 jest.mock('../../../../app/auth')
+jest.mock('../../../../app/api')
 
 const { postInjection } = require('../../../../app/api')
 const { uploadManualPaymentFile } = require('../../../../app/storage')
 const { readFileContent } = require('../../../../app/helpers/read-file-content')
+const { manualPaymentsAdmin } = require('../../../../app/auth/permissions')
+const { getHistoricalInjectionData } = require('../../../../app/api')
+
 const cheerio = require('cheerio')
 const createServer = require('../../../../app/server')
-
-const { manualPaymentsAdmin } = require('../../../../app/auth/permissions')
 const getCrumbs = require('../../../helpers/get-crumbs')
 
-let server
-
-function buildMultipartPayload ({ fields = {}, fileFieldName = 'file', filename = 'test-file.txt', fileContent = 'test content', boundary = '----WebKitFormBoundaryPovBlTQYGDYVuINo' } = {}) {
+function buildMultipartPayload ({
+  fields = {},
+  fileFieldName = 'file',
+  filename = 'test-file.txt',
+  fileContent = 'test content',
+  boundary = '----WebKitFormBoundaryPovBlTQYGDYVuINo'
+} = {}) {
   const parts = []
-
   for (const [name, value] of Object.entries(fields)) {
     parts.push(`--${boundary}`)
     parts.push(`Content-Disposition: form-data; name="${name}"`)
     parts.push('', String(value))
   }
-
   parts.push(`--${boundary}`)
   parts.push(`Content-Disposition: form-data; name="${fileFieldName}"; filename="${filename}"`)
   parts.push('Content-Type: application/octet-stream')
   parts.push('', fileContent)
-
   parts.push(`--${boundary}--`)
   return { payload: parts.join('\r\n'), boundary }
 }
+
+let server
 
 describe('Manual Payments Routes', () => {
   beforeEach(async () => {
@@ -49,13 +54,37 @@ describe('Manual Payments Routes', () => {
     if (server && typeof server.stop === 'function') await server.stop()
   })
 
-  test('GET /manual-payments returns 200 and correct view', async () => {
+  describe('GET /manual-payments', () => {
     const auth = { strategy: 'session-auth', credentials: { scope: [manualPaymentsAdmin] } }
-    const res = await server.inject({ method: 'GET', url: '/manual-payments', auth })
 
-    expect(res.statusCode).toBe(200)
-    const $ = cheerio.load(res.payload)
-    expect($('h1').text()).toContain('Manual payment upload')
+    test('returns 200 and renders upload history correctly', async () => {
+      // Mock happy path for upload history
+      getHistoricalInjectionData.mockResolvedValue({
+        payload: [
+          { id: 1, filename: 'example.csv', timeStamp: '2025-01-01T12:00:00Z' }
+        ]
+      })
+
+      const res = await server.inject({ method: 'GET', url: '/manual-payments', auth })
+
+      expect(res.statusCode).toBe(200)
+      expect(getHistoricalInjectionData).toHaveBeenCalledWith('/manual-upload-audit', 60)
+
+      const $ = cheerio.load(res.payload)
+      expect($('h1').text()).toContain('Manual payment upload')
+      expect(res.payload).toContain('example.csv')
+    })
+
+    test('handles API failure gracefully and still returns 200', async () => {
+      getHistoricalInjectionData.mockRejectedValue(new Error('Network error'))
+
+      const res = await server.inject({ method: 'GET', url: '/manual-payments', auth })
+
+      expect(res.statusCode).toBe(200)
+      const $ = cheerio.load(res.payload)
+      expect($('h1').text()).toContain('Manual payment upload')
+      expect(res.payload).not.toContain('error')
+    })
   })
 
   test('POST /manual-payments/upload with file exceeding MAX_BYTES triggers failAction (413 -> 400)', async () => {

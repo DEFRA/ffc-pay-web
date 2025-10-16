@@ -1,4 +1,4 @@
-const { formatDateFromParts } = require('./format-date')
+const { formatDateFromParts } = require('./date-time-formatter')
 
 const DEFAULT_START_DATE = '2015-01-01'
 

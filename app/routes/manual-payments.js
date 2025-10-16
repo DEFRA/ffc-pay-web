@@ -1,5 +1,6 @@
 const { manualPaymentUploadFailAction } = require('../manual-payments/manual-payment-fail-action')
 const { handleManualPaymentUploadPost } = require('../manual-payments')
+const { formatDateTimeFromString } = require('../helpers/date-time-formatter')
 const { getHistoricalInjectionData } = require('../api')
 
 const { MAX_BYTES } = require('../constants/payload-sizes')
@@ -10,16 +11,6 @@ const MANUAL_PAYMENT_VIEWS = require('../constants/manual-payment-views')
 const MANUAL_PAYMENT_ROUTES = require('../constants/manual-payment-routes')
 const { MANUAL_UPLOAD_AUDIT } = require('../constants/injection-routes')
 const AUTH_SCOPE = { scope: [applicationAdmin, manualPaymentsAdmin] }
-
-function formatDateTime (value) {
-  if (!value) { return 'Unknown' }
-
-  const date = new Date(value)
-
-  if (isNaN(date)) { return 'Invalid date' }
-
-  return date.toISOString().slice(0, 16).replace('T', ' - ')
-}
 
 module.exports = [
   {
@@ -40,7 +31,7 @@ module.exports = [
 
           uploadHistory = (payload || []).map(upload => ({
             ...upload,
-            timeStamp: formatDateTime(upload.timeStamp)
+            timeStamp: formatDateTimeFromString(upload.timeStamp)
           }))
         } catch (err) {
           console.error('Failed to fetch upload history:', err)
