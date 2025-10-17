@@ -1,7 +1,7 @@
 const { getMIReport, getSuppressedReport } = require('../../storage/pay-reports')
 const { getHolds } = require('../../holds')
 const { applicationAdmin, holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
-const { formatDateFromString } = require('../../helpers/format-date')
+const { formatDateFromString } = require('../../helpers/date-time-formatter')
 const storageConfig = require('../../config/storage')
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')

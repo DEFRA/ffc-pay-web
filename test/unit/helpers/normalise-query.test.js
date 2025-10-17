@@ -1,6 +1,6 @@
 const { normaliseQuery } = require('../../../app/helpers/normalise-query')
 
-jest.mock('../../../app/helpers/format-date', () => ({
+jest.mock('../../../app/helpers/date-time-formatter', () => ({
   formatDateFromParts: (day, month, year) => {
     if (day && month && year) {
       const pad = (n) => n.toString().padStart(2, '0')
