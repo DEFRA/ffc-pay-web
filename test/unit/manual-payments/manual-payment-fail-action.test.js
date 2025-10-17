@@ -3,7 +3,7 @@ const MANUAL_PAYMENT_VIEWS = require('../../../app/constants/manual-payment-view
 const HTTP_STATUS = require('../../../app/constants/http-status-codes')
 const { MAX_MEGA_BYTES } = require('../../../app/constants/payload-sizes')
 
-jest.mock('../../../app/manual-payments/manual-payment-upload-history', () => ({
+jest.mock('../../../app/manual-payments/get-manual-payment-upload-history', () => ({
   getManualPaymentUploadHistory: jest.fn().mockResolvedValue([])
 }))
 
