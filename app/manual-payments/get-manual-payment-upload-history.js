@@ -2,7 +2,7 @@ const { MANUAL_UPLOAD_AUDIT } = require('../constants/injection-routes')
 const { formatDateTimeFromString } = require('../helpers/date-time-formatter')
 const { getHistoricalInjectionData } = require('../api')
 
-const manualPaymentUploadHistory = async () => {
+const getManualPaymentUploadHistory = async () => {
   try {
     const { payload = [] } = await getHistoricalInjectionData(MANUAL_UPLOAD_AUDIT, 60)
     console.log(`Retrieved ${payload.length} uploads`)
@@ -17,4 +17,4 @@ const manualPaymentUploadHistory = async () => {
   }
 }
 
-module.exports = { manualPaymentUploadHistory }
+module.exports = { getManualPaymentUploadHistory }

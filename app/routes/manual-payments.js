@@ -1,4 +1,4 @@
-const { handleManualPaymentUploadPost, manualPaymentUploadFailAction, manualPaymentUploadHistory } = require('../manual-payments')
+const { handleManualPaymentUploadPost, manualPaymentUploadFailAction, getManualPaymentUploadHistory } = require('../manual-payments')
 
 const { MAX_BYTES } = require('../constants/payload-sizes')
 const { applicationAdmin, manualPaymentsAdmin } = require('../auth/permissions')
@@ -19,7 +19,7 @@ module.exports = [
         const uploaderNameOrEmail = user?.name || user?.username || user?.email
         console.log(`User ${uploaderNameOrEmail} accessed the upload page.`)
 
-        const uploadHistory = await manualPaymentUploadHistory()
+        const uploadHistory = await getManualPaymentUploadHistory()
 
         return h.view(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, { uploadHistory })
       }

@@ -1,4 +1,4 @@
-const { manualPaymentUploadHistory } = require('../../../app/manual-payments/manual-payment-upload-history')
+const { getManualPaymentUploadHistory } = require('../../../app/manual-payments/get-manual-payment-upload-history')
 const { getHistoricalInjectionData } = require('../../../app/api')
 const { formatDateTimeFromString } = require('../../../app/helpers/date-time-formatter')
 
@@ -8,7 +8,7 @@ jest.mock('../../../app/constants/injection-routes', () => ({
   MANUAL_UPLOAD_AUDIT: 'manual-upload-audit'
 }))
 
-describe('manualPaymentUploadHistory', () => {
+describe('getManualPaymentUploadHistory', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -23,7 +23,7 @@ describe('manualPaymentUploadHistory', () => {
     formatDateTimeFromString
       .mockImplementation(ts => `formatted-${ts}`)
 
-    const result = await manualPaymentUploadHistory()
+    const result = await getManualPaymentUploadHistory()
 
     expect(getHistoricalInjectionData).toHaveBeenCalledWith('manual-upload-audit', 60)
     expect(formatDateTimeFromString).toHaveBeenCalledTimes(2)
@@ -35,7 +35,7 @@ describe('manualPaymentUploadHistory', () => {
 
   test('returns an empty array when payload is missing', async () => {
     getHistoricalInjectionData.mockResolvedValue({})
-    const result = await manualPaymentUploadHistory()
+    const result = await getManualPaymentUploadHistory()
 
     expect(getHistoricalInjectionData).toHaveBeenCalledWith('manual-upload-audit', 60)
     expect(result).toEqual([])
@@ -47,7 +47,7 @@ describe('manualPaymentUploadHistory', () => {
 
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-    const result = await manualPaymentUploadHistory()
+    const result = await getManualPaymentUploadHistory()
 
     expect(result).toEqual([])
     expect(consoleErrorSpy).toHaveBeenCalledWith(

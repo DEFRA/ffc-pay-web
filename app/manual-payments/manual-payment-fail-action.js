@@ -1,12 +1,12 @@
 const { MANUAL_PAYMENTS } = require('../constants/manual-payment-views')
-const { manualPaymentUploadHistory } = require('./manual-payment-upload-history')
+const { getManualPaymentUploadHistory } = require('./get-manual-payment-upload-history')
 const { MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 const HTTP_STATUS = require('../constants/http-status-codes')
 
 const manualPaymentUploadFailAction = async (request, h, error) => {
   const crumb = request.payload?.crumb ?? request.state.crumb
 
-  const uploadHistory = await manualPaymentUploadHistory()
+  const uploadHistory = await getManualPaymentUploadHistory()
 
   if (error?.output?.statusCode === HTTP_STATUS.CONTENT_TOO_LARGE) {
     return h

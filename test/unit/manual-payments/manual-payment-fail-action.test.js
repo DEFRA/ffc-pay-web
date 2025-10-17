@@ -4,7 +4,7 @@ const HTTP_STATUS = require('../../../app/constants/http-status-codes')
 const { MAX_MEGA_BYTES } = require('../../../app/constants/payload-sizes')
 
 jest.mock('../../../app/manual-payments/manual-payment-upload-history', () => ({
-  manualPaymentUploadHistory: jest.fn().mockResolvedValue([])
+  getManualPaymentUploadHistory: jest.fn().mockResolvedValue([])
 }))
 
 describe('manualPaymentUploadFailAction', () => {
