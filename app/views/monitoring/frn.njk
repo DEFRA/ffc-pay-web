@@ -1,5 +1,4 @@
 {% extends '_layout.njk' %}
-{% from "macros/search-box.njk" import searchBox %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% block content %}
@@ -27,7 +26,7 @@
               <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Value</th>
               <th scope="col" class="govuk-table__header govuk-body-s">Status</th>
               <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Last updated</th>
-              <th scope="col" class="govuk-table__header govuk-body-s"></th>
+              <th scope="col" class="govuk-table__header govuk-body-s">Actions</th>
             </tr>
           </thead>
           <tbody class="govuk-table__body">

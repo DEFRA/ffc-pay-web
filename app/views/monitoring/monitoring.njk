@@ -1,37 +1,63 @@
-{% extends '_layout.njk' %}
-{% from "macros/search-box.njk" import searchBox %}
+{% extends "_layout.njk" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
   {{ govukBreadcrumbs({
       items: [{
         text: "Home",
         href: "/"
+      },
+      {
+        text: "Monitoring",
+        href: "/monitoring"
       }]
-    })}}
+  })}}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">Monitoring</h1>
-      <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
-          <div class="user-search-box">
-            <form class="search-form" action="/monitoring/payments/frn" method="GET">
-              {{ searchBox(model.searchByFrn) }}
-            </form>
-          </div>
-        </div>
-      </div>
-      <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
-          <div class="user-search-box">
-            <form class="search-form" action="/monitoring/batch/name" method="GET">
-              {{ searchBox(model.searchByBatch) }}
-            </form>
-          </div>
-        </div>
-      </div>
+
+      <form class="govuk-!-margin-bottom-6" action="/monitoring/payments/frn" method="get" role="search">
+        {{ govukInput({
+          label: {
+            text: "Search for payments by Firm Reference Number (FRN)"
+          },
+          hint: {
+            text: "For example, 1234567890"
+          },
+          id: "search-frn",
+          name: "frn",
+          type: "search",
+          classes: "govuk-input--width-20"
+        }) }}
+
+        {{ govukButton({
+          text: "Search",
+          type: "submit"
+        }) }}
+      </form>
+
+      <form action="/monitoring/batch/name" method="get" role="search">
+        {{ govukInput({
+          label: {
+            text: "Search for payments by payment batch name"
+          },
+          hint: {
+            text: "For example, SITISFI0001_AP_20230525095030.dat"
+          },
+          id: "search-batch",
+          name: "batch",
+          type: "search",
+          classes: "govuk-input--width-20"
+        }) }}
+
+        {{ govukButton({
+          text: "Search",
+          type: "submit"
+        }) }}
+      </form>
     </div>
   </div>
-  
-</div>
 {% endblock %}
