@@ -1,6 +1,7 @@
 {% extends '_layout.njk' %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
@@ -44,26 +45,19 @@
           <input class="govuk-input govuk-input--width-10" id="frn" name="frn" type="text" value="{{ frn }}">
         </div>
 
-        {% for scheme in schemes %}
-          <div class="govuk-form-group">
-            <fieldset class="govuk-fieldset">
-              <label class="govuk-label govuk-label-s" for="frn">
-                Select a hold category for {{ scheme }}
-              </label>
-              <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
-              {% for paymentHoldCategory in paymentHoldCategories %}
-                {% if paymentHoldCategory.schemeName === scheme %}
-                  <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="holdCategoryId" name="holdCategoryId" type="radio" value="{{ paymentHoldCategory.holdCategoryId }}">
-                    <label class="govuk-label govuk-radios__label" for="where-do-you-live">
-                      {{ paymentHoldCategory.name | lower | capitalize }}
-                    </label>
-                  </div>
-                {% endif %}
-              {% endfor %}
-              </div>
-            </fieldset>
-          </div>
+        {% for group in holdCategoryRadios %}
+          {{ govukRadios({
+            classes: "govuk-radios--small",
+            name: "holdCategoryId",
+            fieldset: {
+              legend: {
+                text: "Select a hold category for " + group.scheme.name,
+                isPageHeading: true,
+                classes: "govuk-fieldset__legend--l"
+              }
+            },
+            items: group.radios
+          }) }}
         {% endfor %}
 
         {{ govukButton({

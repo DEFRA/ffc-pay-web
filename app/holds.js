@@ -28,18 +28,26 @@ const getHolds = async (page = 1, pageSize = 100, usePagination = true) => {
 
 const getHoldCategories = async () => {
   const { payload } = await getProcessingData('/payment-hold-categories')
-  const schemes = [...new Set(payload.paymentHoldCategories.map(mapScheme))]
-  return { schemes, paymentHoldCategories: payload.paymentHoldCategories }
+
+  const mappedCategories = payload.paymentHoldCategories.map(category => ({
+    ...category,
+    schemeName: normalizeSchemeName(category.schemeName)
+  }))
+
+  const schemesMap = Object.fromEntries(
+    mappedCategories.map(c => [c.schemeId, { id: c.schemeId, name: c.schemeName }])
+  )
+
+  return {
+    schemes: Object.values(schemesMap),
+    paymentHoldCategories: mappedCategories
+  }
 }
 
-const mapScheme = (scheme) => {
-  if (scheme.schemeName === 'Vet Visits') {
-    scheme.schemeName = 'Annual Health and Welfare Review'
-  }
-  if (scheme.schemeName === 'SFI') {
-    scheme.schemeName = 'SFI22'
-  }
-  return scheme.schemeName
+const normalizeSchemeName = (name) => {
+  if (name === 'Vet Visits') return 'Annual Health and Welfare Review'
+  if (name === 'SFI') return 'SFI22'
+  return name
 }
 
 module.exports = {

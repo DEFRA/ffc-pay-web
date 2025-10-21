@@ -10,7 +10,7 @@ const { bulkFailAction } = require('../helpers/bulk-fail-action')
 const { postProcessing } = require('../api')
 const { applicationAdmin, holdAdmin } = require('../auth/permissions')
 const { getHolds, getHoldCategories } = require('../holds')
-const { handleBulkPost } = require('../hold')
+const { handleBulkPost, mapHoldCategoriesToRadios } = require('../hold')
 const searchLabelText = 'Search for a hold by FRN number'
 
 const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin] }
@@ -84,7 +84,13 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view(HOLDS_VIEWS.ADD, { schemes, paymentHoldCategories })
+
+        const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
+          valueKey: 'holdCategoryId',
+          textKey: 'name'
+        })
+
+        return h.view(HOLDS_VIEWS.ADD, { schemes, holdCategoryRadios })
       }
     }
   },
@@ -93,9 +99,16 @@ module.exports = [
     path: HOLDS_ROUTES.BULK,
     options: {
       auth: AUTH_SCOPE,
+
       handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        return h.view(HOLDS_VIEWS.BULK, { schemes, paymentHoldCategories })
+
+        const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
+          valueKey: 'holdCategoryId',
+          textKey: 'name'
+        })
+
+        return h.view(HOLDS_VIEWS.BULK, { holdCategoryRadios })
       }
     }
   },
@@ -108,10 +121,15 @@ module.exports = [
         payload: schema,
         failAction: async (request, h, error) => {
           const { schemes, paymentHoldCategories } = await getHoldCategories()
+
+          const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
+            valueKey: 'holdCategoryId',
+            textKey: 'name'
+          })
+
           return h
             .view(HOLDS_VIEWS.ADD, {
-              schemes,
-              paymentHoldCategories,
+              holdCategoryRadios,
               errors: error,
               frn: request.payload.frn
             })
