@@ -6,13 +6,11 @@
 
 {% block content %}
   {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Payment holds",
-      href: "/payment-holds"
-    }]
+    items: [      
+      { text: "Home", href: "/" },
+      { text: "Holds", href: "/payment-holds" },
+      { text: "Add Bulk", href: "/payment-holds/bulk" }
+    ]
   })}}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">

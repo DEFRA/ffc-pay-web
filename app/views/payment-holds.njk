@@ -9,7 +9,8 @@
 {% block content %}
   {{ govukBreadcrumbs({
     items: [
-      { text: "Home", href: "/" }
+      { text: "Home", href: "/" },
+      { text: "Holds", href: "/payment-holds" }
     ]
   }) }}
 
@@ -39,7 +40,7 @@
 
           {{ govukInput({
             label: {
-              text: "Search for holds by Firm Reference Number (FRN)",
+              text: "Search for holds by Firm Reference Number (FRN)"
             },
             hint: {
               text: "For example, 1234567890"
