@@ -53,7 +53,7 @@
       checkUrl: "{{ checkUrl }}",
       downloadUrl: "{{ downloadUrl }}",
       redirectUrl: "{{ redirectUrl }}",
-      autoRedirect: Boolean("{{ autoRedirect|lower }}"),
+      autoRedirect: "{{ autoRedirect | string | lower }}" === 'true',
       processingMessage: "{{ processingMessage }}",
       errorMessage: "{{ errorMessage }}",
       completedMessage: "{{ completedMessage }}"

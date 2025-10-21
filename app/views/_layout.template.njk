@@ -11,32 +11,22 @@
 {% endblock %}
 
 {% block header %}
+  {{ govukHeader({
+    classes: "govuk-header--full-width-border",
+    homepageUrl: "/", 
+    productName: serviceName, 
+    serviceUrl: "/"
+  }) }}
 
-
-{{ govukHeader({
-  classes: "govuk-header--full-width-border",
-  homepageUrl: "/", 
-  productName: serviceName, 
-  serviceUrl: "/"
-}) }}
-{{ govukServiceNavigation({
-  navigation: [
-    {
-      href: "/",
-      text: "Home",
-      active: true
-    },
-    {
-      href: "/logout",
-      text: "Sign Out"
-    }
-  ]
-}) }}
+  {{ govukServiceNavigation({
+    navigation: [
+      {
+        href: "/logout",
+        text: "Sign Out"
+      }
+    ]
+  }) }}
 {% endblock %}
-
-{# {% block beforeContent %}
-
-{% endblock %} #}
 
 {% block pageTitle %}
   {{ serviceName }}

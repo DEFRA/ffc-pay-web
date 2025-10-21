@@ -18,6 +18,7 @@ const radioButtonMapper = (items = [], options = {}) => {
     }
 
     return {
+      id: `${text}_id`,
       value,
       text
     }
