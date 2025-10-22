@@ -23,7 +23,7 @@ describe('Get holds categories', () => {
 
     const result = await getHoldCategories()
 
-    expect(result.schemes[0]).toBe('Annual Health and Welfare Review')
+    expect(result.schemes[0].name).toBe('Annual Health and Welfare Review')
   })
 
   test('Should return a schemeName of "SFI22" when schemeName is "SFI"', async () => {
@@ -32,7 +32,7 @@ describe('Get holds categories', () => {
 
     const result = await getHoldCategories()
 
-    expect(result.schemes[0]).toBe('SFI22')
+    expect(result.schemes[0].name).toBe('SFI22')
   })
 
   test('Should return a schemeName of "SFI Pilot" when schemeName is "SFI Pilot"', async () => {
@@ -41,7 +41,7 @@ describe('Get holds categories', () => {
 
     const result = await getHoldCategories()
 
-    expect(result.schemes[0]).toBe('SFI Pilot')
+    expect(result.schemes[0].name).toBe('SFI Pilot')
   })
 
   test('Should return a schemeName of "Lump Sums" when schemeName is "Lump Sums"', async () => {
@@ -50,7 +50,7 @@ describe('Get holds categories', () => {
 
     const result = await getHoldCategories()
 
-    expect(result.schemes[0]).toBe('Lump Sums')
+    expect(result.schemes[0].name).toBe('Lump Sums')
   })
 
   test('Should return a schemeName of "LNR" when schemeName is "LNR"', async () => {
@@ -59,7 +59,7 @@ describe('Get holds categories', () => {
 
     const result = await getHoldCategories()
 
-    expect(result.schemes[0]).toBe('LNR')
+    expect(result.schemes[0].name).toBe('LNR')
   })
 
   test('Should handle an empty paymentHoldCategories array', async () => {
@@ -77,7 +77,7 @@ describe('Get holds categories', () => {
 
     const result = await getHoldCategories()
 
-    expect(result.schemes[0]).toBe(undefined)
+    expect(result.schemes[0].name).toBe(undefined)
   })
 })
 

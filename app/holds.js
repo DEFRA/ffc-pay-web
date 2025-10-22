@@ -29,6 +29,8 @@ const getHolds = async (page = 1, pageSize = 100, usePagination = true) => {
 const getHoldCategories = async () => {
   const { payload } = await getProcessingData('/payment-hold-categories')
 
+  console.log(payload.paymentHoldCategories)
+
   const mappedCategories = payload.paymentHoldCategories.map(category => ({
     ...category,
     schemeName: normalizeSchemeName(category.schemeName)

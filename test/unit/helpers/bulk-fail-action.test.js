@@ -5,12 +5,8 @@ jest.mock('../../../app/holds')
 
 describe('bulkFailAction', () => {
   const request = {
-    payload: {
-      crumb: 'test-crumb'
-    },
-    state: {
-      crumb: 'state-crumb'
-    }
+    payload: { crumb: 'test-crumb' },
+    state: { crumb: 'state-crumb' }
   }
 
   const h = {
@@ -22,23 +18,30 @@ describe('bulkFailAction', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     getHoldCategories.mockResolvedValue({
-      schemes: ['scheme1'],
-      paymentHoldCategories: ['category1']
+      schemes: [
+        {
+          name: 'scheme1',
+          radios: [{ value: 'cat1', text: 'Category 1' }]
+        }
+      ],
+      paymentHoldCategories: [
+        { holdCategoryId: 'cat1', schemeId: 'scheme1', name: 'Category 1' }
+      ]
     })
   })
 
   test('should handle 413 error and return correct view', async () => {
-    const error = {
-      output: {
-        statusCode: 413
-      }
-    }
+    const error = { output: { statusCode: 413 } }
 
     await bulkFailAction(request, h, error)
 
     expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
-      schemes: ['scheme1'],
-      paymentHoldCategories: ['category1'],
+      holdCategoryRadios: [
+        {
+          scheme: { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] },
+          radios: []
+        }
+      ],
       errors: {
         details: [{
           message: 'The uploaded file is too large. Please upload a file smaller than 1 MB.'
@@ -51,15 +54,17 @@ describe('bulkFailAction', () => {
   })
 
   test('should handle generic error and return correct view', async () => {
-    const error = {
-      message: 'Test error'
-    }
+    const error = { message: 'Test error' }
 
     await bulkFailAction(request, h, error)
 
     expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
-      schemes: ['scheme1'],
-      paymentHoldCategories: ['category1'],
+      holdCategoryRadios: [
+        {
+          scheme: { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] },
+          radios: []
+        }
+      ],
       errors: error,
       crumb: 'test-crumb'
     })
@@ -68,17 +73,17 @@ describe('bulkFailAction', () => {
   })
 
   test('should use state crumb when payload crumb is missing', async () => {
-    const requestWithoutPayloadCrumb = {
-      state: {
-        crumb: 'state-crumb'
-      }
-    }
+    const requestWithoutPayloadCrumb = { state: { crumb: 'state-crumb' } }
 
     await bulkFailAction(requestWithoutPayloadCrumb, h, {})
 
     expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
-      schemes: ['scheme1'],
-      paymentHoldCategories: ['category1'],
+      holdCategoryRadios: [
+        {
+          scheme: { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] },
+          radios: []
+        }
+      ],
       errors: {},
       crumb: 'state-crumb'
     })
