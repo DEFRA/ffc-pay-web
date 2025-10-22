@@ -1,5 +1,5 @@
 const { handleBulkPost } = require('./handle-bulk-post')
-const { mapHoldCategoriesToRadios } = require('./map-hold-categories-to-radio')
+const { mapHoldCategoriesToRadios } = require('./map-hold-categories-to-radios')
 
 module.exports = {
   handleBulkPost,

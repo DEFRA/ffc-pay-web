@@ -47,9 +47,14 @@ const getHoldCategories = async () => {
 }
 
 const normalizeSchemeName = (name) => {
-  if (name === 'Vet Visits') return 'Annual Health and Welfare Review'
-  if (name === 'SFI') return 'SFI22'
-  return name
+  switch (name) {
+    case 'Vet Visits':
+      return 'Annual Health and Welfare Review'
+    case 'SFI':
+      return 'SFI22'
+    default:
+      return name
+  }
 }
 
 module.exports = {

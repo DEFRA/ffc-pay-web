@@ -19,7 +19,7 @@
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">Monitoring</h1>
 
-      <form class="govuk-!-margin-bottom-6" action="/monitoring/payments/frn" method="get" role="search">
+      <form class="govuk-!-margin-bottom-6" aria-label="Payment FRN search form." action="/monitoring/payments/frn" method="get" role="search">
         {{ govukInput({
           label: {
             text: "Search for payments by Firm Reference Number (FRN)"
@@ -39,7 +39,7 @@
         }) }}
       </form>
 
-      <form action="/monitoring/batch/name" method="get" role="search">
+      <form action="/monitoring/batch/name" aria-label="Payment batch search form." method="get" role="search">
         {{ govukInput({
           label: {
             text: "Search for payments by payment batch name"
