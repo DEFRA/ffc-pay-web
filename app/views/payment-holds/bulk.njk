@@ -1,8 +1,9 @@
 {% extends '_layout.njk' %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
 
 {% block content %}
   {{ govukBreadcrumbs({
@@ -57,18 +58,7 @@
           <input class="govuk-file-upload" id="file" name="file" type="file" value="{{ file }}">
         </div>
         
-        {% for group in holdCategoryRadios %}
-          {{ govukRadios({
-            classes: "govuk-radios--small",
-            name: "holdCategoryId",
-            fieldset: {
-              legend: {
-                text: "Select a hold category for " + group.scheme.name
-              }
-            },
-            items: group.radios
-          }) }}
-        {% endfor %}
+        {{ holdSelectionRadios(holdCategoryRadios) }}
 
         {{ govukButton({
           text: "Create",

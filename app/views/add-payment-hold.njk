@@ -1,8 +1,9 @@
 {% extends '_layout.njk' %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
 
 {% block content %}
   {{ govukBreadcrumbs({
@@ -46,18 +47,7 @@
           <input class="govuk-input govuk-input--width-10" id="frn" name="frn" type="text" value="{{ frn }}">
         </div>
 
-        {% for group in holdCategoryRadios %}
-          {{ govukRadios({
-            classes: "govuk-radios--small",
-            name: "holdCategoryId",
-            fieldset: {
-              legend: {
-                text: "Select a hold category for " + group.scheme.name
-              }
-            },
-            items: group.radios
-          }) }}
-        {% endfor %}
+        {{ holdSelectionRadios(holdCategoryRadios) }}
 
         {{ govukButton({
         text: "Create",
