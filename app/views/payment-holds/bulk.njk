@@ -3,15 +3,15 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
+{% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
+
 {% block content %}
   {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Payment holds",
-      href: "/payment-holds"
-    }]
+    items: [      
+      { text: "Home", href: "/" },
+      { text: "Holds", href: "/payment-holds" },
+      { text: "Add Bulk", href: "/payment-holds/bulk" }
+    ]
   })}}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
@@ -29,7 +29,9 @@
             <div class="govuk-error-summary__body">
               <ul class="govuk-list govuk-error-summary__list">
                 {% for errorDetail in errors.details %}
-                  <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
+                  <li>
+                    <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
+                  </li>
                 {% endfor %}
               </ul>
             </div>
@@ -56,27 +58,7 @@
           <input class="govuk-file-upload" id="file" name="file" type="file" value="{{ file }}">
         </div>
         
-        {% for scheme in schemes %}
-          <div class="govuk-form-group">
-            <fieldset class="govuk-fieldset">
-              <legend class="govuk-label govuk-label-s">
-                Select a hold category for {{ scheme }}
-              </legend>
-              <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
-              {% for paymentHoldCategory in paymentHoldCategories %}
-                {% if paymentHoldCategory.schemeName === scheme %}
-                  <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="holdCategoryId" name="holdCategoryId" type="radio" value="{{ paymentHoldCategory.holdCategoryId }}">
-                    <label class="govuk-label govuk-radios__label" for="where-do-you-live">
-                      {{ paymentHoldCategory.name | lower | capitalize }}
-                    </label>
-                  </div>
-                {% endif %}
-              {% endfor %}
-              </div>
-            </fieldset>
-          </div>
-        {% endfor %}
+        {{ holdSelectionRadios(holdCategoryRadios) }}
 
         {{ govukButton({
           text: "Create",

@@ -1,5 +1,4 @@
 {% extends '_layout.njk' %}
-{% from "macros/search-box.njk" import searchBox %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% block content %}
@@ -7,11 +6,24 @@
       items: [{
         text: "Home",
         href: "/"
+      },
+      {
+        text: "Monitoring",
+        href: "/monitoring"
+      },
+      {
+        text: "Schemes",
+        href: "/monitoring/schemes"
+      },
+      {
+        text: "View processed payment requests",
+        href: "#", 
+        attributes: { 'aria-disabled': 'true', 'class': 'govuk-breadcrumbs__link--disabled' } 
       }]
     })}}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-
+      <h1 class="govuk-heading-l">View processed payment requests</h1>
       {% if data.length %}
         <table class="govuk-table">
           <caption class="govuk-table__caption govuk-table__caption--l">Processed payment requests</caption>

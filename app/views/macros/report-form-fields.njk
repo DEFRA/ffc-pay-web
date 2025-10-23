@@ -1,5 +1,6 @@
 {% from "govuk/components/select/macro.njk" import govukSelect %}
-{% from "./date-form.njk" import dateInput %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+
 
 {% macro reportPageTitle(text) %}
   <h1 class="govuk-heading-l">{{ text }}</h1>
@@ -88,10 +89,18 @@
   }) }}
 {% endmacro %}
 
-{% macro startDateInput(errors = {}, value = {}) %}
-  {{ dateInput('start-date', errors, value) }}
-{% endmacro %}
+{% macro dateInput(id, text, errors={}) %}
 
-{% macro endDateInput(errors = {}, value = {}) %}
-  {{ dateInput('end-date', errors, value) }}
+  {{ govukDateInput({
+    id: id,
+    namePrefix: id,
+    fieldset: {
+      legend: {
+        text: text
+      }
+    },
+    hint: {
+      text: "For example, 27 11 2025"
+    }
+  }) }}
 {% endmacro %}

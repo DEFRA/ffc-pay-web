@@ -7,12 +7,20 @@
       items: [{
         text: "Home",
         href: "/"
+      },
+{
+        text: "Monitoring",
+        href: "/monitoring"
+      },
+      {
+        text: "Schemes",
+        href: "/monitoring/schemes"
       }]
     })}}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <form method="GET" action="/monitoring/view-processed-payment-requests" autocomplete="off" novalidate>
-        <h1 class="govuk-heading-l">Monitoring</h1>
+        <h1 class="govuk-heading-l">Schemes</h1>
           {% if error %}
             <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
               <h2 class="govuk-error-summary__title" id="error-summary-title">
@@ -20,7 +28,9 @@
             </h2>
               <div class="govuk-error-summary__body">
                 <ul class="govuk-list govuk-error-summary__list">
-                  <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ error }}</span>
+                  <li>
+                    <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ error }}</span>
+                  </li>
                 </ul>
               </div>
             </div>

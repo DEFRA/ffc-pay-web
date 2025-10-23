@@ -3,15 +3,15 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
+{% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
+
 {% block content %}
   {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Payment holds",
-      href: "/payment-holds"
-    }]
+    items: [
+      { text: "Home", href: "/" },
+      { text: "Holds", href: "/payment-holds" },
+      { text: "Add", href: "/add-payment-hold" }
+    ]
   })}}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
@@ -20,15 +20,18 @@
         <h1 class="govuk-heading-l">Add payment hold</h1>
 
         {% if errors %}
-          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-            <h2 class="govuk-error-summary__title" id="error-summary-title">
-            There is a problem
-          </h2>
-            <div class="govuk-error-summary__body">
-              <ul class="govuk-list govuk-error-summary__list">
-                {% for errorDetail in errors.details %}
-                  <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
-                {% endfor %}
+          <div class="govuk-error-summary" data-module="govuk-error-summary">
+            <div role="alert">
+              <h2 class="govuk-error-summary__title">
+                There is a problem
+              </h2>
+              <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+                  {% for errorDetail in errors.details %}
+                    <li>
+                      <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
+                    </li>
+                  {% endfor %}
               </ul>
             </div>
           </div>
@@ -44,27 +47,7 @@
           <input class="govuk-input govuk-input--width-10" id="frn" name="frn" type="text" value="{{ frn }}">
         </div>
 
-        {% for scheme in schemes %}
-          <div class="govuk-form-group">
-            <fieldset class="govuk-fieldset">
-              <label class="govuk-label govuk-label-s" for="frn">
-                Select a hold category for {{ scheme }}
-              </label>
-              <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
-              {% for paymentHoldCategory in paymentHoldCategories %}
-                {% if paymentHoldCategory.schemeName === scheme %}
-                  <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="holdCategoryId" name="holdCategoryId" type="radio" value="{{ paymentHoldCategory.holdCategoryId }}">
-                    <label class="govuk-label govuk-radios__label" for="where-do-you-live">
-                      {{ paymentHoldCategory.name | lower | capitalize }}
-                    </label>
-                  </div>
-                {% endif %}
-              {% endfor %}
-              </div>
-            </fieldset>
-          </div>
-        {% endfor %}
+        {{ holdSelectionRadios(holdCategoryRadios) }}
 
         {{ govukButton({
         text: "Create",

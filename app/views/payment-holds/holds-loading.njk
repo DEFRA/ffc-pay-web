@@ -4,18 +4,15 @@
 
 {% block content %}
   {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Payment holds",
-      href: "/payment-holds"
-    },
-    { 
-      text: "Bulk upload", 
-      href: "#", 
-      attributes: { 'aria-disabled': 'true', 'class': 'govuk-breadcrumbs__link--disabled' } 
-    }]
+    items: [
+      { text: "Home", href: "/" },
+      { text: "Holds", href: "/payment-holds" },
+      { text: "Add Bulk Holds", href: "/payment-holds/bulk" }
+      { 
+        text: "Bulk upload", 
+        href: "#", 
+        attributes: { 'aria-disabled': 'true', 'class': 'govuk-breadcrumbs__link--disabled' } 
+      }]
   })}}
 
   {{ renderLoadingPage(
