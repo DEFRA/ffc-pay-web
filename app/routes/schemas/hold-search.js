@@ -3,7 +3,7 @@ const minFRN = 1000000000
 const maxFRN = 9999999999
 
 module.exports = Joi.object({
-  frn: Joi.number()
+  searchTerm: Joi.number()
     .integer()
     .min(minFRN)
     .max(maxFRN)
