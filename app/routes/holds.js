@@ -46,7 +46,7 @@ module.exports = [
           return h
             .view(HOLDS_VIEWS.HOLDS, {
               paymentHolds,
-              ...new ViewModel(searchLabelText, request.payload.frn, error)
+              ...new ViewModel(searchLabelText, request.payload.searchTerm, error)
             })
             .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
