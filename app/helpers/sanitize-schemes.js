@@ -10,8 +10,8 @@ const sanitizeSchemes = (schemes) => {
     FC: 'Forestry Commission',
     SFI23: 'SFI-23',
     Delinked: 'Delinked Payments',
-    'COHT Revenue': 'Higher Tier (Revenue)',
-    'COHT Capital': 'Higher Tier (Capital)'
+    'COHT Revenue': 'Countryside Stewardship Higher Tier (Revenue)',
+    'COHT Capital': 'Countryside Stewardship Higher Tier (Capital)'
   }
 
   return schemes
