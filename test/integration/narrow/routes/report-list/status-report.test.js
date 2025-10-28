@@ -13,6 +13,7 @@ const {
 const {
   statusReportSfi23,
   statusReportsDelinked,
+  applicationAdmin,
   dataView
 } = require('../../../../../app/auth/permissions')
 
@@ -222,7 +223,7 @@ describe('Status Report List Integration Tests', () => {
       { year: 2023, type: 'Delinked' }
     ])
 
-    const res = await injectGetStatus(getAuth(['application:admin']))
+    const res = await injectGetStatus(getAuth([applicationAdmin]))
 
     expect(res.statusCode).toBe(200)
     const $ = cheerio.load(res.payload)
