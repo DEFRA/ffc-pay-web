@@ -1,0 +1,93 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "macros/search-box.njk" import searchBox %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+
+{% block content %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }]
+  })}}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">Alerts</h1>
+
+      <p class="govuk-body">
+        This section allows users to see payment alerts that are in place for each scheme and   
+        manage who is set up to receive each type of alert. If a payment is rejected, alerts are   
+        used to notify people so that the error preventing payment can be resolved. Some   
+        users are alerted for information, but some will be required to resolve the payment   
+        issue.
+      </p>
+      <p class="govuk-body">
+        Find out more about each alert type by visting our <a href="/alerts/information" class="govuk-link">alerts information</a> page, or by clicking on any of the alert type names below.
+      </p>
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Add new alerts recipient",
+          href: "/alerts/update"
+        }) }}
+      </div>
+      {% if schemes.length %}
+        <div class="govuk-accordion" data-module="govuk-accordion" id="scheme-accordion">
+          {% for scheme in schemes %}
+            <div class="govuk-accordion__section">
+              <div class="govuk-accordion__section-header">
+                <h2 class="govuk-accordion__section-heading">
+                  {% set schemeForId = scheme.name | lower | replace(' ', '-') %}
+                  <span class="govuk-accordion__section-button" id="{{ schemeForId }}-default-heading-1">
+                    {{ scheme.name }}
+                  </span>
+                </h2>
+              </div>
+              <div id="{{ schemeForId }}-content-1" class="govuk-accordion__section-content">
+                {% for alert in scheme.alertTypes %}
+                  {% set parts = alert.alertType.split('_') %}
+                  {% set alertForId = alert.alertType | lower | replace(' ', '-') %}
+                  <h3 class="govuk-heading-s">
+                    <a href="/alerts/information#{{ alertForId }}" class="govuk-link">
+                      {% for part in parts %}
+                        {{ part | capitalize }}{% if not loop.last %} {% endif %}
+                      {% endfor %}
+                    </a>
+                  </h3>
+                  {% if alert.users.length %}
+                    <table class="govuk-table">
+                      <thead class="govuk-table__head">
+                        <tr class="govuk-table__row">
+                          <th scope="col" class="govuk-table__header"></th>
+                          <th scope="col" class="govuk-table__header"></th>
+                        </tr>
+                      </thead>
+                      <tbody class="govuk-table__body">
+                        {% for user in alert.users %}
+                            <tr class="govuk-table__row">
+                              <td class="govuk-table__cell">{{ user.emailAddress }}</td>
+                              <td class="govuk-table__cell">
+                                {% if user.canBeEdited %}
+                                  <a href="/alerts/update?contactId={{ user.contactId }}" class="govuk-button-link">Edit user</a>
+                                {% endif %}
+                              </td>
+                            </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  {% else %}
+                    <p id="no-users-text" class="govuk-body">There are no users who receive alerts for this alert type.</p>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p id="no-schemes-text" class="govuk-body">There are no schemes currently supported.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

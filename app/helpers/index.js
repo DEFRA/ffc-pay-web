@@ -12,6 +12,7 @@ const { readableStreamReturn } = require('./readable-stream-return')
 const { renderErrorPage } = require('./render-error-page')
 const { createFormRoute, createDownloadRoute } = require('./report-route-generator')
 const { generateReportHandler } = require('./generate-report-handler')
+const { sanitizeSchemes } = require('./sanitize-schemes')
 
 module.exports = {
   addDetailsToFilename,
@@ -29,5 +30,6 @@ module.exports = {
   renderErrorPage,
   createFormRoute,
   createDownloadRoute,
-  generateReportHandler
+  generateReportHandler,
+  sanitizeSchemes
 }
