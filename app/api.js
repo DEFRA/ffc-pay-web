@@ -46,11 +46,30 @@ const getAlertingData = async (url, token) => {
   return wreck.get(`${config.alertingEndpoint}${url}`, getConfiguration(token))
 }
 
+const getInjectionData = async (url, token) => {
+  return wreck.get(`${config.injectionEndpoint}${url}`, getConfiguration(token))
+}
+
+const getHistoricalInjectionData = async (endpoint, daysBack, token) => {
+  const today = new Date()
+  const fromDate = new Date()
+  fromDate.setDate(today.getDate() - daysBack)
+
+  const from = fromDate.toISOString().split('T')[0]
+  const to = today.toISOString().split('T')[0]
+
+  const endpointUrl = `${endpoint}?from=${from}&to=${to}`
+
+  return getInjectionData(endpointUrl, token)
+}
+
 module.exports = {
   postProcessing,
   postInjection,
   postAlerting,
   getProcessingData,
   getTrackingData,
-  getAlertingData
+  getAlertingData,
+  getInjectionData,
+  getHistoricalInjectionData
 }

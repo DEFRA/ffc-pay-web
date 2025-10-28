@@ -23,14 +23,17 @@ describe('Payment holds', () => {
     await server.stop()
   })
 
-  const mockPaymentHoldCategories = [{
-    holdCategoryId: 123,
-    name: 'my hold category',
-    schemeName: 'schemeName'
-  }]
+  const mockPaymentHoldCategories = [
+    {
+      holdCategoryId: 1,
+      name: 'btn-text',
+      schemeId: 1,
+      schemeName: 'scheme-name'
+    }
+  ]
 
-  const mockGetPaymentHoldCategories = (paymentHoldCategories) => {
-    getProcessingData.mockResolvedValue({ payload: { paymentHoldCategories } })
+  const mockGetPaymentHoldCategories = (categories) => {
+    getProcessingData.mockResolvedValue({ payload: { paymentHoldCategories: categories } })
   }
 
   const expectRequestForPaymentHoldCategories = (timesCalled = 1) => {
@@ -50,7 +53,7 @@ describe('Payment holds', () => {
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
       expect($('h1').text()).toEqual(pageH1)
-      expect($('.govuk-radios__input').length).toEqual(0)
+      expect($('.govuk-radios__label').length).toEqual(0)
     })
 
     test('returns 403 and no addPaymentHold permission', async () => {
@@ -76,18 +79,19 @@ describe('Payment holds', () => {
       expect($('h1').text()).toEqual(pageH1)
       const holdCategories = $('.govuk-radios__input')
       expect(holdCategories.length).toEqual(1)
-      expect(holdCategories.val()).toEqual('123')
+      expect(holdCategories.val()).toEqual('1')
+      expect($('label.govuk-label').text()).toContain('Btn-text')
     })
   })
 
   describe('POST requests', () => {
     const method = 'POST'
 
-    test('redirects successful request to \'/\' and correctly POSTs hold details', async () => {
+    test('redirects successful request to \'/payment-holds\' and correctly POSTs hold details', async () => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories([])
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
 
-      const holdCategoryId = 1
+      const holdCategoryId = 123
       const res = await server.inject({
         method,
         url,
@@ -103,10 +107,10 @@ describe('Payment holds', () => {
     })
 
     test.each([
-      { frn: 10000000001, holdCategoryId: 1, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: 999999998, holdCategoryId: 1, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: 'not-a-number', holdCategoryId: 1, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: undefined, holdCategoryId: 1, expectedErrorMessage: 'Enter a 10-digit FRN' },
+      { frn: 10000000001, holdCategoryId: 123, expectedErrorMessage: 'Enter a 10-digit FRN' },
+      { frn: 999999998, holdCategoryId: 123, expectedErrorMessage: 'Enter a 10-digit FRN' },
+      { frn: 'not-a-number', holdCategoryId: 123, expectedErrorMessage: 'Enter a 10-digit FRN' },
+      { frn: undefined, holdCategoryId: 123, expectedErrorMessage: 'Enter a 10-digit FRN' },
       { frn: 1000000000, holdCategoryId: undefined, expectedErrorMessage: 'Category is required' }
     ])('returns 400 and view with errors when request fails validation - %p', async ({ frn, holdCategoryId, expectedErrorMessage }) => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories([])
@@ -137,12 +141,12 @@ describe('Payment holds', () => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories([])
       const { cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
 
-      const holdCategory = 'hold this'
+      const holdCategoryId = 123
       const res = await server.inject({
         method,
         url,
         auth,
-        payload: { crumb: viewCrumb, frn: validFrn, holdCategory },
+        payload: { crumb: viewCrumb, frn: validFrn, holdCategoryId },
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
 
@@ -156,12 +160,12 @@ describe('Payment holds', () => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories([])
       const { viewCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
 
-      const holdCategory = 'hold this'
+      const holdCategoryId = 123
       const res = await server.inject({
         method,
         url,
         auth,
-        payload: { crumb: viewCrumb, frn: validFrn, holdCategory },
+        payload: { crumb: viewCrumb, frn: validFrn, holdCategoryId },
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
 

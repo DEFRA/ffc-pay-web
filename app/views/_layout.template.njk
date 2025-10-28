@@ -1,6 +1,9 @@
 {% extends "govuk/template.njk" %}
 {% set govukRebrand = true %}
 
+{% from "govuk/components/header/macro.njk" import govukHeader %}
+{% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+
 {% block head %}
   <% htmlWebpackPlugin.files.css.forEach(file => { %>
   <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
@@ -8,13 +11,21 @@
 {% endblock %}
 
 {% block header %}
-  {{ govukHeader({ rebrand: true, homepageUrl: "/", productName: serviceName, serviceUrl: "/" }) }}
-{% endblock %}
+  {{ govukHeader({
+    classes: "govuk-header--full-width-border",
+    homepageUrl: "/", 
+    productName: serviceName, 
+    serviceUrl: "/"
+  }) }}
 
-{% block beforeContent %}
-  {% if auth.isAuthenticated %}
-    <a href="/logout" class="govuk-body govuk-link">Sign out</a>
-  {% endif %}
+  {{ govukServiceNavigation({
+    navigation: [
+      {
+        href: "/logout",
+        text: "Sign Out"
+      }
+    ]
+  }) }}
 {% endblock %}
 
 {% block pageTitle %}

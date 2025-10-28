@@ -16,7 +16,20 @@ const formatDateFromString = (dateToFormat, currentDateFormat = 'DD/MM/YYYY HH:m
   return 'Unknown'
 }
 
+// Parses a date string with optional format and returns 'DD/MM/YYYY - HH:mm'
+const formatDateTimeFromString = (dateToFormat, currentDateFormat = moment.ISO_8601) => {
+  if (!dateToFormat) {
+    return 'Unknown'
+  }
+
+  const parsed = moment(dateToFormat, currentDateFormat, true)
+  return parsed.isValid()
+    ? parsed.format('DD/MM/YYYY - HH:mm')
+    : 'Invalid date'
+}
+
 module.exports = {
   formatDateFromParts,
-  formatDateFromString
+  formatDateFromString,
+  formatDateTimeFromString
 }

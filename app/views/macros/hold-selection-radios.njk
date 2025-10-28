@@ -1,0 +1,16 @@
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{% macro holdSelectionRadios(holdCategorys) %}
+  {% for category in holdCategorys %}
+    {{ govukRadios({
+      classes: "govuk-radios--small",
+      name: "holdCategoryId",
+      fieldset: {
+        legend: {
+          text: "Select a hold category for " + category.scheme.name
+        }
+      },
+      items: category.radios
+    }) }}
+  {% endfor %}
+{% endmacro %}
