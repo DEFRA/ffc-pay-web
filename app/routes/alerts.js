@@ -9,42 +9,53 @@ const userSchema = require('./schemas/user-schema')
 const removeUserSchema = require('./schemas/remove-user-schema')
 const { getAlertingData } = require('../api')
 
+const paths = {
+  alerts: '/alerts',
+  information: '/alerts/information',
+  update: '/alerts/update'
+}
+
+const views = {
+  alerts: 'alerts',
+  information: 'alerts/information',
+  update: 'alerts/update'
+}
+
 module.exports = [
   {
     method: 'GET',
-    path: '/alerts',
+    path: paths.alerts,
     options: {
-      handler: async (request, h) => {
+      handler: async (_request, h) => {
         const schemes = await getContactsByScheme()
-        return h.view('alerts', { schemes })
+        return h.view(views.alerts, { schemes })
       }
     }
   },
   {
     method: 'GET',
-    path: '/alerts/information',
+    path: paths.information,
     options: {
-      handler: async (request, h) => {
+      handler: async (_request, h) => {
         const alertDescriptionsResponse = await getAlertingData('/alert-descriptions')
         const alertDescriptions = alertDescriptionsResponse?.payload?.alertDescriptions ?? []
-        console.log(alertDescriptions)
-        return h.view('alerts/information', { alertDescriptions })
+        return h.view(views.information, { alertDescriptions })
       }
     }
   },
   {
     method: 'GET',
-    path: '/alerts/update',
+    path: paths.update,
     options: {
       handler: async (request, h) => {
         const viewData = await getAlertUpdateViewData(request)
-        return h.view('alerts/update', viewData)
+        return h.view(views.update, viewData)
       }
     }
   },
   {
     method: 'POST',
-    path: '/alerts/update',
+    path: paths.update,
     handler: async (request, h) => {
       const user = request.auth?.credentials.account
       const userNameOrEmail = user?.name || user?.username || user?.email
@@ -59,14 +70,13 @@ module.exports = [
       } catch (error) {
         const viewData = await getAlertUpdateViewData(request)
         return h
-          .view('alerts/update', { ...viewData, error })
+          .view(views.update, { ...viewData, error })
           .code(BAD_REQUEST)
       }
     },
     options: {
       validate: {
         payload: async (value, _options) => {
-          console.log(value)
           if (value.action === 'remove') {
             const { error } = removeUserSchema.validate(value)
             if (error) {
@@ -83,7 +93,7 @@ module.exports = [
         failAction: async (request, h, error) => {
           const viewData = await getAlertUpdateViewData(request)
           return h
-            .view('alerts/update', { ...viewData, error })
+            .view(views.update, { ...viewData, error })
             .code(BAD_REQUEST)
             .takeover()
         }

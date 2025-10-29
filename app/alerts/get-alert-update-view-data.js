@@ -23,14 +23,14 @@ const getAlertUpdateViewData = async (request) => {
 
   const selectedAlerts = {}
 
-  alertTypesPayload.forEach(alertType => {
+  for (const alertType of alertTypesPayload) {
     const schemesForAlert = contactPayload[alertType] || []
     selectedAlerts[alertType] = {}
 
-    schemesForAlert.forEach(schemeId => {
+    for (const schemeId of schemesForAlert) {
       selectedAlerts[alertType][schemeId] = true
-    })
-  })
+    }
+  }
 
   return { schemesPayload: sanitizedSchemesPayload, alertTypesPayload, contactId, emailAddress, selectedAlerts }
 }

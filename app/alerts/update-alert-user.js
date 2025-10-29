@@ -2,12 +2,48 @@ const { postAlerting, getAlertingData } = require('../api')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
 const { getAlertUpdateViewData } = require('./get-alert-update-view-data')
 
+const isEmailTaken = async (emailAddress, contactId) => {
+  const emailCheckEndpoint = `/contact/email/${encodeURIComponent(emailAddress)}`
+  const emailCheckResponse = await getAlertingData(emailCheckEndpoint)
+  const existingContactId = emailCheckResponse?.payload?.contact?.contactId
+  return existingContactId && existingContactId !== Number(contactId)
+}
+
+const buildUpdateData = (payload, contactId, modifiedBy) => {
+  const data = {
+    emailAddress: payload.emailAddress,
+    modifiedBy
+  }
+  if (contactId && contactId !== '') {
+    data.contactId = contactId
+  }
+
+  for (const key of Object.keys(payload)) {
+    if (key === 'contactId' || key === 'emailAddress') {
+      continue
+    }
+
+    const value = payload[key]
+
+    if (typeof value === 'string' || Array.isArray(value)) {
+      const alertTypes = typeof value === 'string' ? [value] : value
+
+      for (const alertType of alertTypes) {
+        if (!data[alertType]) {
+          data[alertType] = []
+        }
+        data[alertType].push(Number(key))
+      }
+    }
+  }
+
+  return data
+}
+
 const updateAlertUser = async (modifiedBy, payload, h) => {
   const { emailAddress, contactId } = payload
-  const emailCheckEndpoint = `/contact/email/${encodeURIComponent(emailAddress)}`
 
-  const emailCheckResponse = await getAlertingData(emailCheckEndpoint)
-  if (emailCheckResponse?.payload?.contact?.contactId && emailCheckResponse?.payload?.contact?.contactId !== Number(contactId)) {
+  if (await isEmailTaken(emailAddress, contactId)) {
     const minimalRequest = {
       query: { contactId },
       auth: { credentials: { account: { name: modifiedBy } } }
@@ -23,39 +59,7 @@ const updateAlertUser = async (modifiedBy, payload, h) => {
       .takeover()
   }
 
-  const data = {
-    emailAddress,
-    modifiedBy
-  }
-
-  if (contactId && contactId !== '') {
-    data.contactId = contactId
-  }
-
-  for (const key of Object.keys(payload)) {
-    if (key === 'contactId' || key === 'emailAddress') {
-      continue
-    }
-
-    const value = payload[key]
-
-    let alertTypes = []
-
-    if (typeof value === 'string') {
-      alertTypes = [value]
-    } else if (Array.isArray(value)) {
-      alertTypes = value
-    } else {
-      continue
-    }
-
-    for (const alertType of alertTypes) {
-      if (!data[alertType]) {
-        data[alertType] = []
-      }
-      data[alertType].push(Number(key))
-    }
-  }
+  const data = buildUpdateData(payload, contactId, modifiedBy)
 
   await postAlerting('/update-contact', data, null)
   return h.redirect('/alerts')
