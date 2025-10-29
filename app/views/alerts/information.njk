@@ -1,0 +1,42 @@
+{% extends '_layout.njk' %}
+
+{% set mainClasses = "govuk-main-wrapper--l" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block content %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Manage alerts",
+      href: "/alerts"
+    }]
+  })}}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Alerts information</h1>
+      <p class="govuk-body">
+        This page details the various alert types utilised by Payment Hub, as well as guidance on the expected outcomes from each alert type.
+      </p>
+      {% if alertDescriptions.length %}
+        {% for alert in alertDescriptions %}
+          {% set alertForId = alert.type | lower | replace(' ', '-') %}
+          {% set parts = alert.type.split('_') %}
+          <h2 id={{ alertForId }} class="govuk-heading-m">
+            {% for part in parts %}
+              {{ part | capitalize }}{% if not loop.last %} {% endif %}
+            {% endfor %}
+          </h2>
+          {% for line in alert.description %}
+            <p class="govuk-body">
+              {{ line }}
+            </p>
+          {% endfor %}
+        {% endfor %}
+      {% else %}
+        <p id="no-alerts-text" class="govuk-body">There are no alerts offered by the Payment Hub, or there was a temporary issue in loading alert types.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

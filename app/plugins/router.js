@@ -24,7 +24,8 @@ const routes = [].concat(
   require('../routes/report-list/claim-level-report'),
   require('../routes/report-list/transaction-summary-report'),
   require('../routes/report-list/status-report'),
-  require('../routes/manual-payments')
+  require('../routes/manual-payments'),
+  require('../routes/alerts')
 )
 
 module.exports = {

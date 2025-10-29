@@ -1,4 +1,4 @@
-const { paymentsEndpoint, injectionEndpoint, trackingEndpoint } = require('../../app/config')
+const { paymentsEndpoint, injectionEndpoint, trackingEndpoint, alertingEndpoint } = require('../../app/config')
 const api = require('../../app/api')
 const wreck = require('@hapi/wreck')
 
@@ -64,8 +64,30 @@ describe('API', () => {
     expect(response).toEqual({ statusCode: 200, payload: wreckResponseMock.payload })
   })
 
-  test('getTrackingData makes request with auth header and returns response', async () => {
-    const token = 'token'
+  test.each([
+    { token: 'token', expectedAuthVal: 'token' },
+    { token: null, expectedAuthVal: '' },
+    { token: undefined, expectedAuthVal: '' }
+  ])('postAlerting makes request with auth header and returns { statusCode, payload }', async ({ token, expectedAuthVal }) => {
+    const wreckResponseMock = { res: { statusCode: 201 }, payload: { alert: 'sent' } }
+    wreck.post.mockResolvedValueOnce(wreckResponseMock)
+    const data = { alertType: 'email', message: 'Hello' }
+
+    const response = await api.postAlerting('alert-url', data, token)
+
+    expect(wreck.post).toHaveBeenCalledWith(`${alertingEndpoint}alert-url`, {
+      payload: data,
+      headers: { Authorization: expectedAuthVal },
+      json: true
+    })
+    expect(response).toEqual({ statusCode: 201, payload: wreckResponseMock.payload })
+  })
+
+  test.each([
+    { token: 'token', expectedAuthVal: 'token' },
+    { token: null, expectedAuthVal: '' },
+    { token: undefined, expectedAuthVal: '' }
+  ])('getTrackingData makes request with auth header and returns response', async ({ token, expectedAuthVal }) => {
     const url = 'tracking-url'
     const responseMock = { payload: 'tracking data' }
     wreck.get.mockResolvedValueOnce(responseMock)
@@ -73,7 +95,25 @@ describe('API', () => {
     const response = await api.getTrackingData(url, token)
 
     expect(wreck.get).toHaveBeenCalledWith(`${trackingEndpoint}${url}`, {
-      headers: { Authorization: token },
+      headers: { Authorization: expectedAuthVal },
+      json: true
+    })
+    expect(response).toEqual(responseMock)
+  })
+
+  test.each([
+    { token: 'token', expectedAuthVal: 'token' },
+    { token: null, expectedAuthVal: '' },
+    { token: undefined, expectedAuthVal: '' }
+  ])('getAlertingData makes request with auth header and returns response', async ({ token, expectedAuthVal }) => {
+    const url = 'alerting-url'
+    const responseMock = { payload: 'alert data' }
+    wreck.get.mockResolvedValueOnce(responseMock)
+
+    const response = await api.getAlertingData(url, token)
+
+    expect(wreck.get).toHaveBeenCalledWith(`${alertingEndpoint}${url}`, {
+      headers: { Authorization: expectedAuthVal },
       json: true
     })
     expect(response).toEqual(responseMock)
@@ -81,6 +121,10 @@ describe('API', () => {
 })
 
 describe('getInjectionData', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   test.each([
     { token: 'token', expectedAuthVal: 'token' },
     { token: null, expectedAuthVal: '' },
@@ -111,7 +155,6 @@ describe('getHistoricalInjectionData', () => {
   })
 
   test('constructs endpoint with correct date range and delegates to getInjectionData', async () => {
-    // Mock wreck.get directly (since getInjectionData calls it)
     wreck.get.mockResolvedValueOnce('mock-response')
 
     const token = 'test-token'
@@ -124,7 +167,25 @@ describe('getHistoricalInjectionData', () => {
 
     const response = await api.getHistoricalInjectionData(endpoint, daysBack, token)
 
-    // verify wreck.get was called through getInjectionData
+    expect(wreck.get).toHaveBeenCalledWith(`${injectionEndpoint}${expectedUrl}`, {
+      headers: { Authorization: token },
+      json: true
+    })
+    expect(response).toBe('mock-response')
+  })
+
+  test('works correctly with daysBack = 0 (from and to are the same)', async () => {
+    wreck.get.mockResolvedValueOnce('mock-response')
+
+    const token = 'token'
+    const endpoint = '/endpoint'
+    const daysBack = 0
+
+    const today = '2025-10-16'
+    const expectedUrl = `${endpoint}?from=${today}&to=${today}`
+
+    const response = await api.getHistoricalInjectionData(endpoint, daysBack, token)
+
     expect(wreck.get).toHaveBeenCalledWith(`${injectionEndpoint}${expectedUrl}`, {
       headers: { Authorization: token },
       json: true

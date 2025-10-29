@@ -60,18 +60,18 @@
 
       <!-- Row 2: Schemes + Monitoring -->
       <div class="govuk-cards govuk-cards--2">
-        {% if auth.isApplicationAdmin or auth.isSchemeAdminUser %}
+        {% if auth.isApplicationAdmin or auth.isAlertAdminUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Schemes</h2>
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Alerts recipients</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
-              {{ totalSchemes }}
+              {{ totalAlertUsers }}
+            </p>
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              Make updates to Payment Hub alert recipients
             </p>
             <ul class="govuk-list">
               <li>
-                <a href="/payment-schemes" class="govuk-link">Manage schemes</a>
-              </li>
-              <li>
-                <a href="/payment-request/reset" class="govuk-link">Reset payment request</a>
+                <a href="/alerts" class="govuk-link">View all alert recipients</a>
               </li>
             </ul>
           </div>
@@ -130,6 +130,24 @@
             <p class="govuk-body govuk-!-margin-bottom-8">
               <a href="/manual-payments" class="govuk-link">Upload manual payment</a>
             </p>
+          </div>
+        {% endif %}
+      </div>
+      <div class="govuk-cards govuk-cards--1">
+        {% if auth.isApplicationAdmin or auth.isSchemeAdminUser %}
+          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Schemes</h2>
+            <p class="govuk-heading-l govuk-!-margin-bottom-5">
+              {{ totalSchemes }}
+            </p>
+            <ul class="govuk-list">
+              <li>
+                <a href="/payment-schemes" class="govuk-link">Manage schemes</a>
+              </li>
+              <li>
+                <a href="/payment-request/reset" class="govuk-link">Reset payment request</a>
+              </li>
+            </ul>
           </div>
         {% endif %}
       </div>

@@ -11,15 +11,18 @@ data:
   PAYMENTS_SERVICE_ENDPOINT: {{ .Values.container.paymentsEndpoint }}-{{ .Values.environmentCode }}
   TRACKING_SERVICE_ENDPOINT: {{ .Values.container.trackingEndpoint }}-{{ .Values.environmentCode }}
   INJECTION_SERVICE_ENDPOINT: {{ .Values.container.injectionEndpoint }}-{{ .Values.environmentCode }}
+  ALERTING_SERVICE_ENDPOINT: {{ .Values.container.alertingEndpoint }}-{{ .Values.environmentCode }}
     {{ else }}
   PAYMENTS_SERVICE_ENDPOINT: {{ quote .Values.container.paymentsEndpoint }}
   TRACKING_SERVICE_ENDPOINT: {{ quote .Values.container.trackingEndpoint }}
   INJECTION_SERVICE_ENDPOINT: {{ quote .Values.container.injectionEndpoint }}
+  ALERTING_SERVICE_ENDPOINT: {{ quote .Values.container.alertingEndpoint }}
     {{- end }}
   {{ else }}
   PAYMENTS_SERVICE_ENDPOINT: {{ quote .Values.container.paymentsEndpoint }}
   TRACKING_SERVICE_ENDPOINT: {{ quote .Values.container.trackingEndpoint }}
   INJECTION_SERVICE_ENDPOINT: {{ quote .Values.container.injectionEndpoint }}
+  ALERTING_SERVICE_ENDPOINT: {{ quote .Values.container.alertingEndpoint }}
   {{- end }}
   {{- if .Values.pr }}
   REDIRECT_URL: https://{{ .Values.ingress.endpoint }}-{{ .Values.pr }}.{{ .Values.ingress.server }}/{{ .Values.azureAppRegistration.redirectUrl }}
@@ -43,5 +46,8 @@ data:
   {{ else }}
   DATA_TOPIC_ADDRESS: {{ quote .Values.container.dataTopicAddress }}
   DATARESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.dataResponseQueueAddress }}
+  {{- end }}
+  {{- if .Values.container.devTeamEmails }}
+  DEV_TEAM_EMAILS: {{ quote .Values.container.devTeamEmails }}
   {{- end }}
 {{- end -}}

@@ -13,6 +13,7 @@ services:
       PAYMENTS_SERVICE_ENDPOINT: http://ffc-pay-processing:3008
       TRACKING_SERVICE_ENDPOINT: http://ffc-pay-tracking:3002
       INJECTION_SERVICE_ENDPOINT: http://ffc-pay-injection:3014
+      ALERTING_SERVICE_ENDPOINT: http://ffc-pay-alerting:3025
       AZUREID_CLIENT_SECRET: ${AZUREID_CLIENT_SECRET}
       AZUREID_CLIENT_ID: ${AZUREID_CLIENT_ID}
       AZUREID_TENANT_ID: ${AZUREID_TENANT_ID}
@@ -31,6 +32,7 @@ services:
       MANUAL_PAYMENTS_ACTIVE: ${MANUAL_PAYMENTS_ACTIVE:-true}
       REDIS_HOSTNAME: ffc-pay-web-redis
       REDIS_PASSWORD: redis
+      DEV_TEAM_EMAILS: ${DEV_TEAM_EMAILS}
     networks:
       - default
       - docs
