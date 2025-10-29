@@ -226,7 +226,7 @@ describe('Payment holds', () => {
     }
 
     const validForm = {
-      searchTerm: 1234567890
+      frn: 1234567890
     }
 
     test.each([
@@ -278,7 +278,7 @@ describe('Payment holds', () => {
       expect($('h1').text()).toEqual(pageH1)
       const holds = $('.govuk-table__body tr')
       expect(holds.length).toBe(1)
-      expect(holds.find('td').eq(0).text()).toEqual(validForm.searchTerm.toString())
+      expect(holds.find('td').eq(0).text()).toEqual(validForm.frn.toString())
     })
   })
 
