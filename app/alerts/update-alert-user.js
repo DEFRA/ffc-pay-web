@@ -9,32 +9,41 @@ const isEmailTaken = async (emailAddress, contactId) => {
   return existingContactId && existingContactId !== Number(contactId)
 }
 
+const addAlertTypeToData = (data, alertType, keyNumber) => {
+  if (!data[alertType]) {
+    data[alertType] = []
+  }
+  data[alertType].push(keyNumber)
+}
+
+const processPayloadEntry = (data, key, value) => {
+  if (key === 'contactId' || key === 'emailAddress') {
+    return
+  }
+
+  if (typeof value !== 'string' && !Array.isArray(value)) {
+    return
+  }
+
+  const alertTypes = typeof value === 'string' ? [value] : value
+
+  for (const alertType of alertTypes) {
+    addAlertTypeToData(data, alertType, Number(key))
+  }
+}
+
 const buildUpdateData = (payload, contactId, modifiedBy) => {
   const data = {
     emailAddress: payload.emailAddress,
     modifiedBy
   }
+
   if (contactId && contactId !== '') {
     data.contactId = contactId
   }
 
-  for (const key of Object.keys(payload)) {
-    if (key === 'contactId' || key === 'emailAddress') {
-      continue
-    }
-
-    const value = payload[key]
-
-    if (typeof value === 'string' || Array.isArray(value)) {
-      const alertTypes = typeof value === 'string' ? [value] : value
-
-      for (const alertType of alertTypes) {
-        if (!data[alertType]) {
-          data[alertType] = []
-        }
-        data[alertType].push(Number(key))
-      }
-    }
+  for (const [key, value] of Object.entries(payload)) {
+    processPayloadEntry(data, key, value)
   }
 
   return data
