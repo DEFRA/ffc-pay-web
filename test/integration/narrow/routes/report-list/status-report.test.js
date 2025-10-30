@@ -13,7 +13,8 @@ const {
 const {
   statusReportSfi23,
   statusReportsDelinked,
-  dataView
+  dataView,
+  applicationAdmin
 } = require('../../../../../app/auth/permissions')
 
 const createServer = require('../../../../../app/server')
@@ -214,5 +215,28 @@ describe('Status Report List Integration Tests', () => {
       expect(res.headers['content-disposition']).toContain('attachment; filename="test-file.csv"')
       expect(res.payload).toBe('csv content')
     })
+  })
+
+  test('grants all report scopes when user has applicationAdmin scope', async () => {
+    getValidReportYearsByType.mockResolvedValue([
+      { year: 2023, type: 'SFI-23' },
+      { year: 2023, type: 'Delinked' }
+    ])
+
+    const res = await injectGetStatus(getAuth([applicationAdmin]))
+
+    expect(res.statusCode).toBe(200)
+    const $ = cheerio.load(res.payload)
+
+    expect(extractReportTypes($)).toEqual([
+      { value: 'sustainable-farming-incentive', text: 'SFI-23' },
+      { value: 'delinked-payment-statement', text: 'Delinked' }
+    ])
+
+    const yearOptions = extractYearOptions($)
+    expect(yearOptions).toEqual([
+      { value: '2023', type: 'SFI-23' },
+      { value: '2023', type: 'Delinked' }
+    ])
   })
 })

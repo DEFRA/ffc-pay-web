@@ -36,6 +36,10 @@ module.exports = [
           const yearTypeItems = await getValidReportYearsByType()
           const userScopes = request.auth.credentials.scope || []
 
+          if (userScopes.includes(applicationAdmin)) {
+            userScopes.push(statusReportSfi23, statusReportsDelinked)
+          }
+
           const reportTypeItems = Object.entries(reportTypes)
             .filter(([_, { scope }]) => userScopes.includes(scope))
             .map(([value, { display }]) => ({

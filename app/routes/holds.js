@@ -46,14 +46,14 @@ module.exports = [
           return h
             .view(HOLDS_VIEWS.HOLDS, {
               paymentHolds,
-              ...new ViewModel(searchLabelText, request.payload.searchTerm, error)
+              ...new ViewModel(searchLabelText, request.payload.frn, error)
             })
             .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
         }
       },
       handler: async (request, h) => {
-        const frn = request.payload.searchTerm
+        const frn = request.payload.frn
         const paymentHolds = await getHolds(undefined, undefined, false)
         const filteredPaymentHolds = paymentHolds.filter(
           x => x.frn === String(frn)
