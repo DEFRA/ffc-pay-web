@@ -1,6 +1,27 @@
 const Joi = require('joi')
 
-const filenameRegex = /^FFC_Manual_Batch_.*\.csv$/i
+/*
+  Filename rules:
+  - Must start: FFC_Manual_Batch_
+  - Optional scheme: one or more letters/digits followed by underscore (e.g. SFI_ or SFI23_)
+  - Timestamp: either YYYYMMDDHHmm (12 digits) or YYYYMMDDHHmmss (14 digits)
+    - Year limited to 2000-2099 and month/day/hour/minute/second validated to reasonable ranges
+  - Must end with .csv (case-insensitive)
+*/
+const prefix = 'FFC_Manual_Batch_'
+const schemePart = '(?:[A-Z0-9]+_)?'
+const year = '20\\d{2}'
+const month = '(?:0[1-9]|1[0-2])'
+const day = '(?:0[1-9]|[12]\\d|3[01])'
+const hour = '(?:[01]\\d|2[0-3])'
+const minute = '[0-5]\\d'
+const second = '[0-5]\\d'
+
+const timestamp12 = `${year}${month}${day}${hour}${minute}`
+const timestamp14 = `${year}${month}${day}${hour}${minute}${second}`
+const timestamp = `(?:${timestamp14}|${timestamp12})`
+
+const filenameRegex = new RegExp(`^${prefix}${schemePart}${timestamp}\\.csv$`, 'i')
 
 const manualPaymentFileSchema = Joi.object({
   file: Joi.object({
@@ -25,7 +46,7 @@ const manualPaymentFileSchema = Joi.object({
     } else if (key === 'filename') {
       filenameError = err
       err.message =
-        'Invalid filename - We were unable to upload your manual payment file. Your filename does not follow the required naming convention. Filename must match the agreed format, e.g. FFC_Manual_Batch_SFI23_20250626091445.csv'
+        'Invalid filename - We were unable to upload your manual payment file. Filenames must start with "FFC_Manual_Batch_". Optionally include a scheme (e.g. "SFI_" or "SFI23_"), then a timestamp in one of these formats: YYYYMMDDHHmm or YYYYMMDDHHmmss. The filename must end with ".csv". Examples: FFC_Manual_Batch_SFI23_202510231609.csv, FFC_Manual_Batch_202510231609.csv.'
     } else {
       err.message = 'Unknown error - We were unable to upload your manual payment file. This could be a temporary issue. Please try again later and if the problem persists, contact the Payment & Document Services Team.'
     }
