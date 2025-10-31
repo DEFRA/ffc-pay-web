@@ -10,18 +10,20 @@ const Joi = require('joi')
 */
 const prefix = 'FFC_Manual_Batch_'
 const schemePart = '(?:[A-Z0-9]+_)?'
-const year = '20\\d{2}'
-const month = '(?:0[1-9]|1[0-2])'
-const day = '(?:0[1-9]|[12]\\d|3[01])'
-const hour = '(?:[01]\\d|2[0-3])'
-const minute = '[0-5]\\d'
-const second = '[0-5]\\d'
 
-const timestamp12 = `${year}${month}${day}${hour}${minute}`
-const timestamp14 = `${year}${month}${day}${hour}${minute}${second}`
-const timestamp = `(?:${timestamp14}|${timestamp12})`
+// Use String.raw to avoid double-escaping backslashes in regex fragments
+const year = String.raw`20\d{2}`
+const month = String.raw`(?:0[1-9]|1[0-2])`
+const day = String.raw`(?:0[1-9]|[12]\d|3[01])`
+const hour = String.raw`(?:[01]\d|2[0-3])`
+const minute = String.raw`[0-5]\d`
+const second = String.raw`[0-5]\d`
 
-const filenameRegex = new RegExp(`^${prefix}${schemePart}${timestamp}\\.csv$`, 'i')
+const timestamp12 = String.raw`${year}${month}${day}${hour}${minute}`
+const timestamp14 = String.raw`${year}${month}${day}${hour}${minute}${second}`
+const timestamp = String.raw`(?:${timestamp14}|${timestamp12})`
+
+const filenameRegex = new RegExp(String.raw`^${prefix}${schemePart}${timestamp}\.csv$`, 'i')
 
 const manualPaymentFileSchema = Joi.object({
   file: Joi.object({
