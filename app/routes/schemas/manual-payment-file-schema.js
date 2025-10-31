@@ -10,8 +10,6 @@ const Joi = require('joi')
 */
 const prefix = 'FFC_Manual_Batch_'
 const schemePart = '(?:[A-Z0-9]+_)?'
-
-// Use String.raw to avoid double-escaping backslashes in regex fragments
 const year = String.raw`20\d{2}`
 const month = String.raw`(?:0[1-9]|1[0-2])`
 const day = String.raw`(?:0[1-9]|[12]\d|3[01])`
