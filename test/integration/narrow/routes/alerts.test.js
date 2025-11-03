@@ -16,9 +16,12 @@ jest.mock('../../../../app/routes/schemas/remove-user-schema', () => ({
 
 const {
   getContactsByScheme,
-  getAlertUpdateViewData
+  getAlertUpdateViewData,
+  updateAlertUser,
+  removeAlertUser
 } = require('../../../../app/alerts')
 const { getAlertingData } = require('../../../../app/api')
+const { BAD_REQUEST } = require('../../../../app/constants/http-status-codes')
 
 let createServer
 let server
@@ -105,5 +108,93 @@ describe('Alerts test', () => {
     expect(response.statusCode).toBe(200)
     expect(getAlertUpdateViewData).toHaveBeenCalled()
     expect(response.payload).toContain('data')
+  })
+})
+
+describe('Alerts POST /alerts/update route tests', () => {
+  const auth = {
+    strategy: 'session-auth',
+    credentials: {
+      scope: [],
+      account: {
+        name: 'TestUser'
+      }
+    }
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('POST /alerts/update with action "remove" calls removeAlertUser and returns result', async () => {
+    const payload = { action: 'remove', contactId: '123' }
+    const h = {
+      view: jest.fn(),
+      code: jest.fn(() => h)
+    }
+    const request = {
+      auth,
+      payload
+    }
+    removeAlertUser.mockResolvedValue('remove-success')
+
+    const handler = require('../../../../app/routes/alerts').find(
+      route => route.method === 'POST' && route.path === '/alerts/update'
+    ).handler
+
+    const result = await handler(request, h)
+
+    expect(removeAlertUser).toHaveBeenCalledWith('TestUser', '123', h)
+    expect(result).toBe('remove-success')
+  })
+
+  test('POST /alerts/update with non-remove action calls updateAlertUser and returns result', async () => {
+    const payload = { action: 'update', foo: 'bar' }
+    const h = {
+      view: jest.fn(),
+      code: jest.fn(() => h)
+    }
+    const request = {
+      auth,
+      payload
+    }
+    updateAlertUser.mockResolvedValue('update-success')
+
+    const handler = require('../../../../app/routes/alerts').find(
+      route => route.method === 'POST' && route.path === '/alerts/update'
+    ).handler
+
+    const result = await handler(request, h)
+
+    expect(updateAlertUser).toHaveBeenCalledWith('TestUser', payload, h)
+    expect(result).toBe('update-success')
+  })
+
+  test('POST /alerts/update handler catches errors and renders error view with BAD_REQUEST', async () => {
+    const payload = { action: 'update', foo: 'bar' }
+    const request = {
+      auth,
+      payload
+    }
+    const error = new Error('Something went wrong')
+    updateAlertUser.mockRejectedValue(error)
+    getAlertUpdateViewData.mockResolvedValue({ some: 'viewdata' })
+
+    const h = {
+      view: jest.fn(() => h),
+      code: jest.fn(() => h)
+    }
+
+    const handler = require('../../../../app/routes/alerts').find(
+      route => route.method === 'POST' && route.path === '/alerts/update'
+    ).handler
+
+    const result = await handler(request, h)
+
+    expect(updateAlertUser).toHaveBeenCalled()
+    expect(getAlertUpdateViewData).toHaveBeenCalledWith(request)
+    expect(h.view).toHaveBeenCalledWith('alerts/update', { some: 'viewdata', error })
+    expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
+    expect(result).toBe(h)
   })
 })
