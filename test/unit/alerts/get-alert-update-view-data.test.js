@@ -223,6 +223,52 @@ describe('getAlertUpdateViewData', () => {
     })
   })
 
+  test('should fallback to empty contactPayload if contact property is missing in payload', async () => {
+    const mockSanitizedSchemes = []
+    const mockAlertTypesPayload = ['alert1']
+    const mockContactId = 'contact-missing-contact'
+    const encodedContactId = encodeURIComponent(mockContactId)
+    const mockRequest = {
+      auth: {
+        credentials: {
+          account: {
+            name: 'Bob'
+          }
+        }
+      },
+      query: {
+        contactId: mockContactId
+      }
+    }
+
+    getAlertTypesAndSchemes.mockResolvedValue({
+      sanitizedSchemesPayload: mockSanitizedSchemes,
+      alertTypesPayload: mockAlertTypesPayload
+    })
+
+    getAlertingData.mockResolvedValue({
+      payload: {
+      }
+    })
+
+    const result = await getAlertUpdateViewData(mockRequest)
+
+    expect(getAlertingData).toHaveBeenCalledWith(`/contact/contactId/${encodedContactId}`)
+    expect(console.log).toHaveBeenCalledWith(
+      'User Bob has accessed the amend alert recipient page for undefined'
+    )
+
+    expect(result).toEqual({
+      schemesPayload: mockSanitizedSchemes,
+      alertTypesPayload: mockAlertTypesPayload,
+      contactId: mockContactId,
+      emailAddress: undefined,
+      selectedAlerts: {
+        alert1: {}
+      }
+    })
+  })
+
   test('should propagate errors from getAlertTypesAndSchemes', async () => {
     const error = new Error('error in getAlertTypesAndSchemes')
     getAlertTypesAndSchemes.mockRejectedValue(error)
