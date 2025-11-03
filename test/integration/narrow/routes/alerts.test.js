@@ -1,5 +1,3 @@
-const { BAD_REQUEST } = require('../../../../app/constants/http-status-codes')
-
 jest.mock('../../../../app/alerts', () => ({
   getContactsByScheme: jest.fn(),
   getAlertUpdateViewData: jest.fn(),
@@ -18,13 +16,9 @@ jest.mock('../../../../app/routes/schemas/remove-user-schema', () => ({
 
 const {
   getContactsByScheme,
-  getAlertUpdateViewData,
-  updateAlertUser,
-  removeAlertUser
+  getAlertUpdateViewData
 } = require('../../../../app/alerts')
 const { getAlertingData } = require('../../../../app/api')
-const userSchema = require('../../../../app/routes/schemas/user-schema')
-const removeUserSchema = require('../../../../app/routes/schemas/remove-user-schema')
 
 let createServer
 let server
