@@ -18,14 +18,16 @@
     serviceUrl: "/"
   }) }}
 
-  {{ govukServiceNavigation({
-    navigation: [
-      {
-        href: "/logout",
-        text: "Sign Out"
-      }
-    ]
-  }) }}
+ {% if auth.isAuthenticated %}
+    {{ govukServiceNavigation({
+      navigation: [
+        {
+          href: "/logout",
+          text: "Sign Out"
+        }
+      ]
+    }) }}
+  {% endif %}
 {% endblock %}
 
 {% block pageTitle %}
