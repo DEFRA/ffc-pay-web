@@ -22,7 +22,11 @@
       {% if alertDescriptions.length %}
         {% for alert in alertDescriptions %}
           {% set alertForId = alert.type | lower | replace(' ', '-') %}
-          {% set parts = alert.type.split('_') %}
+          {% if alert.type %}
+            {% set parts = alert.type.split('_') %}
+          {% else %}
+            {% set parts = [] %}
+          {% endif %}
           <h2 id={{ alertForId }} class="govuk-heading-m">
             {% for part in parts %}
               {{ part | capitalize }}{% if not loop.last %} {% endif %}
