@@ -111,6 +111,103 @@ describe('Alerts test', () => {
   })
 })
 
+describe('Alerts GET /alerts/confirm-delete route tests', () => {
+  const auth = {
+    strategy: 'session-auth',
+    credentials: {
+      scope: [],
+      account: {
+        name: 'TestUser'
+      }
+    }
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('GET /alerts/confirm-delete with valid contactId and emailAddress renders confirm view', async () => {
+    const contactId = 123
+    const emailAddress = 'test@example.com'
+    getAlertingData.mockResolvedValue({
+      payload: {
+        contact: { emailAddress }
+      }
+    })
+
+    const options = {
+      method: 'GET',
+      url: `/alerts/confirm-delete?contactId=${contactId}`,
+      auth
+    }
+
+    const response = await server.inject(options)
+
+    expect(getAlertingData).toHaveBeenCalledWith(`/contact/contactId/${encodeURIComponent(contactId)}`)
+    expect(response.statusCode).toBe(200)
+    expect(response.payload).toContain(emailAddress)
+    expect(response.payload).toContain(contactId.toString())
+  })
+
+  test('GET /alerts/confirm-delete with valid contactId but no emailAddress renders alerts view', async () => {
+    const contactId = 456
+    getAlertingData.mockResolvedValue({
+      payload: {
+        contact: {}
+      }
+    })
+    const fakeSchemes = [{ id: 1, name: 'Email' }]
+    getContactsByScheme.mockResolvedValue(fakeSchemes)
+
+    const options = {
+      method: 'GET',
+      url: `/alerts/confirm-delete?contactId=${contactId}`,
+      auth
+    }
+
+    const response = await server.inject(options)
+
+    expect(getAlertingData).toHaveBeenCalledWith(`/contact/contactId/${encodeURIComponent(contactId)}`)
+    expect(getContactsByScheme).toHaveBeenCalled()
+    expect(response.statusCode).toBe(200)
+    expect(response.payload).toContain('Email')
+  })
+
+  test('GET /alerts/confirm-delete with invalid contactId triggers validation failAction and renders alerts view', async () => {
+    const fakeSchemes = [{ id: 1, name: 'Email' }]
+    getContactsByScheme.mockResolvedValue(fakeSchemes)
+
+    const options = {
+      method: 'GET',
+      url: '/alerts/confirm-delete?contactId=invalid',
+      auth
+    }
+
+    const response = await server.inject(options)
+
+    expect(getContactsByScheme).toHaveBeenCalled()
+    expect(response.statusCode).toBe(200)
+    expect(response.payload).toContain('Email')
+  })
+
+  test('GET /alerts/confirm-delete without contactId triggers validation failAction and renders alerts view', async () => {
+    const fakeSchemes = [{ id: 1, name: 'Email' }]
+    getContactsByScheme.mockResolvedValue(fakeSchemes)
+
+    const options = {
+      method: 'GET',
+      url: '/alerts/confirm-delete',
+      auth
+    }
+
+    const response = await server.inject(options)
+
+    expect(getContactsByScheme).toHaveBeenCalled()
+    expect(response.statusCode).toBe(200)
+    expect(response.payload).toContain('Email')
+  })
+})
+
 describe('Alerts POST /alerts/update route tests', () => {
   const auth = {
     strategy: 'session-auth',

@@ -78,9 +78,9 @@ module.exports = [
             'any.required': 'A user must be specified to remove'
           })
         }),
-        failAction: async (request, h, error) => {
+        failAction: async (_request, h) => {
           const schemes = await getContactsByScheme()
-          return h.view(views.alerts, { schemes })
+          return h.view(views.alerts, { schemes }).takeover()
         }
       }
     }

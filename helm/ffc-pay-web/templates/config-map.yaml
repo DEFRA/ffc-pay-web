@@ -55,5 +55,5 @@ data:
   {{- end }}
   {{- if .Values.container.approvedEmailDomains }}
   APPROVED_EMAIL_DOMAINS: {{ quote .Values.container.approvedEmailDomains }}
-  {{- end}}
+  {{- end }}
 {{- end -}}

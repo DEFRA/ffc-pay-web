@@ -1,19 +1,11 @@
 {% extends '_layout.njk' %}
 
 {% set mainClasses = "govuk-main-wrapper--l" %}
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'macros/alert-breadcrumbs.njk' import alertBreadcrumbs %}
 
 {% block content %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Manage alerts",
-      href: "/alerts"
-    }]
-  })}}
+  {{ alertBreadcrumbs() }}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <form method="POST" action="/alerts/update" autocomplete="off" novalidate>
