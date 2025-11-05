@@ -21,7 +21,8 @@ const schema = Joi.object({
   legacyReportsActive: Joi.boolean().default(true),
   manualPaymentsActive: Joi.boolean().default(true),
   devTeamEmails: Joi.string().default(''),
-  pdsTeamEmails: Joi.string().default('')
+  pdsTeamEmails: Joi.string().default(''),
+  approvedEmailDomains: Joi.string().default('')
 })
 
 // Build config
@@ -38,7 +39,8 @@ const config = {
   legacyReportsActive: process.env.LEGACY_REPORTS_ACTIVE,
   manualPaymentsActive: process.env.MANUAL_PAYMENTS_ACTIVE,
   devTeamEmails: process.env.DEV_TEAM_EMAILS,
-  pdsTeamEmails: process.env.PDS_TEAM_EMAILS
+  pdsTeamEmails: process.env.PDS_TEAM_EMAILS,
+  approvedEmailDomains: process.env.APPROVED_EMAIL_DOMAINS
 }
 
 // Validate config

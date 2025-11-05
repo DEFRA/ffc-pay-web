@@ -8,17 +8,20 @@ const { BAD_REQUEST } = require('../constants/http-status-codes')
 const userSchema = require('./schemas/user-schema')
 const removeUserSchema = require('./schemas/remove-user-schema')
 const { getAlertingData } = require('../api')
+const Joi = require('joi')
 
 const paths = {
   alerts: '/alerts',
   information: '/alerts/information',
-  update: '/alerts/update'
+  update: '/alerts/update',
+  confirm: '/alerts/confirm-delete'
 }
 
 const views = {
   alerts: 'alerts',
   information: 'alerts/information',
-  update: 'alerts/update'
+  update: 'alerts/update',
+  confirm: 'alerts/confirm-delete'
 }
 
 module.exports = [
@@ -50,6 +53,35 @@ module.exports = [
       handler: async (request, h) => {
         const viewData = await getAlertUpdateViewData(request)
         return h.view(views.update, viewData)
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: paths.confirm,
+    options: {
+      handler: async (request, h) => {
+        const { contactId } = request.query
+        const contact = await getAlertingData(`/contact/contactId/${encodeURIComponent(contactId)}`)
+        const contactPayload = contact?.payload?.contact ?? {}
+        const { emailAddress } = contactPayload
+        if (!emailAddress) {
+          const schemes = await getContactsByScheme()
+          return h.view(views.alerts, { schemes })
+        }
+        return h.view(views.confirm, { contactId: request.query.contactId, emailAddress })
+      },
+      validate: {
+        query: Joi.object({
+          contactId: Joi.number().integer().required().messages({
+            'number.base': 'A user must be specified to remove',
+            'any.required': 'A user must be specified to remove'
+          })
+        }),
+        failAction: async (request, h, error) => {
+          const schemes = await getContactsByScheme()
+          return h.view(views.alerts, { schemes })
+        }
       }
     }
   },

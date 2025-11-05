@@ -61,6 +61,8 @@ container:
   redisPort: 6379
   redisPassword: redis
   devTeamEmails:
+  pdsTeamEmails:
+  approvedEmailDomains:
 
 ingress:
   class: nginx

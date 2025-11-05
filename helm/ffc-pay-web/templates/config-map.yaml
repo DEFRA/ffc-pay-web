@@ -50,4 +50,10 @@ data:
   {{- if .Values.container.devTeamEmails }}
   DEV_TEAM_EMAILS: {{ quote .Values.container.devTeamEmails }}
   {{- end }}
+  {{- if .Values.container.pdsTeamEmails }}
+  PDS_TEAM_EMAILS: {{ quote .Values.container.pdsTeamEmails }}
+  {{- end }}
+  {{- if .Values.container.approvedEmailDomains }}
+  APPROVED_EMAIL_DOMAINS: {{ quote .Values.container.approvedEmailDomains }}
+  {{- end}}
 {{- end -}}

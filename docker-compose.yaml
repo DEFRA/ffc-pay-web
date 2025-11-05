@@ -33,6 +33,8 @@ services:
       REDIS_HOSTNAME: ffc-pay-web-redis
       REDIS_PASSWORD: redis
       DEV_TEAM_EMAILS: ${DEV_TEAM_EMAILS}
+      PDS_TEAM_EMAILS: ${PDS_TEAM_EMAILS}
+      APPROVED_EMAIL_DOMAINS: ${APPROVED_EMAIL_DOMAINS}
     networks:
       - default
       - docs

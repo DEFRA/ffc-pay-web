@@ -1,13 +1,7 @@
 const { postAlerting, getAlertingData } = require('../api')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
 const { getAlertUpdateViewData } = require('./get-alert-update-view-data')
-
-const isEmailTaken = async (emailAddress, contactId) => {
-  const emailCheckEndpoint = `/contact/email/${encodeURIComponent(emailAddress)}`
-  const emailCheckResponse = await getAlertingData(emailCheckEndpoint)
-  const existingContactId = emailCheckResponse?.payload?.contact?.contactId
-  return existingContactId && existingContactId !== Number(contactId)
-}
+const { isEmailTaken, isEmailBlocked } = require('./validation')
 
 const addAlertTypeToData = (data, alertType, keyNumber) => {
   if (!data[alertType]) {
@@ -16,7 +10,7 @@ const addAlertTypeToData = (data, alertType, keyNumber) => {
   data[alertType].push(keyNumber)
 }
 
-const processPayloadEntry = (data, key, value) => {
+const processPayloadEntry = async (data, key, value) => {
   if (key === 'contactId' || key === 'emailAddress') {
     return
   }
@@ -25,14 +19,20 @@ const processPayloadEntry = (data, key, value) => {
     return
   }
 
-  const alertTypes = typeof value === 'string' ? [value] : value
+  let alertTypes = typeof value === 'string' ? [value] : value
+
+  const allAlertTypes = await getAlertingData('/alert-types')
+  const allAlertTypesPayload = allAlertTypes?.payload?.alertTypes ?? []
+  if (alertTypes.includes('all')) {
+    alertTypes = allAlertTypesPayload
+  }
 
   for (const alertType of alertTypes) {
     addAlertTypeToData(data, alertType, Number(key))
   }
 }
 
-const buildUpdateData = (payload, contactId, modifiedBy) => {
+const buildUpdateData = async (payload, contactId, modifiedBy) => {
   const data = {
     emailAddress: payload.emailAddress,
     modifiedBy
@@ -43,7 +43,7 @@ const buildUpdateData = (payload, contactId, modifiedBy) => {
   }
 
   for (const [key, value] of Object.entries(payload)) {
-    processPayloadEntry(data, key, value)
+    await processPayloadEntry(data, key, value)
   }
 
   return data
@@ -51,8 +51,10 @@ const buildUpdateData = (payload, contactId, modifiedBy) => {
 
 const updateAlertUser = async (modifiedBy, payload, h) => {
   const { emailAddress, contactId } = payload
-
-  if (await isEmailTaken(emailAddress, contactId)) {
+  const emailTaken = await isEmailTaken(emailAddress, contactId)
+  const emailBlocked = isEmailBlocked(emailAddress)
+  if (emailTaken || emailBlocked) {
+    const error = emailTaken ? `The email address ${emailAddress} is already registered` : `The email address ${emailAddress} is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.`
     const minimalRequest = {
       query: { contactId },
       auth: { credentials: { account: { name: modifiedBy } } }
@@ -62,13 +64,13 @@ const updateAlertUser = async (modifiedBy, payload, h) => {
     return h
       .view(
         'alerts/update',
-        { ...viewData, error: new Error(`The email address ${emailAddress} is already registered`) }
+        { ...viewData, error: new Error(error) }
       )
       .code(BAD_REQUEST)
       .takeover()
   }
 
-  const data = buildUpdateData(payload, contactId, modifiedBy)
+  const data = await buildUpdateData(payload, contactId, modifiedBy)
 
   await postAlerting('/update-contact', data, null)
   return h.redirect('/alerts')
