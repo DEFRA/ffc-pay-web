@@ -21,6 +21,7 @@ const {
   removeAlertUser
 } = require('../../../../app/alerts')
 const { getAlertingData } = require('../../../../app/api')
+const { alertAdmin } = require('../../../../app/auth/permissions')
 const { BAD_REQUEST } = require('../../../../app/constants/http-status-codes')
 
 let createServer
@@ -33,7 +34,7 @@ describe('Alerts test', () => {
   const auth = {
     strategy: 'session-auth',
     credentials: {
-      scope: [],
+      scope: [alertAdmin],
       account: {
         name: 'TestUser'
       }
@@ -115,7 +116,7 @@ describe('Alerts GET /alerts/confirm-delete route tests', () => {
   const auth = {
     strategy: 'session-auth',
     credentials: {
-      scope: [],
+      scope: [alertAdmin],
       account: {
         name: 'TestUser'
       }
