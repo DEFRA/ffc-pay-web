@@ -1,3 +1,4 @@
+const Joi = require('joi')
 const {
   updateAlertUser,
   removeAlertUser,
@@ -8,7 +9,9 @@ const { BAD_REQUEST } = require('../constants/http-status-codes')
 const userSchema = require('./schemas/user-schema')
 const removeUserSchema = require('./schemas/remove-user-schema')
 const { getAlertingData } = require('../api')
-const Joi = require('joi')
+const { applicationAdmin, alertAdmin } = require('../auth/permissions')
+
+const AUTH_SCOPE = { scope: [applicationAdmin, alertAdmin] }
 
 const paths = {
   alerts: '/alerts',
@@ -29,6 +32,7 @@ module.exports = [
     method: 'GET',
     path: paths.alerts,
     options: {
+      auth: AUTH_SCOPE,
       handler: async (_request, h) => {
         const schemes = await getContactsByScheme()
         return h.view(views.alerts, { schemes })
@@ -39,6 +43,7 @@ module.exports = [
     method: 'GET',
     path: paths.information,
     options: {
+      auth: AUTH_SCOPE,
       handler: async (_request, h) => {
         const alertDescriptionsResponse = await getAlertingData('/alert-descriptions')
         const alertDescriptions = alertDescriptionsResponse?.payload?.alertDescriptions ?? []
@@ -50,6 +55,7 @@ module.exports = [
     method: 'GET',
     path: paths.update,
     options: {
+      auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const viewData = await getAlertUpdateViewData(request)
         return h.view(views.update, viewData)
@@ -60,6 +66,7 @@ module.exports = [
     method: 'GET',
     path: paths.confirm,
     options: {
+      auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const { contactId } = request.query
         const contact = await getAlertingData(`/contact/contactId/${encodeURIComponent(contactId)}`)
@@ -107,6 +114,7 @@ module.exports = [
       }
     },
     options: {
+      auth: AUTH_SCOPE,
       validate: {
         payload: async (value, _options) => {
           if (value.action === 'remove') {
