@@ -69,4 +69,24 @@ describe('radioButtonMapper', () => {
   test('returns empty array when given no items', () => {
     expect(radioButtonMapper([])).toEqual([])
   })
+
+  test('includes schemeId in id prefix when provided (MANUAL)', () => {
+    const items = [{ value: '8', text: 'option eight' }]
+
+    const result = radioButtonMapper(items, { schemeId: 8 })
+
+    expect(result).toEqual([
+      { id: '8_Option eight_id', value: '8', text: 'Option eight' }
+    ])
+  })
+
+  test('includes schemeId in id prefix when provided (CSHT_REVENUE)', () => {
+    const items = [{ value: '15', text: 'option fifteen' }]
+
+    const result = radioButtonMapper(items, { schemeId: 15 })
+
+    expect(result).toEqual([
+      { id: '15_Option fifteen_id', value: '15', text: 'Option fifteen' }
+    ])
+  })
 })
