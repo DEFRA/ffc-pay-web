@@ -13,9 +13,10 @@ const mapHoldCategoriesToRadios = (schemes, categories, options = {}) => {
 
   return schemes.map(scheme => {
     const categoriesForScheme = grouped[scheme.id] || []
+    const idMapping = { ...options, schemeId: scheme.id }
     return {
       scheme,
-      radios: radioButtonMapper(categoriesForScheme, options)
+      radios: radioButtonMapper(categoriesForScheme, idMapping)
     }
   })
 }

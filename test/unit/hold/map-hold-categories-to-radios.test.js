@@ -9,42 +9,53 @@ describe('mapHoldCategoriesToRadios', () => {
   })
 
   const mockSchemes = [
-    { id: 'scheme1', name: 'Scheme 1' },
-    { id: 'scheme2', name: 'Scheme 2' }
+    { id: 8, name: 'MANUAL' },
+    { id: 15, name: 'CSHT_REVENUE' }
   ]
 
   const mockCategories = [
-    { schemeId: 'scheme1', holdCategoryId: 'A', name: 'Cat A' },
-    { schemeId: 'scheme1', holdCategoryId: 'B', name: 'Cat B' },
-    { schemeId: 'scheme2', holdCategoryId: 'C', name: 'Cat C' }
+    { schemeId: 8, holdCategoryId: 'A', name: 'Cat A' },
+    { schemeId: 8, holdCategoryId: 'B', name: 'Cat B' },
+    { schemeId: 15, holdCategoryId: 'C', name: 'Cat C' }
   ]
 
   test('groups categories by schemeId and calls radioButtonMapper per scheme', () => {
-    radioButtonMapper.mockImplementation((categories, options) => categories.map(c => c.name))
+    radioButtonMapper.mockImplementation((categories, options) => {
+      return categories.map(c => ({
+        id: `${options.schemeId}_${c.name}_id`,
+        value: c.holdCategoryId,
+        text: c.name
+      }))
+    })
 
     const result = mapHoldCategoriesToRadios(mockSchemes, mockCategories, { valueKey: 'holdCategoryId' })
 
     expect(radioButtonMapper).toHaveBeenCalledTimes(2)
     expect(radioButtonMapper).toHaveBeenCalledWith(
       [
-        { schemeId: 'scheme1', holdCategoryId: 'A', name: 'Cat A' },
-        { schemeId: 'scheme1', holdCategoryId: 'B', name: 'Cat B' }
+        { schemeId: 8, holdCategoryId: 'A', name: 'Cat A' },
+        { schemeId: 8, holdCategoryId: 'B', name: 'Cat B' }
       ],
-      { valueKey: 'holdCategoryId' }
+      { valueKey: 'holdCategoryId', schemeId: 8 }
     )
     expect(radioButtonMapper).toHaveBeenCalledWith(
-      [{ schemeId: 'scheme2', holdCategoryId: 'C', name: 'Cat C' }],
-      { valueKey: 'holdCategoryId' }
+      [{ schemeId: 15, holdCategoryId: 'C', name: 'Cat C' }],
+      { valueKey: 'holdCategoryId', schemeId: 15 }
     )
 
     expect(result).toEqual([
       {
-        scheme: { id: 'scheme1', name: 'Scheme 1' },
-        radios: ['Cat A', 'Cat B']
+        scheme: { id: 8, name: 'MANUAL' },
+        radios: [
+          { id: '8_Cat A_id', value: 'A', text: 'Cat A' },
+          { id: '8_Cat B_id', value: 'B', text: 'Cat B' }
+        ]
       },
       {
-        scheme: { id: 'scheme2', name: 'Scheme 2' },
-        radios: ['Cat C']
+        scheme: { id: 15, name: 'CSHT_REVENUE' },
+        radios: [
+          { id: '15_Cat C_id', value: 'C', text: 'Cat C' }
+        ]
       }
     ])
   })
@@ -53,15 +64,15 @@ describe('mapHoldCategoriesToRadios', () => {
     radioButtonMapper.mockReturnValue([])
 
     const result = mapHoldCategoriesToRadios(
-      [{ id: 'scheme3', name: 'Empty scheme' }],
+      [{ id: 3, name: 'LUMP_SUMS' }],
       mockCategories,
       { valueKey: 'holdCategoryId' }
     )
 
-    expect(radioButtonMapper).toHaveBeenCalledWith([], { valueKey: 'holdCategoryId' })
+    expect(radioButtonMapper).toHaveBeenCalledWith([], { valueKey: 'holdCategoryId', schemeId: 3 })
     expect(result).toEqual([
       {
-        scheme: { id: 'scheme3', name: 'Empty scheme' },
+        scheme: { id: 3, name: 'LUMP_SUMS' },
         radios: []
       }
     ])

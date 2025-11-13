@@ -2,7 +2,8 @@ const radioButtonMapper = (items = [], options = {}) => {
   const {
     valueKey = 'value',
     textKey = 'text',
-    capitalize = true
+    capitalize = true,
+    schemeId
   } = options
 
   if (!Array.isArray(items)) {
@@ -17,8 +18,10 @@ const radioButtonMapper = (items = [], options = {}) => {
       text = text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
     }
 
+    const idPrefix = schemeId ? `${schemeId}_` : ''
+
     return {
-      id: `${text}_id`,
+      id: `${idPrefix}${text}_id`,
       value,
       text
     }
