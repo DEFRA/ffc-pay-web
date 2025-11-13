@@ -17,8 +17,12 @@ const schema = Joi.object({
   paymentsEndpoint: Joi.string().uri().required(),
   trackingEndpoint: Joi.string().uri().required(),
   injectionEndpoint: Joi.string().uri().required(),
+  alertingEndpoint: Joi.string().uri().required(),
   legacyReportsActive: Joi.boolean().default(true),
-  manualPaymentsActive: Joi.boolean().default(true)
+  manualPaymentsActive: Joi.boolean().default(true),
+  devTeamEmails: Joi.string().default(''),
+  pdsTeamEmails: Joi.string().default(''),
+  approvedEmailDomains: Joi.string().default('')
 })
 
 // Build config
@@ -31,8 +35,12 @@ const config = {
   paymentsEndpoint: process.env.PAYMENTS_SERVICE_ENDPOINT,
   trackingEndpoint: process.env.TRACKING_SERVICE_ENDPOINT,
   injectionEndpoint: process.env.INJECTION_SERVICE_ENDPOINT,
+  alertingEndpoint: process.env.ALERTING_SERVICE_ENDPOINT,
   legacyReportsActive: process.env.LEGACY_REPORTS_ACTIVE,
-  manualPaymentsActive: process.env.MANUAL_PAYMENTS_ACTIVE
+  manualPaymentsActive: process.env.MANUAL_PAYMENTS_ACTIVE,
+  devTeamEmails: process.env.DEV_TEAM_EMAILS,
+  pdsTeamEmails: process.env.PDS_TEAM_EMAILS,
+  approvedEmailDomains: process.env.APPROVED_EMAIL_DOMAINS
 }
 
 // Validate config

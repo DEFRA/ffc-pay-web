@@ -1,0 +1,99 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'macros/alert-breadcrumbs.njk' import alertBreadcrumbs %}
+
+{% block content %}
+  {{ alertBreadcrumbs() }}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <form method="POST" action="/alerts/update" autocomplete="off" novalidate>
+        <input type="hidden" name="crumb" value="{{crumb}}"/>
+        <input type="hidden" name="contactId" value="{{contactId}}"/>
+        {% if contactId %}
+          <h1 class="govuk-heading-l">Update alert recipient</h1>
+        {% else %}
+          <h1 class="govuk-heading-l">Add new alert recipient</h1>
+        {% endif %}
+        {% if error %}
+          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+            <h2 class="govuk-error-summary__title" id="error-summary-title">
+              There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ error.message }}</span>
+              </ul>
+            </div>
+          </div>
+        {% endif %}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label-s" for="emailAddress">
+            Email address
+          </label>
+          <input class="govuk-input" id="emailAddress" name="emailAddress" type="text" value="{{ emailAddress }}">
+        </div>
+        {% for scheme in schemesPayload %}
+          <div class="govuk-form-group">
+            {% set schemeForId = scheme.name | lower | replace(' ', '-') %}
+            <fieldset class="govuk-fieldset" aria-describedby="{{ schemeForId }}-hint">
+              <legend class="govuk-fieldset__legend">
+                Alert types for {{ scheme.name }}
+              </legend>
+              <div id="{{ schemeForId }}-hint" class="govuk-hint">
+                Select all that the provided email address should receive
+              </div>
+              <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                {% for alertType in alertTypesPayload %}
+                  <div class="govuk-checkboxes__item">
+                    {% set alertForId = alertType | lower | replace(' ', '-') %}
+                    <input class="govuk-checkboxes__input" id="{{ schemeForId }}-{{ alertForId }}" name="{{ scheme.schemeId }}" type="checkbox" value="{{ alertType }}" {% if selectedAlerts[alertType] and selectedAlerts[alertType][scheme.schemeId] %}checked{% endif %}>
+                    {% set parts = alertType.split('_') %}
+                    <label class="govuk-label govuk-checkboxes__label" for="{{ schemeForId }}-{{ alertForId }}">
+                      {% for part in parts %}
+                        {{ part | capitalize }}{% if not loop.last %} {% endif %}
+                      {% endfor %}
+                    </label>
+                  </div>
+                {% endfor %}
+                <div class="govuk-checkboxes__divider">or</div>
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="{{ schemeForId }}-all" name="{{ scheme.schemeId }}" type="checkbox" value="all" data-behaviour="exclusive">
+                  <label class="govuk-label govuk-checkboxes__label" for="{{ schemeForId }}-all">
+                    Receive all alerts for this scheme
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+        {% endfor %}
+        <div class="govuk-button-group">
+          {% if contactId %}
+            {{ govukButton({
+              text: "Confirm changes",
+              attributes: {
+                id: "submit",
+                type: "submit",
+                name: "action",
+                value: "edit"
+              }
+            }) }}
+            <button onclick="window.location.href='/alerts/confirm-delete?contactId={{ contactId }}'" type="button" class="govuk-button govuk-button--warning" data-module="govuk-button">
+              Remove email
+            </button>
+          {% else %}
+            {{ govukButton({
+              text: "Create",
+              attributes: {
+                id: "submit",
+                type: "submit",
+                name: "action",
+                value: "create"
+              }
+            }) }}
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
