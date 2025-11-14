@@ -47,12 +47,6 @@ data:
   DATA_TOPIC_ADDRESS: {{ quote .Values.container.dataTopicAddress }}
   DATARESPONSE_QUEUE_ADDRESS: {{ quote .Values.container.dataResponseQueueAddress }}
   {{- end }}
-  {{- if .Values.container.devTeamEmails }}
-  DEV_TEAM_EMAILS: {{ quote .Values.container.devTeamEmails }}
-  {{- end }}
-  {{- if .Values.container.pdsTeamEmails }}
-  PDS_TEAM_EMAILS: {{ quote .Values.container.pdsTeamEmails }}
-  {{- end }}
   {{- if .Values.container.approvedEmailDomains }}
   APPROVED_EMAIL_DOMAINS: {{ quote .Values.container.approvedEmailDomains }}
   {{- end }}

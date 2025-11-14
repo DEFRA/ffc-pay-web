@@ -68,9 +68,7 @@
                             <tr class="govuk-table__row">
                               <td class="govuk-table__cell">{{ user.emailAddress }}</td>
                               <td class="govuk-table__cell">
-                                {% if user.canBeEdited %}
-                                  <a href="/alerts/update?contactId={{ user.contactId }}" class="govuk-button-link">Edit user</a>
-                                {% endif %}
+                                <a href="/alerts/update?contactId={{ user.contactId }}" class="govuk-button-link">Edit user</a>
                               </td>
                             </tr>
                         {% endfor %}
