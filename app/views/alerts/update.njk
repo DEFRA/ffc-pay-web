@@ -33,17 +33,33 @@
           </label>
           <input class="govuk-input" id="emailAddress" name="emailAddress" type="text" value="{{ emailAddress }}">
         </div>
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="selectView">
+            Select a scheme to view alerts for
+          </label>
+          <select class="govuk-select" id="selectView" name="selectView">
+            <option value="all" {% if selectView == 'all' or selectView == null %}selected{% endif %}>All</option>
+            {% for scheme in schemesPayload %}
+              <option value="{{ scheme.schemeId }}" {% if selectView == scheme.schemeId %}selected{% endif %}>{{ scheme.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
         {% for scheme in schemesPayload %}
-          <div class="govuk-form-group">
+          <div class="govuk-form-group scheme-group" data-scheme-id="{{ scheme.schemeId }}">
             {% set schemeForId = scheme.name | lower | replace(' ', '-') %}
-            <fieldset class="govuk-fieldset" aria-describedby="{{ schemeForId }}-hint">
+            <fieldset class="govuk-fieldset">
               <legend class="govuk-fieldset__legend">
                 Alert types for {{ scheme.name }}
               </legend>
-              <div id="{{ schemeForId }}-hint" class="govuk-hint">
-                Select all that the provided email address should receive
-              </div>
               <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="{{ schemeForId }}-all" name="{{ scheme.schemeId }}" type="checkbox" value="all" data-behaviour="exclusive">
+                  <label class="govuk-label govuk-checkboxes__label" for="{{ schemeForId }}-all">
+                    Receive all alerts for this scheme
+                  </label>
+                </div>
+                <div id="{{schemeForId}}-hint" class="govuk-hint govuk-!-margin-top-3 govuk-!-margin-bottom-3">or, select individual alerts to receive:</div>
                 {% for alertType in alertTypesPayload %}
                   <div class="govuk-checkboxes__item">
                     {% set alertForId = alertType | lower | replace(' ', '-') %}
@@ -56,13 +72,6 @@
                     </label>
                   </div>
                 {% endfor %}
-                <div class="govuk-checkboxes__divider">or</div>
-                <div class="govuk-checkboxes__item">
-                  <input class="govuk-checkboxes__input" id="{{ schemeForId }}-all" name="{{ scheme.schemeId }}" type="checkbox" value="all" data-behaviour="exclusive">
-                  <label class="govuk-label govuk-checkboxes__label" for="{{ schemeForId }}-all">
-                    Receive all alerts for this scheme
-                  </label>
-                </div>
               </div>
             </fieldset>
           </div>
@@ -96,4 +105,26 @@
       </form>
     </div>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const selectView = document.getElementById('selectView')
+      const schemeGroups = document.querySelectorAll('.scheme-group')
+
+      function filterSchemes() {
+        const selected = selectView.value
+        schemeGroups.forEach(group => {
+          if (selected === 'all' || group.dataset.schemeId === selected) {
+            group.style.display = 'block'
+          } else {
+            group.style.display = 'none'
+          }
+        })
+      }
+
+      selectView.addEventListener('change', filterSchemes)
+
+      filterSchemes()
+    })
+  </script>
 {% endblock %}

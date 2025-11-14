@@ -1,41 +1,57 @@
 jest.mock('../../../../app/config', () => ({
-  devTeamEmails: 'dev1@example.com; dev2@company.com',
   approvedEmailDomains: 'example.com; @company.com; approved.org'
 }))
 
 const { isEmailBlocked } = require('../../../../app/alerts/validation')
 
 describe('isEmailBlocked', () => {
-  test('returns true for null, undefined, or non-string inputs', () => {
-    expect(isEmailBlocked(null)).toBe(true)
-    expect(isEmailBlocked(undefined)).toBe(true)
-    expect(isEmailBlocked(123)).toBe(true)
-    expect(isEmailBlocked({})).toBe(true)
-    expect(isEmailBlocked('')).toBe(true)
-    expect(isEmailBlocked('   ')).toBe(true)
+  test('throws error for null, undefined, or non-string inputs', () => {
+    expect(() => isEmailBlocked(null)).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
+    expect(() => isEmailBlocked(undefined)).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
+    expect(() => isEmailBlocked(123)).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
+    expect(() => isEmailBlocked({})).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
+    expect(() => isEmailBlocked('')).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
+    expect(() => isEmailBlocked('   ')).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
   })
 
-  test('returns false for emails explicitly listed in devTeamEmails', () => {
-    expect(isEmailBlocked('dev1@example.com')).toBe(false)
-    expect(isEmailBlocked(' DEV1@EXAMPLE.COM ')).toBe(false)
-    expect(isEmailBlocked('dev2@company.com')).toBe(false)
+  test('does not throw for emails with approved domains', () => {
+    expect(() => isEmailBlocked('user@example.com')).not.toThrow()
+    expect(() => isEmailBlocked('user@company.com')).not.toThrow()
+    expect(() => isEmailBlocked('someone@approved.org')).not.toThrow()
+    expect(() => isEmailBlocked('USER@EXAMPLE.COM')).not.toThrow()
+    expect(() => isEmailBlocked(' user@company.com  ')).not.toThrow()
   })
 
-  test('returns false for emails with approved domains', () => {
-    expect(isEmailBlocked('user@example.com')).toBe(false)
-    expect(isEmailBlocked('user@company.com')).toBe(false)
-    expect(isEmailBlocked('someone@approved.org')).toBe(false)
-    expect(isEmailBlocked('USER@EXAMPLE.COM')).toBe(false)
+  test('throws error for emails with domains not in approved list', () => {
+    expect(() => isEmailBlocked('user@notapproved.com')).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
+    expect(() => isEmailBlocked('user@unknown.org')).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
   })
 
-  test('returns true for emails with domains not in approved list', () => {
-    expect(isEmailBlocked('user@notapproved.com')).toBe(true)
-    expect(isEmailBlocked('user@unknown.org')).toBe(true)
-  })
-
-  test('returns true for malformed emails or missing domain', () => {
-    expect(isEmailBlocked('user@')).toBe(true)
-    expect(isEmailBlocked('user')).toBe(true)
-    expect(isEmailBlocked('user@.com')).toBe(true)
+  test('throws error for malformed emails or missing domain', () => {
+    expect(() => isEmailBlocked('user@')).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
+    expect(() => isEmailBlocked('user')).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
+    expect(() => isEmailBlocked('user@.com')).toThrow(
+      'The email address is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.'
+    )
   })
 })

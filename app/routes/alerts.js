@@ -99,7 +99,6 @@ module.exports = [
       const user = request.auth?.credentials.account
       const userNameOrEmail = user?.name || user?.username || user?.email
       const action = request.payload.action
-
       try {
         if (action === 'remove') {
           return await removeAlertUser(userNameOrEmail, request.payload.contactId, h)

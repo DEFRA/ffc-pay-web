@@ -9,263 +9,158 @@ jest.mock('../../../app/alerts/get-alert-update-view-data')
 jest.mock('../../../app/alerts/validation')
 
 describe('updateAlertUser', () => {
+  let h
+
   beforeEach(() => {
     jest.clearAllMocks()
-  })
-
-  test('should return view with error if email already registered to a different contactId', async () => {
-    const modifiedBy = 'adminUser'
-    const payload = {
-      emailAddress: 'test@example.com',
-      contactId: '123'
-    }
-    const h = {
+    h = {
+      redirect: jest.fn().mockReturnValue('redirected'),
       view: jest.fn().mockReturnThis(),
       code: jest.fn().mockReturnThis(),
-      takeover: jest.fn()
+      takeover: jest.fn().mockReturnThis()
     }
-
-    isEmailTaken.mockResolvedValue(true)
-    isEmailBlocked.mockReturnValue(false)
-
-    const mockViewData = { foo: 'bar' }
-    getAlertUpdateViewData.mockResolvedValue(mockViewData)
-
-    await updateAlertUser(modifiedBy, payload, h)
-
-    expect(isEmailTaken).toHaveBeenCalledWith('test@example.com', '123')
-    expect(isEmailBlocked).toHaveBeenCalledWith('test@example.com')
-    expect(getAlertUpdateViewData).toHaveBeenCalledWith({
-      query: { contactId: payload.contactId },
-      auth: { credentials: { account: { name: modifiedBy } } }
+    getAlertingData.mockResolvedValue({
+      payload: { alertTypes: ['type1', 'type2', 'type3'] }
     })
-    expect(h.view).toHaveBeenCalledWith(
-      'alerts/update',
-      expect.objectContaining({
-        ...mockViewData,
-        error: expect.any(Error)
-      })
-    )
-    expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
-    expect(h.takeover).toHaveBeenCalled()
-    expect(postAlerting).not.toHaveBeenCalled()
+    isEmailTaken.mockResolvedValue()
+    isEmailBlocked.mockImplementation(() => { })
+    postAlerting.mockResolvedValue()
+    getAlertUpdateViewData.mockResolvedValue({ someViewData: true })
   })
 
-  test('should return view with error if email is blocked', async () => {
-    const modifiedBy = 'adminUser'
-    const payload = {
-      emailAddress: 'blocked@example.com',
-      contactId: '123'
-    }
-    const h = {
-      view: jest.fn().mockReturnThis(),
-      code: jest.fn().mockReturnThis(),
-      takeover: jest.fn()
-    }
-
-    isEmailTaken.mockResolvedValue(false)
-    isEmailBlocked.mockReturnValue(true)
-
-    const mockViewData = { foo: 'bar' }
-    getAlertUpdateViewData.mockResolvedValue(mockViewData)
-
-    await updateAlertUser(modifiedBy, payload, h)
-
-    expect(isEmailTaken).toHaveBeenCalledWith('blocked@example.com', '123')
-    expect(isEmailBlocked).toHaveBeenCalledWith('blocked@example.com')
-    expect(getAlertUpdateViewData).toHaveBeenCalledWith({
-      query: { contactId: payload.contactId },
-      auth: { credentials: { account: { name: modifiedBy } } }
-    })
-    expect(h.view).toHaveBeenCalledWith(
-      'alerts/update',
-      expect.objectContaining({
-        ...mockViewData,
-        error: expect.any(Error)
-      })
-    )
-    expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
-    expect(h.takeover).toHaveBeenCalled()
-    expect(postAlerting).not.toHaveBeenCalled()
-  })
-
-  test('should proceed to post update and redirect if email is unique and not blocked', async () => {
-    const modifiedBy = 'adminUser'
+  test('should successfully update alert user and redirect', async () => {
     const payload = {
       emailAddress: 'test@example.com',
       contactId: '123',
-      1: 'alertA',
-      2: ['alertA', 'alertB'],
-      3: 'alertC'
+      1: 'type1',
+      2: ['type2', 'type3'],
+      selectView: 'ignored',
+      action: 'ignored'
     }
-    const h = { redirect: jest.fn() }
-
-    isEmailTaken.mockResolvedValue(false)
-    isEmailBlocked.mockReturnValue(false)
-
-    getAlertingData.mockResolvedValue({
-      payload: {
-        alertTypes: ['alertA', 'alertB', 'alertC']
-      }
-    })
-
-    postAlerting.mockResolvedValue()
-
-    const expectedData = {
-      emailAddress: 'test@example.com',
-      modifiedBy: 'adminUser',
-      contactId: '123',
-      alertA: [1, 2],
-      alertB: [2],
-      alertC: [3]
-    }
+    const modifiedBy = 'adminUser'
 
     const result = await updateAlertUser(modifiedBy, payload, h)
 
-    expect(isEmailTaken).toHaveBeenCalledWith('test@example.com', '123')
-    expect(isEmailBlocked).toHaveBeenCalledWith('test@example.com')
-    expect(getAlertingData).toHaveBeenCalledWith('/alert-types')
-    expect(postAlerting).toHaveBeenCalledWith('/update-contact', expectedData, null)
+    expect(isEmailTaken).toHaveBeenCalledWith(payload.emailAddress, payload.contactId)
+    expect(isEmailBlocked).toHaveBeenCalledWith(payload.emailAddress)
+    expect(postAlerting).toHaveBeenCalledWith(
+      '/update-contact',
+      expect.objectContaining({
+        emailAddress: payload.emailAddress,
+        modifiedBy,
+        contactId: payload.contactId,
+        type1: expect.any(Array),
+        type2: expect.any(Array),
+        type3: expect.any(Array)
+      }),
+      null
+    )
     expect(h.redirect).toHaveBeenCalledWith('/alerts')
-    expect(result).toBe(h.redirect.mock.results[0].value)
+    expect(result).toBe('redirected')
   })
 
-  test('should omit contactId in data if contactId is empty string', async () => {
-    const modifiedBy = 'adminUser'
+  test('should throw error if no alert types selected in payload', async () => {
     const payload = {
       emailAddress: 'test@example.com',
-      contactId: '',
-      4: 'alertX'
+      contactId: '123',
+      selectView: 'ignored',
+      action: 'ignored'
     }
-    const h = { redirect: jest.fn() }
+    const modifiedBy = 'adminUser'
 
-    isEmailTaken.mockResolvedValue(false)
-    isEmailBlocked.mockReturnValue(false)
-
-    getAlertingData.mockResolvedValue({
-      payload: {
-        alertTypes: ['alertX']
-      }
-    })
-
-    postAlerting.mockResolvedValue()
-
-    const expectedData = {
-      emailAddress: 'test@example.com',
-      modifiedBy: 'adminUser',
-      alertX: [4]
-    }
-
-    const result = await updateAlertUser(modifiedBy, payload, h)
-
-    expect(postAlerting).toHaveBeenCalledWith('/update-contact', expectedData, null)
-    expect(h.redirect).toHaveBeenCalledWith('/alerts')
-    expect(result).toBe(h.redirect.mock.results[0].value)
+    await expect(updateAlertUser(modifiedBy, payload, h)).resolves.toEqual(
+      expect.objectContaining({})
+    )
+    expect(postAlerting).not.toHaveBeenCalled()
+    expect(h.view).toHaveBeenCalled()
+    expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
+    expect(h.takeover).toHaveBeenCalled()
   })
 
-  test('should treat "all" alert type by expanding to all alert types from API', async () => {
-    const modifiedBy = 'adminUser'
+  test('should treat "all" alert type as all alert types fetched from API', async () => {
     const payload = {
       emailAddress: 'test@example.com',
       contactId: '123',
       1: 'all'
     }
-    const h = { redirect: jest.fn() }
+    const modifiedBy = 'adminUser'
 
-    isEmailTaken.mockResolvedValue(false)
-    isEmailBlocked.mockReturnValue(false)
+    await updateAlertUser(modifiedBy, payload, h)
 
-    getAlertingData.mockResolvedValue({
-      payload: {
-        alertTypes: ['alertA', 'alertB', 'alertC']
-      }
-    })
-
-    postAlerting.mockResolvedValue()
-
-    const expectedData = {
-      emailAddress: 'test@example.com',
-      modifiedBy: 'adminUser',
-      contactId: '123',
-      alertA: [1],
-      alertB: [1],
-      alertC: [1]
-    }
-
-    const result = await updateAlertUser(modifiedBy, payload, h)
-
-    expect(postAlerting).toHaveBeenCalledWith('/update-contact', expectedData, null)
-    expect(h.redirect).toHaveBeenCalledWith('/alerts')
-    expect(result).toBe(h.redirect.mock.results[0].value)
+    expect(postAlerting).toHaveBeenCalledWith(
+      '/update-contact',
+      expect.objectContaining({
+        type1: [1],
+        type2: [1],
+        type3: [1]
+      }),
+      null
+    )
   })
 
-  test('should ignore payload keys with non-string and non-array values for alert types', async () => {
+  test('should call returnErrorView on isEmailTaken rejection', async () => {
+    const payload = {
+      emailAddress: 'taken@example.com',
+      contactId: '123',
+      1: 'type1'
+    }
     const modifiedBy = 'adminUser'
+    const error = new Error('Email taken')
+
+    isEmailTaken.mockRejectedValue(error)
+
+    await updateAlertUser(modifiedBy, payload, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/update',
+      expect.objectContaining({ error })
+    )
+    expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
+    expect(h.takeover).toHaveBeenCalled()
+    expect(postAlerting).not.toHaveBeenCalled()
+  })
+
+  test('should call returnErrorView on postAlerting rejection', async () => {
     const payload = {
       emailAddress: 'test@example.com',
-      contactId: '1',
-      5: 42,
-      6: null,
-      7: { foo: 'bar' }
+      contactId: '123',
+      1: 'type1'
     }
-    const h = { redirect: jest.fn() }
-
-    isEmailTaken.mockResolvedValue(false)
-    isEmailBlocked.mockReturnValue(false)
-
-    getAlertingData.mockResolvedValue({
-      payload: {
-        alertTypes: []
-      }
-    })
-
-    postAlerting.mockResolvedValue()
-
-    const expectedData = {
-      emailAddress: 'test@example.com',
-      modifiedBy: 'adminUser',
-      contactId: '1'
-    }
-
-    const result = await updateAlertUser(modifiedBy, payload, h)
-
-    expect(postAlerting).toHaveBeenCalledWith('/update-contact', expectedData, null)
-    expect(h.redirect).toHaveBeenCalledWith('/alerts')
-    expect(result).toBe(h.redirect.mock.results[0].value)
-  })
-
-  test('should surface errors from isEmailTaken', async () => {
     const modifiedBy = 'adminUser'
-    const payload = { emailAddress: 'fail@example.com', contactId: '1' }
-    const h = { redirect: jest.fn() }
+    const error = new Error('Post failed')
 
-    const error = new Error('isEmailTaken failed')
-    isEmailTaken.mockRejectedValue(error)
-    isEmailBlocked.mockReturnValue(false)
-
-    await expect(updateAlertUser(modifiedBy, payload, h)).rejects.toThrow('isEmailTaken failed')
-    expect(postAlerting).not.toHaveBeenCalled()
-    expect(h.redirect).not.toHaveBeenCalled()
-  })
-
-  test('should surface errors from postAlerting', async () => {
-    const modifiedBy = 'adminUser'
-    const payload = { emailAddress: 'test@example.com', contactId: '1' }
-    const h = { redirect: jest.fn() }
-
-    isEmailTaken.mockResolvedValue(false)
-    isEmailBlocked.mockReturnValue(false)
-
-    getAlertingData.mockResolvedValue({
-      payload: {
-        alertTypes: []
-      }
-    })
-
-    const error = new Error('postAlerting failed')
     postAlerting.mockRejectedValue(error)
 
-    await expect(updateAlertUser(modifiedBy, payload, h)).rejects.toThrow('postAlerting failed')
-    expect(h.redirect).not.toHaveBeenCalled()
+    await updateAlertUser(modifiedBy, payload, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/update',
+      expect.objectContaining({ error })
+    )
+    expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
+    expect(h.takeover).toHaveBeenCalled()
+  })
+
+  test('should ignore invalid payload entries (non-string/non-array) and keys contactId/emailAddress', async () => {
+    const payload = {
+      emailAddress: 'test@example.com',
+      contactId: '123',
+      1: 42,
+      2: { foo: 'bar' },
+      3: 'type1',
+      selectView: 'ignored',
+      action: 'ignored'
+    }
+    const modifiedBy = 'adminUser'
+
+    await updateAlertUser(modifiedBy, payload, h)
+
+    expect(postAlerting).toHaveBeenCalledWith(
+      '/update-contact',
+      expect.objectContaining({
+        type1: [3]
+      }),
+      null
+    )
   })
 })

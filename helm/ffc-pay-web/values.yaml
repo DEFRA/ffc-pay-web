@@ -60,8 +60,6 @@ container:
   redisHostname: redis-host-name
   redisPort: 6379
   redisPassword: redis
-  devTeamEmails:
-  pdsTeamEmails:
   approvedEmailDomains:
 
 ingress:

@@ -26,7 +26,6 @@ const processPayloadEntry = async (data, key, value) => {
   if (alertTypes.includes('all')) {
     alertTypes = allAlertTypesPayload
   }
-
   for (const alertType of alertTypes) {
     addAlertTypeToData(data, alertType, Number(key))
   }
@@ -42,38 +41,55 @@ const buildUpdateData = async (payload, contactId, modifiedBy) => {
     data.contactId = contactId
   }
 
+  delete payload.selectView
+  delete payload.action
+
   for (const [key, value] of Object.entries(payload)) {
     await processPayloadEntry(data, key, value)
+  }
+
+  const alertTypeKeys = Object.keys(data).filter(
+    key => !['emailAddress', 'contactId', 'modifiedBy'].includes(key)
+  )
+  const allEmpty = alertTypeKeys.every(key => Array.isArray(data[key]) && data[key].length === 0)
+
+  if (alertTypeKeys.length === 0 || (alertTypeKeys.length > 0 && allEmpty)) {
+    throw new Error('At least one alert type must be selected.')
   }
 
   return data
 }
 
+const returnErrorView = async (h, contactId, modifiedBy, error) => {
+  const minimalRequest = {
+    query: { contactId },
+    auth: { credentials: { account: { name: modifiedBy } } }
+  }
+  const viewData = await getAlertUpdateViewData(minimalRequest)
+
+  return h
+    .view(
+      'alerts/update',
+      { ...viewData, error }
+    )
+    .code(BAD_REQUEST)
+    .takeover()
+}
+
 const updateAlertUser = async (modifiedBy, payload, h) => {
   const { emailAddress, contactId } = payload
-  const emailTaken = await isEmailTaken(emailAddress, contactId)
-  const emailBlocked = isEmailBlocked(emailAddress)
-  if (emailTaken || emailBlocked) {
-    const error = emailTaken ? `The email address ${emailAddress} is already registered` : `The email address ${emailAddress} is not allowed. Please contact the Payment & Document Services team if you believe this is a mistake.`
-    const minimalRequest = {
-      query: { contactId },
-      auth: { credentials: { account: { name: modifiedBy } } }
-    }
-    const viewData = await getAlertUpdateViewData(minimalRequest)
 
-    return h
-      .view(
-        'alerts/update',
-        { ...viewData, error: new Error(error) }
-      )
-      .code(BAD_REQUEST)
-      .takeover()
+  try {
+    await isEmailTaken(emailAddress, contactId)
+    isEmailBlocked(emailAddress)
+
+    const data = await buildUpdateData(payload, contactId, modifiedBy)
+
+    await postAlerting('/update-contact', data, null)
+    return h.redirect('/alerts')
+  } catch (err) {
+    return returnErrorView(h, contactId, modifiedBy, err)
   }
-
-  const data = await buildUpdateData(payload, contactId, modifiedBy)
-
-  await postAlerting('/update-contact', data, null)
-  return h.redirect('/alerts')
 }
 
 module.exports = {
