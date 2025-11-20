@@ -1,6 +1,6 @@
 {
   "name": "ffc-pay-web",
-  "version": "1.23.2",
+  "version": "1.23.3",
   "description": "FFC payment management service",
   "homepage": "https://github.com/DEFRA/ffc-pay-web",
   "main": "app/index.js",
