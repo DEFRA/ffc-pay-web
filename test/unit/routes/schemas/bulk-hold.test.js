@@ -1,155 +1,126 @@
 const bulkSchema = require('../../../../app/routes/schemas/bulk-hold')
 
 describe('Bulk Hold Validator', () => {
-  test('Valid File Object', () => {
-    const validFile = {
-      filename: 'example.csv',
-      path: '/path/to/file',
-      headers: {
-        'content-disposition': 'attachment; filename="example.csv"',
-        'content-type': 'text/csv'
-      },
-      bytes: 1024
-    }
-    expect(() => bulkSchema.validate({ remove: true, holdCategoryId: 1, file: validFile })).not.toThrow()
+  const validFile = {
+    filename: 'example.csv',
+    path: '/path/to/file',
+    headers: {
+      'content-disposition': 'attachment; filename="example.csv"',
+      'content-type': 'text/csv'
+    },
+    bytes: 1024
+  }
+
+  test('Valid object with required fields passes validation', () => {
+    const { error } = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: validFile })
+    expect(error).toBeUndefined()
   })
 
-  test('Valid File Object - remove is false', () => {
-    const validFile = {
-      filename: 'example.csv',
-      path: '/path/to/file',
-      headers: {
-        'content-disposition': 'attachment; filename="example.csv"',
-        'content-type': 'text/csv'
-      },
-      bytes: 1024
-    }
-    expect(() => bulkSchema.validate({ remove: false, holdCategoryId: 1, file: validFile })).not.toThrow()
+  test('Valid object with remove false passes validation', () => {
+    const { error } = bulkSchema.validate({ remove: false, holdCategoryId: 1, file: validFile })
+    expect(error).toBeUndefined()
   })
 
-  test('Invalid - missing holdcategoryid', () => {
+  test('Valid object including optional selectScheme passes validation', () => {
+    const { error } = bulkSchema.validate({
+      remove: true,
+      holdCategoryId: 1,
+      selectScheme: 'someScheme',
+      file: validFile
+    })
+    expect(error).toBeUndefined()
+  })
+
+  test('Invalid: missing holdCategoryId', () => {
+    const { error } = bulkSchema.validate({ remove: true, file: validFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Category is required/)
+  })
+
+  test('Invalid: holdCategoryId is string instead of integer', () => {
+    const { error } = bulkSchema.validate({ remove: true, holdCategoryId: 'abc', file: validFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Category is required/)
+  })
+
+  test('Invalid: missing filename in file object', () => {
+    const invalidFile = { ...validFile }
+    delete invalidFile.filename
+    const { error } = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Provide a CSV file/)
+  })
+
+  test('Invalid: missing path in file object', () => {
+    const invalidFile = { ...validFile }
+    delete invalidFile.path
+    const { error } = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Provide a CSV file/)
+  })
+
+  test('Invalid: missing headers in file object', () => {
+    const invalidFile = { ...validFile }
+    delete invalidFile.headers
+    const { error } = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Provide a CSV file/)
+  })
+
+  test('Invalid: headers missing content-type', () => {
     const invalidFile = {
-      filename: 'example.csv',
-      path: '/path/to/file',
-      headers: {
-        'content-disposition': 'attachment; filename="example.csv"',
-        'content-type': 'text/csv'
-      },
-      bytes: 1024
-    }
-    const validationResult = bulkSchema.validate({ remove: true, file: invalidFile })
-    expect(validationResult.error).toBeDefined()
-    expect(validationResult.error.message).toMatch(/Category is required/)
-  })
-
-  test('Invalid File Object - Missing filename', () => {
-    const invalidFile = {
-      path: '/path/to/file',
-      headers: {
-        'content-disposition': 'attachment; filename="example.csv"',
-        'content-type': 'text/csv'
-      },
-      bytes: 1024
-    }
-    const validationResult = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
-    expect(validationResult.error).toBeDefined()
-    expect(validationResult.error.message).toMatch(/Provide a CSV file/)
-  })
-
-  test('Invalid File Object - Missing path', () => {
-    const invalidFile = {
-      filename: 'example.csv',
-      headers: {
-        'content-disposition': 'attachment; filename="example.csv"',
-        'content-type': 'text/csv'
-      },
-      bytes: 1024
-    }
-    const validationResult = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
-    expect(validationResult.error).toBeDefined()
-    expect(validationResult.error.message).toMatch(/Provide a CSV file/)
-  })
-
-  test('Invalid File Object - Missing headers', () => {
-    const invalidFile = {
-      filename: 'example.csv',
-      path: '/path/to/file',
-      bytes: 1024
-    }
-    const validationResult = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
-    expect(validationResult.error).toBeDefined()
-    expect(validationResult.error.message).toMatch(/Provide a CSV file/)
-  })
-
-  test('Invalid File Object - Missing headers -> content-type', () => {
-    const invalidFile = {
-      filename: 'example.csv',
-      path: '/path/to/file',
+      ...validFile,
       headers: {
         'content-disposition': 'attachment; filename="example.csv"'
-      },
-      bytes: 1024
+      }
     }
-    const validationResult = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
-    expect(validationResult.error).toBeDefined()
-    expect(validationResult.error.message).toMatch(/Provide a CSV file/)
+    const { error } = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Provide a CSV file/)
   })
 
-  test('Invalid File Object - headers -> content-type not text/csv', () => {
+  test('Invalid: headers content-type not text/csv', () => {
     const invalidFile = {
-      filename: 'example.csv',
-      path: '/path/to/file',
+      ...validFile,
       headers: {
         'content-disposition': 'attachment; filename="example.csv"',
-        'content-type': 'not-text-csv'
-      },
-      bytes: 1024
+        'content-type': 'application/json'
+      }
     }
-    const validationResult = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
-    expect(validationResult.error).toBeDefined()
-    expect(validationResult.error.message).toMatch(/Provide a CSV file/)
+    const { error } = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Provide a CSV file/)
   })
 
-  test('Invalid File Object - Missing headers -> content-disposition', () => {
+  test('Invalid: headers missing content-disposition', () => {
     const invalidFile = {
-      filename: 'example.csv',
-      path: '/path/to/file',
+      ...validFile,
       headers: {
-        'content-type': 'text/csv'
-      },
-      bytes: 1024
-    }
-    const validationResult = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
-    expect(validationResult.error).toBeDefined()
-    expect(validationResult.error.message).toMatch(/Provide a CSV file/)
-  })
-
-  test('Invalid File Object - Missing bytes', () => {
-    const invalidFile = {
-      filename: 'example.csv',
-      path: '/path/to/file',
-      headers: {
-        'content-disposition': 'attachment; filename="example.csv"',
         'content-type': 'text/csv'
       }
     }
-    const validationResult = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
-    expect(validationResult.error).toBeDefined()
-    expect(validationResult.error.message).toMatch(/Provide a CSV file/)
+    const { error } = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Provide a CSV file/)
   })
 
-  test('Invalid File Object - Missing remove', () => {
-    const invalidFile = {
-      filename: 'example.csv',
-      path: '/path/to/file',
-      headers: {
-        'content-disposition': 'attachment; filename="example.csv"',
-        'content-type': 'text/csv'
-      },
-      bytes: 1024
-    }
-    const validationResult = bulkSchema.validate({ holdCategoryId: 1, file: invalidFile })
-    expect(validationResult.error).toBeDefined()
-    expect(validationResult.error.message).toMatch(/Select add to add holds in bulk/)
+  test('Invalid: missing bytes in file object', () => {
+    const invalidFile = { ...validFile }
+    delete invalidFile.bytes
+    const { error } = bulkSchema.validate({ remove: true, holdCategoryId: 1, file: invalidFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Provide a CSV file/)
+  })
+
+  test('Invalid: missing remove field', () => {
+    const { error } = bulkSchema.validate({ holdCategoryId: 1, file: validFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Select add to add holds in bulk/)
+  })
+
+  test('Invalid: remove field is not boolean', () => {
+    const { error } = bulkSchema.validate({ remove: 'yes', holdCategoryId: 1, file: validFile })
+    expect(error).toBeDefined()
+    expect(error.message).toMatch(/Select add to add holds in bulk/)
   })
 })
