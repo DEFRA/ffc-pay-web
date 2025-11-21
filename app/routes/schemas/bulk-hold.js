@@ -9,6 +9,7 @@ module.exports = Joi.object({
     errors.forEach(err => { err.message = 'Category is required' })
     return errors
   }),
+  selectScheme: Joi.string().optional(),
   file: Joi.object().keys({
     filename: Joi.string().required(),
     path: Joi.string().required(),

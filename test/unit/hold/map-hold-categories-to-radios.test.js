@@ -32,29 +32,29 @@ describe('mapHoldCategoriesToRadios', () => {
 
     expect(radioButtonMapper).toHaveBeenCalledTimes(2)
     expect(radioButtonMapper).toHaveBeenCalledWith(
+      [{ schemeId: 15, holdCategoryId: 'C', name: 'Cat C' }],
+      { valueKey: 'holdCategoryId', schemeId: 15 }
+    )
+    expect(radioButtonMapper).toHaveBeenCalledWith(
       [
         { schemeId: 8, holdCategoryId: 'A', name: 'Cat A' },
         { schemeId: 8, holdCategoryId: 'B', name: 'Cat B' }
       ],
       { valueKey: 'holdCategoryId', schemeId: 8 }
     )
-    expect(radioButtonMapper).toHaveBeenCalledWith(
-      [{ schemeId: 15, holdCategoryId: 'C', name: 'Cat C' }],
-      { valueKey: 'holdCategoryId', schemeId: 15 }
-    )
 
     expect(result).toEqual([
+      {
+        scheme: { id: 15, name: 'CSHT_REVENUE' },
+        radios: [
+          { id: '15_Cat C_id', value: 'C', text: 'Cat C' }
+        ]
+      },
       {
         scheme: { id: 8, name: 'MANUAL' },
         radios: [
           { id: '8_Cat A_id', value: 'A', text: 'Cat A' },
           { id: '8_Cat B_id', value: 'B', text: 'Cat B' }
-        ]
-      },
-      {
-        scheme: { id: 15, name: 'CSHT_REVENUE' },
-        radios: [
-          { id: '15_Cat C_id', value: 'C', text: 'Cat C' }
         ]
       }
     ])
@@ -84,5 +84,46 @@ describe('mapHoldCategoriesToRadios', () => {
     const result = mapHoldCategoriesToRadios([], [], {})
     expect(result).toEqual([])
     expect(radioButtonMapper).not.toHaveBeenCalled()
+  })
+
+  test('returns schemes ordered by id descending', () => {
+    radioButtonMapper.mockImplementation((categories, options) => {
+      return categories.map(c => ({
+        id: `${options.schemeId}_${c.name}_id`,
+        value: c.holdCategoryId,
+        text: c.name
+      }))
+    })
+
+    const unorderedSchemes = [
+      { id: 3, name: 'LUMP_SUMS' },
+      { id: 15, name: 'CSHT_REVENUE' },
+      { id: 8, name: 'MANUAL' }
+    ]
+
+    const categories = [
+      { schemeId: 3, holdCategoryId: 'X', name: 'Cat X' },
+      { schemeId: 15, holdCategoryId: 'Y', name: 'Cat Y' },
+      { schemeId: 8, holdCategoryId: 'Z', name: 'Cat Z' }
+    ]
+
+    const result = mapHoldCategoriesToRadios(unorderedSchemes, categories, { valueKey: 'holdCategoryId' })
+
+    expect(result.map(r => r.scheme.id)).toEqual([15, 8, 3])
+
+    expect(result).toEqual([
+      {
+        scheme: { id: 15, name: 'CSHT_REVENUE' },
+        radios: [{ id: '15_Cat Y_id', value: 'Y', text: 'Cat Y' }]
+      },
+      {
+        scheme: { id: 8, name: 'MANUAL' },
+        radios: [{ id: '8_Cat Z_id', value: 'Z', text: 'Cat Z' }]
+      },
+      {
+        scheme: { id: 3, name: 'LUMP_SUMS' },
+        radios: [{ id: '3_Cat X_id', value: 'X', text: 'Cat X' }]
+      }
+    ])
   })
 })

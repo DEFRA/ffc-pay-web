@@ -14,6 +14,7 @@ module.exports = Joi.object({
       })
       return errors
     }),
+  selectScheme: Joi.string().optional(),
   holdCategoryId: Joi.number()
     .integer()
     .required()
