@@ -17,6 +17,7 @@ beforeEach(async () => {
     catbox: require('@hapi/catbox-memory'),
     catboxOptions: {}
   }
+
   server = await createServer()
   await server.initialize()
 
@@ -34,28 +35,20 @@ afterEach(async () => {
 })
 
 describe('get cache object', () => {
-  test('should return defined', async () => {
-    const result = await getCache(request)
-    expect(result).toBeDefined()
+  test('returns cache object', async () => {
+    expect(await getCache(request)).toBeDefined()
   })
 
-  test('should return request.server.app.cache', async () => {
-    const result = await getCache(request)
-    expect(result).toStrictEqual(request.server.app.cache)
+  test('returns request.server.app.cache', async () => {
+    expect(await getCache(request)).toStrictEqual(request.server.app.cache)
   })
 
-  test('should return rule.expiresIn as expected ttl', async () => {
-    const result = await getCache(request)
-    expect(result.rule.expiresIn).toBe(expectedTTL)
-  })
-
-  test('should return ttl() as expected ttl', async () => {
-    const result = await getCache(request)
-    expect(result.ttl()).toBe(expectedTTL)
-  })
-
-  test('should return _segment as expected segment', async () => {
-    const result = await getCache(request)
-    expect(result._segment).toBe(expectedSegment)
+  test.each([
+    ['rule.expiresIn', cache => cache.rule.expiresIn, expectedTTL],
+    ['ttl()', cache => cache.ttl(), expectedTTL],
+    ['_segment', cache => cache._segment, expectedSegment]
+  ])('returns %s correctly', async (_, accessor, expected) => {
+    const cache = await getCache(request)
+    expect(accessor(cache)).toBe(expected)
   })
 })

@@ -5,14 +5,14 @@ const { get, drop } = require('../../../../app/cache')
 const key = 'testKey'
 const value = 'testValue'
 
-let request, server
+let request
+let server
 
 const expectedTTL = 10000
 const expectedSegment = 'default'
 const expectedCacheName = 'default'
 
 beforeEach(async () => {
-  // Override cache config for tests
   config.cache = {
     ttl: expectedTTL,
     segment: expectedSegment,
@@ -26,19 +26,12 @@ beforeEach(async () => {
 
   const dummyCache = {
     data: {},
-    get: async function (k) {
-      return this.data[k]
-    },
-    set: async function (k, v) {
-      this.data[k] = v
-    },
-    drop: async function (k) {
-      delete this.data[k]
-    }
+    get: async function (k) { return this.data[k] },
+    set: async function (k, v) { this.data[k] = v },
+    drop: async function (k) { delete this.data[k] }
   }
 
   server.app.cache = dummyCache
-
   request = { server }
 })
 
@@ -47,31 +40,26 @@ afterEach(async () => {
   jest.resetAllMocks()
 })
 
-describe('Cache operations', () => {
-  test('get returns undefined for non-existing key', async () => {
-    const result = await get(request, 'non-existent')
-    expect(result).toBeUndefined()
+describe('cache operations', () => {
+  test('get returns undefined for missing key', async () => {
+    expect(await get(request, 'missing')).toBeUndefined()
   })
 
-  test('get returns value for existing key', async () => {
+  test('get returns stored value', async () => {
     await server.app.cache.set(key, value)
-    const result = await get(request, key)
-    expect(result).toBe(value)
+    expect(await get(request, key)).toBe(value)
   })
 
-  test('drop removes key from cache', async () => {
+  test('drop removes key', async () => {
     await server.app.cache.set(key, value)
-    const cacheValueBefore = await get(request, key)
-    expect(cacheValueBefore).toBe(value)
+    expect(await get(request, key)).toBe(value)
 
     await drop(request, key)
-    const cacheValueAfter = await get(request, key)
-    expect(cacheValueAfter).toBeUndefined()
+    expect(await get(request, key)).toBeUndefined()
   })
 
-  test('drop on non-existing key does nothing', async () => {
-    await expect(drop(request, 'doesntExist')).resolves.toBeUndefined()
-    const cacheValue = await get(request, key)
-    expect(cacheValue).toBeUndefined()
+  test('drop on non-existing key resolves and changes nothing', async () => {
+    await expect(drop(request, 'absent')).resolves.toBeUndefined()
+    expect(await get(request, key)).toBeUndefined()
   })
 })

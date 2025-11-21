@@ -27,124 +27,46 @@ describe('Loading routes', () => {
     jest.clearAllMocks()
   })
 
+  const jobId = 'test-123'
+
   describe('GET /loading/{jobId}', () => {
-    const jobId = 'test-123'
+    const cases = [
+      { desc: 'returns status when job exists', mock: { status: 'processing' }, expected: { status: 'processing' }, code: 200 },
+      { desc: 'returns not-found when job does not exist', mock: null, expected: { status: 'not-found' }, code: 404 },
+      { desc: 'returns failed on cache error', mock: new Error('Cache error'), expected: { status: 'failed', message: 'Cache error' }, code: 500 }
+    ]
 
-    test('returns status when job exists', async () => {
-      const mockResult = { status: 'processing' }
-      get.mockResolvedValue(mockResult)
+    cases.forEach(({ desc, mock, expected, code }) => {
+      test(desc, async () => {
+        if (mock instanceof Error) get.mockRejectedValue(mock)
+        else get.mockResolvedValue(mock)
 
-      const res = await server.inject({
-        method: 'GET',
-        url: `/loading/${jobId}`
+        const res = await server.inject({ method: 'GET', url: `/loading/${jobId}` })
+
+        expect(res.statusCode).toBe(code)
+        expect(JSON.parse(res.payload)).toEqual(expected)
+        expect(get).toHaveBeenCalledWith(expect.anything(), jobId)
       })
-
-      expect(res.statusCode).toBe(200)
-      expect(JSON.parse(res.payload)).toEqual({
-        status: 'processing'
-      })
-      expect(get).toHaveBeenCalledWith(expect.anything(), jobId)
-    })
-
-    test('returns not-found when job does not exist', async () => {
-      get.mockResolvedValue(null)
-
-      const res = await server.inject({
-        method: 'GET',
-        url: `/loading/${jobId}`
-      })
-
-      expect(res.statusCode).toBe(404)
-      expect(JSON.parse(res.payload)).toEqual({
-        status: 'not-found'
-      })
-      expect(get).toHaveBeenCalledWith(expect.anything(), jobId)
-    })
-
-    test('returns error when get fails', async () => {
-      const ERROR_MESSAGE = 'Cache error'
-      get.mockRejectedValue(new Error(ERROR_MESSAGE))
-
-      const res = await server.inject({
-        method: 'GET',
-        url: `/loading/${jobId}`
-      })
-
-      expect(res.statusCode).toBe(500)
-      expect(JSON.parse(res.payload)).toEqual({
-        status: 'failed',
-        message: ERROR_MESSAGE
-      })
-      expect(get).toHaveBeenCalledWith(expect.anything(), jobId)
-    })
-
-    test('returns status from cache if present', async () => {
-      get.mockResolvedValue({ status: 'download' })
-
-      const res = await server.inject({
-        method: 'GET',
-        url: '/loading/test-job'
-      })
-
-      expect(res.statusCode).toBe(200)
-      expect(JSON.parse(res.payload)).toEqual({ status: 'download' })
-    })
-
-    test('returns not-found if cache entry is missing', async () => {
-      get.mockResolvedValue(null)
-
-      const res = await server.inject({
-        method: 'GET',
-        url: '/loading/missing-job'
-      })
-
-      expect(res.statusCode).toBe(404)
-      expect(JSON.parse(res.payload)).toEqual({ status: 'not-found' })
-    })
-
-    test('returns failed on cache error', async () => {
-      const ERROR_MESSAGE = 'Redis error'
-
-      get.mockRejectedValue(new Error(ERROR_MESSAGE))
-
-      const res = await server.inject({
-        method: 'GET',
-        url: '/loading/error-job'
-      })
-
-      expect(res.statusCode).toBe(500)
-      expect(JSON.parse(res.payload)).toEqual({ status: 'failed', message: ERROR_MESSAGE })
     })
   })
 
   describe('DELETE /loading/{jobId}', () => {
-    const jobId = 'test-123'
-
     test('returns success when job deleted', async () => {
       drop.mockResolvedValue(undefined)
 
-      const res = await server.inject({
-        method: 'DELETE',
-        url: `/loading/${jobId}`
-      })
+      const res = await server.inject({ method: 'DELETE', url: `/loading/${jobId}` })
 
       expect(res.statusCode).toBe(200)
       expect(drop).toHaveBeenCalledWith(expect.anything(), jobId)
     })
 
-    test('returns error when drop fails', async () => {
-      const ERROR_MESSAGE = 'Cache error'
-      drop.mockRejectedValue(new Error(ERROR_MESSAGE))
+    test('returns failed when drop fails', async () => {
+      drop.mockRejectedValue(new Error('Cache error'))
 
-      const res = await server.inject({
-        method: 'DELETE',
-        url: `/loading/${jobId}`
-      })
+      const res = await server.inject({ method: 'DELETE', url: `/loading/${jobId}` })
 
       expect(res.statusCode).toBe(500)
-      expect(JSON.parse(res.payload)).toEqual({
-        status: 'failed' // Fix: Remove "message" if it is not part of the actual response
-      })
+      expect(JSON.parse(res.payload)).toEqual({ status: 'failed' })
       expect(drop).toHaveBeenCalledWith(expect.anything(), jobId)
     })
   })

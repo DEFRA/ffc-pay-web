@@ -1,46 +1,25 @@
 const ViewModel = require('../../../../../app/routes/models/update-scheme')
 
-const getText = (name, active) => {
-  if (active) {
-    return `Would you like to disable ${name}?`
-  }
-  return `Would you like to enable ${name}?`
-}
+const getText = (name, active) =>
+  active ? `Would you like to disable ${name}?` : `Would you like to enable ${name}?`
 
-test('ViewModel should add error message when error is true', () => {
+describe('ViewModel', () => {
   const value = { schemeId: '1', name: 'Test', active: true }
-  const error = true
 
-  const viewModel = new ViewModel(value, error)
-
-  expect(viewModel.model.errorMessage).toEqual({
-    text: 'Please select yes or no to update.'
+  test.each([
+    [true, { text: 'Please select yes or no to update.' }],
+    [false, undefined]
+  ])('adds error message when error is %s', (error, expected) => {
+    const viewModel = new ViewModel(value, error)
+    expect(viewModel.model.errorMessage).toEqual(expected)
   })
 })
 
-test('ViewModel should not add error message when error is false', () => {
-  const value = { schemeId: '1', name: 'Test', active: true }
-  const error = false
-
-  const viewModel = new ViewModel(value, error)
-
-  expect(viewModel.model.errorMessage).toBeUndefined()
-})
-
-test('getText should return disable message when active is true', () => {
-  const name = 'Test'
-  const active = true
-
-  const text = getText(name, active)
-
-  expect(text).toEqual('Would you like to disable Test?')
-})
-
-test('getText should return enable message when active is false', () => {
-  const name = 'Test'
-  const active = false
-
-  const text = getText(name, active)
-
-  expect(text).toEqual('Would you like to enable Test?')
+describe('getText', () => {
+  test.each([
+    [true, 'Would you like to disable Test?'],
+    [false, 'Would you like to enable Test?']
+  ])('returns correct message when active is %s', (active, expected) => {
+    expect(getText('Test', active)).toBe(expected)
+  })
 })
