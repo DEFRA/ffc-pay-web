@@ -1,216 +1,81 @@
-const {
-  schemeAdmin,
-  holdAdmin,
-  dataView
-} = require('../../../../../app/auth/permissions')
+const { schemeAdmin, holdAdmin, dataView } = require('../../../../../app/auth/permissions')
 const { getHolds } = require('../../../../../app/holds')
 const { getMIReport, getSuppressedReport } = require('../../../../../app/storage')
 const createServer = require('../../../../../app/server')
 
 let mockDownload
 jest.mock('../../../../../app/auth')
-jest.mock('@azure/storage-blob', () => {
-  return {
-    BlobServiceClient: {
-      fromConnectionString: jest.fn().mockImplementation(() => {
-        return {
-          getContainerClient: jest.fn().mockImplementation(() => {
-            return {
-              createIfNotExists: jest.fn(),
-              getBlockBlobClient: jest.fn().mockImplementation(() => {
-                return {
-                  download: mockDownload
-                }
-              })
-            }
-          })
-        }
-      })
-    }
-  }
-})
+jest.mock('@azure/storage-blob', () => ({
+  BlobServiceClient: { fromConnectionString: jest.fn(() => ({ getContainerClient: jest.fn(() => ({ createIfNotExists: jest.fn(), getBlockBlobClient: jest.fn(() => ({ download: mockDownload })) })) })) }
+}))
 jest.mock('../../../../../app/holds')
 jest.mock('../../../../../app/api')
 jest.mock('../../../../../app/storage/pay-reports')
 jest.mock('../../../../../app/helpers/get-schemes')
 
-describe('Report test', () => {
+describe('Report Routes', () => {
   let server
-  let auth
+  const auth = { strategy: 'session-auth', credentials: { scope: [schemeAdmin, holdAdmin, dataView] } }
 
   beforeEach(async () => {
-    mockDownload = jest.fn().mockReturnValue({
-      readableStreamBody: 'Hello'
-    })
-    auth = {
-      strategy: 'session-auth',
-      credentials: { scope: [schemeAdmin, holdAdmin, dataView] }
-    }
+    mockDownload = jest.fn().mockReturnValue({ readableStreamBody: 'Hello' })
     server = await createServer()
     await server.initialize()
   })
 
-  afterEach(async () => {
-    await server.stop()
-    jest.clearAllMocks()
+  afterEach(async () => { await server.stop(); jest.clearAllMocks() })
+
+  const injectRoute = (url, credentials = auth) => server.inject({ method: 'GET', url, auth: credentials })
+
+  test.each([
+    ['/report-list/payment-requests', getMIReport],
+    ['/report-list/suppressed-payments', getSuppressedReport]
+  ])('GET %s returns stream', async (url, mockFn) => {
+    mockFn.mockResolvedValue({ readableStreamBody: 'Hello' })
+    const res = await injectRoute(url)
+    expect(res.statusCode).toBe(200)
+    expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
+    expect(res.payload).toBe('Hello')
   })
 
-  test('GET /report-list/payment-requests returns stream if report available', async () => {
-    getMIReport.mockResolvedValue({
-      readableStreamBody: 'Hello'
-    })
-
-    const options = {
-      method: 'GET',
-      url: '/report-list/payment-requests',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toBe('text/csv; charset=utf-8')
-    expect(response.payload).toBe('Hello')
-  })
-
-  test('GET /report-list/suppressed-payments returns stream if report available', async () => {
-    getSuppressedReport.mockResolvedValue({
-      readableStreamBody: 'Hello'
-    })
-
-    const options = {
-      method: 'GET',
-      url: '/report-list/suppressed-payments',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toBe('text/csv; charset=utf-8')
-    expect(response.payload).toBe('Hello')
-  })
-
-  test('GET /report-list/holds returns view if report available', async () => {
-    getHolds.mockResolvedValue([
-      {
-        frn: '123',
-        holdCategorySchemeName: 'Scheme 1',
-        marketingYear: 2023,
-        agreementNumber: 'AG123',
-        contractNumber: 'CON123',
-        holdCategoryName: 'Category 1',
-        dateTimeAdded: new Date()
-      }
-    ])
-
-    const options = {
-      method: 'GET',
-      url: '/report-list/holds',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toBe('text/csv; charset=utf-8')
-    expect(response.payload).toContain('123')
+  test('GET /report-list/holds returns CSV view', async () => {
+    getHolds.mockResolvedValue([{ frn: '123', holdCategorySchemeName: 'Scheme 1', marketingYear: 2023, agreementNumber: 'AG123', contractNumber: 'CON123', holdCategoryName: 'Category 1', dateTimeAdded: new Date() }])
+    const res = await injectRoute('/report-list/holds')
+    expect(res.statusCode).toBe(200)
+    expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
+    expect(res.payload).toContain('123')
   })
 
   test('GET /report-unavailable renders unavailable page', async () => {
-    const options = {
-      method: 'GET',
-      url: '/report-unavailable',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain(
-      '<h1 class="govuk-heading-l">Report unavailable</h1>'
-    )
+    const res = await injectRoute('/report-unavailable')
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).toContain('<h1 class="govuk-heading-l">Report unavailable</h1>')
   })
 
   test('GET /report-list/holds returns unavailable page if no holds', async () => {
     getHolds.mockResolvedValue([])
-
-    const options = {
-      method: 'GET',
-      url: '/report-list/holds',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain('There are currently no holds.')
+    const res = await injectRoute('/report-list/holds')
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).toContain('There are currently no holds.')
   })
 
-  test('GET /report-list/transaction-summary/download returns error for invalid query params', async () => {
-    const options = {
-      method: 'GET',
-      url: '/report-list/transaction-summary/download?schemeId=invalid&year=2023',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(400)
-    expect(response.payload).toContain('There is a problem')
+  test('GET /report-list/transaction-summary/download returns 400 for invalid params', async () => {
+    const res = await injectRoute('/report-list/transaction-summary/download?schemeId=invalid&year=2023')
+    expect(res.statusCode).toBe(400)
+    expect(res.payload).toContain('There is a problem')
   })
 
-  test('GET /report-list/payment-requests returns correct content type', async () => {
-    getMIReport.mockResolvedValue({
-      readableStreamBody: 'Hello'
-    })
-
-    const options = {
-      method: 'GET',
-      url: '/report-list/payment-requests',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.headers['content-type']).toBe('text/csv; charset=utf-8')
+  test('GET /report-list/payment-requests returns 403 for unauthorized', async () => {
+    const res = await injectRoute('/report-list/payment-requests', { strategy: 'session-auth', credentials: { scope: [] } })
+    expect(res.statusCode).toBe(403)
+    expect(res.payload).toContain('Sorry, you are not authorised to perform this action')
   })
 
-  test('GET /report-list/payment-requests returns 403 for unauthorized role', async () => {
-    const unauthorizedAuth = {
-      strategy: 'session-auth',
-      credentials: { scope: [] }
-    }
-
-    const options = {
-      method: 'GET',
-      url: '/report-list/payment-requests',
-      auth: unauthorizedAuth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(403)
-    expect(response.payload).toContain('Sorry, you are not authorised to perform this action')
-  })
-
-  test('GET /report-list/holds returns correct data with default values', async () => {
-    getHolds.mockResolvedValue([
-      {
-        frn: '456',
-        holdCategorySchemeName: 'Scheme 2',
-        marketingYear: undefined,
-        agreementNumber: undefined,
-        contractNumber: undefined,
-        holdCategoryName: 'Category 2',
-        dateTimeAdded: new Date()
-      }
-    ])
-
-    const options = {
-      method: 'GET',
-      url: '/report-list/holds',
-      auth
-    }
-
-    const response = await server.inject(options)
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toBe('text/csv; charset=utf-8')
-
-    expect(response.payload).toContain('All')
-    expect(response.payload).toContain('All')
-    expect(response.payload).toContain('All')
+  test('GET /report-list/holds handles default values', async () => {
+    getHolds.mockResolvedValue([{ frn: '456', holdCategorySchemeName: 'Scheme 2', marketingYear: undefined, agreementNumber: undefined, contractNumber: undefined, holdCategoryName: 'Category 2', dateTimeAdded: new Date() }])
+    const res = await injectRoute('/report-list/holds')
+    expect(res.statusCode).toBe(200)
+    expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
+    expect(res.payload).toContain('All')
   })
 })

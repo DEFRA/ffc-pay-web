@@ -10,7 +10,6 @@ const expectedSegment = 'default'
 const expectedCacheName = 'default'
 
 beforeEach(async () => {
-  // Override cache config for tests
   config.cache = {
     ttl: expectedTTL,
     segment: expectedSegment,
@@ -27,12 +26,8 @@ beforeEach(async () => {
     ttl: () => expectedTTL,
     _segment: expectedSegment,
     data: {},
-    get: async function (k) {
-      return this.data[k]
-    },
-    set: async function (k, v) {
-      this.data[k] = v
-    }
+    get: async function (k) { return this.data[k] },
+    set: async function (k, v) { this.data[k] = v }
   }
 
   request = { server }
@@ -46,48 +41,26 @@ afterEach(async () => {
 })
 
 describe('get cache', () => {
-  test('should return defined', async () => {
-    const result = await get(request, key)
-    expect(result).toBeDefined()
+  test('returns defined for cached key', async () => {
+    expect(await get(request, key)).toBeDefined()
   })
 
-  test('should return the cached value', async () => {
-    const result = await get(request, key)
-    expect(result).toBe(value)
+  test('returns cached value', async () => {
+    expect(await get(request, key)).toBe(value)
   })
 
-  test('should return undefined when null cache key is given', async () => {
-    const result = await get(request, null)
-    expect(result).toBeUndefined()
+  test.each([
+    ['null', null],
+    ['undefined', undefined],
+    ['empty array', []],
+    ['empty object', {}],
+    ['false', false],
+    ['true', true]
+  ])('returns undefined for invalid cache key: %s', async (_, invalidKey) => {
+    expect(await get(request, invalidKey)).toBeUndefined()
   })
 
-  test('should return undefined when undefined cache key is given', async () => {
-    const result = await get(request, undefined)
-    expect(result).toBeUndefined()
-  })
-
-  test('should return undefined when empty array cache key is given', async () => {
-    const result = await get(request, [])
-    expect(result).toBeUndefined()
-  })
-
-  test('should return undefined when empty object cache key is given', async () => {
-    const result = await get(request, {})
-    expect(result).toBeUndefined()
-  })
-
-  test('should return undefined when false cache key is given', async () => {
-    const result = await get(request, false)
-    expect(result).toBeUndefined()
-  })
-
-  test('should return undefined when true cache key is given', async () => {
-    const result = await get(request, true)
-    expect(result).toBeUndefined()
-  })
-
-  test('should return undefined when incorrect request is given', async () => {
-    const result = await get({}, key)
-    expect(result).toBeUndefined()
+  test('returns undefined when request is invalid', async () => {
+    expect(await get({}, key)).toBeUndefined()
   })
 })

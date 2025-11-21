@@ -18,28 +18,18 @@ describe('Payment schemes', () => {
     server = await createServer()
   })
 
-  afterEach(async () => {
-    await server.stop()
-  })
+  afterEach(async () => { await server.stop() })
 
   const mockPaymentSchemes = [
-    {
-      schemeId: '1',
-      name: 'SFI - active',
-      active: true
-    },
-    {
-      schemeId: '2',
-      name: 'SFI - inactive',
-      active: false
-    }
+    { schemeId: '1', name: 'SFI - active', active: true },
+    { schemeId: '2', name: 'SFI - inactive', active: false }
   ]
 
-  function mockGetPaymentSchemes (paymentSchemes) {
+  const mockGetPaymentSchemes = (paymentSchemes) => {
     getProcessingData.mockResolvedValueOnce({ payload: { paymentSchemes } })
   }
 
-  function expectRequestForPaymentSchemes (timesCalled = 1) {
+  const expectRequestForPaymentSchemes = (timesCalled = 1) => {
     expect(getProcessingData).toHaveBeenCalledTimes(timesCalled)
     expect(getProcessingData).toHaveBeenCalledWith('/payment-schemes')
   }
@@ -53,47 +43,38 @@ describe('Payment schemes', () => {
       { holdResponse: '' },
       { holdResponse: 0 },
       { holdResponse: false }
-    ])('returns 500 and no response view when falsy value returned from getting payment schemes', async ({ holdResponse }) => {
+    ])('returns 500 and error view when falsy value returned from getting payment schemes', async ({ holdResponse }) => {
       getProcessingData.mockResolvedValueOnce(holdResponse)
-
       const res = await server.inject({ method, url, auth })
-
       expectRequestForPaymentSchemes()
       expect(res.statusCode).toBe(500)
       const $ = cheerio.load(res.payload)
       expect($('h1').text()).toEqual('Sorry, there is a problem with the service')
     })
 
-    test('returns 200 and no schemes when non are returned', async () => {
+    test('returns 200 and no schemes when none are returned', async () => {
       mockGetPaymentSchemes([])
-
       const res = await server.inject({ method, url, auth })
-
       expectRequestForPaymentSchemes()
       expect(res.statusCode).toBe(200)
-
       const $ = cheerio.load(res.payload)
       expect($('h1').text()).toEqual(pageH1)
-      const content = $('.govuk-body').text()
-      expect(content).toEqual('No available schemes')
+      expect($('.govuk-body').text()).toEqual('No available schemes')
     })
 
-    test('returns 200 and correctly lists returned payment schemes', async () => {
+    test('returns 200 and lists schemes correctly', async () => {
       mockGetPaymentSchemes(mockPaymentSchemes)
-
       const res = await server.inject({ method, url, auth })
-
       expectRequestForPaymentSchemes()
       expect(res.statusCode).toBe(200)
-
       const $ = cheerio.load(res.payload)
       expect($('h1').text()).toEqual(pageH1)
       const schemes = $('tbody tr.govuk-table__row')
       expect(schemes.length).toEqual(mockPaymentSchemes.length)
       schemes.each((i, scheme) => {
-        const schemeCells = $('td', scheme)
-        expect(schemeCells.eq(0).text()).toEqual(mockPaymentSchemes[i].name)
-        expect(schemeCells.eq(1).text()).toEqual(mockPaymentSchemes[i].active ? 'Active' : 'Inactive')
+        const cells = $('td', scheme)
+        expect(cells.eq(0).text()).toEqual(mockPaymentSchemes[i].name)
+        expect(cells.eq(1).text()).toEqual(mockPaymentSchemes[i].active ? 'Active' : 'Inactive')
       })
     })
 
@@ -132,21 +113,14 @@ describe('Payment schemes', () => {
       expect(res.headers.location).toBe('/payment-schemes')
     })
 
-    test('returns 403 and redirects to / - no permission', async () => {
-      auth.credentials.scope = []
+    test.each([
+      { authOverride: { strategy: 'session-auth', credentials: { scope: [] } }, expectedStatus: 403, redirect: null },
+      { authOverride: { strategy: 'session-auth', credentials: {} }, expectedStatus: 302, redirect: '/login' }
+    ])('handles permission/auth checks', async ({ authOverride, expectedStatus, redirect }) => {
       mockGetPaymentSchemes(mockPaymentSchemes)
-      const res = await server.inject({ method, url, auth })
-
-      expect(res.statusCode).toBe(403)
-    })
-
-    test('returns 302 and redirects to /login - no auth', async () => {
-      mockGetPaymentSchemes(mockPaymentSchemes)
-
-      const res = await server.inject({ method, url })
-
-      expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toEqual('/login')
+      const res = await server.inject({ method, url, auth: authOverride })
+      expect(res.statusCode).toBe(expectedStatus)
+      if (redirect) expect(res.headers.location).toBe(redirect)
     })
   })
 })
