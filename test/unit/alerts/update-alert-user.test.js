@@ -19,24 +19,15 @@ describe('updateAlertUser', () => {
       code: jest.fn().mockReturnThis(),
       takeover: jest.fn().mockReturnThis()
     }
-    getAlertingData.mockResolvedValue({
-      payload: { alertTypes: ['type1', 'type2', 'type3'] }
-    })
+    getAlertingData.mockResolvedValue({ payload: { alertTypes: ['type1', 'type2', 'type3'] } })
     isEmailTaken.mockResolvedValue()
-    isEmailBlocked.mockImplementation(() => { })
+    isEmailBlocked.mockImplementation(() => {})
     postAlerting.mockResolvedValue()
     getAlertUpdateViewData.mockResolvedValue({ someViewData: true })
   })
 
-  test('should successfully update alert user and redirect', async () => {
-    const payload = {
-      emailAddress: 'test@example.com',
-      contactId: '123',
-      1: 'type1',
-      2: ['type2', 'type3'],
-      selectView: 'ignored',
-      action: 'ignored'
-    }
+  test('successfully updates alert user and redirects', async () => {
+    const payload = { emailAddress: 'test@example.com', contactId: '123', 1: 'type1', 2: ['type2', 'type3'] }
     const modifiedBy = 'adminUser'
 
     const result = await updateAlertUser(modifiedBy, payload, h)
@@ -59,107 +50,66 @@ describe('updateAlertUser', () => {
     expect(result).toBe('redirected')
   })
 
-  test('should throw error if no alert types selected in payload', async () => {
-    const payload = {
-      emailAddress: 'test@example.com',
-      contactId: '123',
-      selectView: 'ignored',
-      action: 'ignored'
-    }
+  test('throws error if no alert types selected', async () => {
+    const payload = { emailAddress: 'test@example.com', contactId: '123' }
     const modifiedBy = 'adminUser'
 
-    await expect(updateAlertUser(modifiedBy, payload, h)).resolves.toEqual(
-      expect.objectContaining({})
-    )
+    await expect(updateAlertUser(modifiedBy, payload, h)).resolves.toEqual(expect.objectContaining({}))
     expect(postAlerting).not.toHaveBeenCalled()
     expect(h.view).toHaveBeenCalled()
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(h.takeover).toHaveBeenCalled()
   })
 
-  test('should treat "all" alert type as all alert types fetched from API', async () => {
-    const payload = {
-      emailAddress: 'test@example.com',
-      contactId: '123',
-      1: 'all'
-    }
+  test('treats "all" alert type as all alert types fetched from API', async () => {
+    const payload = { emailAddress: 'test@example.com', contactId: '123', 1: 'all' }
     const modifiedBy = 'adminUser'
 
     await updateAlertUser(modifiedBy, payload, h)
 
     expect(postAlerting).toHaveBeenCalledWith(
       '/update-contact',
-      expect.objectContaining({
-        type1: [1],
-        type2: [1],
-        type3: [1]
-      }),
+      expect.objectContaining({ type1: [1], type2: [1], type3: [1] }),
       null
     )
   })
 
-  test('should call returnErrorView on isEmailTaken rejection', async () => {
-    const payload = {
-      emailAddress: 'taken@example.com',
-      contactId: '123',
-      1: 'type1'
-    }
+  test('handles isEmailTaken rejection with error view', async () => {
+    const payload = { emailAddress: 'taken@example.com', contactId: '123', 1: 'type1' }
     const modifiedBy = 'adminUser'
     const error = new Error('Email taken')
 
     isEmailTaken.mockRejectedValue(error)
-
     await updateAlertUser(modifiedBy, payload, h)
 
-    expect(h.view).toHaveBeenCalledWith(
-      'alerts/update',
-      expect.objectContaining({ error })
-    )
+    expect(h.view).toHaveBeenCalledWith('alerts/update', expect.objectContaining({ error }))
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(h.takeover).toHaveBeenCalled()
     expect(postAlerting).not.toHaveBeenCalled()
   })
 
-  test('should call returnErrorView on postAlerting rejection', async () => {
-    const payload = {
-      emailAddress: 'test@example.com',
-      contactId: '123',
-      1: 'type1'
-    }
+  test('handles postAlerting rejection with error view', async () => {
+    const payload = { emailAddress: 'test@example.com', contactId: '123', 1: 'type1' }
     const modifiedBy = 'adminUser'
     const error = new Error('Post failed')
 
     postAlerting.mockRejectedValue(error)
-
     await updateAlertUser(modifiedBy, payload, h)
 
-    expect(h.view).toHaveBeenCalledWith(
-      'alerts/update',
-      expect.objectContaining({ error })
-    )
+    expect(h.view).toHaveBeenCalledWith('alerts/update', expect.objectContaining({ error }))
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(h.takeover).toHaveBeenCalled()
   })
 
-  test('should ignore invalid payload entries (non-string/non-array) and keys contactId/emailAddress', async () => {
-    const payload = {
-      emailAddress: 'test@example.com',
-      contactId: '123',
-      1: 42,
-      2: { foo: 'bar' },
-      3: 'type1',
-      selectView: 'ignored',
-      action: 'ignored'
-    }
+  test('ignores invalid payload entries and reserved keys', async () => {
+    const payload = { emailAddress: 'test@example.com', contactId: '123', 1: 42, 2: { foo: 'bar' }, 3: 'type1' }
     const modifiedBy = 'adminUser'
 
     await updateAlertUser(modifiedBy, payload, h)
 
     expect(postAlerting).toHaveBeenCalledWith(
       '/update-contact',
-      expect.objectContaining({
-        type1: [3]
-      }),
+      expect.objectContaining({ type1: [3] }),
       null
     )
   })

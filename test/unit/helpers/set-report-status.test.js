@@ -15,50 +15,23 @@ describe('setReportStatus', () => {
     set.mockClear()
   })
 
-  test('should call set with only required status when optional values are undefined', async () => {
-    const status = 'pending'
-    await setReportStatus(request, jobId, { status })
-
-    expect(set).toHaveBeenCalledWith(request, jobId, { status })
+  test('calls set with only required status when optional values are undefined', async () => {
+    await setReportStatus(request, jobId, { status: 'pending' })
+    expect(set).toHaveBeenCalledWith(request, jobId, { status: 'pending' })
   })
 
-  test('should include returnedFilename when defined', async () => {
-    const status = 'done'
-    const returnedFilename = 'returned.csv'
+  test('includes individual optional values when provided', async () => {
+    await setReportStatus(request, jobId, { status: 'done', returnedFilename: 'returned.csv' })
+    expect(set).toHaveBeenCalledWith(request, jobId, { status: 'done', returnedFilename: 'returned.csv' })
 
-    await setReportStatus(request, jobId, { status, returnedFilename })
+    await setReportStatus(request, jobId, { status: 'done', reportFilename: 'report.csv' })
+    expect(set).toHaveBeenCalledWith(request, jobId, { status: 'done', reportFilename: 'report.csv' })
 
-    expect(set).toHaveBeenCalledWith(request, jobId, {
-      status,
-      returnedFilename
-    })
+    await setReportStatus(request, jobId, { status: 'done', reportType: 'pdf' })
+    expect(set).toHaveBeenCalledWith(request, jobId, { status: 'done', reportType: 'pdf' })
   })
 
-  test('should include reportFilename when defined', async () => {
-    const status = 'done'
-    const reportFilename = 'report.csv'
-
-    await setReportStatus(request, jobId, { status, reportFilename })
-
-    expect(set).toHaveBeenCalledWith(request, jobId, {
-      status,
-      reportFilename
-    })
-  })
-
-  test('should include reportType when defined', async () => {
-    const status = 'done'
-    const reportType = 'pdf'
-
-    await setReportStatus(request, jobId, { status, reportType })
-
-    expect(set).toHaveBeenCalledWith(request, jobId, {
-      status,
-      reportType
-    })
-  })
-
-  test('should merge all optional values correctly when all are defined', async () => {
+  test('merges all optional values correctly when all are defined', async () => {
     const args = {
       status: 'completed',
       returnedFilename: 'returned.csv',
@@ -67,11 +40,10 @@ describe('setReportStatus', () => {
     }
 
     await setReportStatus(request, jobId, args)
-
     expect(set).toHaveBeenCalledWith(request, jobId, args)
   })
 
-  test('should omit any optional keys that are undefined', async () => {
+  test('omits optional keys that are undefined', async () => {
     const args = {
       status: 'completed',
       returnedFilename: 'returned.csv',

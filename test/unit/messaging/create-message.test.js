@@ -6,25 +6,20 @@ const { MESSAGE_ID } = require('../../mocks/messaging/message-id')
 
 const { createMessage } = require('../../../app/messaging/create-message')
 
-describe('create message', () => {
-  test('should create message with body as body', () => {
-    const message = createMessage(BODY, TYPE)
-    expect(message.body).toEqual(BODY)
+describe('createMessage', () => {
+  const baseMessage = createMessage(BODY, TYPE)
+
+  test.each([
+    ['body', baseMessage.body, BODY],
+    ['type', baseMessage.type, TYPE],
+    ['source', baseMessage.source, SOURCE]
+  ])('should set %s correctly', (_, actual, expected) => {
+    expect(actual).toEqual(expected)
   })
 
-  test('should create message with type as type', () => {
-    const message = createMessage(BODY, TYPE)
-    expect(message.type).toEqual(TYPE)
-  })
-
-  test('should create message with source as source', () => {
-    const message = createMessage(BODY, TYPE)
-    expect(message.source).toEqual(SOURCE)
-  })
-
-  test('should create message with any options set', () => {
+  test('should apply optional fields', () => {
     const options = { messageId: MESSAGE_ID }
-    const message = createMessage(BODY, TYPE, options)
-    expect(message.messageId).toEqual(MESSAGE_ID)
+    const messageWithOptions = createMessage(BODY, TYPE, options)
+    expect(messageWithOptions.messageId).toEqual(MESSAGE_ID)
   })
 })

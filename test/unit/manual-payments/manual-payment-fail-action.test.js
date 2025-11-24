@@ -8,8 +8,7 @@ jest.mock('../../../app/manual-payments/get-manual-payment-upload-history', () =
 }))
 
 describe('manualPaymentUploadFailAction', () => {
-  let request
-  let h
+  let request, h
 
   beforeEach(() => {
     request = {
@@ -26,59 +25,47 @@ describe('manualPaymentUploadFailAction', () => {
     jest.clearAllMocks()
   })
 
-  test('should handle CONTENT_TOO_LARGE (413) error and return correct view', async () => {
-    const error = {
-      output: {
-        statusCode: HTTP_STATUS.CONTENT_TOO_LARGE
-      }
-    }
-
-    await manualPaymentUploadFailAction(request, h, error)
-
+  const expectHapiResponse = async (expectedErrors, crumb = 'payload-crumb') => {
     expect(h.view).toHaveBeenCalledWith(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
-      errors: {
-        details: [
-          {
-            path: 'payload',
-            message: `File too large - The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`
-          }
-        ]
-      },
-      crumb: 'payload-crumb',
+      errors: expectedErrors,
+      crumb,
       uploadHistory: []
     })
     expect(h.code).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST)
     expect(h.takeover).toHaveBeenCalled()
+  }
+
+  test('handles CONTENT_TOO_LARGE (413) error', async () => {
+    const error = { output: { statusCode: HTTP_STATUS.CONTENT_TOO_LARGE } }
+
+    await manualPaymentUploadFailAction(request, h, error)
+
+    const expectedErrors = {
+      details: [
+        {
+          path: 'payload',
+          message: `File too large - The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`
+        }
+      ]
+    }
+
+    await expectHapiResponse(expectedErrors)
   })
 
-  test('should handle generic error and return correct view', async () => {
+  test('handles generic error', async () => {
     const error = { message: 'Some error' }
 
     await manualPaymentUploadFailAction(request, h, error)
 
-    expect(h.view).toHaveBeenCalledWith(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
-      errors: error,
-      crumb: 'payload-crumb',
-      uploadHistory: []
-    })
-    expect(h.code).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST)
-    expect(h.takeover).toHaveBeenCalled()
+    await expectHapiResponse(error)
   })
 
-  test('should use state crumb if payload crumb is missing', async () => {
-    const requestWithoutPayloadCrumb = {
-      state: { crumb: 'state-crumb' }
-    }
+  test('falls back to state crumb if payload crumb is missing', async () => {
     const error = { message: 'Test error' }
+    const requestWithoutPayloadCrumb = { state: { crumb: 'state-crumb' } }
 
     await manualPaymentUploadFailAction(requestWithoutPayloadCrumb, h, error)
 
-    expect(h.view).toHaveBeenCalledWith(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
-      errors: error,
-      crumb: 'state-crumb',
-      uploadHistory: []
-    })
-    expect(h.code).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST)
-    expect(h.takeover).toHaveBeenCalled()
+    await expectHapiResponse(error, 'state-crumb')
   })
 })

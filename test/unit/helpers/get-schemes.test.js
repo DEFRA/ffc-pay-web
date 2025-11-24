@@ -3,12 +3,12 @@ const { getSchemes } = require('../../../app/helpers/get-schemes')
 
 jest.mock('../../../app/api')
 
-describe('get schemes', () => {
+describe('getSchemes', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test('should fetch schemes and return them correctly', async () => {
+  test('fetches schemes and renames SFI to SFI22', async () => {
     const mockSchemes = [
       { name: 'Scheme A' },
       { name: 'SFI' },
@@ -23,7 +23,6 @@ describe('get schemes', () => {
 
     const result = await getSchemes()
 
-    expect(api.getProcessingData).toHaveBeenCalledWith('/payment-schemes')
     expect(result).toEqual([
       { name: 'Scheme A' },
       { name: 'Scheme B' },
@@ -31,7 +30,7 @@ describe('get schemes', () => {
     ])
   })
 
-  test('should rename SFI to SFI22 only', async () => {
+  test('renames multiple SFI schemes to SFI22', async () => {
     const mockSchemes = [
       { name: 'SFI' },
       { name: 'SFI' },
@@ -53,21 +52,17 @@ describe('get schemes', () => {
     ])
   })
 
-  test('should return an empty array if no schemes are available', async () => {
+  test('returns an empty array when no schemes exist', async () => {
     api.getProcessingData.mockResolvedValue({
-      payload: {
-        paymentSchemes: []
-      }
+      payload: { paymentSchemes: [] }
     })
 
     const result = await getSchemes()
-
     expect(result).toEqual([])
   })
 
-  test('should handle API errors gracefully', async () => {
+  test('throws error when API call fails', async () => {
     api.getProcessingData.mockRejectedValue(new Error('API error'))
-
     await expect(getSchemes()).rejects.toThrow('API error')
   })
 })

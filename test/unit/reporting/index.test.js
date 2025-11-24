@@ -16,14 +16,10 @@ jest.mock('../../../app/reporting/create-transform-stream', () => ({
 }))
 const { createTransformStream } = require('../../../app/reporting/create-transform-stream')
 
-jest.mock('JSONStream', () => ({
-  parse: jest.fn()
-}))
+jest.mock('JSONStream', () => ({ parse: jest.fn() }))
 const JSONStream = require('JSONStream')
 
-jest.mock('@fast-csv/format', () => ({
-  format: jest.fn()
-}))
+jest.mock('@fast-csv/format', () => ({ format: jest.fn() }))
 const { format } = require('@fast-csv/format')
 
 describe('generateReport', () => {
@@ -35,6 +31,7 @@ describe('generateReport', () => {
     dummyCSVStream = new PassThrough({ objectMode: true })
     onComplete = jest.fn().mockResolvedValue()
     fileData = { readableStreamBody: dummyReadable }
+
     getDataRequestFile.mockReset()
     getDataFields.mockReset()
     createTransformStream.mockReset()
@@ -45,11 +42,14 @@ describe('generateReport', () => {
   test('returns null and warns if fileData has no readableStreamBody', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     getDataRequestFile.mockResolvedValue({})
+
     const result = await generateReport('filename', 'AP', onComplete)
+
     expect(console.warn).toHaveBeenCalledWith(
       expect.stringContaining('No data available for report type: AP with filename: filename')
     )
     expect(result).toBeNull()
+
     warnSpy.mockRestore()
   })
 
@@ -67,6 +67,7 @@ describe('generateReport', () => {
     })
 
     const result = await generateReport('file.csv', 'AP', onComplete)
+
     expect(getDataRequestFile).toHaveBeenCalledWith('file.csv')
     expect(getDataFields).toHaveBeenCalledWith('AP')
     expect(JSONStream.parse).toHaveBeenCalledWith('*')
@@ -75,10 +76,9 @@ describe('generateReport', () => {
     expect(result).toBe(dummyCSVStream)
   })
 
-  test('calls onComplete with error message and returns null if an error occurs', async () => {
+  test('calls onComplete with error and returns null if getDataRequestFile throws', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
     const errorMessage = 'Test error'
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {}) // Mock console.error
-
     getDataRequestFile.mockRejectedValue(new Error(errorMessage))
 
     const result = await generateReport('file.csv', 'AP', onComplete)
@@ -89,6 +89,6 @@ describe('generateReport', () => {
       expect.stringContaining('Error generating report for AP with filename file.csv:')
     )
 
-    consoleErrorSpy.mockRestore() // Restore console.error after the test
+    consoleErrorSpy.mockRestore()
   })
 })

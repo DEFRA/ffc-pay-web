@@ -2,9 +2,7 @@ const { createTransformStream } = require('../../../app/reporting/create-transfo
 
 jest.mock('../../../app/reporting/mapping/map-and-sanitise', () => ({
   mapAndSanitize: jest.fn((dataRow, fields) => {
-    if (dataRow.error) {
-      throw new Error('Transform error')
-    }
+    if (dataRow.error) throw new Error('Transform error')
     return { ...dataRow, sanitized: true, fields }
   })
 }))
@@ -21,36 +19,22 @@ describe('createTransformStream', () => {
     jest.clearAllTimers()
   })
 
-  test('transforms incoming rows correctly', (done) => {
+  test.each([
+    [{ a: 1, b: 2 }],
+    [{ a: 3, b: 4 }]
+  ])('transforms row %o correctly', (inputRow, done) => {
     const transformStream = createTransformStream(dummyFields, onComplete)
-
-    const inputRows = [
-      { a: 1, b: 2 },
-      { a: 3, b: 4 }
-    ]
     const outputRows = []
 
-    transformStream.on('data', (chunk) => {
-      outputRows.push(chunk)
-    })
-
-    transformStream.on('error', (err) => {
-      done(err)
-    })
-
+    transformStream.on('data', row => outputRows.push(row))
+    transformStream.on('error', err => done(err))
     transformStream.on('end', () => {
-      try {
-        expect(mapAndSanitize).toHaveBeenCalledTimes(inputRows.length)
-        outputRows.forEach((row, index) => {
-          expect(row).toEqual({ ...inputRows[index], sanitized: true, fields: dummyFields })
-        })
-        done()
-      } catch (error) {
-        done(error)
-      }
+      expect(mapAndSanitize).toHaveBeenCalledTimes(1)
+      expect(outputRows[0]).toEqual({ ...inputRow, sanitized: true, fields: dummyFields })
+      done()
     })
 
-    inputRows.forEach(row => transformStream.write(row))
+    transformStream.write(inputRow)
     transformStream.end()
   })
 
@@ -58,7 +42,7 @@ describe('createTransformStream', () => {
     const transformStream = createTransformStream(dummyFields, onComplete)
     const badRow = { error: true }
 
-    transformStream.on('error', (err) => {
+    transformStream.on('error', err => {
       expect(err).toBeInstanceOf(Error)
       expect(err.message).toBe('Transform error')
       done()
@@ -69,16 +53,11 @@ describe('createTransformStream', () => {
 
   test('flush calls onComplete and logs processing stats', (done) => {
     const debugSpy = jest.spyOn(console, 'debug').mockImplementation(() => {})
-
     let now = 1000000
     jest.spyOn(global.Date, 'now').mockImplementation(() => now)
 
     const transformStream = createTransformStream(dummyFields, onComplete)
-
-    const inputRows = [
-      { a: 1 },
-      { a: 2 }
-    ]
+    const inputRows = [{ a: 1 }, { a: 2 }]
     inputRows.forEach(row => transformStream.write(row))
 
     now += 65000

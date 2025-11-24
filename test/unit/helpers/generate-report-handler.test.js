@@ -15,6 +15,7 @@ describe('generateReportHandler', () => {
   let request, h, generateFinalFilenameFunc, options
 
   beforeEach(() => {
+    jest.clearAllMocks()
     uuid.v4.mockReturnValue('job-1234')
     request = {
       query: {
@@ -33,58 +34,44 @@ describe('generateReportHandler', () => {
     console.error = jest.fn()
   })
 
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
-
-  test('uses options values when provided and reportType from parameter', async () => {
-    options = { reportUrl: 'http://options.url', reportTitle: 'Option Title' }
-    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+  const expectCommonFlow = async (handler, expectedReportType, expectedTitle, expectedUrl) => {
     const result = await handler(request, h)
     expect(uuid.v4).toHaveBeenCalled()
     expect(normaliseQuery).toHaveBeenCalledWith(request.query)
-    expect(buildReportUrl).toHaveBeenCalledWith('ParamReport', { normalized: true })
+    expect(buildReportUrl).toHaveBeenCalledWith(expectedReportType, { normalized: true })
     expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', {
       status: 'pending',
-      reportType: 'ParamReport'
+      reportType: expectedReportType
     })
     expect(h.view).toHaveBeenCalledWith('report-list/report-loading', {
       jobId: 'job-1234',
-      reportTitle: 'Option Title',
-      reportUrl: 'http://options.url'
+      reportTitle: expectedTitle,
+      reportUrl: expectedUrl
     })
     expect(result).toBe('view-result')
     await Promise.resolve()
     expect(queryTrackingApi).toHaveBeenCalledWith('http://built.url')
     expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', {
       status: 'download',
-      reportType: 'ParamReport',
+      reportType: expectedReportType,
       returnedFilename: 'valid.json',
       reportFilename: 'final.csv'
     })
+  }
+
+  test('uses options values when provided and reportType from parameter', async () => {
+    options = { reportUrl: 'http://options.url', reportTitle: 'Option Title' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    await expectCommonFlow(handler, 'ParamReport', 'Option Title', 'http://options.url')
   })
 
-  test('falls back on query values when options not provided and reportType from query is used', async () => {
+  test('falls back on query values when options not provided and reportType from query', async () => {
     options = {}
     const handler = generateReportHandler(undefined, generateFinalFilenameFunc, options)
-    await handler(request, h)
-    expect(buildReportUrl).toHaveBeenCalledWith('QReport', { normalized: true })
-    expect(h.view).toHaveBeenCalledWith('report-list/report-loading', {
-      jobId: 'job-1234',
-      reportTitle: 'Query Title',
-      reportUrl: 'http://query.url'
-    })
-    await Promise.resolve()
-    expect(queryTrackingApi).toHaveBeenCalledWith('http://built.url')
-    expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', {
-      status: 'download',
-      reportType: 'QReport',
-      returnedFilename: 'valid.json',
-      reportFilename: 'final.csv'
-    })
+    await expectCommonFlow(handler, 'QReport', 'Query Title', 'http://query.url')
   })
 
-  test('throws error in then chain if returned filename is not valid and sets status to failed', async () => {
+  test('throws error if returned filename is invalid and sets status to failed', async () => {
     queryTrackingApi.mockResolvedValue('invalid.txt')
     options = {}
     const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
@@ -110,25 +97,11 @@ describe('generateReportHandler', () => {
     expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', { status: 'failed' })
   })
 
-  test('verifies handler creation using undefined reportType parameter (falling back to query values)', async () => {
+  test('handles undefined reportType parameter and falls back to query values', async () => {
     options = { reportUrl: 'http://option-url.com' }
     request.query['select-type'] = 'QueryDerived'
     request.query['report-title'] = 'Query Derived Title'
     const handler = generateReportHandler(undefined, generateFinalFilenameFunc, options)
-    await handler(request, h)
-    expect(buildReportUrl).toHaveBeenCalledWith('QueryDerived', { normalized: true })
-    expect(h.view).toHaveBeenCalledWith('report-list/report-loading', {
-      jobId: 'job-1234',
-      reportTitle: 'Query Derived Title',
-      reportUrl: 'http://option-url.com'
-    })
-    await Promise.resolve()
-    expect(queryTrackingApi).toHaveBeenCalledWith('http://built.url')
-    expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', {
-      status: 'download',
-      reportType: 'QueryDerived',
-      returnedFilename: 'valid.json',
-      reportFilename: 'final.csv'
-    })
+    await expectCommonFlow(handler, 'QueryDerived', 'Query Derived Title', 'http://option-url.com')
   })
 })

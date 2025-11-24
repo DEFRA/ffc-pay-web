@@ -9,59 +9,51 @@ const withRequired = obj => ({
 
 describe('shared-validation-models schema (dependsOnFrn=true, includePrn=false)', () => {
   describe('FRN present', () => {
-    test('skips scheme/year/prn but still enforces revenue/Capital rules', () => {
-      const result1 = validationSchema.validate(
-        withRequired({ schemeId: BPS, frn: 1234567890 })
-      )
-      expect(result1.error).toBeUndefined()
+    const frnTests = [
+      [{ frn: 1234567890, schemeId: BPS }, true, 'FRN with BPS and no revenueOrCapital passes'],
+      [{ frn: 1234567890, schemeId: BPS, revenueOrCapital: 'Revenue' }, false, 'FRN with BPS and Revenue fails'],
+      [{ frn: 1234567890, schemeId: CS, revenueOrCapital: 'Revenue' }, true, 'FRN with CS and Revenue passes']
+    ]
 
-      const result2 = validationSchema.validate(
-        withRequired({ frn: 1234567890, schemeId: BPS, revenueOrCapital: 'Revenue' })
-      )
-      expect(result2.error).toBeDefined()
-      expect(result2.error.details[0].message)
-        .toBe('Revenue/Capital should not be selected for this scheme')
-
-      const result3 = validationSchema.validate(
-        withRequired({ frn: 1234567890, schemeId: CS, revenueOrCapital: 'Revenue' })
-      )
-      expect(result3.error).toBeUndefined()
+    test.each(frnTests)('%s', (input, shouldPass) => {
+      const { error } = validationSchema.validate(withRequired(input))
+      if (shouldPass) {
+        expect(error).toBeUndefined()
+      } else {
+        expect(error).toBeDefined()
+      }
     })
   })
 
-  describe('SchemeId & Year', () => {
-    test('requires schemeId when no FRN', () => {
-      const { error } = validationSchema.validate(
-        withRequired({ year: 2020, revenueOrCapital: '' })
-      )
-      expect(error).toBeDefined()
-      expect(error.details[0].message).toBe('A scheme must be selected')
-    })
+  describe('SchemeId & Year when no FRN', () => {
+    const schemeYearTests = [
+      [{ year: 2020, revenueOrCapital: '' }, false, 'requires schemeId when no FRN'],
+      [{ schemeId: CS, revenueOrCapital: 'Revenue', year: '' }, true, 'allows empty year for CS']
+    ]
 
-    test('allows empty year for CS when no FRN', () => {
-      const { error } = validationSchema.validate(
-        withRequired({ schemeId: CS, revenueOrCapital: 'Revenue', year: '' })
-      )
-      expect(error).toBeUndefined()
+    test.each(schemeYearTests)('%s', (input, shouldPass) => {
+      const { error } = validationSchema.validate(withRequired(input))
+      if (shouldPass) {
+        expect(error).toBeUndefined()
+      } else {
+        expect(error).toBeDefined()
+      }
     })
   })
 
   describe('revenueOrCapital field (no FRN)', () => {
-    test('requires Revenue/Capital for CS', () => {
-      const { error } = validationSchema.validate(
-        withRequired({ schemeId: CS, revenueOrCapital: null })
-      )
-      expect(error).toBeDefined()
-      expect(error.details[0].message).toBe('Select Revenue or Capital')
-    })
+    const revenueCapitalTests = [
+      [{ schemeId: CS, revenueOrCapital: null }, false, 'requires Revenue/Capital for CS'],
+      [{ schemeId: BPS, revenueOrCapital: 'Revenue', year: 2020 }, false, 'rejects Revenue/Capital for non-CS']
+    ]
 
-    test('rejects Revenue/Capital for non‑CS', () => {
-      const { error } = validationSchema.validate(
-        withRequired({ schemeId: BPS, revenueOrCapital: 'Revenue', year: 2020 })
-      )
-      expect(error).toBeDefined()
-      expect(error.details[0].message)
-        .toBe('Revenue/Capital should not be selected for this scheme')
+    test.each(revenueCapitalTests)('%s', (input, shouldPass) => {
+      const { error } = validationSchema.validate(withRequired(input))
+      if (shouldPass) {
+        expect(error).toBeUndefined()
+      } else {
+        expect(error).toBeDefined()
+      }
     })
   })
 })

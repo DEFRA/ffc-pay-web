@@ -10,31 +10,27 @@ describe('isEmailTaken', () => {
     jest.clearAllMocks()
   })
 
-  test('does not throw if no contact found in response', async () => {
+  test('resolves if no contact found', async () => {
     getAlertingData.mockResolvedValue({ payload: { contact: null } })
     await expect(isEmailTaken('test@example.com', 1)).resolves.toBeUndefined()
   })
 
-  test('does not throw if contactId matches given contactId', async () => {
+  test('resolves if contactId matches', async () => {
     getAlertingData.mockResolvedValue({ payload: { contact: { contactId: 123 } } })
     await expect(isEmailTaken('test@example.com', 123)).resolves.toBeUndefined()
   })
 
-  test('throws error if contactId exists and differs from given contactId (number input)', async () => {
-    getAlertingData.mockResolvedValue({ payload: { contact: { contactId: 456 } } })
-    await expect(isEmailTaken('test@example.com', 123)).rejects.toThrow(
+  test.each([
+    [456, 123],
+    [789, '123']
+  ])('throws if contactId exists and differs (contactId: %p, given: %p)', async (foundId, givenId) => {
+    getAlertingData.mockResolvedValue({ payload: { contact: { contactId: foundId } } })
+    await expect(isEmailTaken('test@example.com', givenId)).rejects.toThrow(
       'The email address test@example.com is already registered'
     )
   })
 
-  test('throws error if contactId exists and differs from given contactId (string input)', async () => {
-    getAlertingData.mockResolvedValue({ payload: { contact: { contactId: 789 } } })
-    await expect(isEmailTaken('test@example.com', '123')).rejects.toThrow(
-      'The email address test@example.com is already registered'
-    )
-  })
-
-  test('handles missing payload or contact gracefully and does not throw', async () => {
+  test('handles missing payload or contact without throwing', async () => {
     getAlertingData.mockResolvedValue({})
     await expect(isEmailTaken('test@example.com', 1)).resolves.toBeUndefined()
 
@@ -42,7 +38,7 @@ describe('isEmailTaken', () => {
     await expect(isEmailTaken('test@example.com', 1)).resolves.toBeUndefined()
   })
 
-  test('calls getAlertingData with encoded email endpoint', async () => {
+  test('calls getAlertingData with encoded email', async () => {
     const email = 'user+test@example.com'
     getAlertingData.mockResolvedValue({ payload: { contact: null } })
     await isEmailTaken(email, 1)
