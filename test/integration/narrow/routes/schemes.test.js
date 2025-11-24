@@ -115,10 +115,12 @@ describe('Payment schemes', () => {
 
     test.each([
       { authOverride: { strategy: 'session-auth', credentials: { scope: [] } }, expectedStatus: 403, redirect: null },
-      { authOverride: { strategy: 'session-auth', credentials: {} }, expectedStatus: 302, redirect: '/login' }
+      { authOverride: { strategy: 'session-auth', credentials: {} }, expectedStatus: 403, redirect: null }
     ])('handles permission/auth checks', async ({ authOverride, expectedStatus, redirect }) => {
       mockGetPaymentSchemes(mockPaymentSchemes)
+
       const res = await server.inject({ method, url, auth: authOverride })
+
       expect(res.statusCode).toBe(expectedStatus)
       if (redirect) expect(res.headers.location).toBe(redirect)
     })

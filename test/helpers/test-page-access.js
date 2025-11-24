@@ -1,8 +1,10 @@
 const cheerio = require('cheerio')
 
-const testPageAccess = (server, auth, method, url, pageH1 = null) => {
+const testPageAccess = (getServer, getAuth, method, url, pageH1 = null) => {
   describe(`${method} ${url}`, () => {
     test('returns 200 when load successful', async () => {
+      const server = getServer()
+      const auth = getAuth()
       const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(200)
       if (pageH1 != null) {
@@ -12,12 +14,14 @@ const testPageAccess = (server, auth, method, url, pageH1 = null) => {
     })
 
     test('returns 403 if no permission', async () => {
+      const server = getServer()
       const modifiedAuth = { strategy: 'session-auth', credentials: { scope: [] } }
       const res = await server.inject({ method, url, auth: modifiedAuth })
       expect(res.statusCode).toBe(403)
     })
 
     test('returns 302 if no auth', async () => {
+      const server = getServer()
       const res = await server.inject({ method, url })
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/login')
