@@ -25,7 +25,9 @@ const testGetRoute = (expectedStatus, authOverride, redirectLocation) => {
   const options = { method: 'GET', url, auth: authOverride }
   return server.inject(options).then(res => {
     expect(res.statusCode).toBe(expectedStatus)
-    if (redirectLocation) expect(res.headers.location).toBe(redirectLocation)
+    if (redirectLocation) {
+      expect(res.headers.location).toBe(redirectLocation)
+    }
   })
 }
 
@@ -33,7 +35,9 @@ const testPostRoute = (payload, expectedStatus, expectedRedirect) => {
   const options = { method: 'POST', url, auth, payload }
   return server.inject(options).then(res => {
     expect(res.statusCode).toBe(expectedStatus)
-    if (expectedRedirect) expect(res.headers.location).toBe(expectedRedirect)
+    if (expectedRedirect) {
+      expect(res.headers.location).toBe(expectedRedirect)
+    }
   })
 }
 

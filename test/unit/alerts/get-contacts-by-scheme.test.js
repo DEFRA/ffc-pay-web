@@ -24,9 +24,13 @@ describe('getContactsByScheme', () => {
     const alertTypes = ['type1', 'type2', 'type3']
 
     getAlertingData.mockImplementation(async (endpoint) => {
-      if (endpoint === '/contact-list') return { payload: { contacts: users } }
-      if (endpoint === '/alert-types') return { payload: { alertTypes } }
-      return {}
+      if (endpoint === '/contact-list') {
+        return { payload: { contacts: users } }
+      } else if (endpoint === '/alert-types') {
+        return { payload: { alertTypes } }
+      } else {
+        return {}
+      }
     })
     getProcessingData.mockResolvedValue({ payload: { paymentSchemes: schemes } })
     sanitizeSchemes.mockReturnValue(sanitizedSchemes)
@@ -77,9 +81,13 @@ describe('getContactsByScheme', () => {
     const alertTypes = ['type1']
 
     getAlertingData.mockImplementation(async (endpoint) => {
-      if (endpoint === '/contact-list') return { payload: { contacts: users } }
-      if (endpoint === '/alert-types') return { payload: { alertTypes } }
-      return {}
+      if (endpoint === '/contact-list') {
+        return { payload: { contacts: users } }
+      } else if (endpoint === '/alert-types') {
+        return { payload: { alertTypes } }
+      } else {
+        return {}
+      }
     })
     getProcessingData.mockResolvedValue({ payload: { paymentSchemes: schemes } })
     sanitizeSchemes.mockReturnValue(sanitizedSchemes)

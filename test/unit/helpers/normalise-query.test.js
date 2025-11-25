@@ -78,7 +78,8 @@ describe('normaliseQuery', () => {
     const RealDate = Date
     global.Date = class extends RealDate {
       constructor (...args) {
-        if (args.length) return new RealDate(...args)
+        if (args.length) { return new RealDate(...args) }
+
         return fixedDate
       }
 

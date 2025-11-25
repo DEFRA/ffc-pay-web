@@ -122,7 +122,9 @@ describe('Payment schemes', () => {
       const res = await server.inject({ method, url, auth: authOverride })
 
       expect(res.statusCode).toBe(expectedStatus)
-      if (redirect) expect(res.headers.location).toBe(redirect)
+      if (redirect) {
+        expect(res.headers.location).toBe(redirect)
+      }
     })
   })
 })

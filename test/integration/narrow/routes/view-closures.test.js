@@ -36,7 +36,8 @@ describe('GET /closure', () => {
     expect(res.statusCode).toBe(200)
     const $ = cheerio.load(res.payload)
     expect($('h1').text()).toEqual(pageH1)
-    if (noClosures) expect($('#no-closure-text').text()).toEqual('There are no agreement closures.')
+
+    if (noClosures) { expect($('#no-closure-text').text()).toEqual('There are no agreement closures.') }
   })
 
   test.each([
@@ -46,7 +47,8 @@ describe('GET /closure', () => {
     mockGetClosures(mockClosures)
     const res = await server.inject({ method: 'GET', url, auth: authOverride })
     expect(res.statusCode).toBe(status)
-    if (redirect) expect(res.headers.location).toBe(redirect)
+
+    if (redirect) { expect(res.headers.location).toBe(redirect) }
   })
 })
 

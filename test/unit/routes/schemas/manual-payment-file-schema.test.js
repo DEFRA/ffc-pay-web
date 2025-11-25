@@ -10,7 +10,8 @@ describe('Manual File Upload Schema', () => {
         'content-type': contentType
       }
     }
-    if (includeBytes) file.bytes = 1024
+    if (includeBytes) { file.bytes = 1024 }
+
     return { file }
   }
 

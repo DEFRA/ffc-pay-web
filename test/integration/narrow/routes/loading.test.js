@@ -38,8 +38,11 @@ describe('Loading routes', () => {
 
     cases.forEach(({ desc, mock, expected, code }) => {
       test(desc, async () => {
-        if (mock instanceof Error) get.mockRejectedValue(mock)
-        else get.mockResolvedValue(mock)
+        if (mock instanceof Error) {
+          get.mockRejectedValue(mock)
+        } else {
+          get.mockResolvedValue(mock)
+        }
 
         const res = await server.inject({ method: 'GET', url: `/loading/${jobId}` })
 

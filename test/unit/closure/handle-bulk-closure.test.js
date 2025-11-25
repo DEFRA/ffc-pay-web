@@ -31,7 +31,8 @@ describe('handleBulkClosure', () => {
       processClosureData.mockResolvedValue({ uploadData: null, errors: { details: [{ message: 'Processing error' }] } })
     }, { details: [{ message: 'Processing error' }] }]
   ])('returns error when %s', async (_desc, setupFn, expectedMessage) => {
-    if (setupFn) setupFn()
+    if (setupFn) { setupFn() }
+
     await handleBulkClosure(request, h)
     expect(handleBulkClosureError).toHaveBeenCalledWith(h, expectedMessage, 'test-crumb')
   })

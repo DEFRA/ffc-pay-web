@@ -79,7 +79,10 @@ describe('Payment Holds', () => {
       setup()
       const res = await server.inject({ method: 'GET', url: PAGE, auth: status === 403 ? auth : undefined })
       expect(res.statusCode).toBe(status)
-      if (status === 302) expect(res.headers.location).toBe('/login')
+
+      if (status === 302) {
+        expect(res.headers.location).toBe('/login')
+      }
     })
 
     test('lists returned hold rows', async () => {

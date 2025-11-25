@@ -34,12 +34,16 @@ beforeEach(async () => {
     },
     get: async function (k) {
       const entry = this.data[k]
-      if (!entry) return undefined
-      if (entry.invalid) throw new Error('Cache retrieval error: undefined value')
-      if ((Date.now() - entry.timestamp) > this.rule.expiresIn) {
+
+      if (!entry) {
+        return undefined
+      } else if (entry.invalid) {
+        throw new Error('Cache retrieval error: undefined value')
+      } else if ((Date.now() - entry.timestamp) > this.rule.expiresIn) {
         delete this.data[k]
         return null
       }
+
       return entry.value
     },
     drop: async function (k) { delete this.data[k] }

@@ -2,7 +2,8 @@ const { createTransformStream } = require('../../../app/reporting/create-transfo
 
 jest.mock('../../../app/reporting/mapping/map-and-sanitise', () => ({
   mapAndSanitize: jest.fn((dataRow, fields) => {
-    if (dataRow.error) throw new Error('Transform error')
+    if (dataRow.error) { throw new Error('Transform error') }
+
     return { ...dataRow, sanitized: true, fields }
   })
 }))
