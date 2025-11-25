@@ -17,7 +17,7 @@ describe('mapHoldCategoriesToRadios', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    
+
     radioButtonMapper.mockImplementation((categories, options) =>
       categories.map(c => ({
         id: `${options.schemeId}_${c.name}_id`,
