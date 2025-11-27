@@ -4,72 +4,62 @@ const { AGREEMENT_NUMBER } = require('../../mocks/values/agreement-number')
 const { FRN } = require('../../mocks/values/frn')
 
 describe('Process closures', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test('Should process closures with FRN if data is valid', async () => {
-    const result = await processClosureData(`${FRN},${AGREEMENT_NUMBER},2023-12-04`)
-    expect(result.uploadData[0].frn).toBe(FRN.toString())
+  test('Should process single valid row correctly', async () => {
+    const csv = `${FRN},${AGREEMENT_NUMBER},2023-12-04`
+    const result = await processClosureData(csv)
+    const row = result.uploadData[0]
+
+    expect(row.frn).toBe(FRN.toString())
+    expect(row.agreementNumber).toBe(AGREEMENT_NUMBER)
+    expect(row.closureDate).toBe('2023-12-04')
   })
 
-  test('Should process closures with agreement number if data is valid', async () => {
-    const result = await processClosureData(`${FRN},${AGREEMENT_NUMBER},2023-12-04`)
-    expect(result.uploadData[0].agreementNumber).toBe(AGREEMENT_NUMBER)
-  })
+  test('Should process multiple valid rows correctly', async () => {
+    const csv = `${FRN},${AGREEMENT_NUMBER},2023-12-04\n${FRN + 1},new-agreement-number,2023-05-31`
+    const result = await processClosureData(csv)
+    const row = result.uploadData[1]
 
-  test('Should process closures with closure date if data is valid', async () => {
-    const result = await processClosureData(`${FRN},${AGREEMENT_NUMBER},2023-12-04`)
-    expect(result.uploadData[0].closureDate).toBe('2023-12-04')
-  })
-
-  test('Should process closures with FRN if multiple rows and data is valid', async () => {
-    const result = await processClosureData(`${FRN},${AGREEMENT_NUMBER},2023-12-04\n${FRN + 1},new-agreement-number,2023-05-31`)
-    expect(result.uploadData[1].frn).toBe((FRN + 1).toString())
-  })
-
-  test('Should process closures with agreement number if multiple rows and data is valid', async () => {
-    const result = await processClosureData(`${FRN},${AGREEMENT_NUMBER},2023-12-04\n${FRN + 1},new-agreement-number,2023-05-31`)
-    expect(result.uploadData[1].agreementNumber).toBe('new-agreement-number')
-  })
-
-  test('Should process closures with closure date if multiple rows and data is valid', async () => {
-    const result = await processClosureData(`${FRN},${AGREEMENT_NUMBER},2023-12-04\n${FRN + 1},new-agreement-number,2023-05-31`)
-    expect(result.uploadData[1].closureDate).toBe('2023-05-31')
-  })
-
-  test('Should return appropriate error if row length is less than 3', async () => {
-    const result = await processClosureData(`${FRN},${AGREEMENT_NUMBER}`)
-    expect(result.errors.details[0].message).toBe('The file is not in the expected format')
-  })
-
-  test('Should return appropriate error if row length is more than 3', async () => {
-    const result = await processClosureData(`${FRN},${AGREEMENT_NUMBER},2023-12-04,extra-data`)
-    expect(result.errors.details[0].message).toBe('The file is not in the expected format')
+    expect(row.frn).toBe((FRN + 1).toString())
+    expect(row.agreementNumber).toBe('new-agreement-number')
+    expect(row.closureDate).toBe('2023-05-31')
   })
 
   test.each([
-    { frn: 10000000001, agreementNumber: AGREEMENT_NUMBER, expectedErrorMessage: 'Enter a 10-digit FRN' },
-    { frn: 999999998, agreementNumber: AGREEMENT_NUMBER, expectedErrorMessage: 'Enter a 10-digit FRN' },
-    { frn: 'not-a-number', agreementNumber: AGREEMENT_NUMBER, expectedErrorMessage: 'Enter a 10-digit FRN' },
-    { frn: undefined, agreementNumber: AGREEMENT_NUMBER, expectedErrorMessage: 'Enter a 10-digit FRN' }
-  ])('Should return appropriate error if FRN is invalid', async ({ frn, agreementNumber, expectedErrorMessage }) => {
-    const result = await processClosureData(`${frn},${agreementNumber},2023-12-04`)
-    expect(result.errors.details[0].message).toBe(expectedErrorMessage)
+    { csv: `${FRN},${AGREEMENT_NUMBER}`, error: 'The file is not in the expected format' },
+    { csv: `${FRN},${AGREEMENT_NUMBER},2023-12-04,extra`, error: 'The file is not in the expected format' }
+  ])('Should return error for wrong row length', async ({ csv, error }) => {
+    const result = await processClosureData(csv)
+    expect(result.errors.details[0].message).toBe(error)
   })
 
-  test('Should return appropriate error if agreement number undefined', async () => {
+  test.each([
+    { frn: 10000000001, message: 'Enter a 10-digit FRN' },
+    { frn: 999999998, message: 'Enter a 10-digit FRN' },
+    { frn: 'not-a-number', message: 'Enter a 10-digit FRN' },
+    { frn: undefined, message: 'Enter a 10-digit FRN' }
+  ])('Should return error for invalid FRN: $frn', async ({ frn, message }) => {
+    const csv = `${frn},${AGREEMENT_NUMBER},2023-12-04`
+    const result = await processClosureData(csv)
+    expect(result.errors.details[0].message).toBe(message)
+  })
+
+  test('Should return error if agreement number is missing', async () => {
     const result = await processClosureData(`${FRN},,2023-12-04`)
     expect(result.errors.details[0].message).toBe('Enter a valid agreement number')
   })
 
   test.each([
-    { closureDate: undefined },
-    { closureDate: '2-12-04' },
-    { closureDate: '2023-87-05' },
-    { closureDate: '2023-12-76' }
-  ])('Should return appropriate error if date is invalid', async ({ closureDate }) => {
-    const result = await processClosureData(`${FRN},${AGREEMENT_NUMBER},${closureDate}`)
+    '2-12-04',
+    '2023-87-05',
+    '2023-12-76',
+    undefined
+  ])('Should return error for invalid date: %s', async (closureDate) => {
+    const csv = `${FRN},${AGREEMENT_NUMBER},${closureDate}`
+    const result = await processClosureData(csv)
     expect(result.errors.details[0].message).toBe('Enter a valid date')
   })
 })

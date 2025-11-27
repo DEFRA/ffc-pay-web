@@ -1,5 +1,8 @@
 const createServer = require('../../../../app/server')
 
+jest.mock('../../../../app/auth/azure-auth')
+const mockAzureAuth = require('../../../../app/auth/azure-auth')
+
 describe('Login tests', () => {
   let server
   const url = '/login'
@@ -13,37 +16,28 @@ describe('Login tests', () => {
     await server.stop()
   })
 
-  jest.mock('../../../../app/auth/azure-auth')
-  const mockAzureAuth = require('../../../../app/auth')
-
-  const mockGetAuthenticationUrl = () => {
-    mockAzureAuth.getAuthenticationUrl.mockResolvedValue('/')
-  }
-
   describe('Login GET request', () => {
     const method = 'GET'
-    mockGetAuthenticationUrl()
-    test('GET /login route returns 200', async () => {
-      const options = {
-        method,
-        url
-      }
 
-      const response = await server.inject(options)
+    test('GET /login route redirects to auth URL', async () => {
+      mockAzureAuth.getAuthenticationUrl.mockResolvedValue('/')
+
+      const response = await server.inject({ method, url })
+
       expect(response.statusCode).toBe(302)
       expect(response.headers.location).toEqual('/')
+      expect(mockAzureAuth.getAuthenticationUrl).toHaveBeenCalled()
     })
 
-    test('GET /login route returns 500 error if auth fails', async () => {
-      const options = {
-        method,
-        url
-      }
+    test('GET /login route returns 500 if auth fails', async () => {
       mockAzureAuth.getAuthenticationUrl.mockImplementation(() => {
-        throw new Error()
+        throw new Error('Auth failure')
       })
-      const response = await server.inject(options)
+
+      const response = await server.inject({ method, url })
+
       expect(response.statusCode).toBe(500)
+      expect(mockAzureAuth.getAuthenticationUrl).toHaveBeenCalled()
     })
   })
 })

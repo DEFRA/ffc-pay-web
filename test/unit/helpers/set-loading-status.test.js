@@ -15,55 +15,31 @@ describe('setLoadingStatus', () => {
     set.mockClear()
   })
 
-  test('should call set with only required status when errors is undefined', async () => {
-    const status = 'processing'
-    await setLoadingStatus(request, jobId, { status })
-
-    expect(set).toHaveBeenCalledWith(request, jobId, { status })
+  test('calls set with only status when message is undefined', async () => {
+    await setLoadingStatus(request, jobId, { status: 'processing' })
+    expect(set).toHaveBeenCalledWith(request, jobId, { status: 'processing' })
   })
 
-  test('should include errors when defined', async () => {
-    const status = 'failed'
+  test('includes message when provided', async () => {
     const message = 'Test error'
-
-    await setLoadingStatus(request, jobId, { status, message })
-
-    expect(set).toHaveBeenCalledWith(request, jobId, {
-      status,
-      message
-    })
+    await setLoadingStatus(request, jobId, { status: 'failed', message })
+    expect(set).toHaveBeenCalledWith(request, jobId, { status: 'failed', message })
   })
 
-  test('should merge status and errors correctly when both are defined', async () => {
-    const args = {
-      status: 'failed',
-      message: [{ message: 'Error 1' }, { message: 'Error 2' }]
-    }
-
+  test('merges status and array of error messages correctly', async () => {
+    const args = { status: 'failed', message: [{ message: 'Error 1' }, { message: 'Error 2' }] }
     await setLoadingStatus(request, jobId, args)
-
     expect(set).toHaveBeenCalledWith(request, jobId, args)
   })
 
-  test('should omit errors when undefined', async () => {
-    const args = {
-      status: 'completed',
-      message: undefined
-    }
-    const expectedData = {
-      status: 'completed'
-    }
-
+  test('omits message when explicitly undefined', async () => {
+    const args = { status: 'completed', message: undefined }
     await setLoadingStatus(request, jobId, args)
-    expect(set).toHaveBeenCalledWith(request, jobId, expectedData)
+    expect(set).toHaveBeenCalledWith(request, jobId, { status: 'completed' })
   })
 
-  test('should handle empty errors', async () => {
-    const args = {
-      status: 'failed',
-      message: ''
-    }
-
+  test('retains empty string message', async () => {
+    const args = { status: 'failed', message: '' }
     await setLoadingStatus(request, jobId, args)
     expect(set).toHaveBeenCalledWith(request, jobId, args)
   })

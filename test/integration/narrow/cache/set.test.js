@@ -11,7 +11,6 @@ const expectedSegment = 'default'
 const expectedCacheName = 'default'
 
 beforeEach(async () => {
-  // Override cache config for tests
   config.cache = {
     ttl: expectedTTL,
     segment: expectedSegment,
@@ -29,31 +28,28 @@ beforeEach(async () => {
     _segment: expectedSegment,
     data: {},
     set: async function (k, v) {
-      if (v === undefined) {
-        this.data[k] = { value: v, timestamp: Date.now(), invalid: true }
-      } else {
-        this.data[k] = { value: v, timestamp: Date.now() }
-      }
+      this.data[k] = v === undefined
+        ? { value: v, timestamp: Date.now(), invalid: true }
+        : { value: v, timestamp: Date.now() }
     },
     get: async function (k) {
       const entry = this.data[k]
-      if (!entry) return undefined
-      if (entry.invalid) {
+
+      if (!entry) {
+        return undefined
+      } else if (entry.invalid) {
         throw new Error('Cache retrieval error: undefined value')
-      }
-      if ((Date.now() - entry.timestamp) > this.rule.expiresIn) {
+      } else if ((Date.now() - entry.timestamp) > this.rule.expiresIn) {
         delete this.data[k]
         return null
       }
+
       return entry.value
     },
-    drop: async function (k) {
-      delete this.data[k]
-    }
+    drop: async function (k) { delete this.data[k] }
   }
 
   request = { server }
-
   key = 'Key'
   value = 'Value'
   await set(request, key, value)
@@ -66,77 +62,40 @@ afterEach(async () => {
 })
 
 describe('set cache', () => {
-  test('should return undefined', async () => {
-    const result = await set(request, key, value)
-    expect(result).toBeUndefined()
+  test('returns undefined when setting value', async () => {
+    expect(await set(request, key, value)).toBeUndefined()
   })
 
-  test('should populate cache with key', async () => {
+  test.each([
+    ['string', 'Value', 'Value'],
+    ['empty array', [], []],
+    ['empty object', {}, {}],
+    ['true', true, true],
+    ['false', false, false],
+    ['null', null, null]
+  ])('stores %s correctly', async (_, val, expected) => {
+    value = val
     await set(request, key, value)
     const result = await getCacheValue(getCache(request), key)
-    expect(result).toBeDefined()
+    expect(result).toStrictEqual(expected)
   })
 
-  test('should populate cache with value', async () => {
-    await set(request, key, value)
-    const result = await getCacheValue(getCache(request), key)
-    expect(result).toBe(value)
-  })
-
-  test('should populate cache with empty array value', async () => {
-    value = []
-    await set(request, key, value)
-    const result = await getCacheValue(getCache(request), key)
-    expect(result).toStrictEqual(value)
-  })
-
-  test('should populate cache with empty object value', async () => {
-    value = {}
-    await set(request, key, value)
-    const result = await getCacheValue(getCache(request), key)
-    expect(result).toStrictEqual(value)
-  })
-
-  test('should populate cache with true value', async () => {
-    value = true
-    await set(request, key, value)
-    const result = await getCacheValue(getCache(request), key)
-    expect(result).toBe(value)
-  })
-
-  test('should populate cache with false value', async () => {
-    value = false
-    await set(request, key, value)
-    const result = await getCacheValue(getCache(request), key)
-    expect(result).toBe(false)
-  })
-
-  test('should not populate cache with null value', async () => {
-    value = null
-    await set(request, key, value)
-    const result = await getCacheValue(getCache(request), key)
-    expect(result).toBeNull()
-  })
-
-  test('should not populate cache with undefined value and throw when trying to retrieve', async () => {
+  test('throws error for undefined value', async () => {
     value = undefined
     await set(request, key, value)
-    const wrapper = async () => {
-      await getCacheValue(getCache(request), key)
-    }
-    await expect(wrapper).rejects.toThrowError()
+    await expect(getCacheValue(getCache(request), key)).rejects.toThrow()
   })
 
-  test('should have cache value expire after config.cache.ttl has passed', async () => {
+  test('expires cache value after ttl', async () => {
     value = 'Value'
     await set(request, key, value)
-    const beforeTtlTimeout = await getCacheValue(getCache(request), key)
+    const before = await getCacheValue(getCache(request), key)
 
-    jest.useFakeTimers()
+    jest.useFakeTimers('modern')
     jest.setSystemTime(new Date(Date.now() + expectedTTL + 1000))
-    const afterTtlTimeout = await getCacheValue(getCache(request), key)
 
-    expect(beforeTtlTimeout).toBe(value)
-    expect(afterTtlTimeout).toBeNull()
+    const after = await getCacheValue(getCache(request), key)
+    expect(before).toBe(value)
+    expect(after).toBeNull()
   })
 })

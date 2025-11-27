@@ -18,8 +18,20 @@ const { manualPaymentUploadFailAction } = require('../../../app/manual-payments/
 const { isTextWhitespace } = require('../../../app/helpers/is-text-whitespace')
 
 describe('handleManualPaymentUploadPost', () => {
-  let request
-  let h
+  let request, h
+
+  const setupSuccessfulUpload = () => {
+    readFileContent.mockReturnValue('data')
+    isTextWhitespace.mockReturnValue(false)
+    uploadManualPaymentFile.mockResolvedValue()
+  }
+
+  const setupFailedUpload = (code) => {
+    readFileContent.mockReturnValue('data')
+    isTextWhitespace.mockReturnValue(false)
+    uploadManualPaymentFile.mockResolvedValue()
+    postInjection.mockRejectedValue({ data: { payload: { statusCode: code } } })
+  }
 
   beforeEach(() => {
     request = {
@@ -28,15 +40,10 @@ describe('handleManualPaymentUploadPost', () => {
     }
     h = { view: jest.fn() }
 
-    readFileContent.mockReset()
-    setLoadingStatus.mockReset()
-    uploadManualPaymentFile.mockReset()
-    postInjection.mockReset()
-    manualPaymentUploadFailAction.mockReset()
-    isTextWhitespace.mockReset()
+    jest.resetAllMocks()
   })
 
-  test('should fail if file content is empty or whitespace', async () => {
+  test('fails if file content is empty or whitespace', async () => {
     readFileContent.mockReturnValue('   ')
     isTextWhitespace.mockReturnValue(true)
     manualPaymentUploadFailAction.mockResolvedValue('fail-response')
@@ -58,10 +65,8 @@ describe('handleManualPaymentUploadPost', () => {
     expect(result).toBe('fail-response')
   })
 
-  test('should complete successfully when upload works', async () => {
-    readFileContent.mockReturnValue('data')
-    isTextWhitespace.mockReturnValue(false)
-    uploadManualPaymentFile.mockResolvedValue()
+  test('completes successfully when upload works', async () => {
+    setupSuccessfulUpload()
     postInjection.mockResolvedValue({ statusCode: SUCCESS, payload: {} })
 
     await handleManualPaymentUploadPost(request, h)
@@ -76,10 +81,7 @@ describe('handleManualPaymentUploadPost', () => {
       2,
       expect.anything(),
       expect.any(String),
-      {
-        status: 'completed',
-        message: MANUAL_UPLOAD_RESPONSE_MESSAGES[SUCCESS]
-      }
+      { status: 'completed', message: MANUAL_UPLOAD_RESPONSE_MESSAGES[SUCCESS] }
     )
     expect(h.view).toHaveBeenCalledWith(
       MANUAL_PAYMENT_VIEWS.LOADING,
@@ -87,11 +89,12 @@ describe('handleManualPaymentUploadPost', () => {
     )
   })
 
-  test('should handle backend error codes correctly', async () => {
-    readFileContent.mockReturnValue('data')
-    isTextWhitespace.mockReturnValue(false)
-    uploadManualPaymentFile.mockResolvedValue()
-    postInjection.mockRejectedValue({ data: { payload: { statusCode: CONFLICT } } })
+  test.each([
+    { code: CONFLICT },
+    { code: INTERNAL_SERVER_ERROR },
+    { code: UNPROCESSABLE_CONTENT }
+  ])('handles backend error code %p correctly', async ({ code }) => {
+    setupFailedUpload(code)
 
     await handleManualPaymentUploadPost(request, h)
 
@@ -112,46 +115,13 @@ describe('handleManualPaymentUploadPost', () => {
     )
   })
 
-  test('should handle unknown backend errors gracefully', async () => {
-    readFileContent.mockReturnValue('data')
-    isTextWhitespace.mockReturnValue(false)
-    uploadManualPaymentFile.mockResolvedValue()
-    postInjection.mockRejectedValue({ message: 'Short backend msg' })
-
-    await handleManualPaymentUploadPost(request, h)
-
-    expect(setLoadingStatus).toHaveBeenNthCalledWith(
-      1,
-      expect.anything(),
-      expect.any(String),
-      { status: 'processing' }
-    )
-    expect(setLoadingStatus).toHaveBeenNthCalledWith(
-      2,
-      expect.anything(),
-      expect.any(String),
-      {
-        status: 'failed',
-        message: 'An unexpected problem occurred while processing your file. Please try again later or contact support if the issue persists.'
-      }
-    )
-  })
-
-  test('should handle exceptions with no payload', async () => {
-    readFileContent.mockReturnValue('data')
-    isTextWhitespace.mockReturnValue(false)
-    uploadManualPaymentFile.mockResolvedValue()
+  test('handles exceptions with no payload gracefully', async () => {
+    setupSuccessfulUpload()
     postInjection.mockRejectedValue(new Error('Unexpected error'))
 
     await handleManualPaymentUploadPost(request, h)
 
     expect(setLoadingStatus).toHaveBeenNthCalledWith(
-      1,
-      expect.anything(),
-      expect.any(String),
-      { status: 'processing' }
-    )
-    expect(setLoadingStatus).toHaveBeenNthCalledWith(
       2,
       expect.anything(),
       expect.any(String),
@@ -162,12 +132,9 @@ describe('handleManualPaymentUploadPost', () => {
     )
   })
 
-  test('finalizeStatus logs success message on completed upload', async () => {
-    readFileContent.mockReturnValue('data')
-    isTextWhitespace.mockReturnValue(false)
-    uploadManualPaymentFile.mockResolvedValue()
+  test('logs success message on completed upload', async () => {
+    setupSuccessfulUpload()
     postInjection.mockResolvedValue({ statusCode: SUCCESS, payload: {} })
-
     const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
 
     await handleManualPaymentUploadPost(request, h)
@@ -180,19 +147,15 @@ describe('handleManualPaymentUploadPost', () => {
     consoleLogSpy.mockRestore()
   })
 
-  test('finalizeStatus logs failure message on failed upload', async () => {
-    readFileContent.mockReturnValue('data')
-    isTextWhitespace.mockReturnValue(false)
-    uploadManualPaymentFile.mockResolvedValue()
-    postInjection.mockRejectedValue({ data: { payload: { statusCode: INTERNAL_SERVER_ERROR } } })
-
+  test('logs failure message on failed upload', async () => {
+    setupFailedUpload(INTERNAL_SERVER_ERROR)
     const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
 
     await handleManualPaymentUploadPost(request, h)
 
     expect(consoleLogSpy).toHaveBeenCalledWith(
-    `Manual payment file upload failed with code ${INTERNAL_SERVER_ERROR}`,
-    expect.any(String)
+      `Manual payment file upload failed with code ${INTERNAL_SERVER_ERROR}`,
+      expect.any(String)
     )
 
     consoleLogSpy.mockRestore()

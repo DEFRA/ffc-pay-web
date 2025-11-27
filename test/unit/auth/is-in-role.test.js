@@ -1,4 +1,5 @@
 const isInRole = require('../../../app/auth/is-in-role')
+
 const ROLE_1 = 'role1'
 const ROLE_2 = 'role2'
 const ROLE_3 = 'role3'
@@ -12,34 +13,19 @@ describe('is in role', () => {
   })
 
   test('should return true if in role', () => {
-    const result = isInRole(credentials, ROLE_1)
-    expect(result).toBeTruthy()
+    expect(isInRole(credentials, ROLE_1)).toBeTruthy()
   })
 
   test('should return false if not in role', () => {
-    const result = isInRole(credentials, ROLE_3)
-    expect(result).not.toBeTruthy()
+    expect(isInRole(credentials, ROLE_3)).toBeFalsy()
   })
 
-  test('should return false if no roles', () => {
-    credentials.scope = []
-    const result = isInRole(credentials, ROLE_3)
-    expect(result).not.toBeTruthy()
-  })
-
-  test('should return false if no scope', () => {
-    delete credentials.scope
-    const result = isInRole(credentials, ROLE_3)
-    expect(result).not.toBeTruthy()
-  })
-
-  test('should return false if credentials null', () => {
-    const result = isInRole(null, ROLE_3)
-    expect(result).not.toBeTruthy()
-  })
-
-  test('should return false if credentials undefined', () => {
-    const result = isInRole(undefined, ROLE_3)
-    expect(result).not.toBeTruthy()
+  test.each([
+    ['no roles', { scope: [] }],
+    ['no scope property', {}],
+    ['null credentials', null],
+    ['undefined credentials', undefined]
+  ])('should return false if %s', (_, creds) => {
+    expect(isInRole(creds, ROLE_3)).toBeFalsy()
   })
 })

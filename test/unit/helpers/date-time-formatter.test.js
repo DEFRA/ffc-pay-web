@@ -3,7 +3,7 @@ const {
   formatDateFromParts,
   formatDateFromString,
   formatDateTimeFromString
-} = require('../../../app/helpers/date-time-formatter') // adjust path as needed
+} = require('../../../app/helpers/date-time-formatter')
 
 describe('Date formatting helpers', () => {
   describe('formatDateFromParts', () => {

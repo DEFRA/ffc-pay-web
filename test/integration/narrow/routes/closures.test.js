@@ -1,5 +1,6 @@
 jest.mock('../../../../app/api')
 jest.mock('../../../../app/auth')
+
 const cheerio = require('cheerio')
 const fs = require('fs')
 const { closureAdmin } = require('../../../../app/auth/permissions')
@@ -14,17 +15,20 @@ let server
 let auth
 
 const mockGetClosures = () => {
-  getProcessingData.mockResolvedValue(
-    {
-      payload: {
-        closures: [{
-          frn: FRN,
-          agreementNumber: AGREEMENT_NUMBER,
-          closureDate: '2023-09-12'
-        }]
-      }
+  getProcessingData.mockResolvedValue({
+    payload: {
+      closures: [{
+        frn: FRN,
+        agreementNumber: AGREEMENT_NUMBER,
+        closureDate: '2023-09-12'
+      }]
     }
-  )
+  })
+}
+
+const loadPage = async (method, url, authOverride) => {
+  const res = await server.inject({ method, url, auth: authOverride })
+  return { res, $: cheerio.load(res.payload) }
 }
 
 describe('Closures', () => {
@@ -38,135 +42,126 @@ describe('Closures', () => {
     await server.stop()
   })
 
-  describe('GET closure/add page', () => {
-    const method = 'GET'
-    const url = '/closure/add'
-    const pageH1 = 'Agreement closure'
+  const getRoutes = [
+    { url: '/closure/add', h1: 'Agreement closure' },
+    { url: '/closure/bulk', h1: 'Bulk agreement closure' }
+  ]
 
-    test('returns 200 when load successful', async () => {
-      const res = await server.inject({ method, url, auth })
-
+  describe('GET pages', () => {
+    test.each(getRoutes)('%s loads page successfully', async ({ url, h1 }) => {
+      const { res, $ } = await loadPage('GET', url, auth)
       expect(res.statusCode).toBe(200)
-      const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toEqual(pageH1)
+      expect($('h1').text()).toBe(h1)
     })
 
-    test('returns 403 if no permission', async () => {
+    test.each(getRoutes)('%s returns 403 with no permission', async ({ url }) => {
       auth.credentials.scope = []
-      const res = await server.inject({ method, url, auth })
+      const { res } = await loadPage('GET', url, auth)
       expect(res.statusCode).toBe(403)
     })
 
-    test('returns 302 no auth', async () => {
-      const res = await server.inject({ method, url })
+    test.each(getRoutes)('%s redirects without auth', async ({ url }) => {
+      const { res } = await loadPage('GET', url)
       expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toEqual('/login')
-    })
-  })
-
-  describe('GET bulk closure page', () => {
-    const method = 'GET'
-    const url = '/closure/bulk'
-    const pageH1 = 'Bulk agreement closure'
-
-    test('returns 200 when load successful', async () => {
-      const res = await server.inject({ method, url, auth })
-
-      expect(res.statusCode).toBe(200)
-      const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toEqual(pageH1)
-    })
-
-    test('returns 403 if no permission', async () => {
-      auth.credentials.scope = []
-      const res = await server.inject({ method, url, auth })
-      expect(res.statusCode).toBe(403)
-    })
-
-    test('returns 302 no auth', async () => {
-      const res = await server.inject({ method, url })
-      expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toEqual('/login')
+      expect(res.headers.location).toBe('/login')
     })
   })
 
   describe('POST /closure/add', () => {
     const method = 'POST'
     const url = '/closure/add'
-    const pageH1 = 'Agreement closure'
-    test('redirects successful request to \'/\'closure and correctly POSTs hold details', async () => {
-      const mockForCrumbs = () => mockGetClosures()
-      const { cookieCrumb, viewCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload: { crumb: viewCrumb, frn: FRN, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 2023 },
-        headers: { cookie: `crumb=${cookieCrumb}` }
-      })
+    const h1 = 'Agreement closure'
 
-      expect(postProcessing).toHaveBeenCalledTimes(1)
-      expect(postProcessing).toHaveBeenCalledWith('/closure/add', { frn: FRN, agreement: AGREEMENT_NUMBER, date: '2023-08-12T00:00:00' }, null)
+    const postReq = async (payload, cookieCrumb) => server.inject({
+      method,
+      url,
+      auth,
+      payload,
+      headers: { cookie: `crumb=${cookieCrumb}` }
+    })
+
+    test('successful submission posts processing and redirects', async () => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
+
+      const payload = {
+        crumb: viewCrumb,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        day: 12,
+        month: 8,
+        year: 2023
+      }
+
+      const res = await postReq(payload, cookieCrumb)
+
+      expect(postProcessing).toHaveBeenCalledWith(
+        '/closure/add',
+        { frn: FRN, agreement: AGREEMENT_NUMBER, date: '2023-08-12T00:00:00' },
+        null
+      )
+
       expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toEqual('/closure')
+      expect(res.headers.location).toBe('/closure')
     })
 
+    const errorCases = [
+      { frn: 10000000001, msg: 'Enter a 10-digit FRN' },
+      { frn: 999999998, msg: 'Enter a 10-digit FRN' },
+      { frn: 'not-a-number', msg: 'Enter a 10-digit FRN' },
+      { frn: undefined, msg: 'Enter a 10-digit FRN' },
+
+      { frn: 1000000000, agreement: undefined, msg: 'Enter a valid agreement number' },
+      { frn: 1000000000, agreement: 'x'.repeat(60), msg: 'Enter a valid agreement number' },
+
+      { day: 35, msg: 'Enter a valid day' },
+      { day: -4, msg: 'Enter a valid day' },
+      { day: 3.5, msg: 'Enter a valid day' },
+      { day: 'x', msg: 'Enter a valid day' },
+      { day: undefined, msg: 'Enter a valid day' },
+
+      { month: 14, msg: 'Enter a valid month' },
+      { month: -8, msg: 'Enter a valid month' },
+      { month: 8.1, msg: 'Enter a valid month' },
+      { month: 'x', msg: 'Enter a valid month' },
+      { month: undefined, msg: 'Enter a valid month' },
+
+      { year: 5323, msg: 'Enter a valid year' },
+      { year: -2023, msg: 'Enter a valid year' },
+      { year: 20.23, msg: 'Enter a valid year' },
+      { year: 'x', msg: 'Enter a valid year' },
+      { year: undefined, msg: 'Enter a valid year' }
+    ]
+
+    const base = { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 2023 }
+
+    test.each(errorCases)(
+      'returns 400 and error for invalid payload: %p',
+      async err => {
+        const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
+
+        const res = await postReq({ ...base, ...err, crumb: viewCrumb }, cookieCrumb)
+        const $ = cheerio.load(res.payload)
+
+        expect(res.statusCode).toBe(400)
+        expect($('h1').text()).toBe(h1)
+        expect($('.govuk-error-summary__title').text()).toMatch('There is a problem')
+        expect($('.govuk-error-message').text()).toMatch(`Error: ${err.msg}`)
+      }
+    )
+
     test.each([
-      { frn: 10000000001, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 2023, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: 999999998, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 2023, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: 'not-a-number', agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 2023, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: undefined, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 2023, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: 1000000000, agreement: undefined, day: 12, month: 8, year: 2023, expectedErrorMessage: 'Enter a valid agreement number' },
-      { frn: 1000000000, agreement: 'thisstringisreallyreallylongsolonginfactthatitsmorethan50characters', day: 12, month: 8, year: 2023, expectedErrorMessage: 'Enter a valid agreement number' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 35, month: 8, year: 2023, expectedErrorMessage: 'Enter a valid day' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: -4, month: 8, year: 2023, expectedErrorMessage: 'Enter a valid day' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 3.5, month: 8, year: 2023, expectedErrorMessage: 'Enter a valid day' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 'not-a-number', month: 8, year: 2023, expectedErrorMessage: 'Enter a valid day' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: undefined, month: 8, year: 2023, expectedErrorMessage: 'Enter a valid day' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 14, year: 2023, expectedErrorMessage: 'Enter a valid month' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: -8, year: 2023, expectedErrorMessage: 'Enter a valid month' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 8.1, year: 2023, expectedErrorMessage: 'Enter a valid month' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 'not-a-number', year: 2023, expectedErrorMessage: 'Enter a valid month' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: undefined, year: 2023, expectedErrorMessage: 'Enter a valid month' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 5323, expectedErrorMessage: 'Enter a valid year' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: -2023, expectedErrorMessage: 'Enter a valid year' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 20.23, expectedErrorMessage: 'Enter a valid year' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 'not-a-number', expectedErrorMessage: 'Enter a valid year' },
-      { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: undefined, expectedErrorMessage: 'Enter a valid year' }
-    ])('returns 400 and view with errors when request fails validation - %p', async ({ frn, agreement, day, month, year, expectedErrorMessage }) => {
-      const mockForCrumbs = () => mockGetClosures()
-      const { cookieCrumb, viewCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload: { crumb: viewCrumb, frn, agreement, day, month, year },
-        headers: { cookie: `crumb=${cookieCrumb}` }
-      })
-
-      expect(res.statusCode).toBe(400)
-      const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toEqual(pageH1)
-      expect($('.govuk-error-summary__title').text()).toMatch('There is a problem')
-      const errorMessage = $('.govuk-error-message')
-      expect(errorMessage.text()).toMatch(`Error: ${expectedErrorMessage}`)
-    })
-
-    test.each([
-      { viewCrumb: 'incorrect' },
-      { viewCrumb: undefined }
-    ])('returns 403 when view crumb is invalid or not included', async ({ viewCrumb }) => {
-      const mockForCrumbs = () => mockGetClosures()
-      const { cookieCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload: { crumb: viewCrumb, frn: FRN, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 2023 },
-        headers: { cookie: `crumb=${cookieCrumb}` }
-      })
+      { crumb: 'invalid' },
+      { crumb: undefined }
+    ])('403 when crumb invalid: %p', async ({ crumb }) => {
+      const { cookieCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
+      const res = await postReq({
+        crumb,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        day: 12,
+        month: 8,
+        year: 2023
+      }, cookieCrumb)
 
       expect(res.statusCode).toBe(403)
     })
@@ -175,25 +170,22 @@ describe('Closures', () => {
   describe('POST /closure/bulk', () => {
     const method = 'POST'
     const url = '/closure/bulk'
-    const pageH1 = 'Bulk agreement closure'
+    const h1 = 'Bulk agreement closure'
 
-    test('returns 400 and error message when file size exceeds maximum bytes (413 error)', async () => {
-      const mockForCrumbs = () => mockGetClosures()
-      const { cookieCrumb, viewCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
+    test('returns 400 when file exceeds max bytes', async () => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
 
-      // Create a payload with a file larger than MAX_BYTES (1MB)
-      const largeFileContent = Buffer.alloc(MAX_BYTES + 1).fill('a') // 1MB + 1 byte
+      const file = Buffer.alloc(MAX_BYTES + 1).fill('a')
+      jest.spyOn(fs, 'readFileSync').mockReturnValue(file.toString())
+
       const payload = {
+        crumb: viewCrumb,
         file: {
-          path: '/tmp/large-file.csv',
-          bytes: largeFileContent.length,
-          filename: 'large-file.csv'
-        },
-        crumb: viewCrumb
+          path: '/tmp/x.csv',
+          bytes: file.length,
+          filename: 'x.csv'
+        }
       }
-
-      // Mock file system read
-      jest.spyOn(fs, 'readFileSync').mockReturnValue(largeFileContent.toString())
 
       const res = await server.inject({
         method,
@@ -203,12 +195,11 @@ describe('Closures', () => {
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
 
-      expect(res.statusCode).toBe(400)
       const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toEqual(pageH1)
-      expect($('.govuk-error-summary__title').text()).toMatch('There is a problem')
-      const errorMessage = $('.govuk-error-message')
-      expect(errorMessage.text()).toMatch(`Error: The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`)
+      expect(res.statusCode).toBe(400)
+      expect($('h1').text()).toBe(h1)
+      expect($('.govuk-error-message').text())
+        .toMatch(`Error: The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`)
     })
   })
 })

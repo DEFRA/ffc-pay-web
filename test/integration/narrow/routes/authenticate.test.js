@@ -1,4 +1,6 @@
 const createServer = require('../../../../app/server')
+jest.mock('../../../../app/auth/azure-auth')
+const mockAzureAuth = require('../../../../app/auth')
 
 describe('Authentication route tests', () => {
   let server
@@ -13,31 +15,15 @@ describe('Authentication route tests', () => {
     await server.stop()
   })
 
-  jest.mock('../../../../app/auth/azure-auth')
-  const mockAzureAuth = require('../../../../app/auth')
+  test('GET /authenticate redirects to "/"', async () => {
+    const res = await server.inject({ method: 'GET', url })
+    expect(res.statusCode).toBe(302)
+    expect(res.headers.location).toBe('/')
+  })
 
-  describe('Authenticate GET request', () => {
-    const method = 'GET'
-    test('GET /authenticate route redirects to \'/\'', async () => {
-      const options = {
-        method,
-        url
-      }
-
-      const response = await server.inject(options)
-      expect(response.statusCode).toBe(302)
-      expect(response.headers.location).toEqual('/')
-    })
-
-    test('GET /authenticate route returns a 500 error due to try catch', async () => {
-      mockAzureAuth.authenticate.mockImplementation(() => { throw new Error() })
-      const options = {
-        method,
-        url
-      }
-
-      const response = await server.inject(options)
-      expect(response.statusCode).toBe(500)
-    })
+  test('GET /authenticate returns 500 if authenticate throws', async () => {
+    mockAzureAuth.authenticate.mockImplementation(() => { throw new Error() })
+    const res = await server.inject({ method: 'GET', url })
+    expect(res.statusCode).toBe(500)
   })
 })

@@ -18,30 +18,23 @@ describe('getManualPaymentUploadHistory', () => {
       { id: 1, timeStamp: '2025-10-15T10:00:00Z' },
       { id: 2, timeStamp: '2025-10-16T11:30:00Z' }
     ]
-
     getHistoricalInjectionData.mockResolvedValue({ payload: mockUploads })
-    formatDateTimeFromString
-      .mockImplementation(ts => `formatted-${ts}`)
+    formatDateTimeFromString.mockImplementation(ts => `formatted-${ts}`)
 
     const result = await getManualPaymentUploadHistory()
 
     expect(getHistoricalInjectionData).toHaveBeenCalledWith('manual-upload-audit', 60)
-    expect(formatDateTimeFromString).toHaveBeenCalledTimes(2)
-    expect(result).toEqual([
-      { id: 1, timeStamp: 'formatted-2025-10-15T10:00:00Z' },
-      { id: 2, timeStamp: 'formatted-2025-10-16T11:30:00Z' }
-    ])
+    expect(formatDateTimeFromString).toHaveBeenCalledTimes(mockUploads.length)
+    expect(result).toEqual(mockUploads.map(u => ({ id: u.id, timeStamp: `formatted-${u.timeStamp}` })))
   })
 
-  test('returns an empty array when payload is missing', async () => {
+  test('returns empty array when payload is missing', async () => {
     getHistoricalInjectionData.mockResolvedValue({})
     const result = await getManualPaymentUploadHistory()
-
-    expect(getHistoricalInjectionData).toHaveBeenCalledWith('manual-upload-audit', 60)
     expect(result).toEqual([])
   })
 
-  test('returns an empty array and logs an error when API call fails', async () => {
+  test('returns empty array and logs error on API failure', async () => {
     const mockError = new Error('Network failure')
     getHistoricalInjectionData.mockRejectedValue(mockError)
 
@@ -50,10 +43,7 @@ describe('getManualPaymentUploadHistory', () => {
     const result = await getManualPaymentUploadHistory()
 
     expect(result).toEqual([])
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Failed to fetch upload history:',
-      mockError
-    )
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to fetch upload history:', mockError)
 
     consoleErrorSpy.mockRestore()
   })

@@ -1,7 +1,7 @@
 const { radioButtonMapper } = require('../../../app/helpers/radio-button-mapper')
 
 describe('radioButtonMapper', () => {
-  test('maps an array of items using default keys', () => {
+  test('maps an array of items using default keys with capitalization', () => {
     const items = [
       { value: '1', text: 'option one' },
       { value: '2', text: 'option two' }
@@ -16,40 +16,30 @@ describe('radioButtonMapper', () => {
   })
 
   test('respects custom valueKey and textKey options', () => {
-    const items = [
-      { key: 'abc', label: 'custom label' }
-    ]
+    const items = [{ key: 'abc', label: 'custom label' }]
 
     const result = radioButtonMapper(items, { valueKey: 'key', textKey: 'label' })
 
-    expect(result).toEqual([
-      { id: 'Custom label_id', value: 'abc', text: 'Custom label' }
-    ])
+    expect(result).toEqual([{ id: 'Custom label_id', value: 'abc', text: 'Custom label' }])
   })
 
-  test('returns empty value and text when keys are missing', () => {
-    const items = [{}]
-
-    const result = radioButtonMapper(items)
-
-    expect(result).toEqual([
-      { id: '_id', value: '', text: '' }
-    ])
+  test('returns empty value and text when keys are missing or array is empty', () => {
+    expect(radioButtonMapper([{}])).toEqual([{ id: '_id', value: '', text: '' }])
+    expect(radioButtonMapper([])).toEqual([])
   })
 
   test('throws a TypeError if input is not an array', () => {
     expect(() => radioButtonMapper('not an array')).toThrow(TypeError)
-    expect(() => radioButtonMapper('not an array')).toThrow('radioButtonMapper expects an array of items')
+    expect(() => radioButtonMapper('not an array')).toThrow(
+      'radioButtonMapper expects an array of items'
+    )
   })
 
   test('skips capitalization when capitalize option is false', () => {
     const items = [{ value: '1', text: 'lowercase text' }]
-
     const result = radioButtonMapper(items, { capitalize: false })
 
-    expect(result).toEqual([
-      { id: 'lowercase text_id', value: '1', text: 'lowercase text' }
-    ])
+    expect(result).toEqual([{ id: 'lowercase text_id', value: '1', text: 'lowercase text' }])
   })
 
   test('handles already capitalized or mixed-case text correctly', () => {
@@ -66,27 +56,14 @@ describe('radioButtonMapper', () => {
     ])
   })
 
-  test('returns empty array when given no items', () => {
-    expect(radioButtonMapper([])).toEqual([])
-  })
-
-  test('includes schemeId in id prefix when provided (MANUAL)', () => {
-    const items = [{ value: '8', text: 'option eight' }]
-
-    const result = radioButtonMapper(items, { schemeId: 8 })
-
-    expect(result).toEqual([
-      { id: '8_Option eight_id', value: '8', text: 'Option eight' }
-    ])
-  })
-
-  test('includes schemeId in id prefix when provided (CSHT_REVENUE)', () => {
-    const items = [{ value: '15', text: 'option fifteen' }]
-
-    const result = radioButtonMapper(items, { schemeId: 15 })
-
-    expect(result).toEqual([
-      { id: '15_Option fifteen_id', value: '15', text: 'Option fifteen' }
-    ])
+  test.each([
+    [8, '8_Option 8_id'],
+    [15, '15_Option 15_id']
+  ])('includes schemeId %i in id prefix', (schemeId, expectedId) => {
+    const items = [{ value: schemeId.toString(), text: `option ${schemeId}` }]
+    const result = radioButtonMapper(items, { schemeId })
+    expect(result[0].id).toBe(expectedId)
+    expect(result[0].value).toBe(schemeId.toString())
+    expect(result[0].text).toBe(`Option ${schemeId}`)
   })
 })

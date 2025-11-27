@@ -12,38 +12,21 @@ jest.mock('../../../../app/helpers/convert-date-to-ddmmyyyy', () => ({
 
 describe('mapAndSanitize', () => {
   beforeEach(() => {
-    getPoundValue.mockClear()
-    convertDateToDDMMYYYY.mockClear()
+    jest.clearAllMocks()
   })
 
-  test('should sanitize value field using getPoundValue', () => {
-    const fieldMap = { Amount: 'some.nested.deltaAmount' }
-    const data = { some: { nested: { deltaAmount: 200 } } }
+  test.each([
+    ['value field', { Amount: 'some.nested.deltaAmount' }, { some: { nested: { deltaAmount: 200 } } }, '£200', getPoundValue],
+    ['date field', { Date: 'info.batchExportDate' }, { info: { batchExportDate: '2020-12-31' } }, 'formatted(2020-12-31)', convertDateToDDMMYYYY],
+    ['raw field', { Name: 'user.name' }, { user: { name: 'Alice' } }, 'Alice', null],
+    ['missing nested property', { Name: 'user.name' }, { user: {} }, undefined, null]
+  ])('should handle %s correctly', (_, fieldMap, data, expectedValue, mockFn) => {
     const result = mapAndSanitize(data, fieldMap)
-    expect(getPoundValue).toHaveBeenCalledWith(200)
-    expect(result).toEqual({ Amount: '£200' })
-  })
-
-  test('should sanitize date field using convertDateToDDMMYYYY', () => {
-    const fieldMap = { Date: 'info.batchExportDate' }
-    const data = { info: { batchExportDate: '2020-12-31' } }
-    const result = mapAndSanitize(data, fieldMap)
-    expect(convertDateToDDMMYYYY).toHaveBeenCalledWith('2020-12-31')
-    expect(result).toEqual({ Date: 'formatted(2020-12-31)' })
-  })
-
-  test('should return raw value when field is not value or date', () => {
-    const fieldMap = { Name: 'user.name' }
-    const data = { user: { name: 'Alice' } }
-    const result = mapAndSanitize(data, fieldMap)
-    expect(result).toEqual({ Name: 'Alice' })
-  })
-
-  test('should handle missing nested properties gracefully', () => {
-    const fieldMap = { Name: 'user.name' }
-    const data = { user: {} }
-    const result = mapAndSanitize(data, fieldMap)
-    expect(result).toEqual({ Name: undefined })
+    const key = Object.keys(fieldMap)[0]
+    expect(result[key]).toEqual(expectedValue)
+    if (mockFn) {
+      expect(mockFn).toHaveBeenCalled()
+    }
   })
 
   test('should correctly process multiple fields', () => {

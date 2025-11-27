@@ -1,50 +1,20 @@
 const schema = require('../../../../app/routes/schemas/remove-user-schema')
 
 describe('remove-contact-schema validation', () => {
-  test('should validate a correct payload', () => {
-    const payload = {
-      contactId: 123,
-      action: 'remove',
-      extraField: 'allowed'
-    }
-
+  test('valid payload passes validation', () => {
+    const payload = { contactId: 123, action: 'remove', extraField: 'allowed' }
     const { error, value } = schema.validate(payload)
-
     expect(error).toBeUndefined()
     expect(value).toEqual(payload)
   })
 
-  test('should fail if contactId is missing', () => {
-    const payload = {
-      action: 'remove'
-    }
-
+  test.each([
+    [{ action: 'remove' }, 'A user must be specified to remove'],
+    [{ contactId: 'abc', action: 'remove' }, 'A user must be specified to remove'],
+    [{ contactId: 1 }, 'Action is required']
+  ])('invalid payload %o fails with message "%s"', (payload, expectedMessage) => {
     const { error } = schema.validate(payload)
-
     expect(error).toBeDefined()
-    expect(error.details[0].message).toBe('A user must be specified to remove')
-  })
-
-  test('should fail if contactId is not a number', () => {
-    const payload = {
-      contactId: 'abc',
-      action: 'remove'
-    }
-
-    const { error } = schema.validate(payload)
-
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toBe('A user must be specified to remove')
-  })
-
-  test('should fail if action is missing', () => {
-    const payload = {
-      contactId: 1
-    }
-
-    const { error } = schema.validate(payload)
-
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toBe('Action is required')
+    expect(error.details[0].message).toBe(expectedMessage)
   })
 })

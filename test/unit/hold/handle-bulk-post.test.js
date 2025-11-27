@@ -14,7 +14,7 @@ jest.mock('../../../app/hold/process-hold-data')
 jest.mock('../../../app/helpers/set-loading-status')
 jest.mock('uuid', () => ({ v4: () => '123-456' }))
 
-describe('handle bulk post', () => {
+describe('handleBulkPost', () => {
   let request
   const h = {
     view: jest.fn(() => ({
@@ -30,6 +30,24 @@ describe('handle bulk post', () => {
     name: 'my hold category',
     schemeName: 'Scheme Name'
   }]
+
+  const setupDefaultMocks = () => {
+    readFileContent.mockReturnValue(FRN)
+    processHoldData.mockResolvedValue({ uploadData: [FRN], errors: null })
+    getHoldCategories.mockResolvedValue({
+      schemes: ['Scheme Name'],
+      paymentHoldCategories: mockPaymentHoldCategories
+    })
+    setLoadingStatus.mockResolvedValue({ status: 'completed' })
+  }
+
+  const expectFileReadError = () => {
+    expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
+      schemes: ['Scheme Name'],
+      paymentHoldCategories: mockPaymentHoldCategories,
+      errors: { details: [{ message: 'An error occurred whilst reading the file' }] }
+    })
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -48,138 +66,102 @@ describe('handle bulk post', () => {
         holdCategoryId: '124'
       }
     }
-    readFileContent.mockReturnValue(FRN)
-    processHoldData.mockResolvedValue({ uploadData: [FRN], errors: null })
-    getHoldCategories.mockResolvedValue({
-      schemes: ['Scheme Name'],
-      paymentHoldCategories: mockPaymentHoldCategories
+    setupDefaultMocks()
+  })
+
+  describe('successful processing', () => {
+    test('should generate a jobId and render loading view', async () => {
+      await handleBulkPost(request, h)
+      expect(h.view).toHaveBeenCalledWith('payment-holds/holds-loading', { jobId: '123-456' })
     })
-    setLoadingStatus.mockResolvedValue({ status: 'completed' })
-  })
 
-  test('should generate a jobId using uuid', async () => {
-    await handleBulkPost(request, h)
-    expect(h.view).toHaveBeenCalledWith('payment-holds/holds-loading', { jobId: '123-456' })
-  })
+    test('should set initial loading status to processing', async () => {
+      await handleBulkPost(request, h)
+      expect(setLoadingStatus).toHaveBeenCalledWith(
+        request,
+        '123-456',
+        { status: 'processing' }
+      )
+    })
 
-  test('should set initial loading status to processing', async () => {
-    await handleBulkPost(request, h)
-    expect(setLoadingStatus).toHaveBeenCalledWith(
-      request,
-      '123-456',
-      { status: 'processing' }
-    )
-  })
+    test('should call processUpload with correct parameters', async () => {
+      await handleBulkPost(request, h)
+      expect(postProcessing).toHaveBeenCalledWith('/payment-holds/bulk/add', {
+        data: [FRN],
+        holdCategoryId: '124'
+      }, null)
+    })
 
-  test('should call processUpload with correct parameters when processHoldData succeeds', async () => {
-    const uploadData = [FRN]
-    processHoldData.mockResolvedValue({ uploadData, errors: null })
-
-    await handleBulkPost(request, h)
-
-    expect(postProcessing).toHaveBeenCalledWith('/payment-holds/bulk/add', {
-      data: uploadData,
-      holdCategoryId: '124'
-    }, null)
-  })
-
-  test('should return loading view with jobId', async () => {
-    await handleBulkPost(request, h)
-    expect(h.view).toHaveBeenCalledWith('payment-holds/holds-loading', {
-      jobId: '123-456'
+    test('should call remove endpoint when remove is true', async () => {
+      request.payload.remove = true
+      await handleBulkPost(request, h)
+      expect(postProcessing).toHaveBeenCalledWith('/payment-holds/bulk/remove', {
+        data: [FRN],
+        holdCategoryId: '124'
+      }, null)
     })
   })
 
-  test('should handle unexpected errors', async () => {
-    readFileContent.mockImplementation(() => {
-      throw new Error('Unexpected error')
+  describe('file read errors', () => {
+    test('handles unexpected error', async () => {
+      readFileContent.mockImplementation(() => { throw new Error('Unexpected error') })
+      await handleBulkPost(request, h)
+      expectFileReadError()
     })
 
-    await handleBulkPost(request, h)
-
-    expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
-      schemes: ['Scheme Name'],
-      paymentHoldCategories: mockPaymentHoldCategories,
-      errors: { details: [{ message: 'An error occurred whilst reading the file' }] }
+    test('handles empty file', async () => {
+      readFileContent.mockReturnValue('')
+      await handleBulkPost(request, h)
+      expectFileReadError()
     })
-  })
 
-  test('should handle empty file content', async () => {
-    readFileContent.mockReturnValue('')
-
-    await handleBulkPost(request, h)
-
-    expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
-      schemes: ['Scheme Name'],
-      paymentHoldCategories: mockPaymentHoldCategories,
-      errors: { details: [{ message: 'An error occurred whilst reading the file' }] }
+    test('handles null file', async () => {
+      readFileContent.mockReturnValue(null)
+      await handleBulkPost(request, h)
+      expectFileReadError()
     })
   })
 
-  test('should handle null file content', async () => {
-    readFileContent.mockReturnValue(null)
+  describe('validation errors', () => {
+    test('with FRN', async () => {
+      const validationError = new Error('Validation error')
+      validationError.name = 'ValidationError'
+      validationError._original = { frn: 'badfrn' }
+      validationError.details = [{ message: 'Invalid FRN' }]
+      processHoldData.mockResolvedValue({ uploadData: null, errors: validationError })
 
-    await handleBulkPost(request, h)
+      await handleBulkPost(request, h)
+      expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
+        status: 'failed',
+        message: 'There was a problem validating your uploaded data. The FRN, "badfrn" is invalid. Please check your file and try again.'
+      })
+    })
 
-    expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
-      schemes: ['Scheme Name'],
-      paymentHoldCategories: mockPaymentHoldCategories,
-      errors: { details: [{ message: 'An error occurred whilst reading the file' }] }
+    test('without FRN', async () => {
+      const validationError = new Error('Validation error')
+      validationError.name = 'ValidationError'
+      validationError._original = {}
+      validationError.details = [{ message: 'Missing FRN' }]
+      processHoldData.mockResolvedValue({ uploadData: null, errors: validationError })
+
+      await handleBulkPost(request, h)
+      expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
+        status: 'failed',
+        message: 'There was a problem validating your uploaded data: Missing FRN. Please check your file and try again.'
+      })
     })
   })
 
-  test('should call correct endpoint when remove is true', async () => {
-    request.payload.remove = true
-    const uploadData = [FRN]
-    processHoldData.mockResolvedValue({ uploadData, errors: null })
+  describe('other processing errors', () => {
+    test('handles general processHoldData errors', async () => {
+      const otherError = { details: [{ message: 'Other error' }] }
+      processHoldData.mockResolvedValue({ uploadData: null, errors: otherError })
 
-    await handleBulkPost(request, h)
-
-    expect(postProcessing).toHaveBeenCalledWith('/payment-holds/bulk/remove', {
-      data: uploadData,
-      holdCategoryId: '124'
-    }, null)
-  })
-
-  test('should handle validation error with FRN', async () => {
-    const validationError = new Error('Validation error')
-    validationError.name = 'ValidationError'
-    validationError._original = { frn: 'badfrn' }
-    validationError.details = [{ message: 'Invalid FRN' }]
-    processHoldData.mockResolvedValue({ uploadData: null, errors: validationError })
-
-    await handleBulkPost(request, h)
-
-    expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
-      status: 'failed',
-      message: 'There was a problem validating your uploaded data. The FRN, "badfrn" is invalid. Please check your file and try again.'
-    })
-  })
-
-  test('should handle validation error without FRN', async () => {
-    const validationError = new Error('Validation error')
-    validationError.name = 'ValidationError'
-    validationError._original = {}
-    validationError.details = [{ message: 'Missing FRN' }]
-    processHoldData.mockResolvedValue({ uploadData: null, errors: validationError })
-
-    await handleBulkPost(request, h)
-
-    expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
-      status: 'failed',
-      message: 'There was a problem validating your uploaded data: Missing FRN. Please check your file and try again.'
-    })
-  })
-
-  test('should handle other errors from processHoldData', async () => {
-    const otherError = { details: [{ message: 'Other error' }] }
-    processHoldData.mockResolvedValue({ uploadData: null, errors: otherError })
-
-    await handleBulkPost(request, h)
-
-    expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
-      status: 'failed',
-      message: 'An error occurred while processing the data: Other error'
+      await handleBulkPost(request, h)
+      expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
+        status: 'failed',
+        message: 'An error occurred while processing the data: Other error'
+      })
     })
   })
 })
