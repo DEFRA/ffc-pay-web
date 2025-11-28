@@ -49,7 +49,7 @@ describe('Manual Payments Routes', () => {
     })
 
     test('renders upload history', async () => {
-      getHistoricalInjectionData.mockResolvedValue({ payload: [{ id: 1, filename: 'example.csv' }] })
+      getHistoricalInjectionData.mockResolvedValue({ payload: [{ id: 1, filename: 'example.csv', success: true }] })
       const res = await server.inject({ method: 'GET', url, auth })
       expect(res.payload).toContain('example.csv')
     })
@@ -77,7 +77,7 @@ describe('Manual Payments Routes', () => {
     const url = '/manual-payments/upload'
 
     test('fails if file >1MB', async () => {
-      const { cookieCrumb, viewCrumb } = await getCrumbs(() => {}, server, '/manual-payments', auth)
+      const { cookieCrumb, viewCrumb } = await getCrumbs(() => { }, server, '/manual-payments', auth)
       const payload = Buffer.concat([
         Buffer.from(`--boundary\r\nContent-Disposition: form-data; name="crumb"\r\n\r\n${viewCrumb}\r\n`),
         Buffer.alloc(1048577, 'a'), // 1MB+1
