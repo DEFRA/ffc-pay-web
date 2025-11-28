@@ -87,7 +87,11 @@
                   <td class="govuk-table__cell">{{ upload.timeStamp }}</td>
                   <td class="govuk-table__cell">{{ upload.filename }}</td>
                   <td class="govuk-table__cell">{{ upload.uploader }}</td>
-                  <td class="govuk-table__cell"><a href="/monitoring/batch/name?batch={{ upload.filename }}" class="govuk-link">View payment status</a></td>
+                  {% if upload.success == true %}
+                    <td class="govuk-table__cell"><a href="/monitoring/batch/name?batch={{ upload.filename }}" class="govuk-link">View payment status</a></td>
+                  {% else if upload.success == false %}
+                    <td class="govuk-table__cell">Payment file rejected</a></td>
+                  {% endif %}
                 </tr>
               {% endfor %}
             </tbody>
