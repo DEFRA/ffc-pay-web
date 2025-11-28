@@ -89,8 +89,10 @@
                   <td class="govuk-table__cell">{{ upload.uploader }}</td>
                   {% if upload.success == true %}
                     <td class="govuk-table__cell"><a href="/monitoring/batch/name?batch={{ upload.filename }}" class="govuk-link">View payment status</a></td>
-                  {% else if upload.success == false %}
-                    <td class="govuk-table__cell">Payment file rejected</a></td>
+                  {% elif upload.success == false %}
+                    <td class="govuk-table__cell">Payment file rejected</td>
+                  {% else %}
+                    <td class="govuk-table__cell">Payment file processing</td>
                   {% endif %}
                 </tr>
               {% endfor %}
