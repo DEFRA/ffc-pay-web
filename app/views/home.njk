@@ -47,12 +47,12 @@
 
         {% if auth.isApplicationAdmin or auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser or auth.isStatusReportUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Reports</h2>
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Finance reports</h2>
             <p class="govuk-heading-l govuk-!-margin-bottom-5">
               {{ totalReportTypes }}
             </p>
             <p class="govuk-body govuk-!-margin-bottom-8">
-              <a href="/report-list" class="govuk-link">Report List</a>
+              <a href="/report-list" class="govuk-link">Reports</a>
             </p>
           </div>
         {% endif %}
