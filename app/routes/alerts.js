@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const Boom = require('@hapi/boom')
 const {
   updateAlertUser,
   removeAlertUser,
@@ -27,6 +28,11 @@ const views = {
   confirm: 'alerts/confirm-delete'
 }
 
+const handleAlertingError = (error) => {
+  console.error('Alerting Service error:', error)
+  return Boom.badGateway(`Alerting Service is unavailable: ${error.message}`)
+}
+
 module.exports = [
   {
     method: 'GET',
@@ -34,8 +40,12 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (_request, h) => {
-        const schemes = await getContactsByScheme()
-        return h.view(views.alerts, { schemes })
+        try {
+          const schemes = await getContactsByScheme()
+          return h.view(views.alerts, { schemes })
+        } catch (error) {
+          return handleAlertingError(error)
+        }
       }
     }
   },
@@ -45,9 +55,13 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (_request, h) => {
-        const alertDescriptionsResponse = await getAlertingData('/alert-descriptions')
-        const alertDescriptions = alertDescriptionsResponse?.payload?.alertDescriptions ?? []
-        return h.view(views.information, { alertDescriptions })
+        try {
+          const alertDescriptionsResponse = await getAlertingData('/alert-descriptions')
+          const alertDescriptions = alertDescriptionsResponse?.payload?.alertDescriptions ?? []
+          return h.view(views.information, { alertDescriptions })
+        } catch (error) {
+          return handleAlertingError(error)
+        }
       }
     }
   },
@@ -57,8 +71,12 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
-        const viewData = await getAlertUpdateViewData(request)
-        return h.view(views.update, viewData)
+        try {
+          const viewData = await getAlertUpdateViewData(request)
+          return h.view(views.update, viewData)
+        } catch (error) {
+          return handleAlertingError(error)
+        }
       }
     }
   },
@@ -68,15 +86,19 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
-        const { contactId } = request.query
-        const contact = await getAlertingData(`/contact/contactId/${encodeURIComponent(contactId)}`)
-        const contactPayload = contact?.payload?.contact ?? {}
-        const { emailAddress } = contactPayload
-        if (!emailAddress) {
-          const schemes = await getContactsByScheme()
-          return h.view(views.alerts, { schemes })
+        try {
+          const { contactId } = request.query
+          const contact = await getAlertingData(`/contact/contactId/${encodeURIComponent(contactId)}`)
+          const contactPayload = contact?.payload?.contact ?? {}
+          const { emailAddress } = contactPayload
+          if (!emailAddress) {
+            const schemes = await getContactsByScheme()
+            return h.view(views.alerts, { schemes })
+          }
+          return h.view(views.confirm, { contactId: request.query.contactId, emailAddress })
+        } catch (error) {
+          return handleAlertingError(error)
         }
-        return h.view(views.confirm, { contactId: request.query.contactId, emailAddress })
       },
       validate: {
         query: Joi.object({
@@ -86,8 +108,12 @@ module.exports = [
           })
         }),
         failAction: async (_request, h) => {
-          const schemes = await getContactsByScheme()
-          return h.view(views.alerts, { schemes }).takeover()
+          try {
+            const schemes = await getContactsByScheme()
+            return h.view(views.alerts, { schemes }).takeover()
+          } catch (error) {
+            return handleAlertingError(error)
+          }
         }
       }
     }
@@ -96,20 +122,28 @@ module.exports = [
     method: 'POST',
     path: paths.update,
     handler: async (request, h) => {
-      const user = request.auth?.credentials.account
-      const userNameOrEmail = user?.name || user?.username || user?.email
-      const action = request.payload.action
       try {
-        if (action === 'remove') {
-          return await removeAlertUser(userNameOrEmail, request.payload.contactId, h)
-        } else {
-          return await updateAlertUser(userNameOrEmail, request.payload, h)
+        const user = request.auth?.credentials.account
+        const userNameOrEmail = user?.name || user?.username || user?.email
+        const action = request.payload.action
+        try {
+          if (action === 'remove') {
+            return await removeAlertUser(userNameOrEmail, request.payload.contactId, h)
+          } else {
+            return await updateAlertUser(userNameOrEmail, request.payload, h)
+          }
+        } catch (error) {
+          try {
+            const viewData = await getAlertUpdateViewData(request)
+            return h
+              .view(views.update, { ...viewData, error })
+              .code(BAD_REQUEST)
+          } catch (err) {
+            return handleAlertingError(err)
+          }
         }
       } catch (error) {
-        const viewData = await getAlertUpdateViewData(request)
-        return h
-          .view(views.update, { ...viewData, error })
-          .code(BAD_REQUEST)
+        return handleAlertingError(error)
       }
     },
     options: {
@@ -130,11 +164,19 @@ module.exports = [
           return value
         },
         failAction: async (request, h, error) => {
-          const viewData = await getAlertUpdateViewData(request)
-          return h
-            .view(views.update, { ...viewData, error })
-            .code(BAD_REQUEST)
-            .takeover()
+          try {
+            try {
+              const viewData = await getAlertUpdateViewData(request)
+              return h
+                .view(views.update, { ...viewData, error })
+                .code(BAD_REQUEST)
+                .takeover()
+            } catch (err) {
+              return handleAlertingError(err)
+            }
+          } catch (error) {
+            return handleAlertingError(error)
+          }
         }
       }
     }
