@@ -59,9 +59,11 @@
               {% if alert.users.length %}
                 {% set tableRows = [] %}
                 {% for user in alert.users %}
-                  {% set editLinkHtml %}
-                    <a href="/alerts/update?contactId={{ user.contactId }}" class="govuk-link" aria-label="Edit alert settings for {{ user.emailAddress }}">Edit user</a>
-                  {% endset %}
+                {% set editLinkHtml %}
+                  <a href="/alerts/update?contactId={{ user.contactId }}" class="govuk-link">
+                    Edit<span class="govuk-visually-hidden"> alert settings for {{ user.emailAddress }}</span>
+                  </a>
+                {% endset %}
                   {% set tableRows = (tableRows.push([
                     { text: user.emailAddress },
                     { html: editLinkHtml }

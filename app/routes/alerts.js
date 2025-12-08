@@ -165,17 +165,13 @@ module.exports = [
         },
         failAction: async (request, h, error) => {
           try {
-            try {
-              const viewData = await getAlertUpdateViewData(request)
-              return h
-                .view(views.update, { ...viewData, error })
-                .code(BAD_REQUEST)
-                .takeover()
-            } catch (err) {
-              return handleAlertingError(err)
-            }
-          } catch (error) {
-            return handleAlertingError(error)
+            const viewData = await getAlertUpdateViewData(request)
+            return h
+              .view(views.update, { ...viewData, error })
+              .code(BAD_REQUEST)
+              .takeover()
+          } catch (err) {
+            return handleAlertingError(err)
           }
         }
       }

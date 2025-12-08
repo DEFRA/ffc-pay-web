@@ -28,6 +28,7 @@ const baseHolds = [
 const categories = [
   {
     holdCategoryId: 123,
+    schemeId: 1,
     name: 'my hold category',
     schemeName: 'schemeName'
   }
