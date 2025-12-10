@@ -133,7 +133,8 @@
           </div>
         {% endif %}
       </div>
-      <div class="govuk-cards govuk-cards--1">
+      <!-- Row 4: Schemes + Metrics -->
+      <div class="govuk-cards govuk-cards--2">
         {% if auth.isApplicationAdmin or auth.isSchemeAdminUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Schemes</h2>
@@ -148,6 +149,19 @@
                 <a href="/payment-request/reset" class="govuk-link">Reset payment request</a>
               </li>
             </ul>
+          </div>
+        {% endif %}
+                {% if auth.isApplicationAdmin or auth.isManualPaymentsUser and manualPaymentsActive %}
+          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Metrics</h2>
+
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              Payments and Documents metrics
+            </p>
+
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              <a href="/metrics" class="govuk-link">Metrics dashboard</a>
+            </p>
           </div>
         {% endif %}
       </div>

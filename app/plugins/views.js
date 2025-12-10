@@ -25,6 +25,11 @@ module.exports = {
             watch: config.isDev
           })
 
+          env.addFilter('localize', function (num) {
+            if (num === null || num === undefined || num === '') return '0'
+            return Number(num).toLocaleString('en-GB')
+          })
+
           options.compileOptions.environment = env
           return next()
         }

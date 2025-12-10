@@ -1,0 +1,196 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/tabs/macro.njk" import govukTabs %}
+
+{% block content %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }]
+  })}}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-xl">Operational Metrics Dashboard</h1>
+
+      <p class="govuk-body-l">
+        View payment and statement metrics filtered by time period.
+      </p>
+
+      {# Time Period Filter #}
+      <form method="GET" action="/metrics">
+        {{ govukSelect({
+          id: "time-period",
+          name: "period",
+          label: {
+            text: "Select time period",
+            classes: "govuk-label--m"
+          },
+          items: [
+            {
+              value: "ytd",
+              text: "Year to date",
+              selected: selectedPeriod == "ytd"
+            },
+            {
+              value: "year",
+              text: "By year",
+              selected: selectedPeriod == "year"
+            },
+            {
+              value: "month",
+              text: "By month",
+              selected: selectedPeriod == "month"
+            },
+            {
+              value: "week",
+              text: "By week",
+              selected: selectedPeriod == "week"
+            },
+            {
+              value: "day",
+              text: "By day",
+              selected: selectedPeriod == "day"
+            }
+          ]
+        }) }}
+
+        {{ govukButton({
+          text: "Apply filter",
+          type: "submit"
+        }) }}
+      </form>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      {# Payment Metrics Section #}
+      <h2 class="govuk-heading-l">Payment Queries</h2>
+
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-panel govuk-panel--confirmation" style="background-color: #f3f2f1; color: #0b0c0c;">
+            <h3 class="govuk-panel__title" style="color: #0b0c0c;">
+              Total Payments
+            </h3>
+            <div class="govuk-panel__body" style="font-size: 48px; font-weight: bold; color: #0b0c0c;">
+              {{ paymentsMetrics.totalPayments | default(0) | localize }}
+            </div>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-panel govuk-panel--confirmation" style="background-color: #f3f2f1; color: #0b0c0c;">
+            <h3 class="govuk-panel__title" style="color: #0b0c0c;">
+              Total Value
+            </h3>
+            <div class="govuk-panel__body" style="font-size: 48px; font-weight: bold; color: #0b0c0c;">
+              £{{ (paymentsMetrics.totalValue / 100) | default(0) | localize }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">Payments by Scheme</h3>
+      
+      <table class="govuk-table" aria-label="Payments by scheme breakdown">
+        <caption class="govuk-table__caption govuk-visually-hidden">
+          Breakdown of payments and values by scheme
+        </caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Scheme</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Payments</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Value (£)</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Pending</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Processed</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for scheme in paymentsMetrics.paymentsByScheme %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">{{ scheme.schemeName }}</th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.totalPayments | localize }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ (scheme.totalValue / 100) | localize }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.paymentsByStatus.pending | localize }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.paymentsByStatus.processed | localize }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+
+      {# Statement Metrics Section #}
+      <h2 class="govuk-heading-l">Statement Queries</h2>
+
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          <div class="govuk-panel govuk-panel--confirmation" style="background-color: #f3f2f1; color: #0b0c0c;">
+            <h3 class="govuk-panel__title" style="color: #0b0c0c;">
+              Total Statements Issued
+            </h3>
+            <div class="govuk-panel__body" style="font-size: 48px; font-weight: bold; color: #0b0c0c;">
+              {{ statementsMetrics.totalStatements | default(0) | localize }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">Statements by Scheme and Delivery Method</h3>
+      
+      <table class="govuk-table" aria-label="Statements by scheme and delivery method">
+        <caption class="govuk-table__caption govuk-visually-hidden">
+          Breakdown of statements by scheme showing delivery methods and costs
+        </caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Scheme</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Statements</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post Cost (£)</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Email</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for scheme in statementsMetrics.statementsByScheme %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">{{ scheme.schemeName }}</th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.totalStatements | localize }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.printPostCount | localize }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ (scheme.printPostCost / 100) | localize }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.emailCount | localize }}</td>
+            </tr>
+          {% endfor %}
+          <tr class="govuk-table__row">
+            <th scope="row" class="govuk-table__header">Total</th>
+            <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalStatements | localize }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalPrintPost | localize }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ (statementsMetrics.totalPrintPostCost / 100) | localize }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalEmail | localize }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <details class="govuk-details" data-module="govuk-details">
+        <summary class="govuk-details__summary">
+          <span class="govuk-details__summary-text">
+            Help with this page
+          </span>
+        </summary>
+        <div class="govuk-details__text">
+          <p class="govuk-body">This dashboard provides operational metrics for payments and statements.</p>
+          <ul class="govuk-list govuk-list--bullet">
+            <li>Use the time period filter to view data for different time ranges</li>
+            <li>Payment values are displayed in pounds (£)</li>
+            <li>Print & Post costs are calculated at £2.00 per statement</li>
+            <li>All numbers are rounded for display purposes</li>
+          </ul>
+        </div>
+      </details>
+
+    </div>
+  </div>
+{% endblock %}
