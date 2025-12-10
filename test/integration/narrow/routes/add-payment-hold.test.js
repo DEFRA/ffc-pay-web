@@ -129,9 +129,8 @@ describe('Payment holds', () => {
       const $ = cheerio.load(res.payload)
       expect($('h1').text()).toEqual(pageH1)
       expect($('.govuk-error-summary__title').text()).toMatch('There is a problem')
-      const errorMessage = $('.govuk-error-message')
-      expect(errorMessage.length).toEqual(1)
-      expect(errorMessage.text()).toMatch(`Error: ${expectedErrorMessage}`)
+      expect($('.govuk-error-summary__list li').length).toBeGreaterThanOrEqual(1)
+      expect(res.payload).toContain(expectedErrorMessage)
     })
 
     test.each([

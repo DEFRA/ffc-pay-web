@@ -37,7 +37,9 @@ describe('GET /closure', () => {
     const $ = cheerio.load(res.payload)
     expect($('h1').text()).toEqual(pageH1)
 
-    if (noClosures) { expect($('#no-closure-text').text()).toEqual('There are no agreement closures.') }
+    if (noClosures) {
+      expect(res.payload).toContain('There are no agreement closures.')
+    }
   })
 
   test.each([

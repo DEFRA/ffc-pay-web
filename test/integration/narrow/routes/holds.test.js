@@ -127,9 +127,23 @@ describe('Payment Holds', () => {
   })
 
   describe('POST /payment-holds/bulk', () => {
-    beforeEach(() => readFileContent.mockReturnValue('1234567890,2345678901,3456789012'))
+    beforeEach(() => {
+      readFileContent.mockReturnValue('1234567890,2345678901,3456789012')
+    })
+
     test.each([{ viewCrumb: 'incorrect' }, { viewCrumb: undefined }])('invalid crumb %p', async ({ viewCrumb }) => {
-      const { cookieCrumb } = await getCrumbs(() => mockGet('paymentHoldCategories', categories), server, BULK_PAGE, auth)
+      mockGet('paymentHoldCategories', categories)
+
+      // Debug: Make a direct GET request first
+      const debugRes = await server.inject({ method: 'GET', url: BULK_PAGE, auth })
+      console.log('=== DEBUG INFO ===')
+      console.log('Status Code:', debugRes.statusCode)
+      console.log('Headers:', debugRes.headers)
+      console.log('First 1000 chars of response:', debugRes.payload.substring(0, 1000))
+      console.log('getProcessingData called with:', getProcessingData.mock.calls)
+      console.log('=================')
+
+      const { cookieCrumb } = await getCrumbs(() => {}, server, BULK_PAGE, auth)
       const { payload, boundary } = multipartPayload(viewCrumb, '1234567890')
       const res = await server.inject({
         method: 'POST',
@@ -142,7 +156,9 @@ describe('Payment Holds', () => {
     })
 
     test('400 when file too large', async () => {
-      const { cookieCrumb, viewCrumb } = await getCrumbs(() => mockGet('paymentHoldCategories', categories), server, BULK_PAGE, auth)
+      mockGet('paymentHoldCategories', categories)
+
+      const { cookieCrumb, viewCrumb } = await getCrumbs(() => {}, server, BULK_PAGE, auth)
       const { payload, boundary } = multipartPayload(viewCrumb, Buffer.alloc(1048577).fill('1'))
       const res = await server.inject({
         method: 'POST',

@@ -1,54 +1,54 @@
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 
-{% macro holdSelectionRadios(holdCategorys) %}
-
-  <div class="govuk-form-group">
-    <label class="govuk-label" for="selectScheme">
-      Select a scheme to filter the hold categories displayed
-    </label>
-    <select class="govuk-select" id="selectScheme" name="selectScheme">
-      <option value="all" {% if selectScheme == 'all' or selectScheme == null %}selected{% endif %}>All</option>
-      {% for category in holdCategorys %}
-        <option value="{{ category.scheme.name }}" {% if selectScheme == category.scheme.name %}selected{% endif %}>{{ category.scheme.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
-
-  {% for category in holdCategorys %}
-    <div class="scheme-group" data-scheme-name="{{category.scheme.name}}">
-      {{ govukRadios({
-        classes: "govuk-radios--small",
-        name: "holdCategoryId",
-        fieldset: {
-          legend: {
-            text: "Select a hold category for " + category.scheme.name
-          }
-        },
-        items: category.radios
-      }) }}
+{% macro holdSelectionRadios(holdCategorys, selectScheme) %}
+  {% if holdCategorys and holdCategorys.length > 0 %}
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="selectScheme">
+        Select a scheme to filter the hold categories displayed
+      </label>
+      <select class="govuk-select" id="selectScheme" name="selectScheme">
+        <option value="all" {% if selectScheme == 'all' or not selectScheme %}selected{% endif %}>All</option>
+        {% for category in holdCategorys %}
+          <option value="{{ category.scheme.name }}" {% if selectScheme == category.scheme.name %}selected{% endif %}>{{ category.scheme.name }}</option>
+        {% endfor %}
+      </select>
     </div>
-  {% endfor %}
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const selectScheme = document.getElementById('selectScheme')
-      const schemeGroups = document.querySelectorAll('.scheme-group')
+    {% for category in holdCategorys %}
+      <div class="scheme-group" data-scheme-name="{{category.scheme.name}}">
+        {{ govukRadios({
+          classes: "govuk-radios--small",
+          name: "holdCategoryId",
+          fieldset: {
+            legend: {
+              text: "Select a hold category for " + category.scheme.name
+            }
+          },
+          items: category.radios
+        }) }}
+      </div>
+    {% endfor %}
 
-      function filterSchemes() {
-        const selected = selectScheme.value
-        schemeGroups.forEach(group => {
-          if (selected === 'all' || group.dataset.schemeName === selected) {
-            group.style.display = 'block'
-          } else {
-            group.style.display = 'none'
-          }
-        })
-      }
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const selectScheme = document.getElementById('selectScheme')
+        const schemeGroups = document.querySelectorAll('.scheme-group')
 
-      selectScheme.addEventListener('change', filterSchemes)
+        function filterSchemes() {
+          const selected = selectScheme.value
+          schemeGroups.forEach(group => {
+            if (selected === 'all' || group.dataset.schemeName === selected) {
+              group.style.display = 'block'
+            } else {
+              group.style.display = 'none'
+            }
+          })
+        }
 
-      filterSchemes()
-    })
-  </script>
+        selectScheme.addEventListener('change', filterSchemes)
 
+        filterSchemes()
+      })
+    </script>
+  {% endif %}
 {% endmacro %}
