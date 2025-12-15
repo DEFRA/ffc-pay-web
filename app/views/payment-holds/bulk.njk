@@ -2,6 +2,9 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
 
@@ -21,50 +24,57 @@
         <p class="govuk-body">
           Any FRNs provided here will have holds applied or removed depending on your input.
         </p>
-        {% if errors %}
-          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-            <h2 class="govuk-error-summary__title" id="error-summary-title">
-            There is a problem
-          </h2>
-            <div class="govuk-error-summary__body">
-              <ul class="govuk-list govuk-error-summary__list">
-                {% for errorDetail in errors.details %}
-                  <li>
-                    <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
-                  </li>
-                {% endfor %}
-              </ul>
-            </div>
-          </div>
-        {% endif %}
+    {% if errors %}
+      {% set errorList = [] %}
+      {% for error in errors.details %}
+        {% set errorList = (errorList.push({
+          text: error.message
+        }), errorList) %}
+      {% endfor %}
+      
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
 
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="remove">
-            Do you want to add or remove holds?
-          </label>
-          <select class="govuk-select" id="remove" name="remove" value={{ remove }}>
-            <option value="false" selected>Add</option>
-            <option value="true">Remove</option>
-          </select>
-        </div>
+        {{ govukSelect({
+          id: "remove",
+          name: "remove",
+          label: {
+            text: "Do you want to add or remove holds?"
+          },
+          items: [
+            {
+              value: "false",
+              text: "Add",
+              selected: remove === "false" or not remove
+            },
+            {
+              value: "true",
+              text: "Remove",
+              selected: remove === "true"
+            }
+          ]
+        }) }}
 
-        <div class="govuk-form-group">
-          <label class="govuk-label govuk-label-s" for="file">
-            Upload a file
-          </label>
-          <div class="govuk-hint">
-            File should be in CSV format, containing only FRNs to be placed on hold, separated with commas.
-          </div>
-          <input class="govuk-file-upload" id="file" name="file" type="file" value="{{ file }}">
-        </div>
+        {{ govukFileUpload({
+          id: "file",
+          name: "file",
+          label: {
+            text: "Upload a file",
+            classes: "govuk-label--s"
+          },
+          hint: {
+            text: "File should be in CSV format, containing only FRNs to be placed on hold, separated with commas."
+          },
+          value: file
+        }) }}
         
-        {{ holdSelectionRadios(holdCategoryRadios) }}
+        {{ holdSelectionRadios(holdCategoryRadios, selectScheme) }}
 
         {{ govukButton({
-          text: "Create",
-          attributes: {
-            id: "submit"
-          }
+          text: "Create"
         }) }}
       </form>
     </div>

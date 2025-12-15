@@ -2,6 +2,8 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
 
@@ -12,49 +14,64 @@
       { text: "Holds", href: "/payment-holds" },
       { text: "Add", href: "/add-payment-hold" }
     ]
-  })}}
+  }) }}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <form method="POST" action="/add-payment-hold" autocomplete="off" novalidate>
-        <input type="hidden" name="crumb" value="{{crumb}}"/>
+        <input type="hidden" name="crumb" value="{{ crumb }}"/>
+        
         <h1 class="govuk-heading-l">Add payment hold</h1>
 
         {% if errors %}
-          <div class="govuk-error-summary" data-module="govuk-error-summary">
-            <div role="alert">
-              <h2 class="govuk-error-summary__title">
-                There is a problem
-              </h2>
-              <div class="govuk-error-summary__body">
-                <ul class="govuk-list govuk-error-summary__list">
-                  {% for errorDetail in errors.details %}
-                    <li>
-                      <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
-                    </li>
-                  {% endfor %}
-              </ul>
-            </div>
-          </div>
+          {% set errorList = [] %}
+          {% for errorDetail in errors.details %}
+            {% set errorList = (errorList.push({
+              text: errorDetail.message,
+              href: "#" + (errorDetail.context.key if errorDetail.context.key else "frn")
+            }), errorList) %}
+          {% endfor %}
+          
+          {{ govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: errorList
+          }) }}
         {% endif %}
 
-        <div class="govuk-form-group">
-          <label class="govuk-label govuk-label-s" for="frn">
-            Firm reference number (FRN)
-          </label>
-          <div class="govuk-hint">
-            Enter a 10-digit FRN
-          </div>
-          <input class="govuk-input govuk-input--width-10" id="frn" name="frn" type="text" value="{{ frn }}">
-        </div>
+        {% set frnError = null %}
+        {% if errors %}
+          {% for errorDetail in errors.details %}
+            {% if errorDetail.context.key == "frn" %}
+              {% set frnError = { text: errorDetail.message } %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
 
-        {{ holdSelectionRadios(holdCategoryRadios) }}
+        {{ govukInput({
+          label: {
+            text: "Firm reference number (FRN)",
+            classes: "govuk-label--s"
+          },
+          hint: {
+            text: "Enter a 10-digit FRN"
+          },
+          id: "frn",
+          name: "frn",
+          value: frn,
+          classes: "govuk-input--width-10",
+          errorMessage: frnError,
+          inputmode: "numeric",
+          spellcheck: false
+        }) }}
+
+        {{ holdSelectionRadios(holdCategoryRadios, selectScheme) }}
 
         {{ govukButton({
-        text: "Create",
-        attributes: {
-          id: "submit"
-        }
-      }) }}
+          text: "Create",
+          attributes: {
+            id: "submit"
+          }
+        }) }}
       </form>
     </div>
   </div>
