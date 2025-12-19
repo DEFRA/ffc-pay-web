@@ -4,7 +4,6 @@ const {
   getPaymentsByCorrelationId,
   getPaymentsByBatch
 } = require('../payments')
-const ViewModel = require('./models/monitoring')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 
@@ -15,8 +14,12 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE
     },
-    handler: async (_request, h) => {
-      return h.view('monitoring/monitoring', new ViewModel())
+    handler: async (request, h) => {
+      const error = request.query.error
+      if (error) {
+        return h.view('monitoring/monitoring', { error: 'Exactly one of FRN and batch name should be provided' })
+      }
+      return h.view('monitoring/monitoring')
     }
   },
   {
@@ -27,6 +30,9 @@ module.exports = [
     },
     handler: async (request, h) => {
       const frn = request.query.frn
+      if (!frn) {
+        return h.redirect('/monitoring?error=true')
+      }
       const payments = await getPaymentsByFrn(frn)
       return h.view('monitoring/frn', { frn, payments })
     }
@@ -51,6 +57,9 @@ module.exports = [
     },
     handler: async (request, h) => {
       const batch = request.query.batch
+      if (!batch) {
+        return h.redirect('/monitoring?error=true')
+      }
       const payments = await getPaymentsByBatch(batch)
       return h.view('monitoring/batch', { batch, payments })
     }
