@@ -63,6 +63,11 @@ const getHistoricalInjectionData = async (endpoint, daysBack, token) => {
   return getInjectionData(endpointUrl, token)
 }
 
+const getStatementPublisherData = async (url, token) => {
+  const { payload } = await wreck.get(`${config.statementPublisherEndpoint}${url}`, getConfiguration(token))
+  return payload
+}
+
 module.exports = {
   postProcessing,
   postInjection,
@@ -71,5 +76,6 @@ module.exports = {
   getTrackingData,
   getAlertingData,
   getInjectionData,
-  getHistoricalInjectionData
+  getHistoricalInjectionData,
+  getStatementPublisherData
 }

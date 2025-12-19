@@ -3,7 +3,6 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/tabs/macro.njk" import govukTabs %}
 
 {% block content %}
   {{ govukBreadcrumbs({
@@ -20,52 +19,126 @@
       <p class="govuk-body-l">
         View payment and statement metrics filtered by time period.
       </p>
+      
+      {% if error %}
+        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+          <h2 class="govuk-error-summary__title" id="error-summary-title">
+            There is a problem
+          </h2>
+          <div class="govuk-error-summary__body">
+            <p>{{ error }}</p>
+          </div>
+        </div>
+      {% endif %}
 
-      {# Time Period Filter #}
-      <form method="GET" action="/metrics">
-        {{ govukSelect({
-          id: "time-period",
-          name: "period",
-          label: {
-            text: "Select time period",
-            classes: "govuk-label--m"
-          },
-          items: [
-            {
-              value: "ytd",
-              text: "Year to date",
-              selected: selectedPeriod == "ytd"
-            },
-            {
-              value: "year",
-              text: "By year",
-              selected: selectedPeriod == "year"
-            },
-            {
-              value: "month",
-              text: "By month",
-              selected: selectedPeriod == "month"
-            },
-            {
-              value: "week",
-              text: "By week",
-              selected: selectedPeriod == "week"
-            },
-            {
-              value: "day",
-              text: "By day",
-              selected: selectedPeriod == "day"
-            }
-          ]
-        }) }}
-
-        {{ govukButton({
-          text: "Apply filter",
-          type: "submit"
-        }) }}
+      {# Compact Filter Form #}
+      <form method="GET" action="/metrics" id="metrics-filter-form" class="govuk-!-margin-bottom-6">
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-quarter">
+            {{ govukSelect({
+              id: "period",
+              name: "period",
+              label: {
+                text: "Time period",
+                classes: "govuk-label--s"
+              },
+              items: [
+                {
+                  value: "all",
+                  text: "Show all",
+                  selected: selectedPeriod == "all" or not selectedPeriod
+                },
+                {
+                  value: "ytd",
+                  text: "Year to date",
+                  selected: selectedPeriod == "ytd"
+                },
+                {
+                  value: "year",
+                  text: "By year",
+                  selected: selectedPeriod == "year"
+                },
+                {
+                  value: "monthInYear",
+                  text: "By month",
+                  selected: selectedPeriod == "monthInYear"
+                },
+                {
+                  value: "month",
+                  text: "This month",
+                  selected: selectedPeriod == "month"
+                },
+                {
+                  value: "week",
+                  text: "Last 7 days",
+                  selected: selectedPeriod == "week"
+                },
+                {
+                  value: "day",
+                  text: "Last 24 hours",
+                  selected: selectedPeriod == "day"
+                }
+              ]
+            }) }}
+          </div>
+      
+          <div class="govuk-grid-column-one-quarter" id="year-filter" style="{% if selectedPeriod != 'year' and selectedPeriod != 'monthInYear' %}display: none;{% endif %}">
+            {% set yearItems = [{ value: "", text: "Select a year", selected: not schemeYear }] %}
+            {% for year in availableYears %}
+              {% set yearItems = (yearItems.push({
+                value: year,
+                text: year,
+                selected: schemeYear == year
+              }), yearItems) %}
+            {% endfor %}
+            
+            {{ govukSelect({
+              id: "schemeYear",
+              name: "schemeYear",
+              label: {
+                text: "Select year",
+                classes: "govuk-label--s"
+              },
+              items: yearItems
+            }) }}
+          </div>
+      
+          <div class="govuk-grid-column-one-quarter" id="month-filter" style="{% if selectedPeriod != 'monthInYear' %}display: none;{% endif %}">
+            {% set monthItems = [{ value: "", text: "Select a month", selected: not selectedMonth }] %}
+            {% for month in availableMonths %}
+              {% set monthItems = (monthItems.push({
+                value: month.value,
+                text: month.text,
+                selected: selectedMonth == month.value
+              }), monthItems) %}
+            {% endfor %}
+            
+            {{ govukSelect({
+              id: "selectedMonth",
+              name: "month",
+              label: {
+                text: "Select month",
+                classes: "govuk-label--s"
+              },
+              items: monthItems
+            }) }}
+          </div>
+      
+          <div class="govuk-grid-column-one-quarter">
+            {{ govukButton({
+              text: "Apply",
+              type: "submit",
+              classes: "govuk-!-margin-top-6"
+            }) }}
+            
+            {% if selectedPeriod != 'all' or schemeYear or selectedMonth %}
+              <a href="/metrics" class="govuk-link govuk-!-margin-left-3" style="line-height: 40px;">Clear filters</a>
+            {% endif %}
+          </div>
+        </div>
       </form>
 
-      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
       {# Payment Metrics Section #}
       <h2 class="govuk-heading-l">Payment Metrics</h2>
@@ -102,6 +175,9 @@
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Scheme</th>
+            {% if selectedPeriod == 'all' %}
+              <th scope="col" class="govuk-table__header">Year</th>
+            {% endif %}
             <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Payments</th>
             <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Value (£)</th>
             <th scope="col" class="govuk-table__header govuk-table__header--numeric">Pending</th>
@@ -112,6 +188,9 @@
           {% for scheme in paymentsMetrics.paymentsByScheme %}
             <tr class="govuk-table__row">
               <th scope="row" class="govuk-table__header">{{ scheme.schemeName }}</th>
+              {% if selectedPeriod == 'all' %}
+                <td class="govuk-table__cell">{{ scheme.schemeYear | default('N/A') }}</td>
+              {% endif %}
               <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.totalPayments | localize }}</td>
               <td class="govuk-table__cell govuk-table__cell--numeric">{{ (scheme.totalValue / 100) | localize }}</td>
               <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.paymentsByStatus.pending | localize }}</td>
@@ -148,6 +227,9 @@
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Scheme</th>
+            {% if selectedPeriod == 'all' %}
+              <th scope="col" class="govuk-table__header">Year</th>
+            {% endif %}
             <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Statements</th>
             <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post</th>
             <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post Cost (£)</th>
@@ -158,6 +240,9 @@
           {% for scheme in statementsMetrics.statementsByScheme %}
             <tr class="govuk-table__row">
               <th scope="row" class="govuk-table__header">{{ scheme.schemeName }}</th>
+              {% if selectedPeriod == 'all' %}
+                <td class="govuk-table__cell">{{ scheme.schemeYear | default('N/A') }}</td>
+              {% endif %}
               <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.totalStatements | localize }}</td>
               <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.printPostCount | localize }}</td>
               <td class="govuk-table__cell govuk-table__cell--numeric">{{ (scheme.printPostCost / 100) | localize }}</td>
@@ -166,6 +251,9 @@
           {% endfor %}
           <tr class="govuk-table__row">
             <th scope="row" class="govuk-table__header">Total</th>
+            {% if selectedPeriod == 'all' %}
+              <td class="govuk-table__cell">All years</td>
+            {% endif %}
             <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalStatements | localize }}</td>
             <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalPrintPost | localize }}</td>
             <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ (statementsMetrics.totalPrintPostCost / 100) | localize }}</td>
@@ -183,14 +271,52 @@
         <div class="govuk-details__text">
           <p class="govuk-body">This dashboard provides operational metrics for payments and statements.</p>
           <ul class="govuk-list govuk-list--bullet">
-            <li>Use the time period filter to view data for different time ranges</li>
+            <li><strong>Show all</strong> - View complete dataset with no date filtering (includes year breakdown)</li>
+            <li><strong>Year to date</strong> - View data from 1 January of the current year to today</li>
+            <li><strong>By year</strong> - Select a specific year to view annual data</li>
+            <li><strong>By month</strong> - Select a specific year and month to view monthly data</li>
+            <li><strong>This month</strong> - View data for the current calendar month</li>
+            <li><strong>Last 7 days</strong> - View recent weekly activity</li>
+            <li><strong>Last 24 hours</strong> - View real-time daily activity</li>
             <li>Payment values are displayed in pounds (£)</li>
-            <li>Print & Post costs are calculated at £2.00 per statement</li>
-            <li>All numbers are rounded for display purposes</li>
+            <li>Print & Post costs are calculated based on actual postage rates</li>
           </ul>
         </div>
       </details>
 
     </div>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const periodSelect = document.getElementById('period')
+      const yearFilter = document.getElementById('year-filter')
+      const monthFilter = document.getElementById('month-filter')
+  
+      function updateFilters() {
+        const period = periodSelect.value
+        
+        // Show year filter for 'year' and 'monthInYear' periods
+        if (period === 'year' || period === 'monthInYear') {
+          yearFilter.style.display = 'block'
+        } else {
+          yearFilter.style.display = 'none'
+        }
+  
+        // Show month filter only for 'monthInYear' period
+        if (period === 'monthInYear') {
+          monthFilter.style.display = 'block'
+        } else {
+          monthFilter.style.display = 'none'
+        }
+      }
+  
+      periodSelect.addEventListener('change', updateFilters)
+      updateFilters()
+    })
+  
+    if (window.GOVUKFrontend) {
+      window.GOVUKFrontend.initAll()
+    }
+  </script>
 {% endblock %}

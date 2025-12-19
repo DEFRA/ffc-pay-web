@@ -1,8 +1,10 @@
 const { applicationAdmin, dataView } = require('../auth/permissions')
-// const { getProcessingData } = require('../api')
-
+const { getAllMetrics } = require('../metrics/get-metrics')
+const { generateSchemeYears } = require('../helpers/generate-scheme-years')
 const METRICS_ROUTES = require('../constants/metrics-routes')
 const METRICS_VIEWS = require('../constants/metrics-views')
+const MONTHS = require('../constants/months')
+
 const AUTH_SCOPE = { scope: [applicationAdmin, dataView] }
 
 module.exports = [{
@@ -10,37 +12,57 @@ module.exports = [{
   path: METRICS_ROUTES.BASE,
   options: {
     auth: AUTH_SCOPE,
-    handler: async (_request, h) => {
-      // TODO: Replace with actual API calls when backend is ready
-      const paymentsMetrics = {
-        totalPayments: 12543,
-        totalValue: 45678900,
-        paymentsByScheme: [
-          { schemeName: 'SFI23', totalPayments: 4521, totalValue: 15234567, paymentsByStatus: { pending: 120, processed: 4401 } },
-          { schemeName: 'BPS', totalPayments: 3421, totalValue: 12345678, paymentsByStatus: { pending: 89, processed: 3332 } },
-          { schemeName: 'CS', totalPayments: 2301, totalValue: 9876543, paymentsByStatus: { pending: 45, processed: 2256 } },
-          { schemeName: 'Delinked', totalPayments: 2300, totalValue: 8222112, paymentsByStatus: { pending: 67, processed: 2233 } }
-        ]
-      }
+    handler: async (request, h) => {
+      try {
+        const selectedPeriod = request.query.period || 'all'
+        const schemeYear = request.query.schemeYear ? Number.parseInt(request.query.schemeYear) : null
+        const selectedMonth = request.query.month ? Number.parseInt(request.query.month) : null
+        
+        let logMessage = `Loading metrics for period: ${selectedPeriod}`
+        if (schemeYear) {
+          logMessage += `, year: ${schemeYear}`
+        }
+        if (selectedMonth) {
+          logMessage += `, month: ${selectedMonth}`
+        }
+        console.log(logMessage)
+        
+        const { paymentsMetrics, statementsMetrics } = await getAllMetrics(selectedPeriod, schemeYear, selectedMonth)
 
-      const statementsMetrics = {
-        totalStatements: 8932,
-        statementsByScheme: [
-          { schemeName: 'SFI23', totalStatements: 3201, printPostCount: 2140, printPostCost: 4280, emailCount: 1061 },
-          { schemeName: 'BPS', totalStatements: 2531, printPostCount: 1687, printPostCost: 3374, emailCount: 844 },
-          { schemeName: 'CS', totalStatements: 1900, printPostCount: 1267, printPostCost: 2534, emailCount: 633 },
-          { schemeName: 'Delinked', totalStatements: 1300, printPostCount: 867, printPostCost: 1734, emailCount: 433 }
-        ],
-        totalPrintPost: 5961,
-        totalPrintPostCost: 11922,
-        totalEmail: 2971
+        return h.view(METRICS_VIEWS.BASE, {
+          paymentsMetrics,
+          statementsMetrics,
+          selectedPeriod,
+          schemeYear,
+          selectedMonth,
+          availableYears: generateSchemeYears(),
+          availableMonths: MONTHS
+        })
+      } catch (error) {
+        console.error('Error loading metrics:', error)
+        
+        // Fallback to empty state on error
+        return h.view(METRICS_VIEWS.BASE, {
+          paymentsMetrics: { 
+            totalPayments: 0, 
+            totalValue: 0, 
+            paymentsByScheme: [] 
+          },
+          statementsMetrics: { 
+            totalStatements: 0,
+            totalPrintPost: 0,
+            totalPrintPostCost: 0,
+            totalEmail: 0,
+            statementsByScheme: [] 
+          },
+          selectedPeriod: 'all',
+          schemeYear: null,
+          selectedMonth: null,
+          availableYears: generateSchemeYears(),
+          availableMonths: MONTHS,
+          error: 'Unable to load metrics. Please try again later.'
+        })
       }
-
-      return h.view(METRICS_VIEWS.BASE, {
-        paymentsMetrics,
-        statementsMetrics,
-        selectedPeriod: 'ytd' // year-to-date as default
-      })
     }
   }
 }]
