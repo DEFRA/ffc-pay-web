@@ -55,11 +55,76 @@ const testRoute = (url, viewText = 'Monitoring') => {
 
 describe('Monitoring routes', () => {
   ['/monitoring',
-    '/monitoring/payments/frn',
     '/monitoring/payments/correlation-id',
-    '/monitoring/batch/name',
     '/monitoring/view-processed-payment-requests'
   ].forEach(path => {
     testRoute(path, path.includes('processed') ? 'processed payment requests' : 'Monitoring')
+  })
+
+  describe('/monitoring route specific tests', () => {
+    test('GET /monitoring returns error message in view when error query is present', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring?error=true',
+        auth
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.payload).toContain('Exactly one of FRN and batch name should be provided')
+    })
+  })
+
+  describe('/monitoring/payments/frn route specific tests', () => {
+    test('GET /monitoring/payments/frn redirects to /monitoring?error=true if frn query param is missing', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring/payments/frn',
+        auth
+      })
+
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe('/monitoring?error=true')
+    })
+
+    test('GET /monitoring/payments/frn returns view with payments when frn query param is provided', async () => {
+      mockGetPaymentsByFrn.mockResolvedValue(DATA)
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring/payments/frn?frn=123456',
+        auth
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.payload).toContain('123456')
+      expect(res.payload).toContain('Monitoring')
+    })
+  })
+
+  describe('/monitoring/batch/name route specific tests', () => {
+    test('GET /monitoring/batch/name redirects to /monitoring?error=true if batch query param is missing', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring/batch/name',
+        auth
+      })
+
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe('/monitoring?error=true')
+    })
+
+    test('GET /monitoring/batch/name returns view with payments when batch query param is provided', async () => {
+      mockGetPaymentsByBatch.mockResolvedValue(DATA)
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring/batch/name?batch=batch1',
+        auth
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.payload).toContain('batch1')
+      expect(res.payload).toContain('Monitoring')
+    })
   })
 })
