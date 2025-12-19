@@ -14,6 +14,7 @@ services:
       TRACKING_SERVICE_ENDPOINT: http://ffc-pay-tracking:3002
       INJECTION_SERVICE_ENDPOINT: http://ffc-pay-injection:3014
       ALERTING_SERVICE_ENDPOINT: http://ffc-pay-alerting:3025
+      STATEMENT_PUBLISHER_ENDPOINT: http://ffc-doc-statement-publisher:3010
       AZUREID_CLIENT_SECRET: ${AZUREID_CLIENT_SECRET}
       AZUREID_CLIENT_ID: ${AZUREID_CLIENT_ID}
       AZUREID_TENANT_ID: ${AZUREID_TENANT_ID}
