@@ -5,7 +5,6 @@ module.exports = {
   VET_VISITS: 4,
   CS: 5,
   BPS: 6,
-  FDMR: 7,
   MANUAL: 8,
   ES: 9,
   FC: 10,
