@@ -1,11 +1,10 @@
 const { sanitizeSchemes } = require('../../../app/helpers/sanitize-schemes')
 
 describe('sanitizeSchemes', () => {
-  test('should rename schemes according to nameMapping and filter out "FDMR"', () => {
+  test('should rename schemes according to nameMapping', () => {
     const inputSchemes = [
       { name: 'SFI', id: 1 },
       { name: 'Lump Sums', id: 2 },
-      { name: 'FDMR', id: 3 },
       { name: 'Other Scheme', id: 4 },
       { name: 'COHT Capital', id: 5 }
     ]
@@ -28,8 +27,7 @@ describe('sanitizeSchemes', () => {
 
   test('should not mutate original input array', () => {
     const originalSchemes = [
-      { name: 'SFI', id: 1 },
-      { name: 'FDMR', id: 2 }
+      { name: 'SFI', id: 1 }
     ]
     const inputCopy = JSON.parse(JSON.stringify(originalSchemes))
 
@@ -38,7 +36,7 @@ describe('sanitizeSchemes', () => {
     expect(originalSchemes).toEqual(inputCopy)
   })
 
-  test('should leave schemes unchanged if no mapping and not "FDMR"', () => {
+  test('should leave schemes unchanged if no mapping', () => {
     const inputSchemes = [
       { name: 'Unmapped Scheme', id: 10 },
       { name: 'Another Scheme', id: 11 }
