@@ -1,5 +1,3 @@
-const config = require('../config')
-
 const getReportTypes = () => {
   return {
     // These don't call call tracking api (Report already exists in BLOB)

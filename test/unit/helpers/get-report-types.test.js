@@ -1,4 +1,3 @@
-const config = require('../../../app/config')
 const { getReportTypes } = require('../../../app/helpers/get-report-types')
 
 jest.mock('../../../app/config')
@@ -16,7 +15,7 @@ describe('getReportTypes', () => {
     delete process.env.LEGACY_REPORTS_ACTIVE
   })
 
-  test('should return report types', () => {
+  test('should return authreport types', () => {
     const reportTypes = getReportTypes()
 
     expect(reportTypes).toEqual({
