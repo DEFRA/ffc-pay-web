@@ -12,18 +12,18 @@ describe('getReportTypes', () => {
 
   afterEach(() => {
     consoleSpy.mockRestore()
-    delete process.env.LEGACY_REPORTS_ACTIVE
   })
 
   test('should return authreport types', () => {
     const reportTypes = getReportTypes()
 
     expect(reportTypes).toEqual({
-      'Payment request statuses': 'payment-requests',
-      'Suppressed payment requests': 'suppressed-payments',
-      Holds: 'holds',
-      'Payment statement status report': 'status-report'
-
-    })
+        'Payment request statuses': 'payment-requests-v2',
+        'Suppressed payment requests': 'suppressed-payments',
+        'AP-AR listing report': 'ap-ar-report',
+        Holds: 'holds',
+        'Request Editor report': 'request-editor-report',
+        'Payment statement status report': 'status-report'
+      })
   })
 })
