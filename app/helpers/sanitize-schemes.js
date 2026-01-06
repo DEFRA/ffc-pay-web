@@ -15,7 +15,6 @@ const sanitizeSchemes = (schemes) => {
   }
 
   return schemes
-    .filter(scheme => scheme.name !== 'FDMR')
     .map(scheme => {
       if (Object.hasOwn(nameMapping, scheme.name)) {
         return { ...scheme, name: nameMapping[scheme.name] }
