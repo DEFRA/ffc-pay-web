@@ -36,9 +36,6 @@
         {% if auth.isApplicationAdmin or auth.isHoldAdminUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Payment holds</h2>
-            <p class="govuk-heading-l govuk-!-margin-bottom-5">
-              {{ totalHolds }}
-            </p>
             <p class="govuk-body govuk-!-margin-bottom-8">
               <a href="/payment-holds" class="govuk-link">Manage holds</a>
             </p>
@@ -48,9 +45,6 @@
         {% if auth.isApplicationAdmin or auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser or auth.isStatusReportUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Finance reports</h2>
-            <p class="govuk-heading-l govuk-!-margin-bottom-5">
-              {{ totalReportTypes }}
-            </p>
             <p class="govuk-body govuk-!-margin-bottom-8">
               <a href="/report-list" class="govuk-link">Reports</a>
             </p>
@@ -62,13 +56,7 @@
       <div class="govuk-cards govuk-cards--2">
         {% if auth.isApplicationAdmin or auth.isAlertAdminUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Alerts recipients</h2>
-            <p class="govuk-heading-l govuk-!-margin-bottom-5">
-              {{ totalAlertUsers }}
-            </p>
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              Make updates to Payment Hub alert recipients
-            </p>
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Payment alerts</h2>
             <ul class="govuk-list">
               <li>
                 <a href="/alerts" class="govuk-link">View all alert recipients</a>
@@ -79,12 +67,6 @@
         {% if auth.isApplicationAdmin or auth.isClosureAdminUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Agreement closures</h2>
-            <p class="govuk-heading-l govuk-!-margin-bottom-5">
-              {{ totalClosures }}
-            </p>
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              Add details of an agreement number closure
-            </p>
             <ul class="govuk-list">
               <li>
                 <a href="/closure" class="govuk-link">Manage closures</a>
@@ -104,11 +86,7 @@
       <div class="govuk-cards govuk-cards--2">
         {% if auth.isApplicationAdmin or auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Monitoring</h2>
-
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              View payment events
-            </p>
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Payment event monitoring</h2>
             <ul class="govuk-list">
               <li>
                 <a href="/monitoring" class="govuk-link">View events</a>
@@ -122,13 +100,8 @@
         {% if auth.isApplicationAdmin or auth.isManualPaymentsUser and manualPaymentsActive %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Manual payment upload</h2>
-
             <p class="govuk-body govuk-!-margin-bottom-8">
-              Upload a manual payment file
-            </p>
-
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              <a href="/manual-payments" class="govuk-link">Upload manual payment</a>
+              <a href="/manual-payments" class="govuk-link">Upload manual payment file</a>
             </p>
           </div>
         {% endif %}
@@ -137,18 +110,10 @@
       <div class="govuk-cards govuk-cards--2">
         {% if auth.isApplicationAdmin or auth.isSchemeAdminUser %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Schemes</h2>
-            <p class="govuk-heading-l govuk-!-margin-bottom-5">
-              {{ totalSchemes }}
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Reset payment requests</h2>
+            <p class="govuk-body govuk-!-margin-bottom-8">
+              <a href="/payment-request/reset" class="govuk-link">Reset payment request</a>
             </p>
-            <ul class="govuk-list">
-              <li>
-                <a href="/payment-schemes" class="govuk-link">Manage schemes</a>
-              </li>
-              <li>
-                <a href="/payment-request/reset" class="govuk-link">Reset payment request</a>
-              </li>
-            </ul>
           </div>
         {% endif %}
                 {% if auth.isApplicationAdmin or auth.isManualPaymentsUser and manualPaymentsActive %}
