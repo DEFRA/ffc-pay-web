@@ -19,7 +19,7 @@
       <p class="govuk-body-l">
         View payment and statement metrics filtered by time period.
       </p>
-      
+
       {% if error %}
         <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
           <h2 class="govuk-error-summary__title" id="error-summary-title">
@@ -81,9 +81,15 @@
               ]
             }) }}
           </div>
-      
+
           <div class="govuk-grid-column-one-quarter" id="year-filter" style="{% if selectedPeriod != 'year' and selectedPeriod != 'monthInYear' %}display: none;{% endif %}">
-            {% set yearItems = [{ value: "", text: "Select a year", selected: not schemeYear }] %}
+            {% set yearItems = [
+              {
+                value: "",
+                text: "Select a year",
+                selected: not schemeYear
+              }
+            ] %}
             {% for year in availableYears %}
               {% set yearItems = (yearItems.push({
                 value: year,
@@ -91,7 +97,7 @@
                 selected: schemeYear == year
               }), yearItems) %}
             {% endfor %}
-            
+
             {{ govukSelect({
               id: "schemeYear",
               name: "schemeYear",
@@ -102,9 +108,15 @@
               items: yearItems
             }) }}
           </div>
-      
+
           <div class="govuk-grid-column-one-quarter" id="month-filter" style="{% if selectedPeriod != 'monthInYear' %}display: none;{% endif %}">
-            {% set monthItems = [{ value: "", text: "Select a month", selected: not selectedMonth }] %}
+            {% set monthItems = [
+              {
+                value: "",
+                text: "Select a month",
+                selected: not selectedMonth
+              }
+            ] %}
             {% for month in availableMonths %}
               {% set monthItems = (monthItems.push({
                 value: month.value,
@@ -112,7 +124,7 @@
                 selected: selectedMonth == month.value
               }), monthItems) %}
             {% endfor %}
-            
+
             {{ govukSelect({
               id: "selectedMonth",
               name: "month",
@@ -123,14 +135,14 @@
               items: monthItems
             }) }}
           </div>
-      
+
           <div class="govuk-grid-column-one-quarter">
             {{ govukButton({
               text: "Apply",
               type: "submit",
               classes: "govuk-!-margin-top-6"
             }) }}
-            
+
             {% if selectedPeriod != 'all' or schemeYear or selectedMonth %}
               <a href="/metrics" class="govuk-link govuk-!-margin-left-3" style="line-height: 40px;">Clear filters</a>
             {% endif %}
@@ -167,15 +179,17 @@
       </div>
 
       <h3 class="govuk-heading-m govuk-!-margin-top-6">Payments by Scheme</h3>
-      
+
       <table class="govuk-table" aria-label="Payments by scheme breakdown">
         <caption class="govuk-table__caption govuk-visually-hidden">
-          Breakdown of payments and values by scheme
-        </caption>
+    Breakdown of payments and values by scheme
+  </caption>
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Scheme</th>
-            {% if selectedPeriod == 'all' %}
+            {% if selectedPeriod == 'all' and paymentsMetrics.paymentsByScheme.length > 0 and paymentsMetrics
+              .paymentsByScheme[0]
+              .schemeYear %}
               <th scope="col" class="govuk-table__header">Year</th>
             {% endif %}
             <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Payments</th>
@@ -188,8 +202,8 @@
           {% for scheme in paymentsMetrics.paymentsByScheme %}
             <tr class="govuk-table__row">
               <th scope="row" class="govuk-table__header">{{ scheme.schemeName }}</th>
-              {% if selectedPeriod == 'all' %}
-                <td class="govuk-table__cell">{{ scheme.schemeYear | default('N/A') }}</td>
+              {% if selectedPeriod == 'all' and scheme.schemeYear %}
+                <td class="govuk-table__cell">{{ scheme.schemeYear }}</td>
               {% endif %}
               <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.totalPayments | localize }}</td>
               <td class="govuk-table__cell govuk-table__cell--numeric">{{ (scheme.totalValue / 100) | localize }}</td>
@@ -219,7 +233,7 @@
       </div>
 
       <h3 class="govuk-heading-m govuk-!-margin-top-6">Statements by Scheme and Delivery Method</h3>
-      
+
       <table class="govuk-table" aria-label="Statements by scheme and delivery method">
         <caption class="govuk-table__caption govuk-visually-hidden">
           Breakdown of statements by scheme showing delivery methods and costs
@@ -271,13 +285,20 @@
         <div class="govuk-details__text">
           <p class="govuk-body">This dashboard provides operational metrics for payments and statements.</p>
           <ul class="govuk-list govuk-list--bullet">
-            <li><strong>Show all</strong> - View complete dataset with no date filtering (includes year breakdown)</li>
-            <li><strong>Year to date</strong> - View data from 1 January of the current year to today</li>
-            <li><strong>By year</strong> - Select a specific year to view annual data</li>
-            <li><strong>By month</strong> - Select a specific year and month to view monthly data</li>
-            <li><strong>This month</strong> - View data for the current calendar month</li>
-            <li><strong>Last 7 days</strong> - View recent weekly activity</li>
-            <li><strong>Last 24 hours</strong> - View real-time daily activity</li>
+            <li>
+              <strong>Show all</strong> - View complete dataset with no date filtering (includes year breakdown)</li>
+            <li>
+              <strong>Year to date</strong> - View data from 1 January of the current year to today</li>
+            <li>
+              <strong>By year</strong> - Select a specific year to view annual data</li>
+            <li>
+              <strong>By month</strong> - Select a specific year and month to view monthly data</li>
+            <li>
+              <strong>This month</strong> - View data for the current calendar month</li>
+            <li>
+              <strong>Last 7 days</strong> - View recent weekly activity</li>
+            <li>
+              <strong>Last 24 hours</strong> - View real-time daily activity</li>
             <li>Payment values are displayed in pounds (£)</li>
             <li>Print & Post costs are calculated based on actual postage rates</li>
           </ul>
@@ -292,17 +313,17 @@
       const periodSelect = document.getElementById('period')
       const yearFilter = document.getElementById('year-filter')
       const monthFilter = document.getElementById('month-filter')
-  
+
       function updateFilters() {
         const period = periodSelect.value
-        
+
         // Show year filter for 'year' and 'monthInYear' periods
         if (period === 'year' || period === 'monthInYear') {
           yearFilter.style.display = 'block'
         } else {
           yearFilter.style.display = 'none'
         }
-  
+
         // Show month filter only for 'monthInYear' period
         if (period === 'monthInYear') {
           monthFilter.style.display = 'block'
@@ -310,13 +331,15 @@
           monthFilter.style.display = 'none'
         }
       }
-  
+
       periodSelect.addEventListener('change', updateFilters)
       updateFilters()
     })
-  
+
     if (window.GOVUKFrontend) {
-      window.GOVUKFrontend.initAll()
+      window
+        .GOVUKFrontend
+        .initAll()
     }
   </script>
 {% endblock %}

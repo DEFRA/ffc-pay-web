@@ -17,7 +17,7 @@ module.exports = [{
         const selectedPeriod = request.query.period || 'all'
         const schemeYear = request.query.schemeYear ? Number.parseInt(request.query.schemeYear) : null
         const selectedMonth = request.query.month ? Number.parseInt(request.query.month) : null
-        
+
         let logMessage = `Loading metrics for period: ${selectedPeriod}`
         if (schemeYear) {
           logMessage += `, year: ${schemeYear}`
@@ -26,34 +26,47 @@ module.exports = [{
           logMessage += `, month: ${selectedMonth}`
         }
         console.log(logMessage)
-        
+
         const { paymentsMetrics, statementsMetrics } = await getAllMetrics(selectedPeriod, schemeYear, selectedMonth)
 
+        let error = null
+        if (paymentsMetrics.error || statementsMetrics.error) {
+          const errors = []
+          if (paymentsMetrics.error) {
+            errors.push('payment metrics')
+          }
+          if (statementsMetrics.error) {
+            errors.push('statement metrics')
+          }
+          error = `Unable to load ${errors.join(' and ')}. Please try again later. If this error persists, contact a member of the Payments and Documents team.`
+        }
+
         return h.view(METRICS_VIEWS.BASE, {
-          paymentsMetrics,
-          statementsMetrics,
+          paymentsMetrics: paymentsMetrics.data,
+          statementsMetrics: statementsMetrics.data,
           selectedPeriod,
           schemeYear,
           selectedMonth,
           availableYears: generateSchemeYears(),
-          availableMonths: MONTHS
+          availableMonths: MONTHS,
+          error
         })
       } catch (error) {
         console.error('Error loading metrics:', error)
-        
+
         // Fallback to empty state on error
         return h.view(METRICS_VIEWS.BASE, {
-          paymentsMetrics: { 
-            totalPayments: 0, 
-            totalValue: 0, 
-            paymentsByScheme: [] 
+          paymentsMetrics: {
+            totalPayments: 0,
+            totalValue: 0,
+            paymentsByScheme: []
           },
-          statementsMetrics: { 
+          statementsMetrics: {
             totalStatements: 0,
             totalPrintPost: 0,
             totalPrintPostCost: 0,
             totalEmail: 0,
-            statementsByScheme: [] 
+            statementsByScheme: []
           },
           selectedPeriod: 'all',
           schemeYear: null,

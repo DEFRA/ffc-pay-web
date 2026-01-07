@@ -13,29 +13,37 @@ const getStatementMetrics = async (period = 'ytd', schemeYear = null, month = nu
     if (period === 'monthInYear' && schemeYear && month) {
       url += `&schemeYear=${schemeYear}&month=${month}`
     }
-    
+
     const data = await getStatementPublisherData(url)
     const payload = data.payload
-    
+
     return {
-      ...payload,
-      totalPrintPostCost: Number.parseInt(payload.totalPrintPostCost) || 0,
-      statementsByScheme: payload.statementsByScheme.map(s => ({
-        ...s,
-        printPostCost: Number.parseInt(s.printPostCost) || 0
-      }))
+      data: {
+        ...payload,
+        totalPrintPostCost: Number.parseInt(payload.totalPrintPostCost) || 0,
+        statementsByScheme: payload.statementsByScheme.map(s => ({
+          ...s,
+          printPostCost: Number.parseInt(s.printPostCost) || 0
+        }))
+      },
+      error: false,
+      message: ''
     }
   } catch (error) {
     console.error('Error fetching statement metrics:', error)
-    
-    // Return empty structure on error
+
+    // Return empty structure with error flag
     return {
-      totalStatements: 0,
-      totalPrintPost: 0,
-      totalPrintPostCost: 0,
-      totalEmail: 0,
-      totalFailures: 0,
-      statementsByScheme: []
+      data: {
+        totalStatements: 0,
+        totalPrintPost: 0,
+        totalPrintPostCost: 0,
+        totalEmail: 0,
+        totalFailures: 0,
+        statementsByScheme: []
+      },
+      error: true,
+      message: 'Unable to load statement metrics. Please try again later.'
     }
   }
 }

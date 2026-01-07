@@ -26,7 +26,9 @@ module.exports = {
           })
 
           env.addFilter('localize', function (num) {
-            if (num === null || num === undefined || num === '') return '0'
+            if (num === null || num === undefined || num === '') {
+              return '0'
+            }
             return Number(num).toLocaleString('en-GB')
           })
 
