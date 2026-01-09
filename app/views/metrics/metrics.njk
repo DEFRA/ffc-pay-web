@@ -21,14 +21,25 @@
       </p>
 
       {% if error %}
-        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
-          <h2 class="govuk-error-summary__title" id="error-summary-title">
-            There is a problem
-          </h2>
-          <div class="govuk-error-summary__body">
-            <p>{{ error }}</p>
+        {% set isWarning = error.startsWith('No') %}
+        {% if isWarning %}
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-warning-text__assistive">Warning</span>
+              {{ error }}
+            </strong>
           </div>
-        </div>
+        {% else %}
+          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+            <h2 class="govuk-error-summary__title" id="error-summary-title">
+              There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+              <p>{{ error }}</p>
+            </div>
+          </div>
+        {% endif %}
       {% endif %}
 
       {# Compact Filter Form #}
@@ -82,7 +93,7 @@
             }) }}
           </div>
 
-          <div class="govuk-grid-column-one-quarter" id="year-filter" style="{% if selectedPeriod != 'year' and selectedPeriod != 'monthInYear' %}display: none;{% endif %}">
+          <div class="govuk-grid-column-one-quarter{% if selectedPeriod != 'year' and selectedPeriod != 'monthInYear' %} govuk-!-display-none{% endif %}" id="year-filter">
             {% set yearItems = [
               {
                 value: "",
@@ -109,7 +120,7 @@
             }) }}
           </div>
 
-          <div class="govuk-grid-column-one-quarter" id="month-filter" style="{% if selectedPeriod != 'monthInYear' %}display: none;{% endif %}">
+          <div class="govuk-grid-column-one-quarter{% if selectedPeriod != 'monthInYear' %} govuk-!-display-none{% endif %}" id="month-filter">
             {% set monthItems = [
               {
                 value: "",
@@ -144,7 +155,7 @@
             }) }}
 
             {% if selectedPeriod != 'all' or schemeYear or selectedMonth %}
-              <a href="/metrics" class="govuk-link govuk-!-margin-left-3" style="line-height: 40px;">Clear filters</a>
+              <a href="/metrics" class="govuk-link govuk-!-margin-left-3 govuk-!-display-inline-block" style="vertical-align: middle; line-height: 40px;">Clear filters</a>
             {% endif %}
           </div>
         </div>
@@ -157,21 +168,21 @@
 
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-half">
-          <div class="govuk-panel govuk-panel--confirmation" style="background-color: #f3f2f1; color: #0b0c0c;">
-            <h3 class="govuk-panel__title" style="color: #0b0c0c;">
+          <div class="govuk-panel metrics-panel">
+            <h3 class="govuk-panel__title metrics-panel__title">
               Total Payments
             </h3>
-            <div class="govuk-panel__body" style="font-size: 48px; font-weight: bold; color: #0b0c0c;">
+            <div class="govuk-panel__body metrics-panel__body">
               {{ paymentsMetrics.totalPayments | default(0) | localize }}
             </div>
           </div>
         </div>
         <div class="govuk-grid-column-one-half">
-          <div class="govuk-panel govuk-panel--confirmation" style="background-color: #f3f2f1; color: #0b0c0c;">
-            <h3 class="govuk-panel__title" style="color: #0b0c0c;">
+          <div class="govuk-panel metrics-panel">
+            <h3 class="govuk-panel__title metrics-panel__title">
               Total Value
             </h3>
-            <div class="govuk-panel__body" style="font-size: 48px; font-weight: bold; color: #0b0c0c;">
+            <div class="govuk-panel__body metrics-panel__body">
               £{{ (paymentsMetrics.totalValue / 100) | default(0) | localize }}
             </div>
           </div>
@@ -180,39 +191,43 @@
 
       <h3 class="govuk-heading-m govuk-!-margin-top-6">Payments by Scheme</h3>
 
-      <table class="govuk-table" aria-label="Payments by scheme breakdown">
-        <caption class="govuk-table__caption govuk-visually-hidden">
-    Breakdown of payments and values by scheme
-  </caption>
-        <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Scheme</th>
-            {% if selectedPeriod == 'all' and paymentsMetrics.paymentsByScheme.length > 0 and paymentsMetrics
-              .paymentsByScheme[0]
-              .schemeYear %}
-              <th scope="col" class="govuk-table__header">Year</th>
-            {% endif %}
-            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Payments</th>
-            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Value (£)</th>
-            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Pending</th>
-            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Processed</th>
-          </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-          {% for scheme in paymentsMetrics.paymentsByScheme %}
+      {% if paymentsMetrics.paymentsByScheme.length > 0 %}
+        <table class="govuk-table" aria-label="Payments by scheme breakdown">
+          <caption class="govuk-table__caption govuk-visually-hidden">
+            Breakdown of payments and values by scheme
+          </caption>
+          <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              <th scope="row" class="govuk-table__header">{{ scheme.schemeName }}</th>
-              {% if selectedPeriod == 'all' and scheme.schemeYear %}
-                <td class="govuk-table__cell">{{ scheme.schemeYear }}</td>
+              <th scope="col" class="govuk-table__header">Scheme</th>
+              {% if selectedPeriod == 'all' and paymentsMetrics
+                .paymentsByScheme[0]
+                .schemeYear %}
+                <th scope="col" class="govuk-table__header">Year</th>
               {% endif %}
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.totalPayments | localize }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ (scheme.totalValue / 100) | localize }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.paymentsByStatus.pending | localize }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.paymentsByStatus.processed | localize }}</td>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Payments</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Value (£)</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Pending</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Processed</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for scheme in paymentsMetrics.paymentsByScheme %}
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">{{ scheme.schemeName }}</th>
+                {% if selectedPeriod == 'all' and scheme.schemeYear %}
+                  <td class="govuk-table__cell">{{ scheme.schemeYear }}</td>
+                {% endif %}
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.totalPayments | localize }}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ (scheme.totalValue / 100) | localize }}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.paymentsByStatus.pending | localize }}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.paymentsByStatus.processed | localize }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="govuk-body">No payment data available for the selected period.</p>
+      {% endif %}
 
       <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
 
@@ -221,11 +236,11 @@
 
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-          <div class="govuk-panel govuk-panel--confirmation" style="background-color: #f3f2f1; color: #0b0c0c;">
-            <h3 class="govuk-panel__title" style="color: #0b0c0c;">
+          <div class="govuk-panel metrics-panel">
+            <h3 class="govuk-panel__title metrics-panel__title">
               Total Statements Issued
             </h3>
-            <div class="govuk-panel__body" style="font-size: 48px; font-weight: bold; color: #0b0c0c;">
+            <div class="govuk-panel__body metrics-panel__body">
               {{ statementsMetrics.totalStatements | default(0) | localize }}
             </div>
           </div>
@@ -234,47 +249,51 @@
 
       <h3 class="govuk-heading-m govuk-!-margin-top-6">Statements by Scheme and Delivery Method</h3>
 
-      <table class="govuk-table" aria-label="Statements by scheme and delivery method">
-        <caption class="govuk-table__caption govuk-visually-hidden">
-          Breakdown of statements by scheme showing delivery methods and costs
-        </caption>
-        <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Scheme</th>
-            {% if selectedPeriod == 'all' %}
-              <th scope="col" class="govuk-table__header">Year</th>
-            {% endif %}
-            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Statements</th>
-            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post</th>
-            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post Cost (£)</th>
-            <th scope="col" class="govuk-table__header govuk-table__header--numeric">Email</th>
-          </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-          {% for scheme in statementsMetrics.statementsByScheme %}
+      {% if statementsMetrics.statementsByScheme.length > 0 %}
+        <table class="govuk-table" aria-label="Statements by scheme and delivery method">
+          <caption class="govuk-table__caption govuk-visually-hidden">
+            Breakdown of statements by scheme showing delivery methods and costs
+          </caption>
+          <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              <th scope="row" class="govuk-table__header">{{ scheme.schemeName }}</th>
+              <th scope="col" class="govuk-table__header">Scheme</th>
               {% if selectedPeriod == 'all' %}
-                <td class="govuk-table__cell">{{ scheme.schemeYear | default('N/A') }}</td>
+                <th scope="col" class="govuk-table__header">Year</th>
               {% endif %}
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.totalStatements | localize }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.printPostCount | localize }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ (scheme.printPostCost / 100) | localize }}</td>
-              <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.emailCount | localize }}</td>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Statements</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post Cost (£)</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Email</th>
             </tr>
-          {% endfor %}
-          <tr class="govuk-table__row">
-            <th scope="row" class="govuk-table__header">Total</th>
-            {% if selectedPeriod == 'all' %}
-              <td class="govuk-table__cell">All years</td>
-            {% endif %}
-            <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalStatements | localize }}</td>
-            <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalPrintPost | localize }}</td>
-            <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ (statementsMetrics.totalPrintPostCost / 100) | localize }}</td>
-            <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalEmail | localize }}</td>
-          </tr>
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for scheme in statementsMetrics.statementsByScheme %}
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">{{ scheme.schemeName }}</th>
+                {% if selectedPeriod == 'all' %}
+                  <td class="govuk-table__cell">{{ scheme.schemeYear | default('N/A') }}</td>
+                {% endif %}
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.totalStatements | localize }}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.printPostCount | localize }}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ (scheme.printPostCost / 100) | localize }}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ scheme.emailCount | localize }}</td>
+              </tr>
+            {% endfor %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">Total</th>
+              {% if selectedPeriod == 'all' %}
+                <td class="govuk-table__cell">All years</td>
+              {% endif %}
+              <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalStatements | localize }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalPrintPost | localize }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ (statementsMetrics.totalPrintPostCost / 100) | localize }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">{{ statementsMetrics.totalEmail | localize }}</td>
+            </tr>
+          </tbody>
+        </table>
+      {% else %}
+        <p class="govuk-body">No statement data available for the selected period.</p>
+      {% endif %}
 
       <details class="govuk-details" data-module="govuk-details">
         <summary class="govuk-details__summary">
@@ -317,18 +336,24 @@
       function updateFilters() {
         const period = periodSelect.value
 
-        // Show year filter for 'year' and 'monthInYear' periods
         if (period === 'year' || period === 'monthInYear') {
-          yearFilter.style.display = 'block'
+          yearFilter
+            .classList
+            .remove('govuk-!-display-none')
         } else {
-          yearFilter.style.display = 'none'
+          yearFilter
+            .classList
+            .add('govuk-!-display-none')
         }
 
-        // Show month filter only for 'monthInYear' period
         if (period === 'monthInYear') {
-          monthFilter.style.display = 'block'
+          monthFilter
+            .classList
+            .remove('govuk-!-display-none')
         } else {
-          monthFilter.style.display = 'none'
+          monthFilter
+            .classList
+            .add('govuk-!-display-none')
         }
       }
 

@@ -14,8 +14,7 @@ const getStatementMetrics = async (period = 'ytd', schemeYear = null, month = nu
       url += `&schemeYear=${schemeYear}&month=${month}`
     }
 
-    const data = await getStatementPublisherData(url)
-    const payload = data.payload
+    const payload = await getStatementPublisherData(url)
 
     return {
       data: {

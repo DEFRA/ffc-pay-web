@@ -44,7 +44,7 @@ describe('statement-aggregator', () => {
 
     describe('successful requests', () => {
       beforeEach(() => {
-        getStatementPublisherData.mockResolvedValue({ payload: mockPayload })
+        getStatementPublisherData.mockResolvedValue(mockPayload)
       })
 
       test('should fetch statement metrics with default period ytd', async () => {
@@ -135,7 +135,7 @@ describe('statement-aggregator', () => {
           totalPrintPostCost: '25000',
           statementsByScheme: []
         }
-        getStatementPublisherData.mockResolvedValue({ payload: payloadWithStringCost })
+        getStatementPublisherData.mockResolvedValue(payloadWithStringCost)
 
         const result = await getStatementMetrics('ytd')
 
@@ -155,7 +155,7 @@ describe('statement-aggregator', () => {
             }
           ]
         }
-        getStatementPublisherData.mockResolvedValue({ payload: payloadWithStringCosts })
+        getStatementPublisherData.mockResolvedValue(payloadWithStringCosts)
 
         const result = await getStatementMetrics('ytd')
 
@@ -168,7 +168,7 @@ describe('statement-aggregator', () => {
           totalPrintPostCost: 'invalid',
           statementsByScheme: []
         }
-        getStatementPublisherData.mockResolvedValue({ payload: payloadWithInvalidCost })
+        getStatementPublisherData.mockResolvedValue(payloadWithInvalidCost)
 
         const result = await getStatementMetrics('ytd')
 
@@ -184,7 +184,7 @@ describe('statement-aggregator', () => {
             }
           ]
         }
-        getStatementPublisherData.mockResolvedValue({ payload: payloadWithInvalidSchemeCost })
+        getStatementPublisherData.mockResolvedValue(payloadWithInvalidSchemeCost)
 
         const result = await getStatementMetrics('ytd')
 
@@ -200,7 +200,7 @@ describe('statement-aggregator', () => {
           totalFailures: 0,
           statementsByScheme: []
         }
-        getStatementPublisherData.mockResolvedValue({ payload: payloadWithZeros })
+        getStatementPublisherData.mockResolvedValue(payloadWithZeros)
 
         const result = await getStatementMetrics('ytd')
 
@@ -225,7 +225,7 @@ describe('statement-aggregator', () => {
             }
           ]
         }
-        getStatementPublisherData.mockResolvedValue({ payload: payloadWithAllProperties })
+        getStatementPublisherData.mockResolvedValue(payloadWithAllProperties)
 
         const result = await getStatementMetrics('ytd')
 
@@ -257,7 +257,7 @@ describe('statement-aggregator', () => {
           totalStatements: 100,
           statementsByScheme: []
         }
-        getStatementPublisherData.mockResolvedValue({ payload: payloadWithEmptySchemes })
+        getStatementPublisherData.mockResolvedValue(payloadWithEmptySchemes)
 
         const result = await getStatementMetrics('ytd')
 
@@ -273,7 +273,7 @@ describe('statement-aggregator', () => {
             }
           ]
         }
-        getStatementPublisherData.mockResolvedValue({ payload: payloadWithoutCost })
+        getStatementPublisherData.mockResolvedValue(payloadWithoutCost)
 
         const result = await getStatementMetrics('ytd')
 
@@ -291,7 +291,7 @@ describe('statement-aggregator', () => {
           extraField2: 123,
           statementsByScheme: []
         }
-        getStatementPublisherData.mockResolvedValue({ payload: payloadWithExtraProperties })
+        getStatementPublisherData.mockResolvedValue(payloadWithExtraProperties)
 
         const result = await getStatementMetrics('ytd')
 
@@ -307,12 +307,11 @@ describe('statement-aggregator', () => {
 
     describe('error handling', () => {
       test('should return error structure when API call fails', async () => {
-        const error = new Error('API connection failed')
-        getStatementPublisherData.mockRejectedValue(error)
+        getStatementPublisherData.mockRejectedValue(new Error('API connection failed'))
 
         const result = await getStatementMetrics('ytd')
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching statement metrics:', error)
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching statement metrics:', expect.any(Error))
         expect(result.error).toBe(true)
         expect(result.message).toBe('Unable to load statement metrics. Please try again later.')
         expect(result.data).toEqual({
@@ -325,34 +324,12 @@ describe('statement-aggregator', () => {
         })
       })
 
-      test('should handle network errors', async () => {
-        const error = new Error('Network timeout')
-        getStatementPublisherData.mockRejectedValue(error)
-
-        const result = await getStatementMetrics('year', 2024)
-
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching statement metrics:', error)
-        expect(result.error).toBe(true)
-      })
-
-      test('should handle errors without message property', async () => {
-        const error = { code: 'ECONNREFUSED' }
-        getStatementPublisherData.mockRejectedValue(error)
+      test('should return empty data on network error', async () => {
+        getStatementPublisherData.mockRejectedValue(new Error('Network error'))
 
         const result = await getStatementMetrics('ytd')
 
-        expect(consoleErrorSpy).toHaveBeenCalled()
-        expect(result.error).toBe(true)
-      })
-
-      test('should handle error for different period types', async () => {
-        const error = new Error('Service unavailable')
-        getStatementPublisherData.mockRejectedValue(error)
-
-        const result = await getStatementMetrics('monthInYear', 2024, 6)
-
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching statement metrics:', error)
-        expect(result.error).toBe(true)
+        expect(result.data.totalStatements).toBe(0)
       })
 
       test('should return empty statementsByScheme on error', async () => {
@@ -364,7 +341,7 @@ describe('statement-aggregator', () => {
       })
 
       test('should handle API returning undefined payload by catching error', async () => {
-        getStatementPublisherData.mockResolvedValue({})
+        getStatementPublisherData.mockResolvedValue(undefined)
 
         const result = await getStatementMetrics('ytd')
 

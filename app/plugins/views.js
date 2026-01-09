@@ -1,4 +1,4 @@
-const path = require('path')
+const path = require('node:path')
 const nunjucks = require('nunjucks')
 const config = require('../config')
 const { version } = require('../../package.json')

@@ -28,6 +28,7 @@ describe('metrics routes', () => {
       ]
     },
     error: false,
+    errorType: null,
     message: ''
   }
 
@@ -42,6 +43,7 @@ describe('metrics routes', () => {
       ]
     },
     error: false,
+    errorType: null,
     message: ''
   }
 
@@ -59,7 +61,12 @@ describe('metrics routes', () => {
     generateSchemeYears.mockReturnValue(mockSchemeYears)
     getAllMetrics.mockResolvedValue({
       paymentsMetrics: mockPaymentsMetrics,
-      statementsMetrics: mockStatementsMetrics
+      statementsMetrics: mockStatementsMetrics,
+      criticalError: false,
+      partialFailure: false,
+      noData: false,
+      noPaymentData: false,
+      noStatementData: false
     })
 
     const metricsRoute = metricsRoutes.find(
@@ -139,6 +146,15 @@ describe('metrics routes', () => {
 
       expect(consoleLogSpy).toHaveBeenCalledWith('Loading metrics for period: year, year: 2023')
       expect(getAllMetrics).toHaveBeenCalledWith('year', 2023, null)
+    })
+
+    test('should log period and month when only month provided', async () => {
+      mockRequest = { query: { period: 'monthInYear', month: '6' } }
+
+      await handler(mockRequest, mockH)
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('Loading metrics for period: monthInYear, month: 6')
+      expect(getAllMetrics).toHaveBeenCalledWith('monthInYear', null, 6)
     })
 
     test('should render view with metrics data', async () => {
@@ -235,9 +251,15 @@ describe('metrics routes', () => {
         paymentsMetrics: {
           data: mockPaymentsMetrics.data,
           error: true,
+          errorType: 'service',
           message: 'Payment service error'
         },
-        statementsMetrics: mockStatementsMetrics
+        statementsMetrics: mockStatementsMetrics,
+        criticalError: false,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
       })
 
       await handler(mockRequest, mockH)
@@ -257,8 +279,14 @@ describe('metrics routes', () => {
         statementsMetrics: {
           data: mockStatementsMetrics.data,
           error: true,
+          errorType: 'service',
           message: 'Statement service error'
-        }
+        },
+        criticalError: false,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
       })
 
       await handler(mockRequest, mockH)
@@ -271,19 +299,26 @@ describe('metrics routes', () => {
       )
     })
 
-    test('should set error message when both metrics fail', async () => {
+    test('should set critical error message when both metrics fail', async () => {
       mockRequest = { query: { period: 'ytd' } }
       getAllMetrics.mockResolvedValue({
         paymentsMetrics: {
           data: mockPaymentsMetrics.data,
           error: true,
+          errorType: 'service',
           message: 'Payment service error'
         },
         statementsMetrics: {
           data: mockStatementsMetrics.data,
           error: true,
+          errorType: 'service',
           message: 'Statement service error'
-        }
+        },
+        criticalError: true,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
       })
 
       await handler(mockRequest, mockH)
@@ -291,7 +326,93 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load payment metrics and statement metrics. Please try again later. If this error persists, contact a member of the Payments and Documents team.'
+          error: 'Unable to load metrics from both payment and statement services. This may indicate a system-wide issue. Please try again later or contact the Payments and Documents team.'
+        })
+      )
+    })
+
+    test('should include connection issue message when payment metrics has connection error', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: {
+          data: mockPaymentsMetrics.data,
+          error: true,
+          errorType: 'connection',
+          message: 'Payment service connection error'
+        },
+        statementsMetrics: mockStatementsMetrics,
+        criticalError: false,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'Unable to load payment metrics. Connection issue detected. Please try again later. If this error persists, contact a member of the Payments and Documents team.'
+        })
+      )
+    })
+
+    test('should include connection issue message when statement metrics has connection error', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: mockPaymentsMetrics,
+        statementsMetrics: {
+          data: mockStatementsMetrics.data,
+          error: true,
+          errorType: 'connection',
+          message: 'Statement service connection error'
+        },
+        criticalError: false,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'Unable to load statement metrics. Connection issue detected. Please try again later. If this error persists, contact a member of the Payments and Documents team.'
+        })
+      )
+    })
+
+    test('should include connection issue message when both metrics have connection errors', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: {
+          data: mockPaymentsMetrics.data,
+          error: true,
+          errorType: 'connection',
+          message: 'Payment service connection error'
+        },
+        statementsMetrics: {
+          data: mockStatementsMetrics.data,
+          error: true,
+          errorType: 'connection',
+          message: 'Statement service connection error'
+        },
+        criticalError: true,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'Unable to load metrics from both payment and statement services. This may indicate a system-wide issue. Please try again later or contact the Payments and Documents team.'
         })
       )
     })
@@ -305,11 +426,17 @@ describe('metrics routes', () => {
           paymentsByScheme: []
         },
         error: true,
+        errorType: 'service',
         message: 'Payment service error'
       }
       getAllMetrics.mockResolvedValue({
         paymentsMetrics: errorPaymentsMetrics,
-        statementsMetrics: mockStatementsMetrics
+        statementsMetrics: mockStatementsMetrics,
+        criticalError: false,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
       })
 
       await handler(mockRequest, mockH)
@@ -334,11 +461,17 @@ describe('metrics routes', () => {
           statementsByScheme: []
         },
         error: true,
+        errorType: 'service',
         message: 'Statement service error'
       }
       getAllMetrics.mockResolvedValue({
         paymentsMetrics: mockPaymentsMetrics,
-        statementsMetrics: errorStatementsMetrics
+        statementsMetrics: errorStatementsMetrics,
+        criticalError: false,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
       })
 
       await handler(mockRequest, mockH)
@@ -348,6 +481,255 @@ describe('metrics routes', () => {
         expect.objectContaining({
           paymentsMetrics: mockPaymentsMetrics.data,
           statementsMetrics: errorStatementsMetrics.data
+        })
+      )
+    })
+
+    test('should handle both metrics failing with mixed error types', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: {
+          data: mockPaymentsMetrics.data,
+          error: true,
+          errorType: 'connection',
+          message: 'Payment connection error'
+        },
+        statementsMetrics: {
+          data: mockStatementsMetrics.data,
+          error: true,
+          errorType: 'service',
+          message: 'Statement service error'
+        },
+        criticalError: true,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'Unable to load metrics from both payment and statement services. This may indicate a system-wide issue. Please try again later or contact the Payments and Documents team.'
+        })
+      )
+    })
+  })
+
+  describe('no data warnings', () => {
+    test('should show warning when both services have no data', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: {
+          data: {
+            totalPayments: 0,
+            totalValue: 0,
+            paymentsByScheme: []
+          },
+          error: false
+        },
+        statementsMetrics: {
+          data: {
+            totalStatements: 0,
+            totalPrintPost: 0,
+            totalPrintPostCost: 0,
+            totalEmail: 0,
+            statementsByScheme: []
+          },
+          error: false
+        },
+        criticalError: false,
+        partialFailure: false,
+        noData: true,
+        noPaymentData: true,
+        noStatementData: true
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'No metrics data is available for the selected period from either payment or statement services. This may indicate no activity has been recorded yet.'
+        })
+      )
+    })
+
+    test('should show warning when payment data is empty', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: {
+          data: {
+            totalPayments: 0,
+            totalValue: 0,
+            paymentsByScheme: []
+          },
+          error: false
+        },
+        statementsMetrics: mockStatementsMetrics,
+        criticalError: false,
+        partialFailure: false,
+        noData: false,
+        noPaymentData: true,
+        noStatementData: false
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'No payment metrics data is available for the selected period.'
+        })
+      )
+    })
+
+    test('should show warning when statement data is empty', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: mockPaymentsMetrics,
+        statementsMetrics: {
+          data: {
+            totalStatements: 0,
+            totalPrintPost: 0,
+            totalPrintPostCost: 0,
+            totalEmail: 0,
+            statementsByScheme: []
+          },
+          error: false
+        },
+        criticalError: false,
+        partialFailure: false,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: true
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'No statement metrics data is available for the selected period.'
+        })
+      )
+    })
+
+    test('should show combined warning when both payment and statement data empty but not same as noData', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: {
+          data: {
+            totalPayments: 0,
+            totalValue: 0,
+            paymentsByScheme: []
+          },
+          error: false
+        },
+        statementsMetrics: {
+          data: {
+            totalStatements: 0,
+            totalPrintPost: 0,
+            totalPrintPostCost: 0,
+            totalEmail: 0,
+            statementsByScheme: []
+          },
+          error: false
+        },
+        criticalError: false,
+        partialFailure: false,
+        noData: false,
+        noPaymentData: true,
+        noStatementData: true
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'No payment or statement metrics data is available for the selected period.'
+        })
+      )
+    })
+
+    test('should prioritize critical error over no data warning', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: {
+          data: {
+            totalPayments: 0,
+            totalValue: 0,
+            paymentsByScheme: []
+          },
+          error: true,
+          errorType: 'service'
+        },
+        statementsMetrics: {
+          data: {
+            totalStatements: 0,
+            totalPrintPost: 0,
+            totalPrintPostCost: 0,
+            totalEmail: 0,
+            statementsByScheme: []
+          },
+          error: true,
+          errorType: 'service'
+        },
+        criticalError: true,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'Unable to load metrics from both payment and statement services. This may indicate a system-wide issue. Please try again later or contact the Payments and Documents team.'
+        })
+      )
+    })
+
+    test('should prioritize partial failure over no data warning', async () => {
+      mockRequest = { query: { period: 'ytd' } }
+      getAllMetrics.mockResolvedValue({
+        paymentsMetrics: {
+          data: {
+            totalPayments: 0,
+            totalValue: 0,
+            paymentsByScheme: []
+          },
+          error: true,
+          errorType: 'service'
+        },
+        statementsMetrics: {
+          data: {
+            totalStatements: 0,
+            totalPrintPost: 0,
+            totalPrintPostCost: 0,
+            totalEmail: 0,
+            statementsByScheme: []
+          },
+          error: false
+        },
+        criticalError: false,
+        partialFailure: true,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: true
+      })
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith(
+        METRICS_VIEWS.BASE,
+        expect.objectContaining({
+          error: 'Unable to load payment metrics. Please try again later. If this error persists, contact a member of the Payments and Documents team.'
         })
       )
     })

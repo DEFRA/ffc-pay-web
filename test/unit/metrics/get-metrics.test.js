@@ -245,11 +245,16 @@ describe('get-metrics', () => {
 
       expect(result).toEqual({
         paymentsMetrics: mockPaymentMetrics,
-        statementsMetrics: mockStatementMetrics
+        statementsMetrics: mockStatementMetrics,
+        criticalError: false,
+        partialFailure: false,
+        noData: false,
+        noPaymentData: false,
+        noStatementData: false
       })
     })
 
-    test('should return default payment metrics when payment metrics fetch fails', async () => {
+    test('should return default payment metrics with service error type when payment metrics fetch fails', async () => {
       queries.payments.getPaymentMetrics = jest.fn().mockRejectedValue(new Error('Payment API error'))
 
       const result = await getAllMetrics('ytd')
@@ -270,12 +275,19 @@ describe('get-metrics', () => {
           paymentsByScheme: []
         },
         error: true,
-        message: 'Unable to load payment metrics. Please try again later.'
+        errorType: 'service',
+        message: 'Unable to load payment metrics. Please try again later.',
+        reason: 'Payment API error'
       })
       expect(result.statementsMetrics).toEqual(mockStatementMetrics)
+      expect(result.criticalError).toBe(false)
+      expect(result.partialFailure).toBe(true)
+      expect(result.noData).toBe(false)
+      expect(result.noPaymentData).toBe(false)
+      expect(result.noStatementData).toBe(false)
     })
 
-    test('should return default statement metrics when statement metrics fetch fails', async () => {
+    test('should return default statement metrics with service error type when statement metrics fetch fails', async () => {
       queries.statements.getStatementMetrics = jest.fn().mockRejectedValue(new Error('Statement API error'))
 
       const result = await getAllMetrics('ytd')
@@ -292,11 +304,18 @@ describe('get-metrics', () => {
           statementsByScheme: []
         },
         error: true,
-        message: 'Unable to load statement metrics. Please try again later.'
+        errorType: 'service',
+        message: 'Unable to load statement metrics. Please try again later.',
+        reason: 'Statement API error'
       })
+      expect(result.criticalError).toBe(false)
+      expect(result.partialFailure).toBe(true)
+      expect(result.noData).toBe(false)
+      expect(result.noPaymentData).toBe(false)
+      expect(result.noStatementData).toBe(false)
     })
 
-    test('should return default metrics for both when both fetches fail', async () => {
+    test('should return default metrics for both when both fetches fail and log critical error', async () => {
       queries.payments.getPaymentMetrics = jest.fn().mockRejectedValue(new Error('Payment API error'))
       queries.statements.getStatementMetrics = jest.fn().mockRejectedValue(new Error('Statement API error'))
 
@@ -304,6 +323,7 @@ describe('get-metrics', () => {
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('Payment metrics failed:', expect.any(Error))
       expect(consoleErrorSpy).toHaveBeenCalledWith('Statement metrics failed:', expect.any(Error))
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Critical: Both metrics services returned errors.')
       expect(result.paymentsMetrics).toEqual({
         data: {
           totalPayments: 0,
@@ -319,7 +339,9 @@ describe('get-metrics', () => {
           paymentsByScheme: []
         },
         error: true,
-        message: 'Unable to load payment metrics. Please try again later.'
+        errorType: 'service',
+        message: 'Unable to load payment metrics. Please try again later.',
+        reason: 'Payment API error'
       })
       expect(result.statementsMetrics).toEqual({
         data: {
@@ -331,8 +353,65 @@ describe('get-metrics', () => {
           statementsByScheme: []
         },
         error: true,
-        message: 'Unable to load statement metrics. Please try again later.'
+        errorType: 'service',
+        message: 'Unable to load statement metrics. Please try again later.',
+        reason: 'Statement API error'
       })
+      expect(result.criticalError).toBe(true)
+      expect(result.partialFailure).toBe(true)
+      expect(result.noData).toBe(false)
+      expect(result.noPaymentData).toBe(false)
+      expect(result.noStatementData).toBe(false)
+    })
+
+    test('should detect connection error type for ECONNREFUSED in payment metrics', async () => {
+      const connectionError = new Error('connect ECONNREFUSED 127.0.0.1:3000')
+      queries.payments.getPaymentMetrics = jest.fn().mockRejectedValue(connectionError)
+
+      const result = await getAllMetrics('ytd')
+
+      expect(result.paymentsMetrics.errorType).toBe('connection')
+      expect(result.paymentsMetrics.reason).toBe('connect ECONNREFUSED 127.0.0.1:3000')
+    })
+
+    test('should detect connection error type for timeout in statement metrics', async () => {
+      const timeoutError = new Error('Request timeout exceeded')
+      queries.statements.getStatementMetrics = jest.fn().mockRejectedValue(timeoutError)
+
+      const result = await getAllMetrics('ytd')
+
+      expect(result.statementsMetrics.errorType).toBe('connection')
+      expect(result.statementsMetrics.reason).toBe('Request timeout exceeded')
+    })
+
+    test('should log critical connection issue when both services fail with connection errors', async () => {
+      const connectionError1 = new Error('connect ECONNREFUSED 127.0.0.1:3000')
+      const connectionError2 = new Error('Request timeout exceeded')
+      queries.payments.getPaymentMetrics = jest.fn().mockRejectedValue(connectionError1)
+      queries.statements.getStatementMetrics = jest.fn().mockRejectedValue(connectionError2)
+
+      await getAllMetrics('ytd')
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Critical: Both metrics services are unreachable. Possible network or infrastructure issue.')
+    })
+
+    test('should log critical service error when both services fail with service errors', async () => {
+      queries.payments.getPaymentMetrics = jest.fn().mockRejectedValue(new Error('500 Internal Server Error'))
+      queries.statements.getStatementMetrics = jest.fn().mockRejectedValue(new Error('503 Service Unavailable'))
+
+      await getAllMetrics('ytd')
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Critical: Both metrics services returned errors.')
+    })
+
+    test('should log critical connection issue when one service has connection error and other fails', async () => {
+      const connectionError = new Error('connect ECONNREFUSED 127.0.0.1:3000')
+      queries.payments.getPaymentMetrics = jest.fn().mockRejectedValue(connectionError)
+      queries.statements.getStatementMetrics = jest.fn().mockRejectedValue(new Error('500 Internal Server Error'))
+
+      await getAllMetrics('ytd')
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Critical: Both metrics services are unreachable. Possible network or infrastructure issue.')
     })
 
     test('should handle payment metrics with error flag set but not rejected', async () => {
@@ -359,6 +438,8 @@ describe('get-metrics', () => {
 
       expect(result.paymentsMetrics).toEqual(errorPaymentMetrics)
       expect(result.statementsMetrics).toEqual(mockStatementMetrics)
+      expect(result.criticalError).toBe(false)
+      expect(result.partialFailure).toBe(true)
     })
 
     test('should handle statement metrics with error flag set but not rejected', async () => {
@@ -380,6 +461,137 @@ describe('get-metrics', () => {
 
       expect(result.paymentsMetrics).toEqual(mockPaymentMetrics)
       expect(result.statementsMetrics).toEqual(errorStatementMetrics)
+      expect(result.criticalError).toBe(false)
+      expect(result.partialFailure).toBe(true)
+    })
+
+    test('should set criticalError when both metrics have error flag', async () => {
+      const errorPaymentMetrics = {
+        data: {
+          totalPayments: 0,
+          totalValue: 0,
+          totalPendingPayments: 0,
+          totalPendingValue: 0,
+          totalProcessedPayments: 0,
+          totalProcessedValue: 0,
+          totalSettledPayments: 0,
+          totalSettledValue: 0,
+          totalPaymentsOnHold: 0,
+          totalValueOnHold: 0,
+          paymentsByScheme: []
+        },
+        error: true,
+        message: 'Payment API error'
+      }
+      const errorStatementMetrics = {
+        data: {
+          totalStatements: 0,
+          totalPrintPost: 0,
+          totalPrintPostCost: 0,
+          totalEmail: 0,
+          totalFailures: 0,
+          statementsByScheme: []
+        },
+        error: true,
+        message: 'Statement API error'
+      }
+      queries.payments.getPaymentMetrics = jest.fn().mockResolvedValue(errorPaymentMetrics)
+      queries.statements.getStatementMetrics = jest.fn().mockResolvedValue(errorStatementMetrics)
+
+      const result = await getAllMetrics('ytd')
+
+      expect(result.criticalError).toBe(true)
+      expect(result.partialFailure).toBe(true)
+    })
+
+    test('should detect no data when both services return empty data', async () => {
+      const emptyPaymentMetrics = {
+        data: {
+          totalPayments: 0,
+          totalValue: 0,
+          totalPendingPayments: 0,
+          totalPendingValue: 0,
+          totalProcessedPayments: 0,
+          totalProcessedValue: 0,
+          totalSettledPayments: 0,
+          totalSettledValue: 0,
+          totalPaymentsOnHold: 0,
+          totalValueOnHold: 0,
+          paymentsByScheme: []
+        },
+        error: false
+      }
+      const emptyStatementMetrics = {
+        data: {
+          totalStatements: 0,
+          totalPrintPost: 0,
+          totalPrintPostCost: 0,
+          totalEmail: 0,
+          totalFailures: 0,
+          statementsByScheme: []
+        },
+        error: false
+      }
+      queries.payments.getPaymentMetrics = jest.fn().mockResolvedValue(emptyPaymentMetrics)
+      queries.statements.getStatementMetrics = jest.fn().mockResolvedValue(emptyStatementMetrics)
+
+      const result = await getAllMetrics('ytd')
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('Info: No metrics data available from either service for the selected period.')
+      expect(result.noData).toBe(true)
+      expect(result.noPaymentData).toBe(true)
+      expect(result.noStatementData).toBe(true)
+      expect(result.criticalError).toBe(false)
+      expect(result.partialFailure).toBe(false)
+    })
+
+    test('should detect no payment data when only payment data is empty', async () => {
+      const emptyPaymentMetrics = {
+        data: {
+          totalPayments: 0,
+          totalValue: 0,
+          totalPendingPayments: 0,
+          totalPendingValue: 0,
+          totalProcessedPayments: 0,
+          totalProcessedValue: 0,
+          totalSettledPayments: 0,
+          totalSettledValue: 0,
+          totalPaymentsOnHold: 0,
+          totalValueOnHold: 0,
+          paymentsByScheme: []
+        },
+        error: false
+      }
+      queries.payments.getPaymentMetrics = jest.fn().mockResolvedValue(emptyPaymentMetrics)
+
+      const result = await getAllMetrics('ytd')
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('Info: No payment metrics data available for the selected period.')
+      expect(result.noData).toBe(false)
+      expect(result.noPaymentData).toBe(true)
+      expect(result.noStatementData).toBe(false)
+    })
+
+    test('should detect no statement data when only statement data is empty', async () => {
+      const emptyStatementMetrics = {
+        data: {
+          totalStatements: 0,
+          totalPrintPost: 0,
+          totalPrintPostCost: 0,
+          totalEmail: 0,
+          totalFailures: 0,
+          statementsByScheme: []
+        },
+        error: false
+      }
+      queries.statements.getStatementMetrics = jest.fn().mockResolvedValue(emptyStatementMetrics)
+
+      const result = await getAllMetrics('ytd')
+
+      expect(consoleLogSpy).toHaveBeenCalledWith('Info: No statement metrics data available for the selected period.')
+      expect(result.noData).toBe(false)
+      expect(result.noPaymentData).toBe(false)
+      expect(result.noStatementData).toBe(true)
     })
 
     test('should handle zero values for schemeYear and month', async () => {
@@ -414,6 +626,15 @@ describe('get-metrics', () => {
 
       expect(totalTime).toBeLessThan(paymentDelay + statementDelay)
       expect(Math.abs(paymentStartTime - statementStartTime)).toBeLessThan(50)
+    })
+
+    test('should handle error without message property', async () => {
+      queries.payments.getPaymentMetrics = jest.fn().mockRejectedValue({})
+
+      const result = await getAllMetrics('ytd')
+
+      expect(result.paymentsMetrics.reason).toBe('Unknown error')
+      expect(result.paymentsMetrics.errorType).toBe('service')
     })
   })
 })
