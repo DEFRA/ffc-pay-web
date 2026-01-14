@@ -1,31 +1,31 @@
 {% extends '_layout.njk' %}
 {% from "./macros/logout.njk" import logout %}
 {% block content %}
-<style>
-  .govuk-cards {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .govuk-cards--2__item {
-    flex: 1 1;
-  }
-
-  /* Mobile layout: stack cards vertically */
-  @media (max-width: 640px) {
+  <style>
     .govuk-cards {
-      flex-direction: column;
+      display: flex;
+      flex-direction: row;
       flex-wrap: nowrap;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
     .govuk-cards--2__item {
-      flex: 1 1 100%;
+      flex: 1 1;
     }
-  }
-</style>
+
+    /* Mobile layout: stack cards vertically */
+    @media (max-width: 640px) {
+      .govuk-cards {
+        flex-direction: column;
+        flex-wrap: nowrap;
+      }
+
+      .govuk-cards--2__item {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
@@ -116,7 +116,7 @@
             </p>
           </div>
         {% endif %}
-                {% if auth.isApplicationAdmin or auth.isManualPaymentsUser and manualPaymentsActive %}
+        {% if auth.isApplicationAdmin or auth.isManualPaymentsUser and manualPaymentsActive %}
           <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
             <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Metrics</h2>
 

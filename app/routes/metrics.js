@@ -8,7 +8,7 @@ const MONTHS = require('../constants/months')
 const AUTH_SCOPE = { scope: [applicationAdmin, dataView] }
 
 const buildCriticalErrorMessage = () => {
-  return 'Unable to load metrics from both payment and statement services. This may indicate a system-wide issue. Please try again later or contact the Payments and Documents team.'
+  return 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
 }
 
 const buildPartialFailureMessage = (paymentsMetrics, statementsMetrics) => {

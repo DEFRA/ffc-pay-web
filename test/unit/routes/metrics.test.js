@@ -326,7 +326,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load metrics from both payment and statement services. This may indicate a system-wide issue. Please try again later or contact the Payments and Documents team.'
+          error: 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
         })
       )
     })
@@ -412,7 +412,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load metrics from both payment and statement services. This may indicate a system-wide issue. Please try again later or contact the Payments and Documents team.'
+          error: 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
         })
       )
     })
@@ -512,7 +512,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load metrics from both payment and statement services. This may indicate a system-wide issue. Please try again later or contact the Payments and Documents team.'
+          error: 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
         })
       )
     })
@@ -690,7 +690,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load metrics from both payment and statement services. This may indicate a system-wide issue. Please try again later or contact the Payments and Documents team.'
+          error: 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
         })
       )
     })
