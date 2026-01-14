@@ -18,6 +18,7 @@ const schema = Joi.object({
   trackingEndpoint: Joi.string().uri().required(),
   injectionEndpoint: Joi.string().uri().required(),
   alertingEndpoint: Joi.string().uri().required(),
+  statementPublisherEndpoint: Joi.string().uri().required(),
   legacyReportsActive: Joi.boolean().default(true),
   manualPaymentsActive: Joi.boolean().default(true),
   approvedEmailDomains: Joi.string().default('')
@@ -34,6 +35,7 @@ const config = {
   trackingEndpoint: process.env.TRACKING_SERVICE_ENDPOINT,
   injectionEndpoint: process.env.INJECTION_SERVICE_ENDPOINT,
   alertingEndpoint: process.env.ALERTING_SERVICE_ENDPOINT,
+  statementPublisherEndpoint: process.env.STATEMENT_PUBLISHER_ENDPOINT,
   legacyReportsActive: process.env.LEGACY_REPORTS_ACTIVE,
   manualPaymentsActive: process.env.MANUAL_PAYMENTS_ACTIVE,
   approvedEmailDomains: process.env.APPROVED_EMAIL_DOMAINS

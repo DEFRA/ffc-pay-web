@@ -23,6 +23,9 @@ data:
   TRACKING_SERVICE_ENDPOINT: {{ quote .Values.container.trackingEndpoint }}
   INJECTION_SERVICE_ENDPOINT: {{ quote .Values.container.injectionEndpoint }}
   ALERTING_SERVICE_ENDPOINT: {{ quote .Values.container.alertingEndpoint }}
+  STATEMENT_PUBLISHER_ENDPOINT: {{ quote .Values.container.statementPublisherEndpoint }}
+  {{- end }}
+  {{- if .Values.azureAppRegistration.clientId }}
   {{- end }}
   {{- if .Values.pr }}
   REDIRECT_URL: https://{{ .Values.ingress.endpoint }}-{{ .Values.pr }}.{{ .Values.ingress.server }}/{{ .Values.azureAppRegistration.redirectUrl }}
