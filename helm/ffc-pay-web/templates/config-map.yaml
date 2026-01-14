@@ -12,11 +12,13 @@ data:
   TRACKING_SERVICE_ENDPOINT: {{ .Values.container.trackingEndpoint }}-{{ .Values.environmentCode }}
   INJECTION_SERVICE_ENDPOINT: {{ .Values.container.injectionEndpoint }}-{{ .Values.environmentCode }}
   ALERTING_SERVICE_ENDPOINT: {{ .Values.container.alertingEndpoint }}-{{ .Values.environmentCode }}
+  STATEMENT_PUBLISHER_ENDPOINT: {{ quote .Values.container.statementPublisherEndpoint }}-{{ .Values.environmentCode }}
     {{ else }}
   PAYMENTS_SERVICE_ENDPOINT: {{ quote .Values.container.paymentsEndpoint }}
   TRACKING_SERVICE_ENDPOINT: {{ quote .Values.container.trackingEndpoint }}
   INJECTION_SERVICE_ENDPOINT: {{ quote .Values.container.injectionEndpoint }}
   ALERTING_SERVICE_ENDPOINT: {{ quote .Values.container.alertingEndpoint }}
+  STATEMENT_PUBLISHER_ENDPOINT: {{ quote .Values.container.statementPublisherEndpoint }}
     {{- end }}
   {{ else }}
   PAYMENTS_SERVICE_ENDPOINT: {{ quote .Values.container.paymentsEndpoint }}
