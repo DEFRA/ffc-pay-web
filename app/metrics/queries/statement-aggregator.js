@@ -29,7 +29,7 @@ const getStatementMetrics = async (period = 'ytd', schemeYear = null, month = nu
       message: ''
     }
   } catch (error) {
-    console.error('Error fetching statement metrics:', error)
+    console.error('Error fetching document metrics:', error)
 
     // Return empty structure with error flag
     return {
@@ -42,7 +42,7 @@ const getStatementMetrics = async (period = 'ytd', schemeYear = null, month = nu
         statementsByScheme: []
       },
       error: true,
-      message: 'Unable to load statement metrics. Please try again later.'
+      message: 'Unable to load document metrics. Please try again later.'
     }
   }
 }

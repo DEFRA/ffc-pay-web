@@ -8,7 +8,7 @@ const MONTHS = require('../constants/months')
 const AUTH_SCOPE = { scope: [applicationAdmin, dataView] }
 
 const buildCriticalErrorMessage = () => {
-  return 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
+  return 'Unable to load metrics from both payment and document services. Please try again later or contact the Payments and Documents team.'
 }
 
 const buildPartialFailureMessage = (paymentsMetrics, statementsMetrics) => {
@@ -17,7 +17,7 @@ const buildPartialFailureMessage = (paymentsMetrics, statementsMetrics) => {
     errors.push('payment metrics')
   }
   if (statementsMetrics.error) {
-    errors.push('statement metrics')
+    errors.push('document metrics')
   }
   const connectionIssue = paymentsMetrics.errorType === 'connection' || statementsMetrics.errorType === 'connection'
   return `Unable to load ${errors.join(' and ')}. ${connectionIssue ? 'Connection issue detected. ' : ''}Please try again later. If this error persists, contact a member of the Payments and Documents team.`
@@ -25,11 +25,11 @@ const buildPartialFailureMessage = (paymentsMetrics, statementsMetrics) => {
 
 const buildNoDataMessage = (noData, noPaymentData, noStatementData) => {
   if (noData) {
-    return 'No metrics data is available for the selected period from either payment or statement services. This may indicate no activity has been recorded yet.'
+    return 'No metrics data is available for the selected period from either payment or document services. This may indicate no activity has been recorded yet.'
   }
 
   if (noPaymentData && noStatementData) {
-    return 'No payment or statement metrics data is available for the selected period.'
+    return 'No payment or document metrics data is available for the selected period.'
   }
 
   if (noPaymentData) {
@@ -37,7 +37,7 @@ const buildNoDataMessage = (noData, noPaymentData, noStatementData) => {
   }
 
   if (noStatementData) {
-    return 'No statement metrics data is available for the selected period.'
+    return 'No document metrics data is available for the selected period.'
   }
 
   return null

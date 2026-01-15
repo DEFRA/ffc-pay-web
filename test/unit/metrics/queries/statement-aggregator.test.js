@@ -47,7 +47,7 @@ describe('statement-aggregator', () => {
         getStatementPublisherData.mockResolvedValue(mockPayload)
       })
 
-      test('should fetch statement metrics with default period ytd', async () => {
+      test('should fetch document metrics with default period ytd', async () => {
         const result = await getStatementMetrics()
 
         expect(getStatementPublisherData).toHaveBeenCalledWith('/metrics?period=ytd')
@@ -56,19 +56,19 @@ describe('statement-aggregator', () => {
         expect(result.data).toBeDefined()
       })
 
-      test('should fetch statement metrics with custom period', async () => {
+      test('should fetch document metrics with custom period', async () => {
         await getStatementMetrics('month')
 
         expect(getStatementPublisherData).toHaveBeenCalledWith('/metrics?period=month')
       })
 
-      test('should fetch statement metrics with period year and schemeYear', async () => {
+      test('should fetch document metrics with period year and schemeYear', async () => {
         await getStatementMetrics('year', 2024)
 
         expect(getStatementPublisherData).toHaveBeenCalledWith('/metrics?period=year&schemeYear=2024')
       })
 
-      test('should fetch statement metrics with period monthInYear, schemeYear and month', async () => {
+      test('should fetch document metrics with period monthInYear, schemeYear and month', async () => {
         await getStatementMetrics('monthInYear', 2024, 6)
 
         expect(getStatementPublisherData).toHaveBeenCalledWith('/metrics?period=monthInYear&schemeYear=2024&month=6')
@@ -98,7 +98,7 @@ describe('statement-aggregator', () => {
         expect(getStatementPublisherData).toHaveBeenCalledWith('/metrics?period=monthInYear')
       })
 
-      test('should return transformed statement metrics data', async () => {
+      test('should return transformed document metrics data', async () => {
         const result = await getStatementMetrics('ytd')
 
         expect(result.data.totalStatements).toBe(200)
@@ -311,9 +311,9 @@ describe('statement-aggregator', () => {
 
         const result = await getStatementMetrics('ytd')
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching statement metrics:', expect.any(Error))
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching document metrics:', expect.any(Error))
         expect(result.error).toBe(true)
-        expect(result.message).toBe('Unable to load statement metrics. Please try again later.')
+        expect(result.message).toBe('Unable to load document metrics. Please try again later.')
         expect(result.data).toEqual({
           totalStatements: 0,
           totalPrintPost: 0,
@@ -347,7 +347,7 @@ describe('statement-aggregator', () => {
 
         expect(consoleErrorSpy).toHaveBeenCalled()
         expect(result.error).toBe(true)
-        expect(result.message).toBe('Unable to load statement metrics. Please try again later.')
+        expect(result.message).toBe('Unable to load document metrics. Please try again later.')
         expect(result.data).toEqual({
           totalStatements: 0,
           totalPrintPost: 0,
@@ -365,7 +365,7 @@ describe('statement-aggregator', () => {
 
         expect(consoleErrorSpy).toHaveBeenCalled()
         expect(result.error).toBe(true)
-        expect(result.message).toBe('Unable to load statement metrics. Please try again later.')
+        expect(result.message).toBe('Unable to load document metrics. Please try again later.')
         expect(result.data).toEqual({
           totalStatements: 0,
           totalPrintPost: 0,
