@@ -6,18 +6,18 @@
 
 {% block content %}
   {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    }]
+    items: [
+      { text: "Home", href: "/" },
+      { text: "Management information", href: "/management-information" }
+    ]
   })}}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-xl">Operational Metrics Dashboard</h1>
+      <h1 class="govuk-heading-xl">Management Information</h1>
 
       <p class="govuk-body-l">
-        View payment and statement metrics filtered by time period.
+        View payment and document metrics filtered by time period.
       </p>
 
       {% if error %}
@@ -43,6 +43,34 @@
       {% endif %}
 
       {# Compact Filter Form #}
+      <details class="govuk-details" data-module="govuk-details">
+        <summary class="govuk-details__summary">
+          <span class="govuk-details__summary-text">
+            Help with this page
+          </span>
+        </summary>
+        <div class="govuk-details__text">
+          <p class="govuk-body">This dashboard provides operational metrics for payments and documents.</p>
+          <ul class="govuk-list govuk-list--bullet">
+            <li>
+              <strong>Show all</strong> - View complete dataset with no date filtering (includes year breakdown)</li>
+            <li>
+              <strong>Year to date</strong> - View data from 1 January of the current year to today</li>
+            <li>
+              <strong>By year</strong> - Select a specific year to view annual data</li>
+            <li>
+              <strong>By month</strong> - Select a specific year and month to view monthly data</li>
+            <li>
+              <strong>This month</strong> - View data for the current calendar month</li>
+            <li>
+              <strong>Last 7 days</strong> - View recent weekly activity</li>
+            <li>
+              <strong>Last 24 hours</strong> - View real-time daily activity</li>
+            <li>Payment values are displayed in pounds (£)</li>
+            <li>Print & Post costs are calculated based on actual postage rates</li>
+          </ul>
+        </div>
+      </details>
       <form method="GET" action="/metrics" id="metrics-filter-form" class="govuk-!-margin-bottom-6">
         <div class="govuk-grid-row">
           <div class="govuk-grid-column-one-quarter">
@@ -149,7 +177,7 @@
 
           <div class="govuk-grid-column-one-quarter">
             {{ govukButton({
-              text: "Apply",
+              text: "Apply filters",
               type: "submit",
               classes: "govuk-!-margin-top-6"
             }) }}
@@ -189,11 +217,11 @@
         </div>
       </div>
 
-      <h3 class="govuk-heading-m govuk-!-margin-top-6">Payments by Scheme</h3>
-
-      {% if paymentsMetrics.paymentsByScheme.length > 0 %}
+      {% if paymentsMetrics.paymentsByScheme.length < 0 %}
+        <p class="govuk-body">No payment data available for the selected period.</p>
+      {% else %}
         <table class="govuk-table" aria-label="Payments by scheme breakdown">
-          <caption class="govuk-table__caption govuk-visually-hidden">
+          <caption class="govuk-table__caption govuk-!-margin-top-4 and govuk-!-margin-bottom-4">
             Breakdown of payments and values by scheme
           </caption>
           <thead class="govuk-table__head">
@@ -225,20 +253,16 @@
             {% endfor %}
           </tbody>
         </table>
-      {% else %}
-        <p class="govuk-body">No payment data available for the selected period.</p>
       {% endif %}
 
-      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
-
       {# Statement Metrics Section #}
-      <h2 class="govuk-heading-l">Statement Metrics</h2>
+      <h2 class="govuk-heading-l">Document Metrics</h2>
 
       <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
+        <div class="govuk-grid-column-one-half">
           <div class="govuk-panel metrics-panel">
             <h3 class="govuk-panel__title metrics-panel__title">
-              Total Statements Issued
+              Total Documents Issued
             </h3>
             <div class="govuk-panel__body metrics-panel__body">
               {{ statementsMetrics.totalStatements | default(0) | localize }}
@@ -247,12 +271,10 @@
         </div>
       </div>
 
-      <h3 class="govuk-heading-m govuk-!-margin-top-6">Statements by Scheme and Delivery Method</h3>
-
-      {% if statementsMetrics.statementsByScheme.length > 0 %}
+      {% if statementsMetrics.totalStatements.length > 0 %}
         <table class="govuk-table" aria-label="Statements by scheme and delivery method">
-          <caption class="govuk-table__caption govuk-visually-hidden">
-            Breakdown of statements by scheme showing delivery methods and costs
+          <caption class="govuk-table__caption govuk-!-margin-top-4 and govuk-!-margin-bottom-4">
+            Breakdown of documents by scheme showing delivery methods and costs
           </caption>
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
@@ -260,7 +282,7 @@
               {% if selectedPeriod == 'all' %}
                 <th scope="col" class="govuk-table__header">Year</th>
               {% endif %}
-              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Statements</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">Total Documents</th>
               <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post</th>
               <th scope="col" class="govuk-table__header govuk-table__header--numeric">Print & Post Cost (£)</th>
               <th scope="col" class="govuk-table__header govuk-table__header--numeric">Email</th>
@@ -292,38 +314,8 @@
           </tbody>
         </table>
       {% else %}
-        <p class="govuk-body">No statement data available for the selected period.</p>
+        <p class="govuk-body">No document data available for the selected period.</p>
       {% endif %}
-
-      <details class="govuk-details" data-module="govuk-details">
-        <summary class="govuk-details__summary">
-          <span class="govuk-details__summary-text">
-            Help with this page
-          </span>
-        </summary>
-        <div class="govuk-details__text">
-          <p class="govuk-body">This dashboard provides operational metrics for payments and statements.</p>
-          <ul class="govuk-list govuk-list--bullet">
-            <li>
-              <strong>Show all</strong> - View complete dataset with no date filtering (includes year breakdown)</li>
-            <li>
-              <strong>Year to date</strong> - View data from 1 January of the current year to today</li>
-            <li>
-              <strong>By year</strong> - Select a specific year to view annual data</li>
-            <li>
-              <strong>By month</strong> - Select a specific year and month to view monthly data</li>
-            <li>
-              <strong>This month</strong> - View data for the current calendar month</li>
-            <li>
-              <strong>Last 7 days</strong> - View recent weekly activity</li>
-            <li>
-              <strong>Last 24 hours</strong> - View real-time daily activity</li>
-            <li>Payment values are displayed in pounds (£)</li>
-            <li>Print & Post costs are calculated based on actual postage rates</li>
-          </ul>
-        </div>
-      </details>
-
     </div>
   </div>
 

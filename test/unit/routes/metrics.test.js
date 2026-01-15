@@ -294,7 +294,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load statement metrics. Please try again later. If this error persists, contact a member of the Payments and Documents team.'
+          error: 'Unable to load document metrics. Please try again later. If this error persists, contact a member of the Payments and Documents team.'
         })
       )
     })
@@ -326,7 +326,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
+          error: 'Unable to load metrics from both payment and document services. Please try again later or contact the Payments and Documents team.'
         })
       )
     })
@@ -366,7 +366,7 @@ describe('metrics routes', () => {
           data: mockStatementsMetrics.data,
           error: true,
           errorType: 'connection',
-          message: 'Statement service connection error'
+          message: 'Document service connection error'
         },
         criticalError: false,
         partialFailure: true,
@@ -380,7 +380,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load statement metrics. Connection issue detected. Please try again later. If this error persists, contact a member of the Payments and Documents team.'
+          error: 'Unable to load document metrics. Connection issue detected. Please try again later. If this error persists, contact a member of the Payments and Documents team.'
         })
       )
     })
@@ -398,7 +398,7 @@ describe('metrics routes', () => {
           data: mockStatementsMetrics.data,
           error: true,
           errorType: 'connection',
-          message: 'Statement service connection error'
+          message: 'Document service connection error'
         },
         criticalError: true,
         partialFailure: true,
@@ -412,7 +412,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
+          error: 'Unable to load metrics from both payment and document services. Please try again later or contact the Payments and Documents team.'
         })
       )
     })
@@ -462,7 +462,7 @@ describe('metrics routes', () => {
         },
         error: true,
         errorType: 'service',
-        message: 'Statement service error'
+        message: 'Document service error'
       }
       getAllMetrics.mockResolvedValue({
         paymentsMetrics: mockPaymentsMetrics,
@@ -498,7 +498,7 @@ describe('metrics routes', () => {
           data: mockStatementsMetrics.data,
           error: true,
           errorType: 'service',
-          message: 'Statement service error'
+          message: 'Document service error'
         },
         criticalError: true,
         partialFailure: true,
@@ -512,7 +512,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
+          error: 'Unable to load metrics from both payment and document services. Please try again later or contact the Payments and Documents team.'
         })
       )
     })
@@ -552,7 +552,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'No metrics data is available for the selected period from either payment or statement services. This may indicate no activity has been recorded yet.'
+          error: 'No metrics data is available for the selected period from either payment or document services. This may indicate no activity has been recorded yet.'
         })
       )
     })
@@ -612,7 +612,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'No statement metrics data is available for the selected period.'
+          error: 'No document metrics data is available for the selected period.'
         })
       )
     })
@@ -650,7 +650,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'No payment or statement metrics data is available for the selected period.'
+          error: 'No payment or document metrics data is available for the selected period.'
         })
       )
     })
@@ -690,7 +690,7 @@ describe('metrics routes', () => {
       expect(mockH.view).toHaveBeenCalledWith(
         METRICS_VIEWS.BASE,
         expect.objectContaining({
-          error: 'Unable to load metrics from both payment and statement services. Please try again later or contact the Payments and Documents team.'
+          error: 'Unable to load metrics from both payment and document services. Please try again later or contact the Payments and Documents team.'
         })
       )
     })
