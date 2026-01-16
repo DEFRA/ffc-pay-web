@@ -217,7 +217,7 @@
         </div>
       </div>
 
-      {% if paymentsMetrics.paymentsByScheme.length < 0 %}
+      {% if paymentsMetrics.paymentsByScheme.length == 0 %}
         <p class="govuk-body">No payment data available for the selected period.</p>
       {% else %}
         <table class="govuk-table" aria-label="Payments by scheme breakdown">
@@ -271,7 +271,9 @@
         </div>
       </div>
 
-      {% if statementsMetrics.totalStatements.length > 0 %}
+      {% if statementsMetrics.statementsByScheme.length == 0 %}
+        <p class="govuk-body">No document data available for the selected period.</p>
+      {% else %}
         <table class="govuk-table" aria-label="Statements by scheme and delivery method">
           <caption class="govuk-table__caption govuk-!-margin-top-4 and govuk-!-margin-bottom-4">
             Breakdown of documents by scheme showing delivery methods and costs
@@ -313,8 +315,6 @@
             </tr>
           </tbody>
         </table>
-      {% else %}
-        <p class="govuk-body">No document data available for the selected period.</p>
       {% endif %}
     </div>
   </div>
