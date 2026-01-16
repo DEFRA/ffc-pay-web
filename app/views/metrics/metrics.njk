@@ -197,8 +197,7 @@
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-half">
           <div class="govuk-panel metrics-panel">
-            <h3 class="govuk-panel__title metrics-panel__title">
-              Total Payments
+            <h3 class="govuk-panel__title metrics-panel__title govuk-!-font-size-24">              Payments
             </h3>
             <div class="govuk-panel__body metrics-panel__body">
               {{ paymentsMetrics.totalPayments | default(0) | localize }}
@@ -207,7 +206,7 @@
         </div>
         <div class="govuk-grid-column-one-half">
           <div class="govuk-panel metrics-panel">
-            <h3 class="govuk-panel__title metrics-panel__title">
+            <h3 class="govuk-panel__title metrics-panel__title govuk-!-font-size-24">
               Total Value
             </h3>
             <div class="govuk-panel__body metrics-panel__body">
@@ -261,8 +260,8 @@
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-half">
           <div class="govuk-panel metrics-panel">
-            <h3 class="govuk-panel__title metrics-panel__title">
-              Total Documents Issued
+            <h3 class="govuk-panel__title metrics-panel__title govuk-!-font-size-24">
+              Documents Issued
             </h3>
             <div class="govuk-panel__body metrics-panel__body">
               {{ statementsMetrics.totalStatements | default(0) | localize }}
