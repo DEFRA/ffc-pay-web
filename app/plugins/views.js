@@ -1,4 +1,4 @@
-const path = require('path')
+const path = require('node:path')
 const nunjucks = require('nunjucks')
 const config = require('../config')
 const { version } = require('../../package.json')
@@ -23,6 +23,13 @@ module.exports = {
           ], {
             autoescape: true,
             watch: config.isDev
+          })
+
+          env.addFilter('localize', function (num) {
+            if (num === null || num === undefined || num === '') {
+              return '0'
+            }
+            return Number(num).toLocaleString('en-GB')
           })
 
           options.compileOptions.environment = env

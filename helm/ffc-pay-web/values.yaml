@@ -44,6 +44,7 @@ container:
   trackingEndpoint: http://ffc-pay-tracking.ffc-pay
   injectionEndpoint: http://ffc-pay-injection.ffc-pay
   alertingEndpoint: http://ffc-pay-alerting.ffc-pay
+  statementPublisherEndpoint: http://ffc-doc-statement-publisher.ffc-doc
   cookiePassword: cookiecookiecookiecookiecookiecookie
   azureStorageUseConnectionString: false
   azureStorageCreateContainers: false

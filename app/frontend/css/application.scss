@@ -83,11 +83,26 @@ $govuk-font-family: "Arial", sans-serif !important;
 }
 
 .govuk-button-link {
-  background:none !important;
+  background: none !important;
   border: none;
   padding: none;
   text-decoration: underline;
   cursor: pointer;
   font-size: 16px;
-  font-family: "GDS Transport", arial, sans-serif !important; 
+  font-family: "GDS Transport", arial, sans-serif !important;
+}
+
+.metrics-panel {
+  background-color: #f3f2f1;
+  color: #0b0c0c;
+}
+
+.metrics-panel__title {
+  color: #0b0c0c;
+}
+
+.metrics-panel__body {
+  font-size: 48px;
+  font-weight: bold;
+  color: #0b0c0c;
 }
