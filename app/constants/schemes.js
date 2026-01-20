@@ -1,4 +1,4 @@
-module.exports = {
+const schemes = {
   SFI: 1,
   SFI_PILOT: 2,
   LUMP_SUMS: 3,
@@ -14,4 +14,14 @@ module.exports = {
   SFI_EXPANDED: 14,
   CSHT_REVENUE: 15,
   CSHT_CAPITAL: 16
+}
+
+const statementAbbreviations = {
+  [schemes.DELINKED]: 'DP',
+  [schemes.SFI]: 'SFI'
+}
+
+module.exports = {
+  ...schemes,
+  statementAbbreviations
 }

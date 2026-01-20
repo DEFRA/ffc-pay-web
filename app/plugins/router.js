@@ -25,7 +25,8 @@ const routes = [].concat(
   require('../routes/report-list/status-report'),
   require('../routes/manual-payments'),
   require('../routes/alerts'),
-  require('../routes/metrics')
+  require('../routes/metrics'),
+  require('../routes/download-statements')
 )
 
 module.exports = {
