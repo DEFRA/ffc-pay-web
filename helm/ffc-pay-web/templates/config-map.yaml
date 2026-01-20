@@ -42,7 +42,6 @@ data:
   AZURE_STORAGE_CREATE_CONTAINERS: {{ quote .Values.container.azureStorageCreateContainers }}
   PAY_AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
   DOC_AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.docAzureStorageAccountName }}  
-  LEGACY_REPORTS_ACTIVE: {{ quote .Values.container.legacyReportsActive }}
   MANUAL_PAYMENTS_ACTIVE: {{ quote .Values.container.manualPaymentsActive }}
   MESSAGE_QUEUE_HOST: {{ quote .Values.container.messageQueueHost }}
   {{- if and (.Values.environmentCode) (not .Values.pr) }}
