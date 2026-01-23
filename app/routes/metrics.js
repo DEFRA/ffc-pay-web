@@ -56,13 +56,15 @@ const buildErrorMessage = (paymentsMetrics, statementsMetrics, criticalError, pa
 }
 
 const buildViewData = (paymentsMetrics, statementsMetrics, selectedPeriod, schemeYear, selectedMonth, error) => {
+  const availableYears = generateSchemeYears()
+
   return {
     paymentsMetrics: paymentsMetrics.data,
     statementsMetrics: statementsMetrics.data,
     selectedPeriod,
     schemeYear,
     selectedMonth,
-    availableYears: generateSchemeYears(),
+    availableYears,
     availableMonths: MONTHS,
     error
   }
