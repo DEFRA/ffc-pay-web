@@ -22,6 +22,8 @@ const getStatementMetrics = async (period = 'ytd', schemeYear = null, month = nu
         totalPrintPostCost: Number.parseInt(payload.totalPrintPostCost) || 0,
         statementsByScheme: payload.statementsByScheme.map(s => ({
           ...s,
+          receivedYear: s.receivedYear,
+          receivedMonth: s.receivedMonth,
           printPostCost: Number.parseInt(s.printPostCost) || 0
         }))
       },
