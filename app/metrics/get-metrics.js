@@ -76,17 +76,17 @@ const hasNoStatementData = (data) => {
 }
 
 const logErrors = (results, paymentsResult, statementsResult) => {
-  if (results[0].status === 'rejected') {
-    console.error('Payment metrics failed:', results[0].reason)
+  if (results[0]?.status === 'rejected') {
+    console.error('Payment metrics failed:', results[0]?.reason)
   }
-  if (results[1].status === 'rejected') {
-    console.error('Statement metrics failed:', results[1].reason)
+  if (results[1]?.status === 'rejected') {
+    console.error('Statement metrics failed:', results[1]?.reason)
   }
 
-  if (paymentsResult.error && results[0].status === 'fulfilled') {
+  if (paymentsResult.error && results[0]?.status === 'fulfilled') {
     console.error('Payment metrics returned error:', paymentsResult.message)
   }
-  if (statementsResult.error && results[1].status === 'fulfilled') {
+  if (statementsResult.error && results[1]?.status === 'fulfilled') {
     console.error('Statement metrics returned error:', statementsResult.message)
   }
 }
@@ -122,11 +122,12 @@ const logDataAvailability = (bothDataEmpty, paymentDataEmpty, statementDataEmpty
 
 const getAllMetrics = async (period = 'ytd', schemeYear = null, month = null) => {
   console.log(`getAllMetrics called with period: ${period}, schemeYear: ${schemeYear}, month: ${month}`)
-
-  const results = await Promise.allSettled([
+  const promises = [
     getPaymentMetrics(period, schemeYear, month),
     getStatementMetrics(period, schemeYear, month)
-  ])
+  ]
+
+  const results = await Promise.allSettled(promises)
 
   const paymentsResult = results[0].status === 'fulfilled'
     ? results[0].value
