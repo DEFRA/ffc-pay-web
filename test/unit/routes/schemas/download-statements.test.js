@@ -2,7 +2,7 @@ const schema = require('../../../../app/routes/schemas/download-statements')
 
 describe('download-statements schema', () => {
   describe('valid payloads', () => {
-    test('should validate payload with all fields', () => {
+    test('should reject payload with filename plus other criteria', () => {
       const payload = {
         filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025101508224868.pdf',
         schemeId: 1,
@@ -11,10 +11,10 @@ describe('download-statements schema', () => {
         timestamp: '2025101508224868'
       }
 
-      const { error, value } = schema.validate(payload)
+      const { error } = schema.validate(payload)
 
-      expect(error).toBeUndefined()
-      expect(value).toEqual(payload)
+      expect(error).toBeDefined()
+      expect(error.details[0].message).toContain('either the full filename')
     })
 
     test('should validate payload with only filename', () => {
@@ -302,7 +302,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('failed custom validation')
+      expect(error.details[0].message).toContain('At least one search criterion must be provided')
     })
 
     test('should accept zero schemeId with other criteria', () => {
@@ -485,6 +485,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
+      expect(error.details[0].message).toContain('greater than or equal to 1000000000')
     })
 
     test('should reject negative FRN', () => {
@@ -527,7 +528,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('pattern')
+      expect(error.details[0].message).toContain('Timestamp must be a 16 digit numeric')
     })
 
     test('should reject timestamp with 17 digits', () => {
@@ -536,7 +537,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('pattern')
+      expect(error.details[0].message).toContain('Timestamp must be a 16 digit numeric')
     })
 
     test('should reject timestamp with non-numeric characters', () => {
@@ -545,7 +546,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('pattern')
+      expect(error.details[0].message).toContain('Timestamp must be a 16 digit numeric')
     })
 
     test('should reject timestamp with spaces', () => {
@@ -581,7 +582,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('failed custom validation')
+      expect(error.details[0].message).toContain('At least one search criterion must be provided')
     })
 
     test('should reject payload with all empty strings', () => {
@@ -596,7 +597,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('failed custom validation')
+      expect(error.details[0].message).toContain('At least one search criterion must be provided')
     })
 
     test('should reject payload with all null values', () => {
@@ -611,7 +612,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('failed custom validation')
+      expect(error.details[0].message).toContain('At least one search criterion must be provided')
     })
 
     test('should accept payload with one valid criterion among empty values', () => {
@@ -639,10 +640,22 @@ describe('download-statements schema', () => {
 
       expect(error).toBeUndefined()
     })
+
+    test('should reject payload with filename and other criteria', () => {
+      const payload = {
+        filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025101508224868.pdf',
+        schemeId: 1
+      }
+
+      const { error } = schema.validate(payload)
+
+      expect(error).toBeDefined()
+      expect(error.details[0].message).toContain('either the full filename')
+    })
   })
 
   describe('combined field validation', () => {
-    test('should validate all fields with valid values', () => {
+    test('should reject all fields with filename and other criteria', () => {
       const payload = {
         filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025101508224868.pdf',
         schemeId: 1,
@@ -653,7 +666,8 @@ describe('download-statements schema', () => {
 
       const { error } = schema.validate(payload)
 
-      expect(error).toBeUndefined()
+      expect(error).toBeDefined()
+      expect(error.details[0].message).toContain('either the full filename')
     })
 
     test('should report first validation error when multiple fields invalid', () => {

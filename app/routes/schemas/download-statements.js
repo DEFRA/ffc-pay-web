@@ -11,7 +11,7 @@ module.exports = Joi.object({
     .pattern(/^FFC_PaymentDelinkedStatement_[A-Z]+_\d{4}_\d{10}_\d{16}\.pdf$/i)
     .error(errors => {
       errors.forEach(err => {
-        err.message = 'Filename must match format: FFC_PaymentDelinkedStatement_[Scheme]_[Year]_[FRN]_[Timestamp].pdf'
+        err.message = 'Filename must match format: FFC_PaymentDelinkedStatement_ Then: [Scheme]_[Year]_[FRN]_[Timestamp].pdf'
       })
       return errors
     }),
@@ -35,13 +35,31 @@ module.exports = Joi.object({
     .pattern(/^\d{16}$/)
     .optional()
     .allow('', null)
-}).custom((value, helpers) => {
-  // At least one search criterion must be provided
-  const hasValue = value.filename || value.schemeId || value.marketingYear || value.frn || value.timestamp
-  if (!hasValue) {
-    return helpers.error('any.custom', {
-      message: 'At least one search criterion must be provided'
+    .error(errors => {
+      errors.forEach(err => {
+        err.message = 'Timestamp must be a 16 digit numeric string'
+      })
+      return errors
     })
+}).custom((value, helpers) => {
+// Determine presence of numeric fields treating 0 as NOT provided
+  const numberPresent = v => v !== undefined && v !== '' && v !== null && Number(v) !== 0
+
+  const hasFilename = value.filename && String(value.filename).trim() !== ''
+  const hasOtherCriteria = (
+    numberPresent(value.schemeId) ||
+  numberPresent(value.marketingYear) ||
+  numberPresent(value.frn) ||
+  (value.timestamp && String(value.timestamp).trim() !== '')
+  )
+
+  if (!hasFilename && !hasOtherCriteria) {
+    return helpers.message('At least one search criterion must be provided')
   }
+
+  if (hasFilename && hasOtherCriteria) {
+    return helpers.message('Please search using either the full filename OR individual criteria, not both')
+  }
+
   return value
 })
