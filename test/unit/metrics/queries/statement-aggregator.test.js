@@ -26,6 +26,8 @@ describe('statement-aggregator', () => {
         {
           schemeName: 'SFI',
           schemeYear: 2024,
+          receivedYear: 2024,
+          receivedMonth: 6,
           totalStatements: 120,
           printPostCount: 70,
           printPostCost: '9000',
@@ -34,6 +36,8 @@ describe('statement-aggregator', () => {
         {
           schemeName: 'BPS',
           schemeYear: 2024,
+          receivedYear: 2024,
+          receivedMonth: 7,
           totalStatements: 80,
           printPostCount: 50,
           printPostCost: '6000',
@@ -115,6 +119,8 @@ describe('statement-aggregator', () => {
         expect(result.data.statementsByScheme[0]).toEqual({
           schemeName: 'SFI',
           schemeYear: 2024,
+          receivedYear: 2024,
+          receivedMonth: 6,
           totalStatements: 120,
           printPostCount: 70,
           printPostCost: 9000,
@@ -123,6 +129,8 @@ describe('statement-aggregator', () => {
         expect(result.data.statementsByScheme[1]).toEqual({
           schemeName: 'BPS',
           schemeYear: 2024,
+          receivedYear: 2024,
+          receivedMonth: 7,
           totalStatements: 80,
           printPostCount: 50,
           printPostCost: 6000,
@@ -147,10 +155,14 @@ describe('statement-aggregator', () => {
           statementsByScheme: [
             {
               schemeName: 'SFI',
+              receivedYear: 2024,
+              receivedMonth: 6,
               printPostCost: '12345'
             },
             {
               schemeName: 'BPS',
+              receivedYear: 2024,
+              receivedMonth: 7,
               printPostCost: '67890'
             }
           ]
@@ -160,7 +172,11 @@ describe('statement-aggregator', () => {
         const result = await getStatementMetrics('ytd')
 
         expect(result.data.statementsByScheme[0].printPostCost).toBe(12345)
+        expect(result.data.statementsByScheme[0].receivedYear).toBe(2024)
+        expect(result.data.statementsByScheme[0].receivedMonth).toBe(6)
         expect(result.data.statementsByScheme[1].printPostCost).toBe(67890)
+        expect(result.data.statementsByScheme[1].receivedYear).toBe(2024)
+        expect(result.data.statementsByScheme[1].receivedMonth).toBe(7)
       })
 
       test('should handle invalid totalPrintPostCost as zero', async () => {
@@ -180,6 +196,8 @@ describe('statement-aggregator', () => {
           statementsByScheme: [
             {
               schemeName: 'SFI',
+              receivedYear: 2024,
+              receivedMonth: 6,
               printPostCost: 'not-a-number'
             }
           ]
@@ -189,6 +207,8 @@ describe('statement-aggregator', () => {
         const result = await getStatementMetrics('ytd')
 
         expect(result.data.statementsByScheme[0].printPostCost).toBe(0)
+        expect(result.data.statementsByScheme[0].receivedYear).toBe(2024)
+        expect(result.data.statementsByScheme[0].receivedMonth).toBe(6)
       })
 
       test('should handle zero values correctly', async () => {
@@ -217,6 +237,8 @@ describe('statement-aggregator', () => {
             {
               schemeName: 'SFI',
               schemeYear: 2024,
+              receivedYear: 2024,
+              receivedMonth: 6,
               totalStatements: 100,
               printPostCount: 60,
               printPostCost: '7500',
@@ -232,6 +254,8 @@ describe('statement-aggregator', () => {
         expect(result.data.statementsByScheme[0]).toEqual({
           schemeName: 'SFI',
           schemeYear: 2024,
+          receivedYear: 2024,
+          receivedMonth: 6,
           totalStatements: 100,
           printPostCount: 60,
           printPostCost: 7500,
@@ -269,6 +293,8 @@ describe('statement-aggregator', () => {
           statementsByScheme: [
             {
               schemeName: 'SFI',
+              receivedYear: 2024,
+              receivedMonth: 6,
               totalStatements: 50
             }
           ]
@@ -278,6 +304,8 @@ describe('statement-aggregator', () => {
         const result = await getStatementMetrics('ytd')
 
         expect(result.data.statementsByScheme[0].printPostCost).toBe(0)
+        expect(result.data.statementsByScheme[0].receivedYear).toBe(2024)
+        expect(result.data.statementsByScheme[0].receivedMonth).toBe(6)
       })
 
       test('should spread all payload properties into data', async () => {
