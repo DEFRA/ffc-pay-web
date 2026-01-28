@@ -5,16 +5,16 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% block pageTitle %}
-  Download Statements
+    Download Statements
 {% endblock %}
 
 {% block content %}
     {{ govukBreadcrumbs({
-    items: [
-      { text: "Home", href: "/" },
-      { text: "Download Statements" }
-    ]
-  }) }}
+        items: [
+            { text: "Home", href: "/" },
+            { text: "Download Statements" }
+        ]
+    }) }}
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
@@ -26,27 +26,27 @@
         <div class="govuk-grid-column-two-thirds">
             {% if error %}
                 {{ govukErrorSummary({
-          titleText: "There is a problem",
-          errorList: [{ text: error.message }]
-        }) }}
+                    titleText: "There is a problem",
+                    errorList: [{ text: error.message }]
+                }) }}
             {% endif %}
 
             <p class="govuk-body">Search for payment statements. At least one field is required.</p>
 
             <form method="POST" action="/download-statements">
-                <input type="hidden" name="crumb" value="{{crumb}}"/>
+                <input type="hidden" name="crumb" value="{{ crumb }}"/>
 
                 {{ govukInput({
-          id: "filename",
-          name: "filename",
-          label: { 
-            text: "Search using the full filename if known.",
-            classes: "govuk-label--s"
-          },
-          hint: { text: "e.g. FFC_PaymentDelinkedStatement_DP_2024_1100021264_2025101508224868.pdf" },
-          classes: "govuk-input--width-30",
-          value: filename
-        }) }}
+                    id: "filename",
+                    name: "filename",
+                    label: {
+                        text: "Search using the full filename if known.",
+                        classes: "govuk-label--s"
+                    },
+                    hint: { text: "e.g. FFC_PaymentDelinkedStatement_DP_2024_1100021264_2025101508224868.pdf" },
+                    classes: "govuk-input--width-30",
+                    value: filename
+                }) }}
 
                 <p class="govuk-body">Or search by individual criteria:</p>
 
@@ -55,22 +55,22 @@
                 {{ frnInput(frn) }}
 
                 {{ govukInput({
-          id: "timestamp",
-          name: "timestamp",
-          label: { 
-            text: "Timestamp",
-            classes: "govuk-label--s"
-          },
-          hint: { text: "16 digits, e.g. 2025101508224868" },
-          classes: "govuk-input--width-20",
-          value: timestamp
-        }) }}
+                    id: "timestamp",
+                    name: "timestamp",
+                    label: {
+                        text: "Timestamp",
+                        classes: "govuk-label--s"
+                    },
+                    hint: { text: "16 digits, e.g. 2025101508224868" },
+                    classes: "govuk-input--width-20",
+                    value: timestamp
+                }) }}
 
                 {{ submitButton('Search statements') }}
             </form>
 
             {% if searchPerformed %}
-                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible"/>
 
                 <h2 class="govuk-heading-m">Results ({{ statements.length }})</h2>
 
@@ -95,8 +95,11 @@
                                     <td class="govuk-table__cell">{{ statement.timestamp }}</td>
                                     <td class="govuk-table__cell">
                                         <a href="/download-statements/download/{{ statement.filename }}" class="govuk-link" download>
-                      Download<span class="govuk-visually-hidden"> statement for {{ statement.scheme }}
-                                                {{ statement.year }} FRN {{ statement.frn }}</span>
+                                            Download
+                                            <span class="govuk-visually-hidden">
+                                                statement for {{ statement.scheme }}
+                                                {{ statement.year }} FRN {{ statement.frn }}
+                                            </span>
                                         </a>
                                     </td>
                                 </tr>
