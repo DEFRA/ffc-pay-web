@@ -11,6 +11,11 @@ const {
   getStatusReport
 } = require('./doc-reports')
 
+const {
+  searchStatements,
+  downloadStatement
+} = require('./statement-search')
+
 module.exports = {
   uploadManualPaymentFile,
   getMIReport,
@@ -18,5 +23,7 @@ module.exports = {
   getDataRequestFile,
   getValidReportYearsByType,
   getReportsByYearAndType,
-  getStatusReport
+  getStatusReport,
+  searchStatements,
+  downloadStatement
 }
