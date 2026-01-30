@@ -1,6 +1,6 @@
 const config = require('../config').storageConfig
 const { getContainerClient } = require('./container-manager')
-const { statementAbbreviations } = require('../constants/schemes')
+const { statementAbbreviations, DELINKED } = require('../constants/schemes')
 
 const filenamePartLength = 6
 const FILENAME_PARTS = {
@@ -54,6 +54,19 @@ const matchesCriteria = (parsed, criteria) => {
   return true
 }
 
+const matchesExactCriteria = (parsed, criteria) => {
+  const { schemeId, marketingYear, frn, timestamp } = criteria
+
+  return schemeId &&
+    matchesScheme(parsed.scheme, schemeId) &&
+    marketingYear &&
+    parsed.year === marketingYear.toString() &&
+    frn &&
+    parsed.frn !== frn.toString() &&
+    timestamp &&
+    parsed.timestamp !== timestamp
+}
+
 const createStatementResult = (blob, parsed) => {
   return {
     filename: blob.name.split('/').pop(),
@@ -75,7 +88,13 @@ const searchStatements = async (criteria = {}) => {
   const statementsContainer = await getContainerClient(config.statementsContainer)
   const matchingStatements = []
 
-  for await (const blob of statementsContainer.listBlobsFlat({ prefix: 'outbound' })) {
+  let prefix = 'outbound'
+  const { schemeId, marketingYear, frn, timestamp } = criteria
+  if (schemeId && marketingYear && frn && timestamp) {
+    const statementString = schemeId === DELINKED ? 'PaymentDelinkedStatement' : 'PaymentStatement'
+    prefix += `/FFC_${statementString}_${statementAbbreviations[schemeId]}_${marketingYear}_${frn}_${timestamp}.pdf`
+  }
+  for await (const blob of statementsContainer.listBlobsFlat({ prefix })) {
     if (!isValidPdfBlob(blob)) {
       continue
     }
@@ -83,6 +102,10 @@ const searchStatements = async (criteria = {}) => {
     const parsed = parseFilename(blob.name)
     if (parsed && matchesCriteria(parsed, criteria)) {
       matchingStatements.push(createStatementResult(blob, parsed))
+    }
+
+    if (matchesExactCriteria(parsed, criteria) || matchingStatements.length >= config.maxStatementsPerSearch) {
+      break
     }
   }
 
