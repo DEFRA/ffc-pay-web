@@ -54,19 +54,6 @@ const matchesCriteria = (parsed, criteria) => {
   return true
 }
 
-const matchesExactCriteria = (parsed, criteria) => {
-  const { schemeId, marketingYear, frn, timestamp } = criteria
-
-  return schemeId &&
-    matchesScheme(parsed.scheme, schemeId) &&
-    marketingYear &&
-    parsed.year === marketingYear.toString() &&
-    frn &&
-    parsed.frn !== frn.toString() &&
-    timestamp &&
-    parsed.timestamp !== timestamp
-}
-
 const createStatementResult = (blob, parsed) => {
   return {
     filename: blob.name.split('/').pop(),
@@ -77,6 +64,10 @@ const createStatementResult = (blob, parsed) => {
     size: blob.properties.contentLength,
     lastModified: blob.properties.lastModified
   }
+}
+
+const hasAllFilters = (schemeId = null, marketingYear = null, frn = null, timestamp = null) => {
+  return schemeId && marketingYear && frn && timestamp
 }
 
 /**
@@ -90,22 +81,26 @@ const searchStatements = async (criteria = {}) => {
 
   let prefix = 'outbound'
   const { schemeId, marketingYear, frn, timestamp } = criteria
-  if (schemeId && marketingYear && frn && timestamp) {
+  if (hasAllFilters(schemeId, marketingYear, frn, timestamp)) {
     const statementString = schemeId === DELINKED ? 'PaymentDelinkedStatement' : 'PaymentStatement'
     prefix += `/FFC_${statementString}_${statementAbbreviations[schemeId]}_${marketingYear}_${frn}_${timestamp}.pdf`
   }
+
+  let shouldExitLoop = false
   for await (const blob of statementsContainer.listBlobsFlat({ prefix })) {
-    if (!isValidPdfBlob(blob)) {
-      continue
-    }
-
-    const parsed = parseFilename(blob.name)
-    if (parsed && matchesCriteria(parsed, criteria)) {
-      matchingStatements.push(createStatementResult(blob, parsed))
-    }
-
-    if (matchesExactCriteria(parsed, criteria) || matchingStatements.length >= config.maxStatementsPerSearch) {
+    if (shouldExitLoop) {
       break
+    }
+
+    if (isValidPdfBlob(blob)) {
+      const parsed = parseFilename(blob.name)
+      if (parsed && matchesCriteria(parsed, criteria)) {
+        matchingStatements.push(createStatementResult(blob, parsed))
+      }
+
+      if (hasAllFilters(schemeId, marketingYear, frn, timestamp) || matchingStatements.length >= config.maxStatementsPerSearch) {
+        shouldExitLoop = true
+      }
     }
   }
 
