@@ -1,6 +1,6 @@
 const config = require('../config').storageConfig
 const { getContainerClient } = require('./container-manager')
-const { statementAbbreviations } = require('../constants/schemes')
+const { statementAbbreviations, DELINKED } = require('../constants/schemes')
 
 const filenamePartLength = 6
 const FILENAME_PARTS = {
@@ -66,6 +66,10 @@ const createStatementResult = (blob, parsed) => {
   }
 }
 
+const hasAllFilters = (schemeId = null, marketingYear = null, frn = null, timestamp = null) => {
+  return schemeId && marketingYear && frn && timestamp
+}
+
 /**
  * Search for statement files matching the given criteria
  * Filename format: FFC_PaymentDelinkedStatement_{Scheme}_{Year}_{FRN}_{Timestamp}.pdf
@@ -75,14 +79,28 @@ const searchStatements = async (criteria = {}) => {
   const statementsContainer = await getContainerClient(config.statementsContainer)
   const matchingStatements = []
 
-  for await (const blob of statementsContainer.listBlobsFlat({ prefix: 'outbound' })) {
-    if (!isValidPdfBlob(blob)) {
-      continue
+  let prefix = 'outbound'
+  const { schemeId, marketingYear, frn, timestamp } = criteria
+  if (hasAllFilters(schemeId, marketingYear, frn, timestamp)) {
+    const statementString = schemeId === DELINKED ? 'PaymentDelinkedStatement' : 'PaymentStatement'
+    prefix += `/FFC_${statementString}_${statementAbbreviations[schemeId]}_${marketingYear}_${frn}_${timestamp}.pdf`
+  }
+
+  let shouldExitLoop = false
+  for await (const blob of statementsContainer.listBlobsFlat({ prefix })) {
+    if (shouldExitLoop) {
+      break
     }
 
-    const parsed = parseFilename(blob.name)
-    if (parsed && matchesCriteria(parsed, criteria)) {
-      matchingStatements.push(createStatementResult(blob, parsed))
+    if (isValidPdfBlob(blob)) {
+      const parsed = parseFilename(blob.name)
+      if (parsed && matchesCriteria(parsed, criteria)) {
+        matchingStatements.push(createStatementResult(blob, parsed))
+      }
+
+      if (hasAllFilters(schemeId, marketingYear, frn, timestamp) || matchingStatements.length >= config.maxStatementsPerSearch) {
+        shouldExitLoop = true
+      }
     }
   }
 

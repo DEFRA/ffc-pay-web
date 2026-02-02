@@ -1,5 +1,7 @@
 const Joi = require('joi')
 
+const DEFAULT_MAX_STATEMENTS_PER_SEARCH = 50
+
 // Define config schema
 const schema = Joi.object({
   payEventStoreConnectionStr: Joi.string().when('useConnectionStr', { is: true, then: Joi.required(), otherwise: Joi.allow('').optional() }),
@@ -27,7 +29,8 @@ const schema = Joi.object({
   paymentRequestsReportName: Joi.string().default('ffc-pay-requests-statuses-report.csv'),
   sfiStatusReport: Joi.string().default('sustainable-farming-incentive.csv'),
   delinkedStatusReport: Joi.string().default('delinked-payment-statement.csv'),
-  managedIdentityClientId: Joi.string().optional()
+  managedIdentityClientId: Joi.string().optional(),
+  maxStatementsPerSearch: Joi.number().default(DEFAULT_MAX_STATEMENTS_PER_SEARCH)
 })
 
 // Build config
@@ -55,7 +58,8 @@ const config = {
   requestEditorReportName: process.env.REQUEST_EDITOR_REPORT_NAME,
   claimLevelReportName: process.env.CLAIM_LEVEL_REPORT_NAME,
   paymentRequestsReportName: process.env.PAYMENT_REQUESTS_REPORT_NAME,
-  managedIdentityClientId: process.env.AZURE_CLIENT_ID
+  managedIdentityClientId: process.env.AZURE_CLIENT_ID,
+  maxStatementsPerSearch: process.env.MAX_STATEMENTS_PER_SEARCH
 }
 
 // Validate config
