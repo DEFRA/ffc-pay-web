@@ -44,6 +44,9 @@ data:
   DOC_AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.docAzureStorageAccountName }}  
   MANUAL_PAYMENTS_ACTIVE: {{ quote .Values.container.manualPaymentsActive }}
   MESSAGE_QUEUE_HOST: {{ quote .Values.container.messageQueueHost }}
+  STMT_DB_TIMEOUT_MS: {{ quote .Values.container.stmtDbTimeoutMs }}
+  STMT_DB_FAILURES: {{ quote .Values.container.stmtDbFailures }}
+  STMT_DB_RESET_MS: {{ quote .Values.container.stmtDbResetMs }}
   {{- if and (.Values.environmentCode) (not .Values.pr) }}
   DATA_TOPIC_ADDRESS: {{ .Values.container.dataTopicAddress }}-{{ .Values.environmentCode }}
   DATARESPONSE_QUEUE_ADDRESS: {{ .Values.container.dataResponseQueueAddress }}-{{ .Values.environmentCode }}

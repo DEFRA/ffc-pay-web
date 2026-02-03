@@ -1,11 +1,11 @@
 const downloadStatementsRoute = require('../../../app/routes/download-statements')
-const { searchStatements, downloadStatement } = require('../../../app/storage/statement-search')
+const { searchStatements, downloadStatement } = require('../../../app/statement-downloader/statement-search')
 const { parseStatementFilename } = require('../../../app/helpers/parse-statement-filename')
 const { getStatementSchemes } = require('../../../app/helpers/get-statement-schemes')
-const { BAD_REQUEST, SUCCESS, NOT_FOUND } = require('../../../app/constants/http-status-codes')
+const { BAD_REQUEST, SUCCESS, NOT_FOUND, INTERNAL_SERVER_ERROR, FORBIDDEN } = require('../../../app/constants/http-status-codes')
 const { applicationAdmin } = require('../../../app/auth/permissions')
 
-jest.mock('../../../app/storage/statement-search')
+jest.mock('../../../app/statement-downloader/statement-search')
 jest.mock('../../../app/helpers/parse-statement-filename')
 jest.mock('../../../app/helpers/get-statement-schemes')
 
@@ -14,26 +14,32 @@ describe('download-statements route', () => {
   let mockH
   let mockResponse
   let consoleErrorSpy
+  let consoleInfoSpy
 
   const mockSchemes = [
-    { schemeId: 1, schemeName: 'SFI' },
-    { schemeId: 2, schemeName: 'BPS' }
+    { schemeId: 1, name: 'SFI' },
+    { schemeId: 2, name: 'BPS' },
+    { schemeId: 4, name: 'DP' }
   ]
 
   const mockStatements = [
     {
-      filename: 'FFC_someSFI_statement_SFI_2025_1000000000_20250915120000.pdf',
-      schemeId: 1,
-      marketingYear: 2023,
-      frn: 1000000000,
-      timestamp: '20230915120000'
+      filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf',
+      scheme: 'SFI',
+      year: '2024',
+      frn: '1000000000',
+      timestamp: '20240915120000',
+      size: 1024,
+      lastModified: new Date('2024-09-15')
     },
     {
-      filename: 'S1234568-2023-1000000001-20230916120000.pdf',
-      schemeId: 2,
-      marketingYear: 2023,
-      frn: 1000000001,
-      timestamp: '20230916120000'
+      filename: 'FFC_PaymentDelinkedStatement_BPS_2024_1000000001_20240916120000.pdf',
+      scheme: 'BPS',
+      year: '2024',
+      frn: '1000000001',
+      timestamp: '20240916120000',
+      size: 2048,
+      lastModified: new Date('2024-09-16')
     }
   ]
 
@@ -65,15 +71,17 @@ describe('download-statements route', () => {
     }
 
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+    consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation()
 
     getStatementSchemes.mockResolvedValue(mockSchemes)
     parseStatementFilename.mockReturnValue({ isValid: false })
-    searchStatements.mockResolvedValue(mockStatements)
+    searchStatements.mockResolvedValue({ statements: mockStatements, continuationToken: null })
     downloadStatement.mockResolvedValue(mockReadableStream)
   })
 
   afterEach(() => {
     consoleErrorSpy.mockRestore()
+    consoleInfoSpy.mockRestore()
   })
 
   describe('route configuration', () => {
@@ -132,11 +140,26 @@ describe('download-statements route', () => {
       })
     })
 
-    test('should propagate error if getStatementSchemes fails', async () => {
+    test('should handle error fetching schemes', async () => {
       const error = new Error('Failed to fetch schemes')
       getStatementSchemes.mockRejectedValue(error)
 
-      await expect(handler(mockRequest, mockH)).rejects.toThrow('Failed to fetch schemes')
+      await handler(mockRequest, mockH)
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching schemes:', error)
+      expect(mockH.response).toHaveBeenCalledWith({ error: 'Unable to load schemes. Please try again later.' })
+      expect(mockResponse.code).toHaveBeenCalledWith(INTERNAL_SERVER_ERROR)
+    })
+
+    test('should handle undefined crumb value', async () => {
+      mockRequest.plugins.crumb = undefined
+
+      await handler(mockRequest, mockH)
+
+      expect(mockH.view).toHaveBeenCalledWith('download-statements', {
+        schemes: mockSchemes,
+        crumb: undefined
+      })
     })
   })
 
@@ -181,6 +204,8 @@ describe('download-statements route', () => {
           marketingYear: '2023',
           frn: undefined,
           timestamp: undefined,
+          limit: undefined,
+          continuationToken: undefined,
           error: mockError
         })
         expect(mockResponse.code).toHaveBeenCalledWith(BAD_REQUEST)
@@ -199,8 +224,22 @@ describe('download-statements route', () => {
           marketingYear: undefined,
           frn: undefined,
           timestamp: undefined,
+          limit: undefined,
+          continuationToken: undefined,
           error: mockError
         })
+      })
+
+      test('should handle error fetching schemes during validation failure', async () => {
+        const schemeError = new Error('Scheme fetch failed')
+        getStatementSchemes.mockRejectedValue(schemeError)
+        mockRequest.payload = { schemeId: '1' }
+
+        await failAction(mockRequest, mockH, mockError)
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching schemes in validation failure:', schemeError)
+        expect(mockH.response).toHaveBeenCalledWith({ error: 'Unable to load schemes. Please try again later.' })
+        expect(mockResponse.code).toHaveBeenCalledWith(INTERNAL_SERVER_ERROR)
       })
     })
 
@@ -216,11 +255,12 @@ describe('download-statements route', () => {
         await handler(mockRequest, mockH)
 
         expect(searchStatements).toHaveBeenCalledWith({
+          filename: null,
           schemeId: 1,
           marketingYear: 2023,
           frn: 1000000000,
           timestamp: '20230915120000'
-        })
+        }, 50, null)
       })
 
       test('should search statements with partial criteria', async () => {
@@ -232,24 +272,85 @@ describe('download-statements route', () => {
         await handler(mockRequest, mockH)
 
         expect(searchStatements).toHaveBeenCalledWith({
+          filename: null,
           schemeId: 1,
           marketingYear: 2023,
           frn: null,
           timestamp: undefined
-        })
+        }, 50, null)
       })
 
-      test('should search with null criteria when no payload provided', async () => {
-        mockRequest.payload = {}
+      test('should handle custom limit', async () => {
+        mockRequest.payload = {
+          schemeId: '1',
+          limit: '100'
+        }
 
         await handler(mockRequest, mockH)
 
-        expect(searchStatements).toHaveBeenCalledWith({
-          schemeId: null,
-          marketingYear: null,
-          frn: null,
-          timestamp: undefined
+        expect(searchStatements).toHaveBeenCalledWith(
+          expect.any(Object),
+          100,
+          null
+        )
+      })
+
+      test('should use default limit of 50 when not provided', async () => {
+        mockRequest.payload = { schemeId: '1' }
+
+        await handler(mockRequest, mockH)
+
+        expect(searchStatements).toHaveBeenCalledWith(
+          expect.any(Object),
+          50,
+          null
+        )
+      })
+
+      test('should handle continuation token', async () => {
+        mockRequest.payload = {
+          schemeId: '1',
+          continuationToken: 'next-token-123'
+        }
+
+        await handler(mockRequest, mockH)
+
+        expect(searchStatements).toHaveBeenCalledWith(
+          expect.any(Object),
+          50,
+          'next-token-123'
+        )
+      })
+
+      test('should return continuation token from search result', async () => {
+        searchStatements.mockResolvedValue({
+          statements: mockStatements,
+          continuationToken: 'next-page-token'
         })
+        mockRequest.payload = { schemeId: '1' }
+
+        await handler(mockRequest, mockH)
+
+        expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.objectContaining({
+          continuationToken: 'next-page-token'
+        }))
+      })
+
+      test('should log search criteria', async () => {
+        mockRequest.payload = { schemeId: '1' }
+
+        await handler(mockRequest, mockH)
+
+        expect(consoleInfoSpy).toHaveBeenCalledWith(
+          'Download-statements search criteria: %o',
+          {
+            filename: null,
+            schemeId: 1,
+            marketingYear: null,
+            frn: null,
+            timestamp: undefined
+          }
+        )
       })
 
       test('should return view with statements and searchPerformed flag', async () => {
@@ -267,13 +368,15 @@ describe('download-statements route', () => {
           marketingYear: '2023',
           frn: undefined,
           timestamp: undefined,
+          limit: undefined,
+          continuationToken: null,
           statements: mockStatements,
           searchPerformed: true
         })
       })
 
       test('should handle empty statements result', async () => {
-        searchStatements.mockResolvedValue([])
+        searchStatements.mockResolvedValue({ statements: [], continuationToken: null })
         mockRequest.payload = { schemeId: '999' }
 
         await handler(mockRequest, mockH)
@@ -283,6 +386,50 @@ describe('download-statements route', () => {
           searchPerformed: true
         }))
       })
+
+      test('should handle search result error property', async () => {
+        searchStatements.mockResolvedValue({
+          statements: [],
+          continuationToken: null,
+          error: 'No matching statements found'
+        })
+        mockRequest.payload = { schemeId: '1' }
+
+        await handler(mockRequest, mockH)
+
+        expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.objectContaining({
+          error: { message: 'No matching statements found' },
+          searchPerformed: false
+        }))
+      })
+
+      test('should handle filename search with no results', async () => {
+        searchStatements.mockResolvedValue({ statements: [], continuationToken: null })
+        mockRequest.payload = {
+          filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf'
+        }
+
+        await handler(mockRequest, mockH)
+
+        expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.objectContaining({
+          error: { message: 'Statement not found' },
+          searchPerformed: false
+        }))
+      })
+
+      test('should handle filename search with null statements', async () => {
+        searchStatements.mockResolvedValue({ statements: null, continuationToken: null })
+        mockRequest.payload = {
+          filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf'
+        }
+
+        await handler(mockRequest, mockH)
+
+        expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.objectContaining({
+          error: { message: 'Statement not found' },
+          searchPerformed: false
+        }))
+      })
     })
 
     describe('filename parsing integration', () => {
@@ -290,39 +437,40 @@ describe('download-statements route', () => {
         const parsedData = {
           isValid: true,
           schemeId: 1,
-          marketingYear: 2023,
+          marketingYear: 2024,
           frn: 1000000000,
-          timestamp: '20230915120000'
+          timestamp: '20240915120000'
         }
 
         parseStatementFilename.mockReturnValue(parsedData)
         mockRequest.payload = {
-          filename: 'FFC_someSFI_statement_SFI_2025_1000000000_20250915120000.pdf'
+          filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf'
         }
 
         await handler(mockRequest, mockH)
 
-        expect(parseStatementFilename).toHaveBeenCalledWith('FFC_someSFI_statement_SFI_2025_1000000000_20250915120000.pdf')
+        expect(parseStatementFilename).toHaveBeenCalledWith('FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf')
         expect(searchStatements).toHaveBeenCalledWith({
+          filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf',
           schemeId: 1,
-          marketingYear: 2023,
+          marketingYear: 2024,
           frn: 1000000000,
-          timestamp: '20230915120000'
-        })
+          timestamp: '20240915120000'
+        }, 50, null)
       })
 
       test('should prefer payload values over parsed filename values', async () => {
         const parsedData = {
           isValid: true,
           schemeId: 1,
-          marketingYear: 2023,
+          marketingYear: 2024,
           frn: 1000000000,
-          timestamp: '20230915120000'
+          timestamp: '20240915120000'
         }
 
         parseStatementFilename.mockReturnValue(parsedData)
         mockRequest.payload = {
-          filename: 'FFC_someSFI_statement_SFI_2025_1000000000_20250915120000.pdf',
+          filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf',
           schemeId: '2',
           frn: '9999999999'
         }
@@ -330,11 +478,12 @@ describe('download-statements route', () => {
         await handler(mockRequest, mockH)
 
         expect(searchStatements).toHaveBeenCalledWith({
+          filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf',
           schemeId: 2,
-          marketingYear: 2023,
+          marketingYear: 2024,
           frn: 9999999999,
-          timestamp: '20230915120000'
-        })
+          timestamp: '20240915120000'
+        }, 50, null)
       })
 
       test('should not merge when filename parsing fails', async () => {
@@ -347,11 +496,12 @@ describe('download-statements route', () => {
         await handler(mockRequest, mockH)
 
         expect(searchStatements).toHaveBeenCalledWith({
+          filename: 'invalid-filename.pdf',
           schemeId: 1,
           marketingYear: null,
           frn: null,
           timestamp: undefined
-        })
+        }, 50, null)
       })
 
       test('should handle null parsed result', async () => {
@@ -363,11 +513,12 @@ describe('download-statements route', () => {
         await handler(mockRequest, mockH)
 
         expect(searchStatements).toHaveBeenCalledWith({
+          filename: 'bad-file.pdf',
           schemeId: null,
           marketingYear: null,
           frn: null,
           timestamp: undefined
-        })
+        }, 50, null)
       })
 
       test('should handle undefined parsed result', async () => {
@@ -379,11 +530,12 @@ describe('download-statements route', () => {
         await handler(mockRequest, mockH)
 
         expect(searchStatements).toHaveBeenCalledWith({
+          filename: 'another-bad-file.pdf',
           schemeId: null,
           marketingYear: null,
           frn: null,
           timestamp: undefined
-        })
+        }, 50, null)
       })
 
       test('should handle empty filename in payload', async () => {
@@ -396,11 +548,12 @@ describe('download-statements route', () => {
 
         expect(parseStatementFilename).not.toHaveBeenCalled()
         expect(searchStatements).toHaveBeenCalledWith({
+          filename: null,
           schemeId: 1,
           marketingYear: null,
           frn: null,
           timestamp: undefined
-        })
+        }, 50, null)
       })
     })
 
@@ -412,6 +565,7 @@ describe('download-statements route', () => {
 
         await handler(mockRequest, mockH)
 
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error in POST handler:', expect.any(Error))
         expect(mockH.view).toHaveBeenCalledWith('download-statements', {
           schemes: mockSchemes,
           filename: undefined,
@@ -419,6 +573,8 @@ describe('download-statements route', () => {
           marketingYear: undefined,
           frn: undefined,
           timestamp: undefined,
+          limit: undefined,
+          continuationToken: undefined,
           error: { message: errorMessage }
         })
       })
@@ -456,6 +612,25 @@ describe('download-statements route', () => {
           schemes: mockSchemes
         }))
       })
+
+      test('should handle schemes fetch error after search failure', async () => {
+        const searchError = new Error('Search failed')
+        const schemeError = new Error('Schemes unavailable')
+
+        searchStatements.mockRejectedValue(searchError)
+        getStatementSchemes.mockResolvedValueOnce(mockSchemes)
+        getStatementSchemes.mockRejectedValueOnce(schemeError)
+
+        mockRequest.payload = { schemeId: '1' }
+
+        await handler(mockRequest, mockH)
+
+        expect(consoleErrorSpy).toHaveBeenCalledTimes(2)
+        expect(consoleErrorSpy).toHaveBeenNthCalledWith(1, 'Error in POST handler:', searchError)
+        expect(consoleErrorSpy).toHaveBeenNthCalledWith(2, 'Error fetching schemes after search failure:', schemeError)
+        expect(mockH.response).toHaveBeenCalledWith({ error: 'Unable to load schemes. Please try again later.' })
+        expect(mockResponse.code).toHaveBeenCalledWith(INTERNAL_SERVER_ERROR)
+      })
     })
 
     describe('data type conversion', () => {
@@ -466,7 +641,7 @@ describe('download-statements route', () => {
 
         expect(searchStatements).toHaveBeenCalledWith(expect.objectContaining({
           schemeId: 123
-        }))
+        }), 50, null)
       })
 
       test('should convert string marketingYear to number', async () => {
@@ -476,7 +651,7 @@ describe('download-statements route', () => {
 
         expect(searchStatements).toHaveBeenCalledWith(expect.objectContaining({
           marketingYear: 2024
-        }))
+        }), 50, null)
       })
 
       test('should convert string frn to number', async () => {
@@ -486,7 +661,7 @@ describe('download-statements route', () => {
 
         expect(searchStatements).toHaveBeenCalledWith(expect.objectContaining({
           frn: 1234567890
-        }))
+        }), 50, null)
       })
 
       test('should handle invalid number conversions', async () => {
@@ -499,11 +674,12 @@ describe('download-statements route', () => {
         await handler(mockRequest, mockH)
 
         expect(searchStatements).toHaveBeenCalledWith({
-          schemeId: Number.NaN,
-          marketingYear: Number.NaN,
-          frn: Number.NaN,
+          filename: null,
+          schemeId: NaN,
+          marketingYear: NaN,
+          frn: NaN,
           timestamp: undefined
-        })
+        }, 50, null)
       })
 
       test('should keep timestamp as string', async () => {
@@ -513,7 +689,15 @@ describe('download-statements route', () => {
 
         expect(searchStatements).toHaveBeenCalledWith(expect.objectContaining({
           timestamp: '20230915120000'
-        }))
+        }), 50, null)
+      })
+
+      test('should handle floating point limit', async () => {
+        mockRequest.payload = { schemeId: '1', limit: '75.9' }
+
+        await handler(mockRequest, mockH)
+
+        expect(searchStatements).toHaveBeenCalledWith(expect.any(Object), 75.9, null)
       })
     })
   })
@@ -526,22 +710,22 @@ describe('download-statements route', () => {
     })
 
     test('should download statement successfully', async () => {
-      mockRequest.params = { filename: 'FFC_someSFI_statement_SFI_2025_1000000000_20250915120000.pdf' }
+      mockRequest.params = { filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf' }
 
       await handler(mockRequest, mockH)
 
-      expect(downloadStatement).toHaveBeenCalledWith('FFC_someSFI_statement_SFI_2025_1000000000_20250915120000.pdf')
+      expect(downloadStatement).toHaveBeenCalledWith('FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf')
       expect(mockH.response).toHaveBeenCalledWith('mock-pdf-stream')
       expect(mockResponse.type).toHaveBeenCalledWith('application/pdf')
       expect(mockResponse.header).toHaveBeenCalledWith(
         'Content-Disposition',
-        'attachment; filename="FFC_someSFI_statement_SFI_2025_1000000000_20250915120000.pdf"'
+        'attachment; filename="FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000.pdf"'
       )
       expect(mockResponse.code).toHaveBeenCalledWith(SUCCESS)
     })
 
     test('should handle filename with special characters', async () => {
-      const specialFilename = 'FFC_someSFI_statement_SFI_2025_1000000000_20250915120000 (1).pdf'
+      const specialFilename = 'FFC_PaymentDelinkedStatement_SFI_2024_1000000000_20240915120000 (1).pdf'
       mockRequest.params = { filename: specialFilename }
 
       await handler(mockRequest, mockH)
@@ -565,8 +749,22 @@ describe('download-statements route', () => {
       )
     })
 
-    test('should log error and return NOT_FOUND when download fails', async () => {
+    test('should handle BlobNotFound error code', async () => {
+      const error = new Error('Blob not found')
+      error.code = 'BlobNotFound'
+      downloadStatement.mockRejectedValue(error)
+      mockRequest.params = { filename: 'missing.pdf' }
+
+      await handler(mockRequest, mockH)
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Download error:', error)
+      expect(mockH.response).toHaveBeenCalledWith({ error: 'Statement not found' })
+      expect(mockResponse.code).toHaveBeenCalledWith(NOT_FOUND)
+    })
+
+    test('should handle NOT_FOUND status code', async () => {
       const error = new Error('Statement not found in storage')
+      error.statusCode = NOT_FOUND
       downloadStatement.mockRejectedValue(error)
       mockRequest.params = { filename: 'nonexistent.pdf' }
 
@@ -577,20 +775,32 @@ describe('download-statements route', () => {
       expect(mockResponse.code).toHaveBeenCalledWith(NOT_FOUND)
     })
 
-    test('should log error with full error object when download fails', async () => {
-      const error = new Error('Blob not found')
-      error.statusCode = 404
-      error.code = 'BlobNotFound'
+    test('should handle FORBIDDEN status code', async () => {
+      const error = new Error('Access denied')
+      error.statusCode = FORBIDDEN
       downloadStatement.mockRejectedValue(error)
-      mockRequest.params = { filename: 'missing.pdf' }
+      mockRequest.params = { filename: 'forbidden.pdf' }
 
       await handler(mockRequest, mockH)
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('Download error:', error)
-      expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
+      expect(mockH.response).toHaveBeenCalledWith({ error: 'Access denied' })
+      expect(mockResponse.code).toHaveBeenCalledWith(FORBIDDEN)
     })
 
-    test('should handle network errors during download', async () => {
+    test('should handle generic errors with INTERNAL_SERVER_ERROR', async () => {
+      const error = new Error('Unexpected error')
+      downloadStatement.mockRejectedValue(error)
+      mockRequest.params = { filename: 'test.pdf' }
+
+      await handler(mockRequest, mockH)
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Download error:', error)
+      expect(mockH.response).toHaveBeenCalledWith({ error: 'An error occurred while downloading the statement' })
+      expect(mockResponse.code).toHaveBeenCalledWith(INTERNAL_SERVER_ERROR)
+    })
+
+    test('should handle network timeout errors', async () => {
       const networkError = new Error('Network timeout')
       networkError.code = 'ETIMEDOUT'
       downloadStatement.mockRejectedValue(networkError)
@@ -599,8 +809,8 @@ describe('download-statements route', () => {
       await handler(mockRequest, mockH)
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('Download error:', networkError)
-      expect(mockH.response).toHaveBeenCalledWith({ error: 'Statement not found' })
-      expect(mockResponse.code).toHaveBeenCalledWith(NOT_FOUND)
+      expect(mockH.response).toHaveBeenCalledWith({ error: 'An error occurred while downloading the statement' })
+      expect(mockResponse.code).toHaveBeenCalledWith(INTERNAL_SERVER_ERROR)
     })
 
     test('should handle empty filename parameter', async () => {
@@ -619,34 +829,12 @@ describe('download-statements route', () => {
       expect(downloadStatement).toHaveBeenCalledWith(undefined)
     })
 
-    test('should return error response on exception', async () => {
-      downloadStatement.mockRejectedValue(new Error('Storage unavailable'))
-      mockRequest.params = { filename: 'test.pdf' }
-
-      const result = await handler(mockRequest, mockH)
-
-      expect(result).toBe(mockResponse)
-      expect(mockH.response).toHaveBeenCalledWith({ error: 'Statement not found' })
-      expect(mockResponse.code).toHaveBeenCalledWith(NOT_FOUND)
-    })
-
-    test('should log error message when error object has message', async () => {
-      const error = { message: 'Custom error message' }
-      downloadStatement.mockRejectedValue(error)
-      mockRequest.params = { filename: 'test.pdf' }
+    test('should not log error on successful download', async () => {
+      mockRequest.params = { filename: 'success.pdf' }
 
       await handler(mockRequest, mockH)
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Download error:', error)
-    })
-
-    test('should log error even when error is null', async () => {
-      downloadStatement.mockRejectedValue(null)
-      mockRequest.params = { filename: 'test.pdf' }
-
-      await handler(mockRequest, mockH)
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Download error:', null)
+      expect(consoleErrorSpy).not.toHaveBeenCalled()
     })
   })
 
@@ -656,14 +844,12 @@ describe('download-statements route', () => {
       const postHandler = downloadStatementsRoute[1].options.handler
       const downloadHandler = downloadStatementsRoute[2].options.handler
 
-      // Step 1: GET request
       await getHandler(mockRequest, mockH)
       expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.objectContaining({
         schemes: mockSchemes
       }))
 
-      // Step 2: POST request with search
-      mockRequest.payload = { schemeId: '1', marketingYear: '2023' }
+      mockRequest.payload = { schemeId: '1', marketingYear: '2024' }
       await postHandler(mockRequest, mockH)
       expect(searchStatements).toHaveBeenCalled()
       expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.objectContaining({
@@ -671,7 +857,6 @@ describe('download-statements route', () => {
         searchPerformed: true
       }))
 
-      // Step 3: Download a statement
       mockRequest.params = { filename: mockStatements[0].filename }
       await downloadHandler(mockRequest, mockH)
       expect(downloadStatement).toHaveBeenCalledWith(mockStatements[0].filename)
@@ -697,6 +882,8 @@ describe('download-statements route', () => {
         marketingYear: '2024',
         frn: '1234567890',
         timestamp: '20240101120000',
+        limit: undefined,
+        continuationToken: null,
         statements: mockStatements,
         searchPerformed: true
       })
@@ -729,7 +916,7 @@ describe('download-statements route', () => {
 
       expect(searchStatements).toHaveBeenCalledWith(expect.objectContaining({
         frn: 9999999999
-      }))
+      }), 50, null)
     })
 
     test('should handle zero values', async () => {
@@ -743,11 +930,12 @@ describe('download-statements route', () => {
       await postHandler(mockRequest, mockH)
 
       expect(searchStatements).toHaveBeenCalledWith({
+        filename: null,
         schemeId: 0,
         marketingYear: 0,
         frn: 0,
         timestamp: undefined
-      })
+      }, 50, null)
     })
 
     test('should handle negative values', async () => {
@@ -762,18 +950,7 @@ describe('download-statements route', () => {
       expect(searchStatements).toHaveBeenCalledWith(expect.objectContaining({
         schemeId: -1,
         marketingYear: -2023
-      }))
-    })
-
-    test('should handle floating point numbers in string format', async () => {
-      const postHandler = downloadStatementsRoute[1].options.handler
-      mockRequest.payload = { schemeId: '1.5' }
-
-      await postHandler(mockRequest, mockH)
-
-      expect(searchStatements).toHaveBeenCalledWith(expect.objectContaining({
-        schemeId: 1
-      }))
+      }), 50, null)
     })
 
     test('should handle whitespace in string values', async () => {
@@ -786,76 +963,31 @@ describe('download-statements route', () => {
       await postHandler(mockRequest, mockH)
 
       expect(searchStatements).toHaveBeenCalledWith({
+        filename: null,
         schemeId: 1,
         marketingYear: null,
         frn: null,
         timestamp: '  20230915120000  '
-      })
+      }, 50, null)
     })
 
-    test('should handle undefined crumb value', async () => {
-      const getHandler = downloadStatementsRoute[0].options.handler
-      mockRequest.plugins.crumb = undefined
-
-      await getHandler(mockRequest, mockH)
-
-      expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.objectContaining({
-        crumb: undefined
-      }))
-    })
-
-    test('should handle missing plugins object', async () => {
-      const getHandler = downloadStatementsRoute[0].options.handler
-      mockRequest.plugins = undefined
-
-      await expect(async () => {
-        await getHandler(mockRequest, mockH)
-      }).rejects.toThrow()
-    })
-  })
-
-  describe('console.error logging verification', () => {
-    test('should log to console.error exactly once on download error', async () => {
-      const downloadHandler = downloadStatementsRoute[2].options.handler
-      const error = new Error('Test error')
-      downloadStatement.mockRejectedValue(error)
-      mockRequest.params = { filename: 'test.pdf' }
-
-      await downloadHandler(mockRequest, mockH)
-
-      expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Download error:', error)
-    })
-
-    test('should log exact error message text', async () => {
-      const downloadHandler = downloadStatementsRoute[2].options.handler
-      const specificError = new Error('Specific error message for testing')
-      downloadStatement.mockRejectedValue(specificError)
-      mockRequest.params = { filename: 'test.pdf' }
-
-      await downloadHandler(mockRequest, mockH)
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Download error:', specificError)
-      const loggedError = consoleErrorSpy.mock.calls[0][1]
-      expect(loggedError.message).toBe('Specific error message for testing')
-    })
-
-    test('should not log errors when downloads succeed', async () => {
-      const downloadHandler = downloadStatementsRoute[2].options.handler
-      mockRequest.params = { filename: 'success.pdf' }
-
-      await downloadHandler(mockRequest, mockH)
-
-      expect(consoleErrorSpy).not.toHaveBeenCalled()
-    })
-
-    test('should not log errors during successful POST requests', async () => {
+    test('should handle null values in payload', async () => {
       const postHandler = downloadStatementsRoute[1].options.handler
-      mockRequest.payload = { schemeId: '1' }
+      mockRequest.payload = {
+        schemeId: null,
+        marketingYear: null,
+        frn: null
+      }
 
       await postHandler(mockRequest, mockH)
 
-      expect(consoleErrorSpy).not.toHaveBeenCalled()
+      expect(searchStatements).toHaveBeenCalledWith({
+        filename: null,
+        schemeId: null,
+        marketingYear: null,
+        frn: null,
+        timestamp: undefined
+      }, 50, null)
     })
   })
 })

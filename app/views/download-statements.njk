@@ -72,9 +72,9 @@
             {% if searchPerformed %}
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible"/>
 
-                <h2 class="govuk-heading-m">Results ({{ statements.length }})</h2>
+                <h2 class="govuk-heading-m">Results ({{ (statements or []).length }})</h2>
 
-                {% if statements.length > 0 %}
+                {% if statements and statements.length > 0 %}
                     <table class="govuk-table">
                         <caption class="govuk-visually-hidden">Search results for payment statements</caption>
                         <thead class="govuk-table__head">
@@ -94,18 +94,36 @@
                                     <td class="govuk-table__cell">{{ statement.frn }}</td>
                                     <td class="govuk-table__cell">{{ statement.timestamp }}</td>
                                     <td class="govuk-table__cell">
-                                        <a href="/download-statements/download/{{ statement.filename }}" class="govuk-link" download>
-                                            Download
-                                            <span class="govuk-visually-hidden">
-                                                statement for {{ statement.scheme }}
-                                                {{ statement.year }} FRN {{ statement.frn }}
-                                            </span>
-                                        </a>
+                                        {% if statement.filename %}
+                                            <a href="/download-statements/download/{{ statement.filename }}" class="govuk-link">
+                                                Download
+                                                <span class="govuk-visually-hidden">
+                                                    statement for {{ statement.scheme }}
+                                                    {{ statement.year }} FRN {{ statement.frn }}
+                                                </span>
+                                            </a>
+                                        {% else %}
+                                            <span class="govuk-body-s">File unavailable</span>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+
+                    {% if continuationToken %}
+                        <form method="POST" action="/download-statements" style="margin-top:1rem;">
+                            <input type="hidden" name="crumb" value="{{ crumb }}"/>
+                            <input type="hidden" name="schemeId" value="{{ schemeId }}"/>
+                            <input type="hidden" name="marketingYear" value="{{ marketingYear }}"/>
+                            <input type="hidden" name="frn" value="{{ frn }}"/>
+                            <input type="hidden" name="filename" value="{{ filename }}"/>
+                            <input type="hidden" name="timestamp" value="{{ timestamp }}"/>
+                            <input type="hidden" name="limit" value="{{ limit or 50 }}"/>
+                            <input type="hidden" name="continuationToken" value="{{ continuationToken }}"/>
+                            <button class="govuk-button govuk-button--secondary">Load more</button>
+                        </form>
+                    {% endif %}
                 {% else %}
                     <p class="govuk-body">No statements found.</p>
                 {% endif %}
