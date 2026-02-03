@@ -60,6 +60,7 @@ const buildBlobPrefix = (criteria) => {
   if (!criteria?.schemeId) {
     return 'outbound'
   }
+
   const schemeAbbrev = statementAbbreviations[criteria.schemeId]
   if (!schemeAbbrev) {
     return 'outbound'
