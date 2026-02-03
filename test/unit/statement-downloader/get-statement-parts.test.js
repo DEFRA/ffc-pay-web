@@ -698,7 +698,7 @@ describe('get-statement-parts', () => {
           expect(result).toBe('outbound/FFC_PaymentDelinkedStatement_BPS_2023_9999999999')
         })
 
-        test('should ignore timestamp in criteria', () => {
+        test('should include timestamp in criteria', () => {
           const result = buildBlobPrefix({
             schemeId: 1,
             marketingYear: 2024,
@@ -706,7 +706,7 @@ describe('get-statement-parts', () => {
             timestamp: '20240915120000'
           })
 
-          expect(result).toBe('outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264')
+          expect(result).toBe('outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264_20240915120000')
         })
 
         test('should ignore extra properties in criteria', () => {

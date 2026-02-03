@@ -70,8 +70,13 @@ const buildBlobPrefix = (criteria) => {
   if (criteria.marketingYear) {
     prefix += `_${criteria.marketingYear}`
   }
+
   if (criteria.frn) {
     prefix += `_${criteria.frn}`
+  }
+
+  if (criteria.timestamp) {
+    prefix += `_${criteria.timestamp}`
   }
 
   return prefix

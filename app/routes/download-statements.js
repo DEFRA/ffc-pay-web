@@ -76,6 +76,7 @@ module.exports = [
     path: '/download-statements',
     options: {
       auth: AUTH_SCOPE,
+      pre: [{ method: applicationAdmin }],
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
