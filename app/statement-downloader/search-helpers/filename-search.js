@@ -32,8 +32,8 @@ const searchDbByFilename = async (filename) => {
     const row = await db.getByFilename(filename)
     const rowResult = createStatementResultFromDBRow(row)
     return rowResult ? { statements: [rowResult], continuationToken: null } : { statements: [], continuationToken: null }
-  } catch (dbErr) {
-    console.warn('DB filename search failed:', dbErr?.message || dbErr)
+  } catch (error) {
+    console.warn('DB filename search failed:', error?.message || error)
     return { statements: [], continuationToken: null }
   }
 }

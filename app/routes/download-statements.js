@@ -112,7 +112,6 @@ module.exports = [
 
           const { statements, continuationToken: nextToken } = searchResult
 
-          // If user entered a filename and there are no results, show a not-found message
           if (searchCriteria.filename && (!Array.isArray(statements) || statements.length === 0)) {
             return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, {
               error: { message: 'Statement not found' },
@@ -131,8 +130,8 @@ module.exports = [
           try {
             const schemes = await getStatementSchemes()
             return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, { error }))
-          } catch (schemeErr) {
-            console.error('Error fetching schemes after search failure:', schemeErr)
+          } catch (error) {
+            console.error('Error fetching schemes after search failure:', error)
             return h.response({ error: SCHEMES_ERROR }).code(INTERNAL_SERVER_ERROR)
           }
         }
