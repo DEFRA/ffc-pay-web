@@ -61,6 +61,9 @@ container:
   redisPort: 6379
   redisPassword: redis
   approvedEmailDomains:
+  stmtDbTimeoutMs: 2000
+  stmtDbFailures: 3
+  stmtDbResetMs: 10000
 
 ingress:
   class: nginx

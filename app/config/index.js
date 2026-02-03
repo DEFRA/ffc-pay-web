@@ -7,6 +7,10 @@ const cacheConfig = require('./cache')
 const portNumber = 3007
 const staticCacheTimeout = 604800000
 
+const TIMEOUT_MS = 2000
+const FAILURE_THRESHOLD = 3
+const RESET_TIMEOUT_MS = 10000
+
 // Define config schema
 const schema = Joi.object({
   serviceName: Joi.string().default('Payment management'),
@@ -20,7 +24,10 @@ const schema = Joi.object({
   alertingEndpoint: Joi.string().uri().required(),
   statementPublisherEndpoint: Joi.string().uri().required(),
   manualPaymentsActive: Joi.boolean().default(true),
-  approvedEmailDomains: Joi.string().default('')
+  approvedEmailDomains: Joi.string().default(''),
+  timeoutMs: Joi.number().default(TIMEOUT_MS),
+  failureThreshold: Joi.number().default(FAILURE_THRESHOLD),
+  resetTimeoutMs: Joi.number().default(RESET_TIMEOUT_MS)
 })
 
 // Build config
@@ -36,7 +43,10 @@ const config = {
   alertingEndpoint: process.env.ALERTING_SERVICE_ENDPOINT,
   statementPublisherEndpoint: process.env.STATEMENT_PUBLISHER_ENDPOINT,
   manualPaymentsActive: process.env.MANUAL_PAYMENTS_ACTIVE,
-  approvedEmailDomains: process.env.APPROVED_EMAIL_DOMAINS
+  approvedEmailDomains: process.env.APPROVED_EMAIL_DOMAINS,
+  timeoutMs: process.env.STMT_DB_TIMEOUT_MS,
+  failureThreshold: process.env.STMT_DB_FAILURES,
+  resetTimeoutMs: process.env.STMT_DB_RESET_MS
 }
 
 // Validate config
