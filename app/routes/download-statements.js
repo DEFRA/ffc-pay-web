@@ -127,13 +127,14 @@ module.exports = [
         } catch (err) {
           console.error('Error in POST handler:', err)
           const error = { message: err.message || 'An error occurred while searching for statements' }
+          let schemes
           try {
-            const schemes = await getStatementSchemes()
-            return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, { error }))
-          } catch (error) {
-            console.error('Error fetching schemes after search failure:', error)
+            schemes = await getStatementSchemes()
+          } catch (e) {
+            console.error('Error fetching schemes after search failure:', e)
             return h.response({ error: SCHEMES_ERROR }).code(INTERNAL_SERVER_ERROR)
           }
+          return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, { error }))
         }
       }
     }
