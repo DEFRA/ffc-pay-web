@@ -3,6 +3,8 @@ const minFRN = 1000000000
 const maxFRN = 9999999999
 const minYear = 2020
 const maxYear = 2099
+const limitStart = 1
+const limitEnd = 200
 
 module.exports = Joi.object({
   filename: Joi.string()
@@ -43,8 +45,8 @@ module.exports = Joi.object({
     }),
   limit: Joi.number()
     .integer()
-    .min(1)
-    .max(200)
+    .min(limitStart)
+    .max(limitEnd)
     .optional(),
   continuationToken: Joi.string()
     .optional()

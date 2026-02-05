@@ -77,7 +77,7 @@ const prepareSearchParams = (request, fileLimit) => {
 
 const performSearch = async (searchCriteria, limit, offsetOrToken) => {
   console.info('Download-statements search criteria: %o', searchCriteria)
-  return await searchStatements(searchCriteria, limit, offsetOrToken)
+  return searchStatements(searchCriteria, limit, offsetOrToken)
 }
 
 module.exports = {
