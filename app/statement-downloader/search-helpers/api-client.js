@@ -39,17 +39,29 @@ const handleApiError = (err, fullUrl, breaker) => {
     breaker.state = 'OPEN'
     breaker.nextAttempt = Date.now() + breaker.resetTimeoutMs
   }
+  const errStatus = err?.statusCode ?? err?.res?.statusCode ?? err?.output?.statusCode ?? null
+  const errCode = err?.code ?? null
+  console.error(`Statement-publisher request failed for ${fullUrl} - status: ${errStatus}, code: ${errCode}, message: ${err.message}`)
+  if (err?.stack) {
+    console.error(err.stack.split('\n').slice(0, 2).join('\n'))
+  }
 
-  const out = new Error(`Statement-publisher request failed for ${fullUrl}: ${err.message || err}`)
-  out.orig = err
-  throw out
+  const wrapperErr = new Error(`Statement-publisher request failed for ${fullUrl}: ${err.message || err}`)
+  wrapperErr.orig = err
+  throw wrapperErr
 }
 
 const executeApiCall = async (path, endpoint, breaker, timeoutMs) => {
   const fullUrl = `${endpoint}${path}`
-  breaker.shouldAttemptHalfOpen()
+  try {
+    breaker.shouldAttemptHalfOpen()
+  } catch (e) {
+    console.info(`Statement-publisher circuit status: ${e.message}`)
+    throw e
+  }
 
   try {
+    console.info(`Calling statement-publisher: ${fullUrl}`)
     const apiCall = api.getStatementPublisherData(path)
     const result = await Promise.race([apiCall, createTimeoutPromise(timeoutMs)])
     breaker.handleSuccess()

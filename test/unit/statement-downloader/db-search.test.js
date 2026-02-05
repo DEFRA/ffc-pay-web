@@ -220,6 +220,60 @@ describe('db-search', () => {
     })
   })
 
+  test('should pass timestamp from criteria to db.search', async () => {
+    db.search.mockResolvedValue({ statements: [], continuationToken: null })
+
+    await dbSearch(50, 0, { timestamp: '20240915120000' })
+
+    expect(db.search).toHaveBeenCalledWith(
+      expect.objectContaining({ timestamp: '20240915120000' }),
+      50,
+      0
+    )
+  })
+
+  test('should handle timestamp with other criteria', async () => {
+    db.search.mockResolvedValue({ statements: [], continuationToken: null })
+
+    await dbSearch(50, 0, {
+      schemeId: 1,
+      marketingYear: 2024,
+      frn: '1234567890',
+      timestamp: '20240915120000'
+    })
+
+    expect(db.search).toHaveBeenCalledWith({
+      frn: '1234567890',
+      schemeShortName: 'SFI',
+      schemeYear: 2024,
+      timestamp: '20240915120000'
+    }, 50, 0)
+  })
+
+  test('should exclude null timestamp', async () => {
+    db.search.mockResolvedValue({ statements: [], continuationToken: null })
+
+    await dbSearch(50, 0, { frn: '1234567890', timestamp: null })
+
+    expect(db.search).toHaveBeenCalledWith(
+      expect.objectContaining({ timestamp: null }),
+      50,
+      0
+    )
+  })
+
+  test('should exclude undefined timestamp with default', async () => {
+    db.search.mockResolvedValue({ statements: [], continuationToken: null })
+
+    await dbSearch(50, 0, { frn: '1234567890' })
+
+    expect(db.search).toHaveBeenCalledWith(
+      expect.objectContaining({ timestamp: undefined }),
+      50,
+      0
+    )
+  })
+
   describe('pagination', () => {
     test('should pass pageLimit and offset to db.search', async () => {
       db.search.mockResolvedValue({ statements: [], continuationToken: null })

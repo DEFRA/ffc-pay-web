@@ -11,6 +11,10 @@ const getStatementsContainer = async () => {
   return _cachedStatementsContainer
 }
 
+const _resetCache = () => {
+  _cachedStatementsContainer = null
+}
+
 const filenamePartLength = 6
 const FILENAME_PARTS = {
   PREFIX: 0,
@@ -85,6 +89,7 @@ const buildBlobPrefix = (criteria) => {
 
 module.exports = {
   getStatementsContainer,
+  _resetCache,
   isValidPdfBlob,
   parseFilename,
   matchesCriteria,

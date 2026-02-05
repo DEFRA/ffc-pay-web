@@ -40,17 +40,30 @@ module.exports = Joi.object({
         err.message = 'Timestamp must be a 16 digit numeric string'
       })
       return errors
-    })
+    }),
+  limit: Joi.number()
+    .integer()
+    .min(1)
+    .max(200)
+    .optional(),
+  continuationToken: Joi.string()
+    .optional()
+    .allow(null),
+  pageNumber: Joi.number()
+    .integer()
+    .min(0)
+    .optional()
+    .allow(null)
 }).custom((value, helpers) => {
-// Determine presence of numeric fields treating 0 as NOT provided
+  // Determine presence of numeric fields treating 0 as NOT provided
   const numberPresent = v => v !== undefined && v !== '' && v !== null && Number(v) !== 0
 
   const hasFilename = value.filename && String(value.filename).trim() !== ''
   const hasOtherCriteria = (
     numberPresent(value.schemeId) ||
-  numberPresent(value.marketingYear) ||
-  numberPresent(value.frn) ||
-  (value.timestamp && String(value.timestamp).trim() !== '')
+    numberPresent(value.marketingYear) ||
+    numberPresent(value.frn) ||
+    (value.timestamp && String(value.timestamp).trim() !== '')
   )
 
   if (!hasFilename && !hasOtherCriteria) {

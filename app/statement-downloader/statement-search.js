@@ -7,9 +7,12 @@ const { validateAndNormalizeLimit, validateContinuationToken, hasCriteria } = re
 
 const DEFAULT_SEARCH_LIMIT = 50
 
-const safeDbSearch = async (pageLimit, criteria) => {
+const safeDbSearch = async (pageLimit, token, criteria) => {
+  const offset = (token !== null && /^\d+$/.test(String(token))) ? Number(token) : 0
+
   try {
-    return await dbSearch(pageLimit, 0, criteria)
+    console.info('DB search: limit=%d offset=%o', pageLimit, offset)
+    return await dbSearch(pageLimit, offset, criteria)
   } catch (err) {
     console.warn('DB search failed, falling back to blob listing:', err?.message || err)
     return null
@@ -27,7 +30,7 @@ const searchStatements = async (criteria, limit = DEFAULT_SEARCH_LIMIT, continua
   const steps = [
     () => { return filenameSearch(criteria) },
     () => { return constructedFilenameSearch(criteria) },
-    () => { return safeDbSearch(pageLimit, criteria) },
+    () => { return safeDbSearch(pageLimit, token, criteria) },
     () => { return blobListingSearch(pageLimit, token, criteria) }
   ]
 
