@@ -101,7 +101,7 @@ const handlePostDownloadStatements = async (request, h) => {
     return handleSuccessfulSearch(schemes, request, statements, nextToken, h)
   } catch (err) {
     console.error('Error in POST handler:', err)
-    return await handlePostError(err, undefined, request, h)
+    return handlePostError(err, undefined, request, h)
   }
 }
 
