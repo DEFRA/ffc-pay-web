@@ -4,7 +4,7 @@ environmentCode: snd
 pr: true
 ingress:
   class: nginx
-  endpoint: ffc-pay-web-snd2
+  endpoint: ffc-pay-web-snd
   server: azure.defra.cloud
 container:
   paymentsEndpoint: http://ffc-pay-processing.ffc-pay
