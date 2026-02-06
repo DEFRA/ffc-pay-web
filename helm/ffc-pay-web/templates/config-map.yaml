@@ -27,11 +27,7 @@ data:
   ALERTING_SERVICE_ENDPOINT: {{ quote .Values.container.alertingEndpoint }}
   STATEMENT_PUBLISHER_ENDPOINT: {{ quote .Values.container.statementPublisherEndpoint }}
   {{- end }}
-  {{- if .Values.pr }}
-  REDIRECT_URL: https://{{ .Values.ingress.endpoint }}-{{ .Values.pr }}.{{ .Values.ingress.server }}/{{ .Values.container.azureAppRegistrationRedirectUrl }}
-  {{ else }}
   REDIRECT_URL: https://{{ .Values.ingress.endpoint }}.{{ .Values.ingress.server }}/{{ .Values.container.azureAppRegistrationRedirectUrl }}
-  {{- end }}
   AUTHENTICATION_ENABLED: {{ quote .Values.container.azureAppRegistrationEnabled }}
   {{- if .Values.container.azureAppRegistrationEnabled }}
   AZUREID_CLIENT_ID: {{ quote .Values.container.azureAppRegistrationClientId }}
