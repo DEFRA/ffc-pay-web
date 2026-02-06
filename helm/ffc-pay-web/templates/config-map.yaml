@@ -6,7 +6,7 @@ data:
   APPINSIGHTS_CLOUDROLE: {{ quote .Values.name }}
   REDIS_HOSTNAME: {{ quote .Values.container.redisHostname }}
   REDIS_PORT: {{ quote .Values.container.redisPort }}
-  {{- if and (.Values.environmentCode) (not .Values.pr) }}
+  {{- if (.Values.environmentCode) }}
     {{- if ne .Values.environmentCode "snd" }}
   PAYMENTS_SERVICE_ENDPOINT: {{ .Values.container.paymentsEndpoint }}-{{ .Values.environmentCode }}
   TRACKING_SERVICE_ENDPOINT: {{ .Values.container.trackingEndpoint }}-{{ .Values.environmentCode }}
@@ -27,14 +27,12 @@ data:
   ALERTING_SERVICE_ENDPOINT: {{ quote .Values.container.alertingEndpoint }}
   STATEMENT_PUBLISHER_ENDPOINT: {{ quote .Values.container.statementPublisherEndpoint }}
   {{- end }}
-  {{- if .Values.azureAppRegistration.clientId }}
+  REDIRECT_URL: https://{{ .Values.ingress.endpoint }}.{{ .Values.ingress.server }}/{{ .Values.container.azureAppRegistrationRedirectUrl }}
+  AUTHENTICATION_ENABLED: {{ quote .Values.container.azureAppRegistrationEnabled }}
+  {{- if .Values.container.azureAppRegistrationEnabled }}
+  AZUREID_CLIENT_ID: {{ quote .Values.container.azureAppRegistrationClientId }}
+  AZUREID_TENANT_ID: {{ quote .Values.container.azureAppRegistrationTenantId }}
   {{- end }}
-  {{- if .Values.pr }}
-  REDIRECT_URL: https://{{ .Values.ingress.endpoint }}-{{ .Values.pr }}.{{ .Values.ingress.server }}/{{ .Values.azureAppRegistration.redirectUrl }}
-  {{ else }}
-  REDIRECT_URL: https://{{ .Values.ingress.endpoint }}.{{ .Values.ingress.server }}/{{ .Values.azureAppRegistration.redirectUrl }}
-  {{- end }}
-  AUTHENTICATION_ENABLED: {{ quote .Values.azureAppRegistration.enabled }}
   PAY_EVENT_STORE_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.payEventStoreAzureStorageConnectionString }}
   PAY_INJECTION_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.payInjectionAzureStorageConnectionString }}
   DOC_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.docAzureStorageConnectionString }}
@@ -47,7 +45,7 @@ data:
   STMT_DB_TIMEOUT_MS: {{ quote .Values.container.stmtDbTimeoutMs }}
   STMT_DB_FAILURES: {{ quote .Values.container.stmtDbFailures }}
   STMT_DB_RESET_MS: {{ quote .Values.container.stmtDbResetMs }}
-  {{- if and (.Values.environmentCode) (not .Values.pr) }}
+  {{- if (.Values.environmentCode) }}
   DATA_TOPIC_ADDRESS: {{ .Values.container.dataTopicAddress }}-{{ .Values.environmentCode }}
   DATARESPONSE_QUEUE_ADDRESS: {{ .Values.container.dataResponseQueueAddress }}-{{ .Values.environmentCode }}
   {{ else }}
