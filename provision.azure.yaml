@@ -1,9 +1,39 @@
 resources:
   identity: pay-web
-  topics:
-    - name: ffc-pay-data-request
-      role: sender
-  queues:
-    - name: ffc-pay-data-request-response
-      role: receiver
-      session: true
+  service_bus:
+    topics:
+      - name: ffc-pay-data-request
+        defaultMessageTimeToLive: P3650D
+        duplicateDetectionHistoryTimeWindow: PT10M30S
+        requiresDuplicateDetection: true
+        roles: 
+        - name: sender
+    queues:
+      - name: ffc-pay-data-request-response
+        existing: true
+        roles:
+          - name: receiver
+  storage_accounts:
+    - name: pay
+      containers:
+        - name: data-requests
+          roles:
+            - name: blobContributor
+        - name: payeventstore
+          roles:
+            - name: blobContributor   
+        - name: reports
+          roles:
+            - name: blobContributor  
+        - name: manual
+          roles:
+            - name: blobContributor                               
+      roles:
+        - name: storageAccountContributor
+    - name: doc
+      containers:
+        - name: statements
+          roles:
+            - name: blobContributor
+      roles:
+        - name: storageAccountContributor

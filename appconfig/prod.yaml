@@ -1,9 +1,9 @@
 ---
 environment: production
-environmentCode: pre
+environmentCode: prd
 ingress:
   class: nginx
-  endpoint: ffc-pay-web-pre
+  endpoint: ffc-pay-web-prd
   server: azure.defra.cloud
 container:
   paymentsEndpoint: http://ffc-pay-processing.ffc-pay
@@ -14,12 +14,12 @@ container:
   payEventStoreAzureStorageConnectionString: dummy
   payInjectionAzureStorageConnectionString: dummy
   docAzureStorageConnectionString: dummy
-  azureStorageAccountName: preffcpayst1001
-  docAzureStorageAccountName: preffcdocst1001
-  messageQueueHost: PREFFCINFSB1001.servicebus.windows.net
+  azureStorageAccountName: prdffcpayst1001
+  docAzureStorageAccountName: prdffcdocst1001
+  messageQueueHost: PRDFFCINFSB1001.servicebus.windows.net
   dataTopicAddress: ffc-pay-data-request
   dataResponseQueueAddress: ffc-pay-data-request-response
-  redisHostname: PREFFCINFRD1001.redis.cache.windows.net
+  redisHostname: PRDFFCINFRD1001.redis.cache.windows.net
   redisPort: 6380
   stmtDbTimeoutMs: 2000
   stmtDbFailures: 3
@@ -29,24 +29,24 @@ secretProviderClass:
   azure:
     keyvaultName: PREFFCINFKV1001
     objects:
-      - objectName: pre-ffcahwr-appInsights-connectionString
+      - objectName: prd-ffcahwr-appInsights-connectionString
         objectType: secret
-      - objectName: pre-ffc-pay-cookie-password
+      - objectName: prd-ffc-pay-cookie-password
         objectType: secret
-      - objectName: pre-redisPassword
+      - objectName: prd-redisPassword
         objectType: secret
-      - objectName: dev-ffcPayWebClientSecret
+      - objectName: prd-ffcPayWebClientSecret
         objectType: secret
 
   secretObjects:
     - secretName: ffc-pay-web
       type: Opaque
       data:
-        - objectName: pre-ffcahwr-appInsights-connectionString
+        - objectName: prd-ffcahwr-appInsights-connectionString
           key: APPINSIGHTS_CONNECTIONSTRING
-        - objectName: pre-ffc-pay-cookie-password
+        - objectName: prd-ffc-pay-cookie-password
           key: COOKIE_PASSWORD
-        - objectName: pre-redisPassword
+        - objectName: prd-redisPassword
           key: REDIS_PASSWORD
-        - objectName: pre-ffcPayWebClientSecret
+        - objectName: prd-ffcPayWebClientSecret
           key: AZUREID_CLIENT_SECRET

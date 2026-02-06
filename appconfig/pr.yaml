@@ -1,6 +1,7 @@
 ---
 environment: production
-environmentCode: snd2
+environmentCode: snd
+pr: true
 ingress:
   class: nginx
   endpoint: ffc-pay-web-snd2
@@ -17,8 +18,8 @@ container:
   azureStorageAccountName: snd2ffcpayst2001
   docAzureStorageAccountName: snd2ffcdocst2001
   messageQueueHost: SNDFFCINFSB2001.servicebus.windows.net
-  dataTopicAddress: ffc-pay-data-request
-  dataResponseQueueAddress: ffc-pay-data-request-response
+  dataTopicAddress: queue:ffc-pay-data-request
+  dataResponseQueueAddress: queue:ffc-pay-data-request-response
   redisHostname: SNDFFCINFRD2001.redis.cache.windows.net
   redisPort: 6380
   stmtDbTimeoutMs: 2000
