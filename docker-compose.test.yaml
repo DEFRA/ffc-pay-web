@@ -39,7 +39,6 @@ services:
   ffc-pay-event-store-azurite:
     labels:
       com.docker.compose.pay.role: test
-
   sqledge:
     container_name: "sqledge"
     image: "mcr.microsoft.com/azure-sql-edge:latest"
@@ -67,3 +66,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
+
+networks:
+  docs:
+    name: ffc-doc
+    external: false

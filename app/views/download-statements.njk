@@ -3,6 +3,7 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% block pageTitle %}
     Download Statements
@@ -43,7 +44,9 @@
                         text: "Search using the full filename if known.",
                         classes: "govuk-label--s"
                     },
-                    hint: { text: "e.g. FFC_PaymentDelinkedStatement_DP_2024_1100021264_2025101508224868.pdf" },
+                    hint: { 
+                        html: 'Examples:<br>FFC_PaymentDelinkedStatement_DP_2024_1100021264_2025101508224868.pdf<br>FFC_PaymentSfi23QuarterlyStatement_DP_2024_1100021264_2025101508224868.pdf' 
+                    },
                     classes: "govuk-input--width-30",
                     value: filename
                 }) }}
@@ -72,9 +75,17 @@
             {% if searchPerformed %}
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible"/>
 
-                <h2 class="govuk-heading-m">Results ({{ (statements or []).length }})</h2>
-
                 {% if statements and statements.length > 0 %}
+                    {% set resultCount = statements.length %}
+                    {% set itemLimit = limit or 50 %}
+                    {% set startItem = ((pageNumber - 1) * itemLimit) + 1 %}
+                    {% set endItem = startItem + resultCount - 1 %}
+
+                    <h2 class="govuk-heading-m">Results (Page {{ pageNumber }})</h2>
+                    <p class="govuk-body-s">
+                        Showing items {{ startItem }} to {{ endItem }} on this page ({{ resultCount }} items)
+                    </p>
+
                     <table class="govuk-table">
                         <caption class="govuk-visually-hidden">Search results for payment statements</caption>
                         <thead class="govuk-table__head">
@@ -111,20 +122,34 @@
                         </tbody>
                     </table>
 
-                    {% if continuationToken %}
-                        <form method="POST" action="/download-statements" style="margin-top:1rem;">
+                    {% if continuationToken or pageNumber > 1 %}
+                        <form id="pagination-form" method="POST" action="/download-statements" style="display: none;">
                             <input type="hidden" name="crumb" value="{{ crumb }}"/>
                             <input type="hidden" name="schemeId" value="{{ schemeId }}"/>
                             <input type="hidden" name="marketingYear" value="{{ marketingYear }}"/>
                             <input type="hidden" name="frn" value="{{ frn }}"/>
                             <input type="hidden" name="filename" value="{{ filename }}"/>
                             <input type="hidden" name="timestamp" value="{{ timestamp }}"/>
-                            <input type="hidden" name="limit" value="{{ limit or 50 }}"/>
-                            <input type="hidden" name="continuationToken" value="{{ continuationToken }}"/>
-                            <button class="govuk-button govuk-button--secondary">Load more</button>
+                            <input type="hidden" name="limit" value="{{ itemLimit }}"/>
+                            {% if continuationToken %}
+                                <input type="hidden" name="continuationToken" id="pagination-continuation-token" value="{{ continuationToken }}"/>
+                            {% endif %}
+                            <input type="hidden" name="pageNumber" id="pagination-page-number" value="0"/>
                         </form>
+
+                        {% set prevAttrs = {'onclick': "document.getElementById('pagination-page-number').value = " ~ (pageNumber - 2) ~ "; document.getElementById('pagination-form').submit(); return false;"} %}
+                        {% set nextAttrs = {'onclick': "document.getElementById('pagination-page-number').value = " ~ pageNumber ~ "; document.getElementById('pagination-form').submit(); return false;"} %}
+
+                        {% if pageNumber > 1 and continuationToken %}
+                            {{ govukPagination({ previous: { href: '#', attributes: prevAttrs }, next: { href: '#', attributes: nextAttrs } }) }}
+                        {% elif pageNumber > 1 %}
+                            {{ govukPagination({ previous: { href: '#', attributes: prevAttrs } }) }}
+                        {% else %}
+                            {{ govukPagination({ next: { href: '#', attributes: nextAttrs } }) }}
+                        {% endif %}
                     {% endif %}
                 {% else %}
+                    <h2 class="govuk-heading-m">Results</h2>
                     <p class="govuk-body">No statements found.</p>
                 {% endif %}
             {% endif %}
