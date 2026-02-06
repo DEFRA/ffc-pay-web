@@ -1,6 +1,6 @@
 services:
   ffc-pay-web:
-    depends_on: 
+    depends_on:
       - ffc-pay-event-store-azurite
     build:
       context: .
@@ -50,3 +50,4 @@ services:
 networks:
   docs:
     name: ffc-doc
+    external: true

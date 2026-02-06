@@ -3,6 +3,7 @@ const buildSearchParams = (criteria, limit, offset) => {
     criteria.frn !== undefined && criteria.frn !== null ? `frn=${encodeURIComponent(criteria.frn)}` : null,
     criteria.schemeShortName !== undefined && criteria.schemeShortName !== null ? `schemeshortname=${encodeURIComponent(criteria.schemeShortName)}` : null,
     criteria.schemeYear !== undefined && criteria.schemeYear !== null ? `schemeyear=${encodeURIComponent(criteria.schemeYear)}` : null,
+    criteria.timestamp !== undefined && criteria.timestamp !== null && criteria.timestamp !== '' ? `timestamp=${encodeURIComponent(criteria.timestamp)}` : null,
     `limit=${encodeURIComponent(limit)}`,
     `offset=${encodeURIComponent(offset)}`
   ].filter(Boolean)

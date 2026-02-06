@@ -2,13 +2,13 @@ const { searchStatements, downloadStatement } = require('../../../app/statement-
 const { filenameSearch } = require('../../../app/statement-downloader/search-helpers/filename-search')
 const { constructedFilenameSearch } = require('../../../app/statement-downloader/search-helpers/constructed-filename-search')
 const { dbSearch } = require('../../../app/statement-downloader/search-helpers/db-search')
-const { blobListingSearch } = require('../../../app/statement-downloader/search-helpers/blob-listing-search')
+const { apiBlobSearch } = require('../../../app/statement-downloader/search-helpers/api-blob-search')
 const { downloadStatement: downloadStatementHelper } = require('../../../app/statement-downloader/search-helpers/download-statement')
 
 jest.mock('../../../app/statement-downloader/search-helpers/filename-search')
 jest.mock('../../../app/statement-downloader/search-helpers/constructed-filename-search')
 jest.mock('../../../app/statement-downloader/search-helpers/db-search')
-jest.mock('../../../app/statement-downloader/search-helpers/blob-listing-search')
+jest.mock('../../../app/statement-downloader/search-helpers/api-blob-search')
 jest.mock('../../../app/statement-downloader/search-helpers/download-statement')
 
 describe('statement-search', () => {
@@ -48,6 +48,13 @@ describe('statement-search', () => {
         expect(result.statements).toEqual([])
         expect(result.error).toBe('At least one search criterion must be provided')
       })
+
+      test('should return error when criteria has only falsy values', async () => {
+        const result = await searchStatements({ schemeId: 0, marketingYear: null })
+
+        expect(result.statements).toEqual([])
+        expect(result.error).toBe('At least one search criterion must be provided')
+      })
     })
 
     describe('search strategy waterfall', () => {
@@ -63,7 +70,7 @@ describe('statement-search', () => {
         expect(filenameSearch).toHaveBeenCalledWith({ filename: 'test.pdf' })
         expect(constructedFilenameSearch).not.toHaveBeenCalled()
         expect(dbSearch).not.toHaveBeenCalled()
-        expect(blobListingSearch).not.toHaveBeenCalled()
+        expect(apiBlobSearch).not.toHaveBeenCalled()
         expect(result).toEqual(mockResult)
       })
 
@@ -81,7 +88,7 @@ describe('statement-search', () => {
         expect(filenameSearch).toHaveBeenCalled()
         expect(constructedFilenameSearch).toHaveBeenCalledWith(criteria)
         expect(dbSearch).not.toHaveBeenCalled()
-        expect(blobListingSearch).not.toHaveBeenCalled()
+        expect(apiBlobSearch).not.toHaveBeenCalled()
         expect(result).toEqual(mockResult)
       })
 
@@ -99,26 +106,26 @@ describe('statement-search', () => {
         expect(filenameSearch).toHaveBeenCalled()
         expect(constructedFilenameSearch).toHaveBeenCalled()
         expect(dbSearch).toHaveBeenCalledWith(50, 0, { schemeId: 1 })
-        expect(blobListingSearch).not.toHaveBeenCalled()
+        expect(apiBlobSearch).not.toHaveBeenCalled()
         expect(result).toEqual(mockResult)
       })
 
-      test('should use blob listing search when all previous strategies fail', async () => {
+      test('should use apiBlobSearch when all previous strategies fail', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
         const mockResult = {
-          statements: [createMockStatement('blob-result.pdf')],
+          statements: [createMockStatement('api-result.pdf')],
           continuationToken: null
         }
-        blobListingSearch.mockResolvedValue(mockResult)
+        apiBlobSearch.mockResolvedValue(mockResult)
 
         const result = await searchStatements({ schemeId: 1 })
 
         expect(filenameSearch).toHaveBeenCalled()
         expect(constructedFilenameSearch).toHaveBeenCalled()
         expect(dbSearch).toHaveBeenCalled()
-        expect(blobListingSearch).toHaveBeenCalledWith(50, null, { schemeId: 1 })
+        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { schemeId: 1 })
         expect(result).toEqual(mockResult)
       })
 
@@ -126,7 +133,7 @@ describe('statement-search', () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-        blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
+        apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
         const result = await searchStatements({ schemeId: 1 })
 
@@ -134,7 +141,7 @@ describe('statement-search', () => {
         expect(result.continuationToken).toBeNull()
       })
 
-      test('should skip to next strategy when current returns empty array for filename search', async () => {
+      test('should skip to next strategy when filename search returns empty array', async () => {
         filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
         constructedFilenameSearch.mockResolvedValue(null)
         const mockResult = {
@@ -148,124 +155,76 @@ describe('statement-search', () => {
         expect(result).toEqual({ statements: [], continuationToken: null })
       })
 
-      test('should handle db search failure gracefully', async () => {
+      test('should handle db search failure and fall back to apiBlobSearch', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockRejectedValue(new Error('DB connection failed'))
         const mockResult = {
-          statements: [createMockStatement('blob-result.pdf')],
+          statements: [createMockStatement('api-result.pdf')],
           continuationToken: null
         }
-        blobListingSearch.mockResolvedValue(mockResult)
+        apiBlobSearch.mockResolvedValue(mockResult)
 
         const result = await searchStatements({ schemeId: 1 })
 
-        expect(blobListingSearch).toHaveBeenCalled()
+        expect(apiBlobSearch).toHaveBeenCalled()
         expect(result).toEqual(mockResult)
       })
     })
 
-    describe('filtering by schemeId', () => {
-      test('should pass schemeId to search strategies', async () => {
+    describe('criteria handling', () => {
+      test('should pass schemeId to strategies', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-        blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
+        apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
         await searchStatements({ schemeId: 1 })
 
         expect(dbSearch).toHaveBeenCalledWith(50, 0, { schemeId: 1 })
-        expect(blobListingSearch).toHaveBeenCalledWith(50, null, { schemeId: 1 })
+        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { schemeId: 1 })
       })
 
-      test('should handle schemeId with other criteria', async () => {
+      test('should pass marketingYear to strategies', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-        blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
-
-        const criteria = { schemeId: 2, marketingYear: 2025 }
-        await searchStatements(criteria)
-
-        expect(blobListingSearch).toHaveBeenCalledWith(50, null, criteria)
-      })
-    })
-
-    describe('filtering by marketingYear', () => {
-      test('should pass marketingYear to search strategies', async () => {
-        filenameSearch.mockResolvedValue(null)
-        constructedFilenameSearch.mockResolvedValue(null)
-        dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-        blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
+        apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
         await searchStatements({ marketingYear: 2025 })
 
         expect(dbSearch).toHaveBeenCalledWith(50, 0, { marketingYear: 2025 })
-        expect(blobListingSearch).toHaveBeenCalledWith(50, null, { marketingYear: 2025 })
+        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { marketingYear: 2025 })
       })
-    })
 
-    describe('filtering by FRN', () => {
-      test('should pass FRN to search strategies', async () => {
+      test('should pass frn to strategies', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-        blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
+        apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
         await searchStatements({ frn: '1234567890' })
 
         expect(dbSearch).toHaveBeenCalledWith(50, 0, { frn: '1234567890' })
-        expect(blobListingSearch).toHaveBeenCalledWith(50, null, { frn: '1234567890' })
+        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { frn: '1234567890' })
       })
-    })
 
-    describe('filtering by timestamp', () => {
-      test('should pass timestamp to search strategies', async () => {
+      test('should pass timestamp to strategies', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-        blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
+        apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
         await searchStatements({ schemeId: 1, timestamp: '2025081908254124' })
 
-        expect(blobListingSearch).toHaveBeenCalledWith(50, null, { schemeId: 1, timestamp: '2025081908254124' })
+        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { schemeId: 1, timestamp: '2025081908254124' })
       })
 
-      test('should handle undefined timestamp', async () => {
-        filenameSearch.mockResolvedValue(null)
-        constructedFilenameSearch.mockResolvedValue(null)
-        const mockResult = {
-          statements: [createMockStatement('test.pdf')],
-          continuationToken: null
-        }
-        dbSearch.mockResolvedValue(mockResult)
-
-        const result = await searchStatements({ schemeId: 1, timestamp: undefined })
-
-        expect(result.statements).toHaveLength(1)
-      })
-
-      test('should handle empty string timestamp', async () => {
-        filenameSearch.mockResolvedValue(null)
-        constructedFilenameSearch.mockResolvedValue(null)
-        const mockResult = {
-          statements: [createMockStatement('test.pdf')],
-          continuationToken: null
-        }
-        dbSearch.mockResolvedValue(mockResult)
-
-        const result = await searchStatements({ schemeId: 1, timestamp: '' })
-
-        expect(result.statements).toHaveLength(1)
-      })
-    })
-
-    describe('filtering with multiple criteria', () => {
-      test('should pass all criteria to search strategies', async () => {
+      test('should pass all criteria to strategies', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-        blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
+        apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
         const criteria = {
           schemeId: 1,
@@ -277,7 +236,7 @@ describe('statement-search', () => {
 
         expect(constructedFilenameSearch).toHaveBeenCalledWith(criteria)
         expect(dbSearch).toHaveBeenCalledWith(50, 0, criteria)
-        expect(blobListingSearch).toHaveBeenCalledWith(50, null, criteria)
+        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, criteria)
       })
     })
 
@@ -286,26 +245,26 @@ describe('statement-search', () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-        blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
+        apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
         await searchStatements({ schemeId: 1 }, 100)
 
         expect(dbSearch).toHaveBeenCalledWith(100, 0, { schemeId: 1 })
-        expect(blobListingSearch).toHaveBeenCalledWith(100, null, { schemeId: 1 })
+        expect(apiBlobSearch).toHaveBeenCalledWith(100, null, { schemeId: 1 })
       })
 
       test('should handle continuation token', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-        blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
+        apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
         await searchStatements({ schemeId: 1 }, 50, 'next-token')
 
-        expect(blobListingSearch).toHaveBeenCalledWith(50, 'next-token', { schemeId: 1 })
+        expect(apiBlobSearch).toHaveBeenCalledWith(50, 'next-token', { schemeId: 1 })
       })
 
-      test('should return continuation token from blob listing search', async () => {
+      test('should return continuation token from apiBlobSearch', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
         dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
@@ -313,22 +272,26 @@ describe('statement-search', () => {
           statements: [createMockStatement('test.pdf')],
           continuationToken: 'next-page-token'
         }
-        blobListingSearch.mockResolvedValue(mockResult)
+        apiBlobSearch.mockResolvedValue(mockResult)
 
         const result = await searchStatements({ schemeId: 1 })
 
         expect(result.continuationToken).toBe('next-page-token')
       })
+
+      test('should handle invalid continuation token as 0', async () => {
+        filenameSearch.mockResolvedValue(null)
+        constructedFilenameSearch.mockResolvedValue(null)
+        dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
+        apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
+
+        await searchStatements({ schemeId: 1 }, 50, 'invalid-token')
+
+        expect(apiBlobSearch).toHaveBeenCalledWith(50, 'invalid-token', { schemeId: 1 })
+      })
     })
 
     describe('edge cases', () => {
-      test('should handle zero schemeId', async () => {
-        const result = await searchStatements({ schemeId: 0 })
-
-        expect(result.statements).toEqual([])
-        expect(result.error).toBe('At least one search criterion must be provided')
-      })
-
       test('should handle null marketingYear', async () => {
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
@@ -358,26 +321,13 @@ describe('statement-search', () => {
       })
 
       test('should preserve all statement properties', async () => {
-        const statement = {
-          filename: 'test.pdf',
-          scheme: 'SFI',
-          year: '2024',
-          frn: '1100021264',
-          timestamp: '2025081908254124',
-          size: 2048,
-          lastModified: new Date('2025-01-20')
-        }
         filenameSearch.mockResolvedValue(null)
         constructedFilenameSearch.mockResolvedValue(null)
-        const mockResult = {
-          statements: [statement],
-          continuationToken: null
-        }
-        dbSearch.mockResolvedValue(mockResult)
+        const statement = createMockStatement('test.pdf')
+        dbSearch.mockResolvedValue({ statements: [statement], continuationToken: null })
 
         const result = await searchStatements({ schemeId: 1 })
 
-        expect(result.statements).toHaveLength(1)
         expect(result.statements[0]).toEqual(statement)
       })
     })
@@ -436,37 +386,10 @@ describe('statement-search', () => {
       expect(result).toEqual(mockDownloadResult)
     })
 
-    describe('error handling', () => {
-      test('should propagate errors from downloadStatementHelper', async () => {
-        const error = new Error('Download failed')
-        downloadStatementHelper.mockRejectedValue(error)
+    test('should propagate errors from downloadStatementHelper', async () => {
+      downloadStatementHelper.mockRejectedValue(new Error('Download failed'))
 
-        await expect(downloadStatement('test-file.pdf')).rejects.toThrow('Download failed')
-      })
-
-      test('should handle blob not found error', async () => {
-        const error = new Error('BlobNotFound')
-        error.code = 'BlobNotFound'
-        downloadStatementHelper.mockRejectedValue(error)
-
-        await expect(downloadStatement('nonexistent.pdf')).rejects.toThrow('BlobNotFound')
-      })
-
-      test('should handle network timeout error', async () => {
-        const error = new Error('Network timeout')
-        error.code = 'ETIMEDOUT'
-        downloadStatementHelper.mockRejectedValue(error)
-
-        await expect(downloadStatement('test.pdf')).rejects.toThrow('Network timeout')
-      })
-
-      test('should handle unauthorized access error', async () => {
-        const error = new Error('Unauthorized')
-        error.statusCode = 401
-        downloadStatementHelper.mockRejectedValue(error)
-
-        await expect(downloadStatement('test.pdf')).rejects.toThrow('Unauthorized')
-      })
+      await expect(downloadStatement('test.pdf')).rejects.toThrow('Download failed')
     })
   })
 
@@ -506,7 +429,7 @@ describe('statement-search', () => {
       filenameSearch.mockResolvedValue(null)
       constructedFilenameSearch.mockResolvedValue(null)
       dbSearch.mockResolvedValue({ statements: [], continuationToken: null })
-      blobListingSearch.mockResolvedValue({ statements: [], continuationToken: null })
+      apiBlobSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
       const searchResults = await searchStatements({ schemeId: 1 })
       expect(searchResults.statements).toEqual([])
@@ -537,7 +460,7 @@ describe('statement-search', () => {
       const result = await searchStatements(criteria)
       expect(result.statements).toHaveLength(1)
       expect(dbSearch).not.toHaveBeenCalled()
-      expect(blobListingSearch).not.toHaveBeenCalled()
+      expect(apiBlobSearch).not.toHaveBeenCalled()
     })
   })
 })

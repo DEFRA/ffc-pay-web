@@ -33,3 +33,8 @@ services:
   ffc-pay-event-store-azurite:
     labels:
       com.docker.compose.pay.role: test
+
+networks:
+  docs:
+    name: ffc-doc
+    external: false

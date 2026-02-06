@@ -3,15 +3,17 @@ const minFRN = 1000000000
 const maxFRN = 9999999999
 const minYear = 2020
 const maxYear = 2099
+const limitStart = 1
+const limitEnd = 200
 
 module.exports = Joi.object({
   filename: Joi.string()
     .optional()
     .allow('', null)
-    .pattern(/^FFC_PaymentDelinkedStatement_[A-Z]+_\d{4}_\d{10}_\d{16}\.pdf$/i)
+    .pattern(/^FFC_(PaymentDelinkedStatement|PaymentSfi23QuarterlyStatement)_[A-Z]+_\d{4}_\d{10}_\d{16}\.pdf$/i)
     .error(errors => {
       errors.forEach(err => {
-        err.message = 'Filename must match format: FFC_PaymentDelinkedStatement_ Then: [Scheme]_[Year]_[FRN]_[Timestamp].pdf'
+        err.message = 'Filename must match format either: FFC_PaymentDelinkedStatement_ or FFC_PaymentSfi23QuarterlyStatement_ Then: [Scheme]_[Year]_[FRN]_[Timestamp].pdf'
       })
       return errors
     }),
@@ -40,17 +42,30 @@ module.exports = Joi.object({
         err.message = 'Timestamp must be a 16 digit numeric string'
       })
       return errors
-    })
+    }),
+  limit: Joi.number()
+    .integer()
+    .min(limitStart)
+    .max(limitEnd)
+    .optional(),
+  continuationToken: Joi.string()
+    .optional()
+    .allow(null),
+  pageNumber: Joi.number()
+    .integer()
+    .min(0)
+    .optional()
+    .allow(null)
 }).custom((value, helpers) => {
-// Determine presence of numeric fields treating 0 as NOT provided
+  // Determine presence of numeric fields treating 0 as NOT provided
   const numberPresent = v => v !== undefined && v !== '' && v !== null && Number(v) !== 0
 
   const hasFilename = value.filename && String(value.filename).trim() !== ''
   const hasOtherCriteria = (
     numberPresent(value.schemeId) ||
-  numberPresent(value.marketingYear) ||
-  numberPresent(value.frn) ||
-  (value.timestamp && String(value.timestamp).trim() !== '')
+    numberPresent(value.marketingYear) ||
+    numberPresent(value.frn) ||
+    (value.timestamp && String(value.timestamp).trim() !== '')
   )
 
   if (!hasFilename && !hasOtherCriteria) {

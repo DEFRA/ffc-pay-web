@@ -7,7 +7,8 @@ const dbSearch = async (pageLimit, offset, criteria = {}) => {
   const payload = await db.search({
     frn: criteria.frn,
     schemeShortName,
-    schemeYear: criteria.marketingYear
+    schemeYear: criteria.marketingYear,
+    timestamp: criteria.timestamp
   }, pageLimit, offset)
 
   const rows = payload?.statements ?? payload?.rows ?? (Array.isArray(payload) ? payload : [])
