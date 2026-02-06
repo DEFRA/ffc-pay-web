@@ -23,13 +23,13 @@
 
       {% if auth.isAuthenticated %}
         {{ govukServiceNavigation({
-      navigation: [
-        {
-          href: "/logout",
-          text: "Sign Out"
-        }
-      ]
-    }) }}
+          navigation: [
+            {
+              href: "/logout",
+              text: "Sign Out"
+            }
+          ]
+        }) }}
       {% endif %}
     {% endblock %}
 
@@ -41,8 +41,8 @@
 
     {% block footer %}
       {{ govukFooter({
-    rebrand: true
-  }) }}
+        rebrand: true
+      }) }}
     {% endblock %}
 
     {% block bodyEnd %}
