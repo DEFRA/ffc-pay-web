@@ -1,7 +1,7 @@
 const { filenameSearch } = require('./search-helpers/filename-search')
 const { constructedFilenameSearch } = require('./search-helpers/constructed-filename-search')
 const { dbSearch } = require('./search-helpers/db-search')
-const { blobListingSearch } = require('./search-helpers/blob-listing-search')
+const { apiBlobSearch } = require('./search-helpers/api-blob-search')
 const { downloadStatement } = require('./search-helpers/download-statement')
 const { validateAndNormalizeLimit, validateContinuationToken, hasCriteria } = require('./search-helpers/search-validators')
 
@@ -31,7 +31,7 @@ const searchStatements = async (criteria, limit = DEFAULT_SEARCH_LIMIT, continua
     () => { return filenameSearch(criteria) },
     () => { return constructedFilenameSearch(criteria) },
     () => { return safeDbSearch(pageLimit, token, criteria) },
-    () => { return blobListingSearch(pageLimit, token, criteria) }
+    () => { return apiBlobSearch(pageLimit, token, criteria) }
   ]
 
   for (const step of steps) {

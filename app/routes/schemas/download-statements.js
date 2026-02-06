@@ -10,10 +10,10 @@ module.exports = Joi.object({
   filename: Joi.string()
     .optional()
     .allow('', null)
-    .pattern(/^FFC_PaymentDelinkedStatement_[A-Z]+_\d{4}_\d{10}_\d{16}\.pdf$/i)
+    .pattern(/^FFC_(PaymentDelinkedStatement|PaymentSfi23QuarterlyStatement)_[A-Z]+_\d{4}_\d{10}_\d{16}\.pdf$/i)
     .error(errors => {
       errors.forEach(err => {
-        err.message = 'Filename must match format: FFC_PaymentDelinkedStatement_ Then: [Scheme]_[Year]_[FRN]_[Timestamp].pdf'
+        err.message = 'Filename must match format either: FFC_PaymentDelinkedStatement_ or FFC_PaymentSfi23QuarterlyStatement_ Then: [Scheme]_[Year]_[FRN]_[Timestamp].pdf'
       })
       return errors
     }),
