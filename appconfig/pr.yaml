@@ -1,7 +1,6 @@
 ---
 environment: production
 environmentCode: snd
-pr: true
 ingress:
   class: nginx
   endpoint: ffc-pay-web-snd
