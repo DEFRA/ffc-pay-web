@@ -11,13 +11,6 @@ labels:
 appInsights:
   connectionString:
 
-azureAppRegistration:
-  enabled: true
-  clientId:
-  clientSecret:
-  tenantId:
-  redirectUrl: authenticate
-
 azureIdentity:
   clientID: not-a-real-clientID
   resourceID: not-a-real-resourceID
@@ -26,7 +19,7 @@ containerConfigMap:
   name: ffc-pay-web-config-map
 
 containerSecret:
-  name: ffc-pay-web-container-secret
+  name: ffc-pay-web
   type: Opaque
 
 service:
@@ -64,6 +57,11 @@ container:
   stmtDbTimeoutMs: 2000
   stmtDbFailures: 3
   stmtDbResetMs: 10000
+  azureAppRegistrationEnabled: true
+  azureAppRegistrationClientId:
+  azureAppRegistrationTenantId:
+  azureAppRegistrationClientSecret:
+  azureAppRegistrationRedirectUrl: authenticate
 
 ingress:
   class: nginx
@@ -87,3 +85,29 @@ readinessProbe:
   timeoutSeconds: 20
 
 workloadIdentity: true
+
+secretProviderClass:
+  azure:
+    keyvaultName: SNDFFCINFKV2001
+    objects: # reading the secret from Azure Key Vault
+      - objectName: appInsights-connectionString # secret name in Azure Key Vault
+        objectType: secret
+      - objectName: snd2-ffc-pay-cookie-password
+        objectType: secret
+      - objectName: snd2-ffcPayWebClientSecret
+        objectType: secret
+      - objectName: snd2-redisPassword # secret name in Azure Key Vault
+        objectType: secret
+
+  secretObjects: # creating a Kubernetes secret from the Azure Key Vault secrets
+    - secretName: ffc-pay-web
+      type: Opaque
+      data:
+        - objectName: appInsights-connectionString # secret name in Azure Key Vault
+          key: APPINSIGHTS_CONNECTIONSTRING # the secret key in the Kubernetes secret and use in the application
+        - objectName: snd2-ffc-pay-cookie-password # secret name in Azure Key Vault
+          key: COOKIE_PASSWORD # the secret key in the Kubernetes secret and use in the application
+        - objectName: snd2-ffcPayWebClientSecret
+          key: AZUREID_CLIENT_SECRET
+        - objectName: snd2-redisPassword # secret name in Azure Key Vault
+          key: REDIS_PASSWORD # the secret key in the Kubernetes secret and use in the application

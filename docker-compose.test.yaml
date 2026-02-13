@@ -9,6 +9,8 @@ services:
     container_name: ffc-pay-web-test
     depends_on:
       - ffc-pay-web-redis
+      - ffc-pay-event-store-azurite
+      - servicebus-emulator
     command: npm run test
     environment:
       NODE_ENV: ${NODE_ENV:-test}
@@ -23,7 +25,11 @@ services:
       PDS_TEAM_EMAILS: testpds@example.com
       DEV_TEAM_EMAILS: testdev@example.com
       APPROVED_EMAIL_DOMAINS: example.com
-
+      MESSAGE_QUEUE_HOST: servicebus-emulator
+      MESSAGE_QUEUE_USER: RootManageSharedAccessKey
+      MESSAGE_QUEUE_PASSWORD: SAS_KEY_VALUE
+      DATA_TOPIC_ADDRESS: ffc-pay-data-request-test
+      DATARESPONSE_QUEUE_ADDRESS: ffc-pay-data-request-response-test
     volumes:
       - ./test:/home/node/test
       - ./test-output:/home/node/test-output
@@ -33,6 +39,33 @@ services:
   ffc-pay-event-store-azurite:
     labels:
       com.docker.compose.pay.role: test
+  sqledge:
+    container_name: "sqledge"
+    image: "mcr.microsoft.com/azure-sql-edge:latest"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "DummyStrongPa$$w0rd" # To be filled by user as per policy : https://learn.microsoft.com/en-us/sql/relational-databases/security/strong-passwords?view=sql-server-linux-ver16
+
+  servicebus-emulator:
+    container_name: "servicebus-emulator"
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    pull_policy: always
+    volumes:
+      - "./BusConfig.json:/ServiceBus_Emulator/ConfigFiles/Config.json"
+    ports:
+      - "5672:5672"
+    environment:
+      SQL_SERVER: sqledge
+      MSSQL_SA_PASSWORD: "DummyStrongPa$$w0rd" # Password should be same as what is set for SQL Edge
+      ACCEPT_EULA: "Y"
+    depends_on:
+      - sqledge
+
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 5672"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
 
 networks:
   docs:
