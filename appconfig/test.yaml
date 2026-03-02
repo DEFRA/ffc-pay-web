@@ -1,0 +1,52 @@
+---
+environment: production
+environmentCode: test
+ingress:
+  class: nginx
+  endpoint: ffc-pay-web-test
+  server: azure.defra.cloud
+container:
+  paymentsEndpoint: http://ffc-pay-processing.ffc-pay
+  trackingEndpoint: http://ffc-pay-tracking.ffc-pay
+  injectionEndpoint: http://ffc-pay-injection.ffc-pay
+  alertingEndpoint: http://ffc-pay-alerting.ffc-pay
+  statementPublisherEndpoint: http://ffc-doc-statement-publisher.ffc-doc
+  payEventStoreAzureStorageConnectionString: dummy
+  payInjectionAzureStorageConnectionString: dummy
+  docAzureStorageConnectionString: dummy
+  azureStorageAccountName: testffcpayst1001
+  docAzureStorageAccountName: testffcdocst1001
+  messageQueueHost: DEVFFCINFSB1001.servicebus.windows.net
+  dataTopicAddress: ffc-pay-data-request
+  dataResponseQueueAddress: ffc-pay-data-request-response
+  redisHostname: DEVFFCINFRD1001.redis.cache.windows.net
+  redisPort: 6380
+  stmtDbTimeoutMs: 2000
+  stmtDbFailures: 3
+  stmtDbResetMs: 10000
+  azureAppRegistrationRedirectUrl: authenticate
+secretProviderClass:
+  azure:
+    keyvaultName: DEVFFCINFKV1001
+    objects:
+      - objectName: devtest-ffcahwr-appInsights-connectionString
+        objectType: secret
+      - objectName: dev-ffc-pay-cookie-password
+        objectType: secret
+      - objectName: dev-redisPassword
+        objectType: secret
+      - objectName: test-ffcPayWebClientSecret
+        objectType: secret
+
+  secretObjects:
+    - secretName: ffc-pay-web
+      type: Opaque
+      data:
+        - objectName: devtest-ffcahwr-appInsights-connectionString
+          key: APPINSIGHTS_CONNECTIONSTRING
+        - objectName: dev-ffc-pay-cookie-password
+          key: COOKIE_PASSWORD
+        - objectName: dev-redisPassword
+          key: REDIS_PASSWORD
+        - objectName: test-ffcPayWebClientSecret
+          key: AZUREID_CLIENT_SECRET
