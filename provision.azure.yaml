@@ -11,6 +11,11 @@ resources:
     queues:
       - name: ffc-pay-data-request-response
         existing: true
+        autoDeleteOnIdle: P10675199DT2H48M5.4775807S
+        defaultMessageTimeToLive: P100D
+        lockDuration: PT5M
+        requiresDuplicateDetection: true
+        requiresSession: true
         roles:
           - name: receiver
   storage_accounts:
