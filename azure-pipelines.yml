@@ -46,44 +46,44 @@ extends:
     sndDeployment: ${{ parameters.sndDeployment }}
     variableGroupName: ffc-pay-web-env-var
     pr_params:
-      container.azureStorageCreateContainers: ${{ eq(variables['pr_azureStorageCreateContainers'], 'true') }}
-      container.azureStorageUseConnectionString: ${{ eq(variables['pr_azureStorageUseConnectionString'], 'true') }}
-      container.manualPaymentsActive: ${{ eq(variables['pr_manualPaymentsActive'], 'true') }}
-      container.azureAppRegistrationEnabled: ${{ eq(variables['pr_azureAppRegistrationEnabled'], 'true') }}
+      container.azureStorageCreateContainers: $(pr_azureStorageCreateContainers)
+      container.azureStorageUseConnectionString: $(pr_azureStorageUseConnectionString)
+      container.manualPaymentsActive: $(pr_manualPaymentsActive)
+      container.azureAppRegistrationEnabled: $(pr_azureAppRegistrationEnabled)
       container.azureAppRegistrationClientId: $(pr_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(pr_azureAppRegistrationTenantId)
     snd2_params:
-      container.azureStorageCreateContainers: ${{ eq(variables['snd2_azureStorageCreateContainers'], 'true') }}
-      container.azureStorageUseConnectionString: ${{ eq(variables['snd2_azureStorageUseConnectionString'], 'true') }}
-      container.manualPaymentsActive: ${{ eq(variables['snd2_manualPaymentsActive'], 'true') }}
-      container.azureAppRegistrationEnabled: ${{ eq(variables['snd2_azureAppRegistrationEnabled'], 'true') }}
+      container.azureStorageCreateContainers: $(snd2_azureStorageCreateContainers)
+      container.azureStorageUseConnectionString: $(snd2_azureStorageUseConnectionString)
+      container.manualPaymentsActive: $(snd2_manualPaymentsActive)
+      container.azureAppRegistrationEnabled: $(snd2_azureAppRegistrationEnabled)
       container.azureAppRegistrationClientId: $(snd2_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(snd2_azureAppRegistrationTenantId)
     dev_params:
-      container.azureStorageCreateContainers: ${{ eq(variables['dev_azureStorageCreateContainers'], 'true') }}
-      container.azureStorageUseConnectionString: ${{ eq(variables['dev_azureStorageUseConnectionString'], 'true') }}
-      container.manualPaymentsActive: ${{ eq(variables['dev_manualPaymentsActive'], 'true') }}
-      container.azureAppRegistrationEnabled: ${{ eq(variables['dev_azureAppRegistrationEnabled'], 'true') }}
+      container.azureStorageCreateContainers: $(dev_azureStorageCreateContainers)
+      container.azureStorageUseConnectionString: $(dev_azureStorageUseConnectionString)
+      container.manualPaymentsActive: $(dev_manualPaymentsActive)
+      container.azureAppRegistrationEnabled: $(dev_azureAppRegistrationEnabled)
       container.azureAppRegistrationClientId: $(dev_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(dev_azureAppRegistrationTenantId)
     test_params:
-      container.azureStorageCreateContainers: ${{ eq(variables['test_azureStorageCreateContainers'], 'true') }}
-      container.azureStorageUseConnectionString: ${{ eq(variables['test_azureStorageUseConnectionString'], 'true') }}
-      container.manualPaymentsActive: ${{ eq(variables['test_manualPaymentsActive'], 'true') }}
-      container.azureAppRegistrationEnabled: ${{ eq(variables['test_azureAppRegistrationEnabled'], 'true') }}
+      container.azureStorageCreateContainers: $(test_azureStorageCreateContainers)
+      container.azureStorageUseConnectionString: $(test_azureStorageUseConnectionString)
+      container.manualPaymentsActive: $(test_manualPaymentsActive)
+      container.azureAppRegistrationEnabled: $(test_azureAppRegistrationEnabled)
       container.azureAppRegistrationClientId: $(test_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(test_azureAppRegistrationTenantId)
     pre_params:
-      container.azureStorageCreateContainers: ${{ eq(variables['pre_azureStorageCreateContainers'], 'true') }}
-      container.azureStorageUseConnectionString: ${{ eq(variables['pre_azureStorageUseConnectionString'], 'true') }}
-      container.manualPaymentsActive: ${{ eq(variables['pre_manualPaymentsActive'], 'true') }}
-      container.azureAppRegistrationEnabled: ${{ eq(variables['pre_azureAppRegistrationEnabled'], 'true') }}
+      container.azureStorageCreateContainers: $(pre_azureStorageCreateContainers)
+      container.azureStorageUseConnectionString: $(pre_azureStorageUseConnectionString)
+      container.manualPaymentsActive: $(pre_manualPaymentsActive)
+      container.azureAppRegistrationEnabled: $(pre_azureAppRegistrationEnabled)
       container.azureAppRegistrationClientId: $(pre_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(pre_azureAppRegistrationTenantId)
     prd_params:
-      container.azureStorageCreateContainers: ${{ eq(variables['prd_azureStorageCreateContainers'], 'true') }}
-      container.azureStorageUseConnectionString: ${{ eq(variables['prd_azureStorageUseConnectionString'], 'true') }}
-      container.manualPaymentsActive: ${{ eq(variables['prd_manualPaymentsActive'], 'true') }}
-      container.azureAppRegistrationEnabled: ${{ eq(variables['prod_azureAppRegistrationEnabled'], 'true') }}
+      container.azureStorageCreateContainers: $(prd_azureStorageCreateContainers)
+      container.azureStorageUseConnectionString: $(prd_azureStorageUseConnectionString)
+      container.manualPaymentsActive: $(prd_manualPaymentsActive)
+      container.azureAppRegistrationEnabled: $(prod_azureAppRegistrationEnabled)
       container.azureAppRegistrationClientId: $(prd_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(prd_azureAppRegistrationTenantId)
