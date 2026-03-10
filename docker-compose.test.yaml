@@ -70,4 +70,4 @@ services:
 networks:
   docs:
     name: ffc-doc
-    external: true
+    external: false
