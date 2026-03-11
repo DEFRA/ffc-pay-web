@@ -40,8 +40,8 @@ services:
   ffc-pay-event-store-azurite:
     labels:
       com.docker.compose.pay.role: test
-  sqledge:
-    container_name: "sqledge"
+  ffc-pay-web-sqledge:
+    container_name: "ffc-pay-web-sqledge"
     image: "mcr.microsoft.com/azure-sql-edge:latest"
     environment:
       ACCEPT_EULA: "Y"
@@ -56,11 +56,11 @@ services:
     ports:
       - "5672:5672"
     environment:
-      SQL_SERVER: sqledge
+      SQL_SERVER: ffc-pay-web-sqledge
       MSSQL_SA_PASSWORD: "DummyStrongPa$$w0rd" # Password should be same as what is set for SQL Edge
       ACCEPT_EULA: "Y"
     depends_on:
-      - sqledge
+      - ffc-pay-web-sqledge
 
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 5672"]
@@ -70,5 +70,5 @@ services:
 
 networks:
   docs:
-    name: ffc-doc
+    name: docs
     external: false
