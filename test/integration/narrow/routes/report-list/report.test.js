@@ -42,7 +42,7 @@ describe('Report Routes', () => {
     getHolds.mockResolvedValue([{ frn: '123', holdCategorySchemeName: 'Scheme 1', marketingYear: 2023, agreementNumber: 'AG123', contractNumber: 'CON123', holdCategoryName: 'Category 1', dateTimeAdded: new Date() }])
     const res = await injectRoute('/report-list/holds')
     expect(res.statusCode).toBe(200)
-    expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
+    expect(res.headers['content-type']).toBe('text/html; charset=utf-8')
     expect(res.payload).toContain('123')
   })
 
