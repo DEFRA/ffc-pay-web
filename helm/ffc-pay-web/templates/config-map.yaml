@@ -54,5 +54,6 @@ data:
   {{- end }}
   {{- if .Values.container.approvedEmailDomains }}
   APPROVED_EMAIL_DOMAINS: {{ quote .Values.container.approvedEmailDomains }}
+  ENABLE_LEGACY_REPORTS: {{ quote .Values.container.enableLegacyReports }}
   {{- end }}
 {{- end -}}

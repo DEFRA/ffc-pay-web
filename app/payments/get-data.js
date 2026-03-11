@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid')
-const util = require('util')
+const util = require('node:util')
 const { TYPE } = require('../constants/type')
 const config = require('../config')
 const { sendMessage, receiveMessage } = require('../messaging')

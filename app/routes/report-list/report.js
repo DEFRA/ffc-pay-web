@@ -3,6 +3,7 @@ const { getHolds } = require('../../holds')
 const { applicationAdmin, holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 const { formatDateFromString } = require('../../helpers/date-time-formatter')
 const storageConfig = require('../../config/storage')
+const config = require('../../config')
 const REPORT_LIST = require('../../constants/report-list')
 const REPORT_VIEWS = require('../../constants/report-views')
 const {
@@ -12,16 +13,7 @@ const {
 
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 
-module.exports = [
-  {
-    method: 'GET',
-    path: REPORT_LIST.PAYMENT_REQUESTS,
-    options: {
-      auth: AUTH_SCOPE,
-      handler: async (_request, h) =>
-        handleStreamResponse(getMIReport, storageConfig.miReportName, h)
-    }
-  },
+const reportEndpoints = [
   {
     method: 'GET',
     path: REPORT_LIST.SUPPRESSED_PAYMENTS,
@@ -80,3 +72,22 @@ module.exports = [
     }
   }
 ]
+
+if (config.legacyReportsEnabled) {
+  reportEndpoints.push({
+    method: 'GET',
+    path: REPORT_LIST.PAYMENT_REQUESTS,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (_request, h) => {
+        if (config.legacyReportsEnabled) {
+          return h.view('error/not-found')
+        }
+
+        return handleStreamResponse(getMIReport, storageConfig.miReportName, h)
+      }
+    }
+  })
+}
+
+module.exports = reportEndpoints

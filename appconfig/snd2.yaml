@@ -25,3 +25,4 @@ container:
   stmtDbFailures: 3
   stmtDbResetMs: 10000
   azureAppRegistrationRedirectUrl: authenticate
+  enableLegacyReports: false
