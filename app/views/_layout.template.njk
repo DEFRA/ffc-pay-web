@@ -9,43 +9,54 @@
   {% if cookiesPolicy and cookiesPolicy.analytics %}
     {% include "./tag-manager/_head-content.njk" %}
   {% endif %}
-  <% htmlWebpackPlugin.files.css.forEach(file=> { %>
-  <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
+
+  <% htmlWebpackPlugin.files.css.forEach(file => { %>
+    <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
   <% }) %>
 {% endblock %}
 
+
 {% block header %}
   {{ govukHeader({
-  rebrand:true,
-  containerClasses: "govuk-width-container",
-  homepageUrl: "/",
-  productName: serviceName,
-  serviceUrl: "/"
+    rebrand: true,
+    containerClasses: "govuk-width-container",
+    homepageUrl: "/",
+    productName: serviceName,
+    serviceUrl: "/"
   }) }}
 
   {% if auth.isAuthenticated %}
-  {{ govukServiceNavigation({
-  navigation: [
-  {
-  href: "/logout",
-  text: "Sign Out"
-  }
-  ]
-  }) }}
+    {{ govukServiceNavigation({
+      navigation: [
+        {
+          href: "/logout",
+          text: "Sign Out"
+        }
+      ]
+    }) }}
   {% endif %}
 {% endblock %}
+
 
 {% block pageTitle %}
   {{ serviceName }}
 {% endblock %}
 
+
 {% block beforeContent %}
   <div class="govuk-!-margin-top-6">
-    <div class="govuk-notification-banner" role="region" aria-labelledby="monitoring-outage-banner-title"
-      data-module="govuk-notification-banner">
+    <div
+      class="govuk-notification-banner"
+      role="region"
+      aria-labelledby="monitoring-outage-banner-title"
+      data-module="govuk-notification-banner"
+    >
 
       <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="monitoring-outage-banner-title">
+        <h2
+          class="govuk-notification-banner__title"
+          id="monitoring-outage-banner-title"
+        >
           Important
         </h2>
       </div>
@@ -56,8 +67,10 @@
         </p>
 
         <p class="govuk-body">
-          The service will be offline from <strong>10:00 Monday 16 March</strong> until
-          <strong>16:30 Tuesday 17 March</strong> for essential maintenance.
+          The service will be offline from
+          <strong>Monday 16 March 10:00</strong> until
+          <strong>Tuesday 17 March 16:30</strong>
+          for essential maintenance.
         </p>
 
         <p class="govuk-body">
@@ -72,21 +85,22 @@
   </div>
 {% endblock %}
 
-{% block content %}
 
+{% block content %}
 {% endblock %}
+
 
 {% block footer %}
   {{ govukFooter({
-  rebrand: true
+    rebrand: true
   }) }}
 {% endblock %}
 
-{% block bodyEnd %}
-  {# Run JavaScript at end of the
 
-  <body>, to avoid blocking the initial render. #}
-  <% htmlWebpackPlugin.files.js.forEach(file=> { %>
-  <script src="<%= file.replace('../dist/', '/static/') %>"></script>
+{% block bodyEnd %}
+  {# Run JavaScript at end of the body to avoid blocking the initial render #}
+
+  <% htmlWebpackPlugin.files.js.forEach(file => { %>
+    <script src="<%= file.replace('../dist/', '/static/') %>"></script>
   <% }) %>
 {% endblock %}
