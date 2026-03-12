@@ -42,7 +42,7 @@ describe('createStatementResultFromService', () => {
 
     expect(result).toEqual({
       filename: 'test.pdf',
-      scheme: 'DP',  // Mapped from schemeId 1
+      scheme: 'DP', // Mapped from schemeId 1
       year: '2023',
       frn: '1234567890',
       timestamp: '2023101508224868',
@@ -66,7 +66,7 @@ describe('createStatementResultFromService', () => {
 
     expect(result).toEqual({
       filename: 'test.pdf',
-      scheme: 'SFI',  // Mapped from schemeId 2
+      scheme: 'SFI', // Mapped from schemeId 2
       year: '2024',
       frn: '9876543210',
       timestamp: '2024101508224868',
@@ -85,7 +85,7 @@ describe('createStatementResultFromService', () => {
   test('should fallback to schemeId if not in statementAbbreviations', () => {
     const statement = {
       filename: 'test.pdf',
-      schemeId: 999,  // Not in mock abbreviations
+      schemeId: 999, // Not in mock abbreviations
       marketingYear: 2023
     }
     const result = createStatementResultFromService(statement)
@@ -148,7 +148,7 @@ describe('apiBlobSearch', () => {
     const result = await apiBlobSearch(10, '5', criteria)
 
     expect(mockDbSearch).toHaveBeenCalledWith(
-      { schemeshortname: 'DP', marketingYear: 2023 },  // schemeId mapped to abbrev
+      { schemeshortname: 'DP', marketingYear: 2023 }, // schemeId mapped to abbrev
       10,
       5
     )
@@ -211,7 +211,7 @@ describe('apiBlobSearch', () => {
 
     const result = await apiBlobSearch(10, null, { schemeId: 1 })
 
-    expect(result.statements).toHaveLength(1)  // Only successful download
+    expect(result.statements).toHaveLength(1) // Only successful download
     expect(result.statements[0].filename).toBe('good.pdf')
     expect(console.warn).toHaveBeenCalledWith('Failed to download bad.pdf:', 'Download failed')
   })

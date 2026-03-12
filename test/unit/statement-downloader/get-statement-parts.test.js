@@ -44,7 +44,7 @@ describe('get-statement-parts helpers', () => {
         scheme: 'SFI',
         year: '2024',
         frn: '100',
-        timestamp: '20240101120000'  // .pdf trimmed, extra ignored
+        timestamp: '20240101120000' // .pdf trimmed, extra ignored
       })
     })
 
@@ -77,7 +77,7 @@ describe('get-statement-parts helpers', () => {
 
     test('propagates errors from getContainerClient', async () => {
       const { getStatementsContainer, _resetCache } = require(MODULE_PATH)
-      _resetCache()  // Explicitly clear cache to ensure no cached value
+      _resetCache() // Explicitly clear cache to ensure no cached value
       mockGetContainerClient.mockRejectedValue(new Error('Container client error'))
 
       await expect(getStatementsContainer()).rejects.toThrow('Container client error')
@@ -87,7 +87,7 @@ describe('get-statement-parts helpers', () => {
   describe('_resetCache', () => {
     test('clears the cached container so next call fetches fresh', async () => {
       const { getStatementsContainer, _resetCache } = require(MODULE_PATH)
-      _resetCache()  // Explicitly clear cache to ensure no cached value
+      _resetCache() // Explicitly clear cache to ensure no cached value
       mockGetContainerClient.mockResolvedValue({ client: 'first-client' })
 
       const firstResult = await getStatementsContainer()
@@ -99,7 +99,7 @@ describe('get-statement-parts helpers', () => {
       // Mock a different result for the next call
       mockGetContainerClient.mockResolvedValue({ client: 'second-client' })
       const secondResult = await getStatementsContainer()
-      expect(mockGetContainerClient).toHaveBeenCalledTimes(2)  // Called again after reset
+      expect(mockGetContainerClient).toHaveBeenCalledTimes(2) // Called again after reset
       expect(secondResult).toEqual({ client: 'second-client' })
       expect(secondResult).not.toBe(firstResult)
     })
