@@ -80,10 +80,6 @@ if (config.legacyReportsEnabled) {
     options: {
       auth: AUTH_SCOPE,
       handler: async (_request, h) => {
-        if (config.legacyReportsEnabled) {
-          return h.view('error/not-found')
-        }
-
         return handleStreamResponse(getMIReport, storageConfig.miReportName, h)
       }
     }
