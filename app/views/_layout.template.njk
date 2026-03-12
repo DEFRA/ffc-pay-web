@@ -3,50 +3,88 @@
 
 {% from "govuk/components/header/macro.njk" import govukHeader %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% block head %}
-  {% if cookiesPolicy and cookiesPolicy.analytics %}
-    {% include "./tag-manager/_head-content.njk" %}
-  {% endif %}
-  <% htmlWebpackPlugin.files.css.forEach(file => { %>
-    <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
-    <% }) %>{% endblock %}
+{% if cookiesPolicy and cookiesPolicy.analytics %}
+{% include "./tag-manager/_head-content.njk" %}
+{% endif %}
+<% htmlWebpackPlugin.files.css.forEach(file=> { %>
+  <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
+  <% }) %>{% endblock %}
 
     {% block header %}
-      {{ govukHeader({
-        rebrand:true,
-        containerClasses: "govuk-width-container",
-        homepageUrl: "/", 
-        productName: serviceName, 
-        serviceUrl: "/"
-      }) }}
+    {{ govukHeader({
+    rebrand:true,
+    containerClasses: "govuk-width-container",
+    homepageUrl: "/",
+    productName: serviceName,
+    serviceUrl: "/"
+    }) }}
 
-      {% if auth.isAuthenticated %}
-        {{ govukServiceNavigation({
-          navigation: [
-            {
-              href: "/logout",
-              text: "Sign Out"
-            }
-          ]
-        }) }}
-      {% endif %}
+    {% if auth.isAuthenticated %}
+    {{ govukServiceNavigation({
+    navigation: [
+    {
+    href: "/logout",
+    text: "Sign Out"
+    }
+    ]
+    }) }}
+    {% endif %}
     {% endblock %}
 
     {% block pageTitle %}
-      {{ serviceName }}
+    {{ serviceName }}
     {% endblock %}
 
-    {% block content %}{% endblock %}
+    {% block beforeContent %}
+    <div class="govuk-!-margin-top-6">
+      <div class="govuk-notification-banner" role="region" aria-labelledby="monitoring-outage-banner-title"
+        data-module="govuk-notification-banner">
+
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="monitoring-outage-banner-title">
+            Important
+          </h2>
+        </div>
+
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">
+            Event monitoring will be temporarily unavailable.
+          </p>
+
+          <p class="govuk-body">
+            The service will be offline from <strong>10:00 Monday 16 March</strong> until
+            <strong>16:30 Tuesday 17 March</strong> for essential maintenance.
+          </p>
+
+          <p class="govuk-body">
+            If you have any concerns, contact
+            <a class="govuk-link" href="mailto:sam.thompson@defra.gov.uk">
+              sam.thompson@defra.gov.uk
+            </a>.
+          </p>
+        </div>
+
+      </div>
+    </div>
+    {% endblock %}
+
+    {% block content %}
+
+    {% endblock %}
 
     {% block footer %}
-      {{ govukFooter({
-        rebrand: true
-      }) }}
+    {{ govukFooter({
+    rebrand: true
+    }) }}
     {% endblock %}
 
     {% block bodyEnd %}
-      {# Run JavaScript at end of the <body>, to avoid blocking the initial render. #}
-      <% htmlWebpackPlugin.files.js.forEach(file => { %>
+    {# Run JavaScript at end of the
+
+    <body>, to avoid blocking the initial render. #}
+      <% htmlWebpackPlugin.files.js.forEach(file=> { %>
         <script src="<%= file.replace('../dist/', '/static/') %>"></script>
         <% }) %>{% endblock %}
