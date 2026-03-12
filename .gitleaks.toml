@@ -1,0 +1,18 @@
+# ffc-< INSERT SERVICE NAME >/.gitleaks.toml
+title = "ffc-< INSERT SERVICE NAME >"
+
+[extend]
+path = ".gitleaks-shared/.gitleaks.toml"
+
+# Service-specific additions only below this line, use [[ ]] for multiple allowlist instances
+[allowlist]
+description = "Service-specific exclusions"
+paths = [
+  '''test/mock-objects/.*''',
+  '''test/mock-modules/.*''',
+  '''test/unit/.*'''
+]
+
+#enter regex here wrapped in triple ''' to exclude specific keys
+#regexes = [
+#]
