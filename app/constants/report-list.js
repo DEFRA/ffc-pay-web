@@ -4,8 +4,8 @@ const buildDownload = (path) => `${path}/download`
 const basePaths = {
   PAYMENT_REQUESTS: `${reportListPath}/payment-requests`,
   PAYMENT_REQUESTS_V2: `${reportListPath}/payment-requests-v2`,
-  TRANSACTION_SUMMARY: `${reportListPath}/transaction-summary`, // todo: remove
-  CLAIM_LEVEL_REPORT: `${reportListPath}/claim-level-report`, // todo: remove
+  TRANSACTION_SUMMARY: `${reportListPath}/transaction-summary`,
+  CLAIM_LEVEL_REPORT: `${reportListPath}/claim-level-report`,
   REQUEST_EDITOR_REPORT: `${reportListPath}/request-editor-report`,
   SUPPRESSED_PAYMENTS: `${reportListPath}/suppressed-payments`,
   HOLDS: `${reportListPath}/holds`,
