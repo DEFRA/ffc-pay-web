@@ -3,12 +3,12 @@ const { statementAbbreviations } = require('../constants/schemes')
 const filenamePartLength = 6
 
 const FILENAME_PARTS = {
-  PREFIX: 0,        // "FFC"
+  PREFIX: 0, // "FFC"
   DOCUMENT_TYPE: 1, // e.g., "PaymentDelinkedStatement", "PaymentStatement", etc.
-  SCHEME: 2,        // e.g., "DP"
-  YEAR: 3,          // e.g., "2024"
-  FRN: 4,           // e.g., "1100021264"
-  TIMESTAMP: 5      // e.g., "2025101508224868.pdf"
+  SCHEME: 2, // e.g., "DP"
+  YEAR: 3, // e.g., "2024"
+  FRN: 4, // e.g., "1100021264"
+  TIMESTAMP: 5 // e.g., "2025101508224868.pdf"
 }
 
 const abbreviationToScheme = Object.fromEntries(
