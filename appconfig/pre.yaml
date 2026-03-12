@@ -35,7 +35,7 @@ secretProviderClass:
         objectType: secret
       - objectName: pre-redisPassword
         objectType: secret
-      - objectName: dev-ffcPayWebClientSecret
+      - objectName: pre-ffcPayWebClientSecret
         objectType: secret
 
   secretObjects:
