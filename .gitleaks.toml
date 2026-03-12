@@ -14,5 +14,6 @@ paths = [
 ]
 
 #enter regex here wrapped in triple ''' to exclude specific keys
-#regexes = [
-#]
+regexes = [
+    '''sam.thompson@defra.gov.uk'''
+]
