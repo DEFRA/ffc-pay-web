@@ -62,6 +62,7 @@ container:
   azureAppRegistrationTenantId:
   azureAppRegistrationClientSecret:
   azureAppRegistrationRedirectUrl: authenticate
+  enableLegacyReports: false
 
 ingress:
   class: nginx

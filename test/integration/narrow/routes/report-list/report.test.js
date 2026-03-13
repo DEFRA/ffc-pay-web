@@ -12,11 +12,19 @@ jest.mock('../../../../../app/holds')
 jest.mock('../../../../../app/api')
 jest.mock('../../../../../app/storage/pay-reports')
 jest.mock('../../../../../app/helpers/get-schemes')
+jest.mock('../../../../../app/config', () => {
+  const actual = jest.requireActual('../../../../../app/config')
+  return {
+    ...actual,
+    legacyReportsEnabled: true
+  }
+})
+let server
+const auth = { strategy: 'session-auth', credentials: { scope: [schemeAdmin, holdAdmin, dataView] } }
+
+const injectRoute = (url, credentials = auth) => server.inject({ method: 'GET', url, auth: credentials })
 
 describe('Report Routes', () => {
-  let server
-  const auth = { strategy: 'session-auth', credentials: { scope: [schemeAdmin, holdAdmin, dataView] } }
-
   beforeEach(async () => {
     mockDownload = jest.fn().mockReturnValue({ readableStreamBody: 'Hello' })
     server = await createServer()
@@ -24,8 +32,6 @@ describe('Report Routes', () => {
   })
 
   afterEach(async () => { await server.stop(); jest.clearAllMocks() })
-
-  const injectRoute = (url, credentials = auth) => server.inject({ method: 'GET', url, auth: credentials })
 
   test.each([
     ['/report-list/payment-requests', getMIReport],
@@ -77,5 +83,34 @@ describe('Report Routes', () => {
     expect(res.statusCode).toBe(200)
     expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
     expect(res.payload).toContain('All')
+  })
+})
+
+describe('Report Routes - legacyReportsEnabled = false', () => {
+  jest.doMock('../../../../../app/config', () => {
+    const actual = jest.requireActual('../../../../../app/config')
+    return {
+      ...actual,
+      legacyReportsEnabled: false
+    }
+  })
+
+  beforeEach(async () => {
+    jest.resetModules()
+  })
+
+  beforeEach(async () => {
+    mockDownload = jest.fn().mockReturnValue({ readableStreamBody: 'Hello' })
+    server = await createServer()
+    await server.initialize()
+  })
+
+  afterEach(async () => { await server.stop(); jest.clearAllMocks() })
+
+  test('GET /report-list/payment-requests returns unavailable page', async () => {
+    const res = await injectRoute('/report-list/payment-requests')
+
+    expect(res.statusCode).toBe(404)
+    expect(res.payload).toContain('<h1 class="govuk-heading-l">Page not found</h1>')
   })
 })

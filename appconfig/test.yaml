@@ -25,6 +25,7 @@ container:
   stmtDbFailures: 3
   stmtDbResetMs: 10000
   azureAppRegistrationRedirectUrl: authenticate
+  enableLegacyReports: false
 secretProviderClass:
   azure:
     keyvaultName: DEVFFCINFKV1001
