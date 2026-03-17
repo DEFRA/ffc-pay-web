@@ -1,9 +1,10 @@
-const downloadStatementsRoute = require('../../../app/routes/download-statements')
-const { getStatementSchemes } = require('../../../app/helpers/get-statement-schemes')
-
 jest.mock('../../../app/statement-downloader/statement-search')
 jest.mock('../../../app/helpers/get-statement-schemes')
 jest.mock('../../../app/statement-downloader/search-helpers/download-helper')
+
+const downloadStatementsRoute = require('../../../app/routes/download-statements')
+const { getStatementSchemes } = require('../../../app/helpers/get-statement-schemes')
+const { applicationAdmin, statusReportsDelinked } = require('../../../app/auth/permissions')
 
 describe('download-statements route - GET', () => {
   let mockRequest
@@ -86,14 +87,14 @@ describe('download-statements route - GET', () => {
       const getRoute = downloadStatementsRoute[0]
       expect(getRoute.method).toBe('GET')
       expect(getRoute.path).toBe('/download-statements')
-      expect(getRoute.options.auth.scope).toEqual([require('../../../app/auth/permissions').applicationAdmin])
+      expect(getRoute.options.auth.scope).toEqual([applicationAdmin, statusReportsDelinked])
     })
 
     test('should have POST route for /download-statements', () => {
       const postRoute = downloadStatementsRoute[1]
       expect(postRoute.method).toBe('POST')
       expect(postRoute.path).toBe('/download-statements')
-      expect(postRoute.options.auth.scope).toEqual([require('../../../app/auth/permissions').applicationAdmin])
+      expect(postRoute.options.auth.scope).toEqual([applicationAdmin, statusReportsDelinked])
       expect(postRoute.options.validate.payload).toBe(require('../../../app/routes/schemas/download-statements'))
       expect(typeof postRoute.options.validate.failAction).toBe('function')
     })
@@ -102,7 +103,7 @@ describe('download-statements route - GET', () => {
       const downloadRoute = downloadStatementsRoute[2]
       expect(downloadRoute.method).toBe('GET')
       expect(downloadRoute.path).toBe('/download-statements/download/{filename*}')
-      expect(downloadRoute.options.auth.scope).toEqual([require('../../../app/auth/permissions').applicationAdmin])
+      expect(downloadRoute.options.auth.scope).toEqual([applicationAdmin, statusReportsDelinked])
     })
   })
 
