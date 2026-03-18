@@ -27,7 +27,7 @@ container:
   azureAppRegistrationRedirectUrl: authenticate
 secretProviderClass:
   azure:
-    keyvaultName: PREFFCINFKV1001
+    keyvaultName: PRDFFCINFKV1001
     objects:
       - objectName: prd-ffcahwr-appInsights-connectionString
         objectType: secret
