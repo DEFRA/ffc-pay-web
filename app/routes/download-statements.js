@@ -1,7 +1,7 @@
 const schema = require('./schemas/download-statements')
 const { downloadStatement } = require('../statement-downloader/statement-search')
 const { BAD_REQUEST, SUCCESS, NOT_FOUND, INTERNAL_SERVER_ERROR, FORBIDDEN } = require('../constants/http-status-codes')
-const { applicationAdmin } = require('../auth/permissions')
+const { applicationAdmin, statusReportsDelinked } = require('../auth/permissions')
 const { getStatementSchemes } = require('../helpers/get-statement-schemes')
 const {
   buildViewContext,
@@ -13,7 +13,7 @@ const {
 const DOWNLOAD_VIEW = 'download-statements'
 const SCHEMES_ERROR = 'Unable to load schemes. Please try again later.'
 const fileLimit = 50
-const AUTH_SCOPE = { scope: [applicationAdmin] }
+const AUTH_SCOPE = { scope: [applicationAdmin, statusReportsDelinked] }
 
 const handleGetDownloadStatements = async (_request, h) => {
   try {
