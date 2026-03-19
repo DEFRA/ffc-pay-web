@@ -5,57 +5,57 @@
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
 
 {% block head %}
-{% if cookiesPolicy and cookiesPolicy.analytics %}
-{% include "./tag-manager/_head-content.njk" %}
-{% endif %}
+  {% if cookiesPolicy and cookiesPolicy.analytics %}
+    {% include "./tag-manager/_head-content.njk" %}
+  {% endif %}
 
-<% htmlWebpackPlugin.files.css.forEach(file=> { %>
-  <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
+  <% htmlWebpackPlugin.files.css.forEach(file=> { %>
+    <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
   <% }) %>
-    {% endblock %}
+{% endblock %}
 
 
-    {% block header %}
-    {{ govukHeader({
+{% block header %}
+  {{ govukHeader({
     rebrand: true,
     containerClasses: "govuk-width-container",
     homepageUrl: "/",
     productName: serviceName,
     serviceUrl: "/"
-    }) }}
+  }) }}
 
-    {% if auth.isAuthenticated %}
+  {% if auth.isAuthenticated %}
     {{ govukServiceNavigation({
-    navigation: [
-    {
-    href: "/logout",
-    text: "Sign Out"
-    }
-    ]
+      navigation: [
+        {
+        href: "/logout",
+        text: "Sign Out"
+        }
+      ]
     }) }}
-    {% endif %}
-    {% endblock %}
+  {% endif %}
+{% endblock %}
 
 
-    {% block pageTitle %}
-    {{ serviceName }}
-    {% endblock %}
+{% block pageTitle %}
+  {{ serviceName }}
+{% endblock %}
 
-    {% block content %}
-    {% endblock %}
-
-
-    {% block footer %}
-    {{ govukFooter({
-    rebrand: true
-    }) }}
-    {% endblock %}
+{% block content %}
+{% endblock %}
 
 
-    {% block bodyEnd %}
-    {# Run JavaScript at end of the body to avoid blocking the initial render #}
+{% block footer %}
+  {{ govukFooter({
+  rebrand: true
+  }) }}
+{% endblock %}
 
-    <% htmlWebpackPlugin.files.js.forEach(file=> { %>
-      <script src="<%= file.replace('../dist/', '/static/') %>"></script>
-      <% }) %>
-        {% endblock %}
+
+{% block bodyEnd %}
+  {# Run JavaScript at end of the body to avoid blocking the initial render #}
+
+  <% htmlWebpackPlugin.files.js.forEach(file=> { %>
+    <script src="<%= file.replace('../dist/', '/static/') %>"></script>
+  <% }) %>
+{% endblock %}
