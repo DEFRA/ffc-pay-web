@@ -9,7 +9,7 @@
     {% include "./tag-manager/_head-content.njk" %}
   {% endif %}
 
-  <% htmlWebpackPlugin.files.css.forEach(file=> { %>
+  <% htmlWebpackPlugin.files.css.forEach(file => { %>
     <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
   <% }) %>
 {% endblock %}
@@ -28,8 +28,8 @@
     {{ govukServiceNavigation({
       navigation: [
         {
-        href: "/logout",
-        text: "Sign Out"
+          href: "/logout",
+          text: "Sign Out"
         }
       ]
     }) }}
@@ -47,7 +47,7 @@
 
 {% block footer %}
   {{ govukFooter({
-  rebrand: true
+    rebrand: true
   }) }}
 {% endblock %}
 
@@ -55,7 +55,7 @@
 {% block bodyEnd %}
   {# Run JavaScript at end of the body to avoid blocking the initial render #}
 
-  <% htmlWebpackPlugin.files.js.forEach(file=> { %>
+  <% htmlWebpackPlugin.files.js.forEach(file => { %>
     <script src="<%= file.replace('../dist/', '/static/') %>"></script>
   <% }) %>
 {% endblock %}
