@@ -8,45 +8,54 @@
   {% if cookiesPolicy and cookiesPolicy.analytics %}
     {% include "./tag-manager/_head-content.njk" %}
   {% endif %}
+
   <% htmlWebpackPlugin.files.css.forEach(file => { %>
     <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
-    <% }) %>{% endblock %}
+  <% }) %>
+{% endblock %}
 
-    {% block header %}
-      {{ govukHeader({
-        rebrand:true,
-        containerClasses: "govuk-width-container",
-        homepageUrl: "/", 
-        productName: serviceName, 
-        serviceUrl: "/"
-      }) }}
 
-      {% if auth.isAuthenticated %}
-        {{ govukServiceNavigation({
-          navigation: [
-            {
-              href: "/logout",
-              text: "Sign Out"
-            }
-          ]
-        }) }}
-      {% endif %}
-    {% endblock %}
+{% block header %}
+  {{ govukHeader({
+    rebrand: true,
+    containerClasses: "govuk-width-container",
+    homepageUrl: "/",
+    productName: serviceName,
+    serviceUrl: "/"
+  }) }}
 
-    {% block pageTitle %}
-      {{ serviceName }}
-    {% endblock %}
+  {% if auth.isAuthenticated %}
+    {{ govukServiceNavigation({
+      navigation: [
+        {
+          href: "/logout",
+          text: "Sign Out"
+        }
+      ]
+    }) }}
+  {% endif %}
+{% endblock %}
 
-    {% block content %}{% endblock %}
 
-    {% block footer %}
-      {{ govukFooter({
-        rebrand: true
-      }) }}
-    {% endblock %}
+{% block pageTitle %}
+  {{ serviceName }}
+{% endblock %}
 
-    {% block bodyEnd %}
-      {# Run JavaScript at end of the <body>, to avoid blocking the initial render. #}
-      <% htmlWebpackPlugin.files.js.forEach(file => { %>
-        <script src="<%= file.replace('../dist/', '/static/') %>"></script>
-        <% }) %>{% endblock %}
+{% block content %}
+{% endblock %}
+
+
+{% block footer %}
+  {{ govukFooter({
+    rebrand: true
+  }) }}
+{% endblock %}
+
+
+{% block bodyEnd %}
+  {# Run JavaScript at end of the body to avoid blocking the initial render #}
+
+  <% htmlWebpackPlugin.files.js.forEach(file => { %>
+    <script src="<%= file.replace('../dist/', '/static/') %>"></script>
+  <% }) %>
+{% endblock %}
