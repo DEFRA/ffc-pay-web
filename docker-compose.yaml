@@ -35,6 +35,7 @@ services:
       DEV_TEAM_EMAILS: ${DEV_TEAM_EMAILS}
       PDS_TEAM_EMAILS: ${PDS_TEAM_EMAILS}
       APPROVED_EMAIL_DOMAINS: ${APPROVED_EMAIL_DOMAINS}
+      ENABLE_LEGACY_REPORTS: "false"
     networks:
       - default
       - docs

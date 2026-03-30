@@ -27,7 +27,8 @@ const schema = Joi.object({
   approvedEmailDomains: Joi.string().default(''),
   timeoutMs: Joi.number().default(TIMEOUT_MS),
   failureThreshold: Joi.number().default(FAILURE_THRESHOLD),
-  resetTimeoutMs: Joi.number().default(RESET_TIMEOUT_MS)
+  resetTimeoutMs: Joi.number().default(RESET_TIMEOUT_MS),
+  legacyReportsEnabled: Joi.bool().default(false)
 })
 
 // Build config
@@ -46,7 +47,8 @@ const config = {
   approvedEmailDomains: process.env.APPROVED_EMAIL_DOMAINS,
   timeoutMs: process.env.STMT_DB_TIMEOUT_MS,
   failureThreshold: process.env.STMT_DB_FAILURES,
-  resetTimeoutMs: process.env.STMT_DB_RESET_MS
+  resetTimeoutMs: process.env.STMT_DB_RESET_MS,
+  legacyReportsEnabled: process.env.ENABLE_LEGACY_REPORTS
 }
 
 // Validate config

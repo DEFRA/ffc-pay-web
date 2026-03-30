@@ -53,6 +53,7 @@ extends:
       container.azureAppRegistrationClientId: $(pr_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(pr_azureAppRegistrationTenantId)
       container.approvedEmailDomains: $(pr_approvedEmailDomains)
+      container.enableLegacyReports: $(pr_enableLegacyReports)
     snd2_params:
       container.azureStorageCreateContainers: $(snd2_azureStorageCreateContainers)
       container.azureStorageUseConnectionString: $(snd2_azureStorageUseConnectionString)
@@ -61,6 +62,7 @@ extends:
       container.azureAppRegistrationClientId: $(snd2_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(snd2_azureAppRegistrationTenantId)
       container.approvedEmailDomains: $(snd2_approvedEmailDomains)
+      container.enableLegacyReports: $(snd2_enableLegacyReports)
     dev_params:
       container.azureStorageCreateContainers: $(dev_azureStorageCreateContainers)
       container.azureStorageUseConnectionString: $(dev_azureStorageUseConnectionString)
@@ -69,6 +71,7 @@ extends:
       container.azureAppRegistrationClientId: $(dev_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(dev_azureAppRegistrationTenantId)
       container.approvedEmailDomains: $(dev_approvedEmailDomains)
+      container.enableLegacyReports: $(dev_enableLegacyReports)
     test_params:
       container.azureStorageCreateContainers: $(test_azureStorageCreateContainers)
       container.azureStorageUseConnectionString: $(test_azureStorageUseConnectionString)
@@ -77,6 +80,7 @@ extends:
       container.azureAppRegistrationClientId: $(test_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(test_azureAppRegistrationTenantId)
       container.approvedEmailDomains: $(test_approvedEmailDomains)
+      container.enableLegacyReports: $(test_enableLegacyReports)
     pre_params:
       container.azureStorageCreateContainers: $(pre_azureStorageCreateContainers)
       container.azureStorageUseConnectionString: $(pre_azureStorageUseConnectionString)
@@ -85,6 +89,7 @@ extends:
       container.azureAppRegistrationClientId: $(pre_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(pre_azureAppRegistrationTenantId)
       container.approvedEmailDomains: $(pre_approvedEmailDomains)
+      container.enableLegacyReports: $(pre_enableLegacyReports)
     prd_params:
       container.azureStorageCreateContainers: $(prd_azureStorageCreateContainers)
       container.azureStorageUseConnectionString: $(prd_azureStorageUseConnectionString)
@@ -93,3 +98,4 @@ extends:
       container.azureAppRegistrationClientId: $(prd_azureAppRegistrationClientId)
       container.azureAppRegistrationTenantId: $(prd_azureAppRegistrationTenantId)
       container.approvedEmailDomains: $(prd_approvedEmailDomains)
+      container.enableLegacyReports: $(prd_enableLegacyReports)

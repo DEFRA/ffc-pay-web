@@ -30,6 +30,7 @@ services:
       MESSAGE_QUEUE_PASSWORD: SAS_KEY_VALUE
       DATA_TOPIC_ADDRESS: ffc-pay-data-request-test
       DATARESPONSE_QUEUE_ADDRESS: ffc-pay-data-request-response-test
+      ENABLE_LEGACY_REPORTS: "true"
     volumes:
       - ./test:/home/node/test
       - ./test-output:/home/node/test-output
