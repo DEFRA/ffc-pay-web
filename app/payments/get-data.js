@@ -63,7 +63,6 @@ const getData = async (category, value) => {
     ...item,
     scheme: item.scheme === 'SFI' ? 'SFI22' : item.scheme
   }))
-  console.log(transformedData)
   return transformedData
 }
 
