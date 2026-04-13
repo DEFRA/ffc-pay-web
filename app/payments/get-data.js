@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid')
-const util = require('util')
+const util = require('node:util')
 const { TYPE } = require('../constants/type')
 const config = require('../config')
 const { sendMessage, receiveMessage } = require('../messaging')
@@ -63,7 +63,6 @@ const getData = async (category, value) => {
     ...item,
     scheme: item.scheme === 'SFI' ? 'SFI22' : item.scheme
   }))
-  console.log(transformedData)
   return transformedData
 }
 
