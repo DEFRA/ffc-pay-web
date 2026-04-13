@@ -1,0 +1,30 @@
+#!/bin/sh
+
+GITLEAKS_VERSION="8.30.0"
+GITLEAKS_BIN="$HOME/.local/bin/gitleaks"
+GITLEAKS_URL="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+
+# get installed version (if any)
+INSTALLED_VERSION=""
+if [ -x "$GITLEAKS_BIN" ]; then
+  INSTALLED_VERSION=$("$GITLEAKS_BIN" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || true)
+fi
+
+if [ "$INSTALLED_VERSION" != "$GITLEAKS_VERSION" ]; then
+  echo "⚠️  Installing/updating gitleaks v${GITLEAKS_VERSION} (was: ${INSTALLED_VERSION:-none})..."
+  mkdir -p "$HOME/.local/bin"
+  curl -sSfL "$GITLEAKS_URL" | tar -xz -C "$HOME/.local/bin" gitleaks
+  chmod +x "$GITLEAKS_BIN"
+fi
+
+# Always fetch latest shared gitleaks config
+echo "Fetching shared gitleaks config..."
+mkdir -p .gitleaks-shared
+if ! curl -sSfL https://raw.githubusercontent.com/DEFRA/ffc-shared-actions/main/.gitleaks.toml \
+  -o .gitleaks-shared/.gitleaks.toml; then
+  echo "❌ Failed to fetch shared gitleaks config from ffc-shared-actions." >&2
+  exit 1
+fi
+
+echo "🔍 Running gitleaks scan..."
+"$GITLEAKS_BIN" protect --staged --config .gitleaks.toml --verbose --exit-code=2
