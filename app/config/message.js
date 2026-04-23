@@ -6,8 +6,7 @@ const schema = Joi.object({
     host: Joi.string(),
     username: Joi.string(),
     password: Joi.string(),
-    useCredentialChain: Joi.bool().default(false),
-    appInsights: Joi.object()
+    useCredentialChain: Joi.bool().default(false)
   },
   dataTopic: {
     address: Joi.string()
@@ -24,8 +23,7 @@ const config = {
     host: process.env.MESSAGE_QUEUE_HOST,
     username: process.env.MESSAGE_QUEUE_USER,
     password: process.env.MESSAGE_QUEUE_PASSWORD,
-    useCredentialChain: process.env.NODE_ENV === PRODUCTION,
-    appInsights: process.env.NODE_ENV === PRODUCTION ? require('applicationinsights') : undefined
+    useCredentialChain: process.env.NODE_ENV === PRODUCTION
   },
   dataTopic: {
     address: process.env.DATA_TOPIC_ADDRESS
