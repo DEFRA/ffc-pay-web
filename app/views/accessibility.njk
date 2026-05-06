@@ -1,0 +1,63 @@
+{% extends "_layout.njk" %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block pageTitle %}Accessibility statement{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {{ govukBackLink({
+        text: "Back",
+        href: "/",
+        classes: "govuk-!-margin-bottom-7"
+      }) }}
+
+      <h1 class="govuk-heading-l">Accessibility statement</h1>
+      <p class="govuk-body">
+        This service is run by Defra. We want as many people as possible to be able to use this website. 
+        For example, that means you should be able to:
+      </p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>change colours, contrast levels and fonts</li>
+        <li>zoom in up to 200% without the text spilling off the screen</li>
+        <li>navigate most of the website using just a keyboard</li>
+        <li>navigate most of the website using speech recognition software</li>
+        <li>listen to most of the website using a screen reader (including the most recent versions of JAWS, NVDA and VoiceOver)</li>
+      </ul>
+
+      <p class="govuk-body">We have also made the website text as simple as possible to understand.</p>
+      <p class="govuk-body"><a href="https://mcmw.abilitynet.org.uk/">AbilityNet</a> has advice on making your device easier to use if you have a disability.</p>
+
+      <h2 class="govuk-heading-m">Reporting accessibility problems with this website</h2>
+      <p class="govuk-body">
+        We are always looking to improve the accessibility of this website. 
+        If you find any problems not listed on this page or think we are not meeting the requirements of the accessibility regulations, contact us:
+      </p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>email: <a href="mailto:contentteam@defra.gov.uk.">contentteam@defra.gov.uk.</a></li>
+        <li>call <a href="tel:03459335577">03459 33 55 77</a> (Monday to Friday, 8:30am to 5pm find out about call charges at <a href="www.gov.uk/call-charges">www.gov.uk/call-charges</a>)</li>
+        <li>write to Defra Helpline, Seacole Building, 2 Marsham Street, London. SW1P 4DF United Kingdom</li>
+      </ul>
+
+      <h2 class="govuk-heading-m">Enforcement procedure</h2>
+      <p class="govuk-body">
+        The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the ‘accessibility regulations’). 
+        If you are not happy with how we respond to your complaint, contact the <a href="https://www.equalityadvisoryservice.com/">Equality Advisory and Support Service (EASS)</a>.
+      </p>
+
+      <h2 class="govuk-heading-m">Technical information about this website’s accessibility</h2>
+      <p class="govuk-body">
+        Defra is committed to making its website accessible, in accordance with the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018. 
+        This service is compliant with the <a href="https://www.w3.org/TR/WCAG21/">Web Content Accessibility Guidelines version 2.1</a> AA standard.
+      </p>
+      <p class="govuk-body">
+        This statement was prepared on 06 May 2026. It was last reviewed on 06 May 2026.
+      </p>
+      <p class="govuk-body">
+        This website was last tested on 06 May 2026. The test was carried out by Defra.
+      </p>
+
+    </div>
+  </div>
+{% endblock %}
