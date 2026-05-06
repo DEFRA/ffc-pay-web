@@ -11,7 +11,8 @@ module.exports = {
   entry: {
     core: [
       './app/frontend/css/index.js',
-      './app/frontend/images/favicon.ico',
+      './app/frontend/images/favicon.png',
+      './app/frontend/images/brand.png',
       './app/frontend/images/search-icon.png'
     ]
   },

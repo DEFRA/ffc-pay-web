@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid')
+const { randomUUID } = require('node:crypto')
 const setReportStatus = require('./set-report-status')
 const { buildReportUrl } = require('./build-query-url')
 const { queryTrackingApi } = require('./query-tracking-api')
@@ -6,7 +6,7 @@ const { normaliseQuery } = require('./normalise-query')
 
 const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, options = {}) => {
   return async (request, h) => {
-    const jobId = uuidv4()
+    const jobId = randomUUID()
     const { query } = request
 
     const reportUrl = options.reportUrl ?? query['report-url']

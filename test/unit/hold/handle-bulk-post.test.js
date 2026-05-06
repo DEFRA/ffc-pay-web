@@ -6,13 +6,15 @@ const { processHoldData } = require('../../../app/hold/process-hold-data')
 const { setLoadingStatus } = require('../../../app/helpers/set-loading-status')
 const filePath = require('../../mocks/values/file-path')
 const { FRN } = require('../../mocks/values/frn')
+jest.mock('node:crypto')
+const { randomUUID } = require('node:crypto')
 
 jest.mock('../../../app/api')
 jest.mock('../../../app/holds')
 jest.mock('../../../app/helpers/read-file-content')
 jest.mock('../../../app/hold/process-hold-data')
 jest.mock('../../../app/helpers/set-loading-status')
-jest.mock('uuid', () => ({ v4: () => '123-456' }))
+randomUUID.mockReturnValue('70cb0f07-e0cf-449c-86e8-0344f2c6cc6c')
 
 describe('handleBulkPost', () => {
   let request
@@ -72,14 +74,14 @@ describe('handleBulkPost', () => {
   describe('successful processing', () => {
     test('should generate a jobId and render loading view', async () => {
       await handleBulkPost(request, h)
-      expect(h.view).toHaveBeenCalledWith('payment-holds/holds-loading', { jobId: '123-456' })
+      expect(h.view).toHaveBeenCalledWith('payment-holds/holds-loading', { jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c' })
     })
 
     test('should set initial loading status to processing', async () => {
       await handleBulkPost(request, h)
       expect(setLoadingStatus).toHaveBeenCalledWith(
         request,
-        '123-456',
+        '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
         { status: 'processing' }
       )
     })
@@ -131,7 +133,7 @@ describe('handleBulkPost', () => {
       processHoldData.mockResolvedValue({ uploadData: null, errors: validationError })
 
       await handleBulkPost(request, h)
-      expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
+      expect(setLoadingStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', {
         status: 'failed',
         message: 'There was a problem validating your uploaded data. The FRN, "badfrn" is invalid. Please check your file and try again.'
       })
@@ -145,7 +147,7 @@ describe('handleBulkPost', () => {
       processHoldData.mockResolvedValue({ uploadData: null, errors: validationError })
 
       await handleBulkPost(request, h)
-      expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
+      expect(setLoadingStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', {
         status: 'failed',
         message: 'There was a problem validating your uploaded data: Missing FRN. Please check your file and try again.'
       })
@@ -158,7 +160,7 @@ describe('handleBulkPost', () => {
       processHoldData.mockResolvedValue({ uploadData: null, errors: otherError })
 
       await handleBulkPost(request, h)
-      expect(setLoadingStatus).toHaveBeenCalledWith(request, '123-456', {
+      expect(setLoadingStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', {
         status: 'failed',
         message: 'An error occurred while processing the data: Other error'
       })

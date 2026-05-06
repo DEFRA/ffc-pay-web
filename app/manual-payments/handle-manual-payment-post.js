@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid')
+const { randomUUID } = require('node:crypto')
 const Boom = require('@hapi/boom')
 
 const { MANUAL_UPLOAD } = require('../constants/injection-routes')
@@ -14,7 +14,7 @@ const { uploadManualPaymentFile } = require('../storage')
 const { postInjection } = require('../api')
 
 const handleManualPaymentUploadPost = async (request, h) => {
-  const jobId = uuidv4()
+  const jobId = randomUUID()
   const { path: filePath, filename } = request.payload.file
   const user = request.auth?.credentials.account
 
