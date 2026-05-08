@@ -12,11 +12,9 @@
   {% if cookiesPolicy and cookiesPolicy.analytics %}
     {% include "./tag-manager/_head-content.njk" %}
   {% endif %}
-
   <% htmlWebpackPlugin.files.css.forEach(file => { %>
     <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
   <% }) %>
-
   <style>
     .govuk-service-navigation__container { display: flex; align-items: center; gap: 1rem; width: 100%; }
     .govuk-service-navigation__service-name, .govuk-service-navigation__wrapper { display: flex; align-items: center; }
@@ -60,6 +58,16 @@
       }) }}
     {%- endif %}
   {%- endif %}
+{% endblock %}
+
+{% block bodyStart %}
+  {% if cookiesPolicy and not cookiesPolicy.confirmed %}
+    {% include "./cookies/_cookie-banner.njk" %}
+  {% endif %}
+
+  {% if cookiesPolicy and cookiesPolicy.analytics %}
+    {% include "./tag-manager/_body-content.njk" %}
+  {% endif %}
 {% endblock %}
 
 {% block content %}

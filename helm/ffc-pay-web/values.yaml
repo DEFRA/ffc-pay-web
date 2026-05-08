@@ -63,6 +63,7 @@ container:
   azureAppRegistrationClientSecret:
   azureAppRegistrationRedirectUrl: authenticate
   enableLegacyReports: false
+  googleTagManagerKey: GTM-5XJKV8F
 
 ingress:
   class: nginx

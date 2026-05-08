@@ -57,4 +57,5 @@ data:
   APPROVED_EMAIL_DOMAINS: {{ quote .Values.container.approvedEmailDomains }}
   ENABLE_LEGACY_REPORTS: {{ quote .Values.container.enableLegacyReports }}
   {{- end }}
+  GOOGLE_TAG_MANAGER_KEY: {{ quote .Values.container.googleTagManagerKey}}
 {{- end -}}

@@ -17,7 +17,16 @@ const schema = Joi.object({
   port: Joi.number().default(portNumber),
   env: Joi.string().valid('development', 'test', 'production').default('development'),
   staticCacheTimeoutMillis: Joi.number().default(staticCacheTimeout),
-  googleTagManagerKey: Joi.string().default(''),
+  googleTagManagerKey: Joi.string().default('GTM-5XJKV8F'),
+  cookieOptions: Joi.object({
+    ttl: Joi.number().default(1000 * 60 * 60 * 24 * 365),
+    isSameSite: Joi.string().valid('Lax').default('Lax'),
+    encoding: Joi.string().valid('base64json').default('base64json'),
+    isSecure: Joi.bool().default(true),
+    isHttpOnly: Joi.bool().default(true),
+    clearInvalid: Joi.bool().default(false),
+    strictHeader: Joi.bool().default(true)
+  }),
   paymentsEndpoint: Joi.string().uri().required(),
   trackingEndpoint: Joi.string().uri().required(),
   injectionEndpoint: Joi.string().uri().required(),
@@ -38,6 +47,15 @@ const config = {
   env: process.env.NODE_ENV,
   staticCacheTimeoutMillis: process.env.STATIC_CACHE_TIMEOUT_IN_MILLIS,
   googleTagManagerKey: process.env.GOOGLE_TAG_MANAGER_KEY,
+  cookieOptions: {
+    ttl: process.env.COOKIE_TTL_IN_MILLIS,
+    isSameSite: 'Lax',
+    encoding: 'base64json',
+    isSecure: process.env.NODE_ENV === 'production',
+    isHttpOnly: true,
+    clearInvalid: false,
+    strictHeader: true
+  },
   paymentsEndpoint: process.env.PAYMENTS_SERVICE_ENDPOINT,
   trackingEndpoint: process.env.TRACKING_SERVICE_ENDPOINT,
   injectionEndpoint: process.env.INJECTION_SERVICE_ENDPOINT,

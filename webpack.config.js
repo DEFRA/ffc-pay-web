@@ -14,7 +14,8 @@ module.exports = {
       './app/frontend/images/favicon.png',
       './app/frontend/images/brand.png',
       './app/frontend/images/search-icon.png'
-    ]
+    ],
+    cookies: './app/frontend/js/cookies.js'
   },
   mode: isDev ? 'development' : 'production',
   module: {
@@ -71,6 +72,12 @@ module.exports = {
       filename: '../views/_layout.njk',
       template: 'app/views/_layout.template.njk',
       chunks: ['core']
+    }),
+    new HtmlWebpackPlugin({
+      inject: false,
+      filename: '../views/cookies/_cookie-banner.njk',
+      template: 'app/views/cookies/_cookie-banner.template.njk',
+      chunks: ['cookies']
     }),
     new MiniCssExtractPlugin({
       filename: 'css/[name].[fullhash].css'
