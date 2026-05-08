@@ -6,7 +6,7 @@ describe('Application Insights', () => {
     jest.resetModules()
 
     jest.mock('@azure/monitor-opentelemetry', () => ({
-      useAzureMonitor: jest.fn(),
+      useAzureMonitor: jest.fn()
     }))
 
     useAzureMonitor = require('@azure/monitor-opentelemetry').useAzureMonitor
