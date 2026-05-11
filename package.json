@@ -32,7 +32,7 @@
   "license": "OGL-UK-3.0",
   "dependencies": {
     "@azure/identity": "4.4.1",
-    "@azure/monitor-opentelemetry": "1.16.0",
+    "@azure/monitor-opentelemetry": "1.17.0",
     "@azure/msal-node": "2.9.2",
     "@azure/storage-blob": "12.31.0",
     "@fast-csv/format": "5.0.2",
