@@ -1,52 +1,49 @@
 {% extends '_layout.njk' %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% block content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      },
-      {
-        text: "Monitoring",
-        href: "/monitoring"
-      },
-      {
-        text: "Schemes",
-        href: "/monitoring/schemes"
-      },
-      {
-        text: "View processed payment requests",
-        href: "#", 
-        attributes: { 'aria-disabled': 'true', 'class': 'govuk-breadcrumbs__link--disabled' } 
-      }]
-    })}}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">View processed payment requests</h1>
-      {% if data.length %}
-        <table class="govuk-table">
-          <caption class="govuk-table__caption govuk-table__caption--l">Processed payment requests</caption>
-          <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-              <th scope="col" class="govuk-table__header govuk-body-s">Scheme</th>
-              <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Number of payments</th>
-              <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Value</th>
-            </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-            {% for paymentRequests in data %}
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Monitoring by scheme",
+      href: "/monitoring/schemes"
+    }, {
+      text: "View processed payment requests"
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
+  <main class="govuk-main-wrapper " id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <h1 class="govuk-heading-l">View processed payment requests</h1>
+        {% if data.length %}
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--l">Processed payment requests</caption>
+            <thead class="govuk-table__head">
               <tr class="govuk-table__row">
-                <td class="govuk-table__cell govuk-body-s">{{ paymentRequests.scheme }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ paymentRequests.paymentRequests }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ paymentRequests.value }}</td>
+                <th scope="col" class="govuk-table__header govuk-body-s">Scheme</th>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Number of payments</th>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Value</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p id="no-hold-text" class="govuk-body">No processed payment requests found.</p>
-      {% endif %}
-  </div>
-</div>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for paymentRequests in data %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell govuk-body-s">{{ paymentRequests.scheme }}</td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ paymentRequests.paymentRequests }}</td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ paymentRequests.value }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p id="no-hold-text" class="govuk-body">No processed payment requests found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </main>
 {% endblock %}

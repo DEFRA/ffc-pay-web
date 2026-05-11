@@ -3,19 +3,29 @@
 {% set mainClasses = "govuk-main-wrapper--l" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% block content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
       href: "/"
+    },{
+      text: "Reports",
+      href: "/report-list"
+    }, {
+      text: "Payment report unavailable"
     }]
   })}}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Payment report unavailable</h1>
-        <p class="govuk-body">
-          The payment report is not currently available.  Please try again later.
-        </p>
+{% endblock %}
+
+{% block content %}
+  <main class="govuk-main-wrapper " id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+          <h1 class="govuk-heading-l">Payment report unavailable</h1>
+          <p class="govuk-body">
+            The payment report is not currently available.  Please try again later.
+          </p>
+      </div>
     </div>
-  </div>
+  </main>
 {% endblock %}

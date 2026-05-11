@@ -1,51 +1,58 @@
 {% extends '_layout.njk' %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% block content %}
+{% block beforeContent %}
   {{ govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      }, {
-        text: "Monitoring",
-        href: "/monitoring"
-      }]
-    })}}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-      <span class="govuk-caption-l">{{frn}}</span>
-      <h1 class="govuk-heading-l">Monitoring</h1>
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Monitoring",
+      href: "/monitoring"
+    },{
+      text: "Monitoring by FRN"
+    }]
+  })}}
+{% endblock %}
 
-      {% if payments.length %}
-        <table class="govuk-table">
-          <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-              <th scope="col" class="govuk-table__header govuk-body-s">Scheme</th>
-              <th scope="col" class="govuk-table__header govuk-body-s">Agreement</th>
-              <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Payment request</th>
-              <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Value</th>
-              <th scope="col" class="govuk-table__header govuk-body-s">Status</th>
-              <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Last updated</th>
-              <th scope="col" class="govuk-table__header govuk-body-s">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-            {% for payment in payments %}
+{% block content %}
+  <main class="govuk-main-wrapper " id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <span class="govuk-caption-l">{{frn}}</span>
+        <h1 class="govuk-heading-l">Monitoring by FRN</h1>
+
+        {% if payments.length %}
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
               <tr class="govuk-table__row">
-                <td class="govuk-table__cell govuk-body-s">{{ payment.scheme }}</td>
-                <td class="govuk-table__cell govuk-body-s">{{ payment.agreementNumber }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ payment.paymentRequestNumber }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ payment.originalValueText }}</td>
-                <td class="govuk-table__cell govuk-body-s"><strong class="govuk-tag {% if payment.status.state == 'Completed' %}govuk-tag--green{% elif payment.status.state == 'Waiting' %}govuk-tag--yellow{% endif %}">{{ payment.status.detail }}</strong></td>
-                <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ payment.lastUpdated }}</td>
-                <td class="govuk-table__cell govuk-body-s"><a href="/monitoring/payments/correlation-id?correlationId={{ payment.correlationId }}">View</a></td>
+                <th scope="col" class="govuk-table__header govuk-body-s">Scheme</th>
+                <th scope="col" class="govuk-table__header govuk-body-s">Agreement</th>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Payment request</th>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Value</th>
+                <th scope="col" class="govuk-table__header govuk-body-s">Status</th>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Last updated</th>
+                <th scope="col" class="govuk-table__header govuk-body-s">Actions</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p id="no-hold-text" class="govuk-body">No payments found for FRN {{frn}}.</p>
-      {% endif %}
-  </div>
-</div>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for payment in payments %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell govuk-body-s">{{ payment.scheme }}</td>
+                  <td class="govuk-table__cell govuk-body-s">{{ payment.agreementNumber }}</td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ payment.paymentRequestNumber }}</td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ payment.originalValueText }}</td>
+                  <td class="govuk-table__cell govuk-body-s"><strong class="govuk-tag {% if payment.status.state == 'Completed' %}govuk-tag--green{% elif payment.status.state == 'Waiting' %}govuk-tag--yellow{% endif %}">{{ payment.status.detail }}</strong></td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ payment.lastUpdated }}</td>
+                  <td class="govuk-table__cell govuk-body-s"><a href="/monitoring/payments/correlation-id?correlationId={{ payment.correlationId }}">View</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p id="no-hold-text" class="govuk-body">No payments found for FRN {{frn}}.</p>
+        {% endif %}
+      </div>
+    </div>
+  </main>
 {% endblock %}
