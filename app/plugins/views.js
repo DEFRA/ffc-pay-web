@@ -39,13 +39,6 @@ module.exports = {
             return normalizedBase + (normalizedAsset ? '/' + normalizedAsset : '')
           })
 
-          env.addGlobal('getGovukAssetPath', function (assetPath) {
-            const base = options?.context?.govukAssetPath || '/assets'
-            const normalizedBase = String(base).replace(/\/+$/, '')
-            const normalizedAsset = String(assetPath || '').replace(/^\/+/, '')
-            return normalizedBase + (normalizedAsset ? '/' + normalizedAsset : '')
-          })
-
           options.compileOptions.environment = env
           return next()
         }
