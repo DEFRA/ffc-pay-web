@@ -33,6 +33,7 @@ describe('GET /closure', () => {
   ])('renders closures page %#', async ({ closures, noClosures }) => {
     mockGetClosures(closures)
     const res = await server.inject({ method: 'GET', url, auth })
+    console.log(res.payload)
     expect(res.statusCode).toBe(200)
     const $ = cheerio.load(res.payload)
     expect($('h1').text()).toEqual(pageH1)

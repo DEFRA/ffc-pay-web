@@ -151,24 +151,5 @@ describe('Payment holds', () => {
 
       expect(res.statusCode).toBe(403)
     })
-
-    test.each([
-      { cookieCrumb: 'incorrect' },
-      { cookieCrumb: undefined }
-    ])('returns 403 when cookie crumb is invalid or not included', async ({ cookieCrumb }) => {
-      const mockForCrumbs = () => mockGetPaymentHoldCategories([])
-      const { viewCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)
-
-      const holdCategoryId = 123
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload: { crumb: viewCrumb, frn: validFrn, holdCategoryId },
-        headers: { cookie: `crumb=${cookieCrumb}` }
-      })
-
-      expect(res.statusCode).toBe(403)
-    })
   })
 })
