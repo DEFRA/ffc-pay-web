@@ -33,14 +33,14 @@ module.exports = {
           })
 
           env.addGlobal('getAssetPath', function (assetPath) {
-            const base = (options && options.context && options.context.assetPath) || '/static'
+            const base = options?.context?.assetPath || '/static'
             const normalizedBase = String(base).replace(/\/+$/, '')
             const normalizedAsset = String(assetPath || '').replace(/^\/+/, '')
             return normalizedBase + (normalizedAsset ? '/' + normalizedAsset : '')
           })
 
           env.addGlobal('getGovukAssetPath', function (assetPath) {
-            const base = (options && options.context && options.context.govukAssetPath) || '/assets'
+            const base = options?.context?.govukAssetPath || '/assets'
             const normalizedBase = String(base).replace(/\/+$/, '')
             const normalizedAsset = String(assetPath || '').replace(/^\/+/, '')
             return normalizedBase + (normalizedAsset ? '/' + normalizedAsset : '')

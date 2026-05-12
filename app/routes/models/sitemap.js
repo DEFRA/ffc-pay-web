@@ -1,4 +1,4 @@
-function ViewModel (sections = []) {
+function viewModel (sections = []) {
   this.model = {
     title: { text: 'Sitemap' },
     sections: (sections || []).map(s => {
@@ -9,4 +9,4 @@ function ViewModel (sections = []) {
   }
 }
 
-module.exports = ViewModel
+module.exports = viewModel
