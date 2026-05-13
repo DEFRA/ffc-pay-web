@@ -1,5 +1,4 @@
 const { v4: uuidv4 } = require('uuid')
-const util = require('node:util')
 const { TYPE } = require('../constants/type')
 const config = require('../config')
 const { sendMessage, receiveMessage } = require('../messaging')
@@ -25,7 +24,7 @@ const getData = async (category, value) => {
   await sendMessage(request, TYPE, config.messageConfig.dataTopic, {
     messageId
   })
-  console.info('Data request sent:', util.inspect(request, false, null, true))
+  console.info(`Data request sent: category=${request.category}, value=${request.value}`)
 
   const response = await receiveMessage(
     messageId,
@@ -49,11 +48,7 @@ const getData = async (category, value) => {
   }
 
   const parsedData = JSON.parse(downloadedData)
-
-  console.info(
-    'Data response received:',
-    util.inspect(parsedData, false, null, true)
-  )
+  console.info(`Data response received: ${request.category}=${request.value}`)
 
   if (!Array.isArray(parsedData.data)) {
     return parsedData.data
