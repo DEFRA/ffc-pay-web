@@ -1,9 +1,9 @@
 {% extends '_layout.njk' %}
 
-{% set pageTitle = contactId ? "Update alert recipient" : "Add new alert recipient" %}
-
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% set pageTitle = contactId ? "Update alert recipient" : "Add new alert recipient" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 

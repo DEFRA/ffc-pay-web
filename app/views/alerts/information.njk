@@ -1,8 +1,9 @@
 {% extends '_layout.njk' %}
 
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
 {% set pageTitle = "Alerts information" %}
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
