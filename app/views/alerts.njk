@@ -1,9 +1,12 @@
 {% extends '_layout.njk' %}
 
+{% set pageTitle = "Manage alerts" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
   {{ govukBreadcrumbs({
@@ -11,16 +14,15 @@
       text: "Home",
       href: "/"
     }, {
-      text: "Manage alerts"
+      text: pageTitle
     }]
   })}}
 {% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-full">
-        <h1 class="govuk-heading-l">Manage alerts</h1>
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
         <p class="govuk-body">
           This section allows users to see payment alerts that are in place for each scheme and   
@@ -109,5 +111,4 @@
         {% endif %}
       </div>
     </div>
-  </main>
 {% endblock %}

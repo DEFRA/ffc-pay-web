@@ -1,18 +1,18 @@
 {% extends '_layout.njk' %}
 
-{% set mainClasses = "govuk-main-wrapper--l" %}
+{% set pageTitle = "Sorry, there is a problem with the service" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Sorry, there is a problem with the service</h1>
-        {% if message %}
-          <p class="govuk-body">{{ message | escape }}</p>
-        {% else %}
-            <p class="govuk-body">An unexpected error has occurred. Please try again later.</p>
-        {% endif %}
-      </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      {% if message %}
+        <p class="govuk-body">{{ message | escape }}</p>
+      {% else %}
+          <p class="govuk-body">An unexpected error has occurred. Please try again later.</p>
+      {% endif %}
     </div>
-  </main>
+  </div>
 {% endblock %}

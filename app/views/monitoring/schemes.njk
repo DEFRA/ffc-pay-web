@@ -1,6 +1,10 @@
 {% extends '_layout.njk' %}
+
+{% set pageTitle = "Monitoring by scheme" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
   {{ govukBreadcrumbs({
@@ -8,54 +12,52 @@
       text: "Home",
       href: "/"
     },{
-      text: "Monitoring by scheme"
+      text: pageTitle
     }]
   })}}
 {% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-full">
-        <form method="GET" action="/monitoring/view-processed-payment-requests" autocomplete="off" novalidate>
-          <h1 class="govuk-heading-l">Monitoring by scheme</h1>
-            {% if error %}
-              <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-                <h2 class="govuk-error-summary__title" id="error-summary-title">
-                There is a problem
-              </h2>
-                <div class="govuk-error-summary__body">
-                  <ul class="govuk-list govuk-error-summary__list">
-                    <li>
-                      <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ error }}</span>
-                    </li>
-                  </ul>
-                </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <form method="GET" action="/monitoring/view-processed-payment-requests" autocomplete="off" novalidate>
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+          {% if error %}
+            <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+              <h2 class="govuk-error-summary__title" id="error-summary-title">
+              There is a problem
+            </h2>
+              <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+                  <li>
+                    <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ error }}</span>
+                  </li>
+                </ul>
               </div>
-            {% endif %}
-
-          {% if data.length %}
-            <div class="govuk-form-group">
-              <label class="govuk-label" for="schemeId">
-                Select the scheme to view data for
-              </label>
-              <select class="govuk-select" id="schemeId" name="schemeId">
-                {% for scheme in data %}
-                  <option value="{{scheme.schemeId}}">{{scheme.name}}</option>
-                {% endfor %}
-              </select>
             </div>
-            {{ govukButton({
-              text: "Continue",
-              attributes: {
-                id: "submit"
-              }
-            }) }}
-          {% else %}
-            <p id="no-schemes" class="govuk-body">No schemes were found.</p>
           {% endif %}
-        </form>
-      </div>
+
+        {% if data.length %}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="schemeId">
+              Select the scheme to view data for
+            </label>
+            <select class="govuk-select" id="schemeId" name="schemeId">
+              {% for scheme in data %}
+                <option value="{{scheme.schemeId}}">{{scheme.name}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {{ govukButton({
+            text: "Continue",
+            attributes: {
+              id: "submit"
+            }
+          }) }}
+        {% else %}
+          <p id="no-schemes" class="govuk-body">No schemes were found.</p>
+        {% endif %}
+      </form>
     </div>
-  </main>
+  </div>
 {% endblock %}

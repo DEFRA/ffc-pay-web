@@ -1,6 +1,10 @@
 {% extends "_layout.njk" %}
+
+{% set pageTitle = "Processing manual payment upload" %}
 {% from "macros/loading.njk" import renderLoadingPage %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
   {{ govukBreadcrumbs({
@@ -11,22 +15,20 @@
       text: "Manual payment upload",
       href: "/manual-payments"
     },{
-      text: "Processing manual payment upload"
+      text: pageTitle
     }]
   })}}
 {% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    {{ renderLoadingPage(
-      jobId=jobId,
-      checkUrl="/loading/" + jobId,
-      redirectUrl="/manual-payments",
-      title="Processing manual payment upload",
-      statusMessage="We're processing your manual payment file. This may take a few minutes for large files.",
-      completedMessage="Your manual payment file has been successfully processed. To make another upload, please click the link below to return to the manual payments page.",
-      errorMessage="We were unable to process your manual payment file.", 
-      autoRedirect=false
-    ) }}
-  </main>
+  {{ renderLoadingPage(
+    jobId=jobId,
+    checkUrl="/loading/" + jobId,
+    redirectUrl="/manual-payments",
+    title=pageTitle,
+    statusMessage="We're processing your manual payment file. This may take a few minutes for large files.",
+    completedMessage="Your manual payment file has been successfully processed. To make another upload, please click the link below to return to the manual payments page.",
+    errorMessage="We were unable to process your manual payment file.", 
+    autoRedirect=false
+  ) }}
 {% endblock %}

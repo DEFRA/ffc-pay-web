@@ -1,7 +1,10 @@
 {% extends '_layout.njk' %}
 
+{% set pageTitle = "Add agreement closures in bulk" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
   {{ govukBreadcrumbs({
@@ -12,60 +15,58 @@
       text: "Agreement closures",
       href: "/closure"
     },{
-      text: "Add agreement closures in bulk"
+      text: pageTitle
     }]
   })}}
 {% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-full">
-        <form method="POST" action="/closure/bulk" autocomplete="off" novalidate enctype="multipart/form-data">
-          <input type="hidden" name="crumb" value="{{crumb}}"/>
-          <h1 class="govuk-heading-l">Add agreement closures in bulk</h1>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <form method="POST" action="/closure/bulk" autocomplete="off" novalidate enctype="multipart/form-data">
+        <input type="hidden" name="crumb" value="{{crumb}}"/>
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
-          <p class="govuk-body">Any details you provide here will result in a suppression being applied to payments against a given FRN and agreement number.</p>
-          <p class="govuk-body">If a 0 value request is provided to the Payment Hub, following the date supplied, any amount repayable will be suppressed and Dynamics 365 will be informed that the outstanding value should be reduced to 0.</p>
-          <p class="govuk-body">It is assumed that any details provided are applicable to SFI22.</p>
+        <p class="govuk-body">Any details you provide here will result in a suppression being applied to payments against a given FRN and agreement number.</p>
+        <p class="govuk-body">If a 0 value request is provided to the Payment Hub, following the date supplied, any amount repayable will be suppressed and Dynamics 365 will be informed that the outstanding value should be reduced to 0.</p>
+        <p class="govuk-body">It is assumed that any details provided are applicable to SFI22.</p>
 
-          <p class="govuk-body">Want to upload a single closure? Click <a href="/closure/add" class="govuk-link">here</a>.</p>
+        <p class="govuk-body">Want to upload a single closure? Click <a href="/closure/add" class="govuk-link">here</a>.</p>
 
-          {% if errors %}
-            <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-              <h2 class="govuk-error-summary__title" id="error-summary-title">
-              There is a problem
-            </h2>
-              <div class="govuk-error-summary__body">
-                <ul class="govuk-list govuk-error-summary__list">
-                  {% for errorDetail in errors.details %}
-                    <li>
-                      <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
-                    </li>
-                  {% endfor %}
-                </ul>
-              </div>
+        {% if errors %}
+          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+            <h2 class="govuk-error-summary__title" id="error-summary-title">
+            There is a problem
+          </h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                {% for errorDetail in errors.details %}
+                  <li>
+                    <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
             </div>
-          {% endif %}
-
-          <div class="govuk-form-group">
-            <label class="govuk-label govuk-label-s" for="file">
-              Upload a file
-            </label>
-            <div class="govuk-hint">
-              In case of any questions on the required format, please contact the Payment Hub team.
-            </div>
-            <input class="govuk-file-upload" id="file" name="file" type="file" value="{{ file }}">
           </div>
-          
-          {{ govukButton({
-            text: "Create",
-            attributes: {
-              id: "submit"
-            }
-          }) }}
-        </form>
-      </div>
+        {% endif %}
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label-s" for="file">
+            Upload a file
+          </label>
+          <div class="govuk-hint">
+            In case of any questions on the required format, please contact the Payment Hub team.
+          </div>
+          <input class="govuk-file-upload" id="file" name="file" type="file" value="{{ file }}">
+        </div>
+        
+        {{ govukButton({
+          text: "Create",
+          attributes: {
+            id: "submit"
+          }
+        }) }}
+      </form>
     </div>
-  </main>
+  </div>
 {% endblock %}

@@ -1,5 +1,9 @@
 {% extends '_layout.njk' %}
+
+{% set pageTitle = "Monitoring by correlation ID" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
   {{ govukBreadcrumbs({
@@ -10,49 +14,47 @@
       text: "Monitoring",
       href: "/monitoring"
     },{
-      text: "Monitoring by correlation ID"
+      text: pageTitle
     }]
   })}}
 {% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-full">
-        <span class="govuk-caption-l">{{ events.frn }} - {{ events.agreementNumber }} - PR{{ events.paymentRequestNumber }}</span>
-        <h1 class="govuk-heading-l">Monitoring by correlation ID</h1>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <span class="govuk-caption-l">{{ events.frn }} - {{ events.agreementNumber }} - PR{{ events.paymentRequestNumber }}</span>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
-        {% if events %}
-          <table class="govuk-table">
-            <thead class="govuk-table__head">
+      {% if events %}
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header govuk-body-s">Activity</th>
+              <th scope="col" class="govuk-table__header govuk-body-s">Status</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Completed</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for event in events.events %}
               <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header govuk-body-s">Activity</th>
-                <th scope="col" class="govuk-table__header govuk-body-s">Status</th>
-                <th scope="col" class="govuk-table__header govuk-table__header--numeric govuk-body-s">Completed</th>
+                <td class="govuk-table__cell govuk-body-s">{{ event.status.name }}</td>
+                <td class="govuk-table__cell govuk-body-s">
+                  {% if event.timestamp %}
+                    <strong class="govuk-tag govuk-tag--green">Completed</strong>
+                  {% elif events.events[loop.index0 - 1].lastEvent %}
+                    <span class="govuk-tag">In progress</span>
+                  {% else %}
+                    <strong class="govuk-tag govuk-tag--grey">Not started yet</strong>
+                  {% endif %}
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ event.timestamp }}</td>
               </tr>
-            </thead>
-            <tbody class="govuk-table__body">
-              {% for event in events.events %}
-                <tr class="govuk-table__row">
-                  <td class="govuk-table__cell govuk-body-s">{{ event.status.name }}</td>
-                  <td class="govuk-table__cell govuk-body-s">
-                    {% if event.timestamp %}
-                      <strong class="govuk-tag govuk-tag--green">Completed</strong>
-                    {% elif events.events[loop.index0 - 1].lastEvent %}
-                      <span class="govuk-tag">In progress</span>
-                    {% else %}
-                      <strong class="govuk-tag govuk-tag--grey">Not started yet</strong>
-                    {% endif %}
-                  </td>
-                  <td class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">{{ event.timestamp }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        {% else %}
-          <p id="no-hold-text" class="govuk-body">No events found for FRN {{events.frn}}.</p>
-        {% endif %}
-      </div>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p id="no-hold-text" class="govuk-body">No events found for FRN {{events.frn}}.</p>
+      {% endif %}
     </div>
-  </main>
+  </div>
 {% endblock %}

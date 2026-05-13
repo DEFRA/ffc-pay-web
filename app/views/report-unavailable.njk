@@ -1,7 +1,9 @@
 {% extends '_layout.njk' %}
 
-{% set mainClasses = "govuk-main-wrapper--l" %}
+{% set pageTitle = "Report unavailable" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
   {{ govukBreadcrumbs({
@@ -12,20 +14,18 @@
       text: "Reports",
       href: "/report-list"
     }, {
-      text: "Report unavailable"
+      text: pageTitle
     }]
   })}}
 {% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Report unavailable</h1>
-        <p class="govuk-body">
-          This report is no longer available or does not contain any associated data.
-        </p>
-      </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      <p class="govuk-body">
+        This report is no longer available or does not contain any associated data.
+      </p>
     </div>
-  </main>
+  </div>
 {% endblock %}

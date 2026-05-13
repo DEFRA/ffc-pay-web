@@ -1,14 +1,14 @@
 {% extends '_layout.njk' %}
 
-{% set mainClasses = "govuk-main-wrapper--l" %}
+{% set pageTitle = "Sorry, you are not authorised to perform this action" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Sorry, you are not authorised to perform this action</h1>
-        <a class="govuk-link" href="/login">Login using another account</a>
-      </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      <a class="govuk-link" href="/login">Login using another account</a>
     </div>
-  </main>
+  </div>
 {% endblock %}

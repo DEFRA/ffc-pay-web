@@ -1,5 +1,9 @@
 {% extends '_layout.njk' %}
+
+{% set pageTitle = "Reports" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
   {{ govukBreadcrumbs({
@@ -7,7 +11,7 @@
       text: "Home",
       href: "/"
     },{
-      text: "Reports"
+      text: pageTitle
     }]
   })}}
 {% endblock %}
@@ -38,37 +42,25 @@
       }
     }
   </style>
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },
-    {
-      text: "Reports",
-      href: "/report-list"
-    }]
-  })}}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-full">
-        <h1 class="govuk-heading-l">Reports</h1>
-        <div class="govuk-cards govuk-cards--1">
-          <div class="govuk-cards--2__item govuk-card--dashboard">
-            <ul class="govuk-list govuk-list--bullet">
-              {% for reportType in reportTypes %}
-                <li>
-                  <a href="/report-list/{{ reportTypesRoutes[reportType] | lower }}" class="govuk-link">{{ reportType }}</a>
-                </li>
-              {% endfor %}
-              {% if totalHolds > 0 %}
-                <li>
-                  <a href="/report-list/holds" class="govuk-link">Holds</a>
-                </li>
-              {% endif %}
-            </ul>
-          </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      <div class="govuk-cards govuk-cards--1">
+        <div class="govuk-cards--2__item govuk-card--dashboard">
+          <ul class="govuk-list govuk-list--bullet">
+            {% for reportType in reportTypes %}
+              <li>
+                <a href="/report-list/{{ reportTypesRoutes[reportType] | lower }}" class="govuk-link">{{ reportType }}</a>
+              </li>
+            {% endfor %}
+            {% if totalHolds > 0 %}
+              <li>
+                <a href="/report-list/holds" class="govuk-link">Holds</a>
+              </li>
+            {% endif %}
+          </ul>
         </div>
       </div>
     </div>
-  </main>
+  </div>
 {% endblock %}

@@ -1,6 +1,9 @@
 {% extends '_layout.njk' %}
+
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from 'macros/report-form-fields.njk' import submitButton %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
   {{ govukBreadcrumbs({
@@ -17,21 +20,19 @@
 {% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    {% if errors %}
-      {{ govukErrorSummary({
-        titleText: "There is a problem",
-        errorList: errors
-      }) }}
-    {% endif %}
+  {% if errors %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: errors
+    }) }}
+  {% endif %}
 
-    <form id="reportForm" method="get" action="{{ formAction }}">
-      <input type="hidden" name="report-url" value="{{ reportUrl }}">
-      <input type="hidden" name="report-title" value="{{ reportTitle }}">
-      
-      {% block reportContent %}{% endblock %}
-      
-      {{ submitButton(reportSubmitLabel or "Download report") }}
-    </form>
-  </main>
+  <form id="reportForm" method="get" action="{{ formAction }}">
+    <input type="hidden" name="report-url" value="{{ reportUrl }}">
+    <input type="hidden" name="report-title" value="{{ reportTitle }}">
+    
+    {% block reportContent %}{% endblock %}
+    
+    {{ submitButton(reportSubmitLabel or "Download report") }}
+  </form>
 {% endblock %}

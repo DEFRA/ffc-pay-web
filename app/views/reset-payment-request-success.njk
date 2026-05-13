@@ -1,7 +1,10 @@
 {% extends '_layout.njk' %}
 
+{% set pageTitle = "Payment request successfully reset" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
   {{ govukBreadcrumbs({
@@ -12,36 +15,34 @@
       text: "Reset payment request",
       href: "/payment-request/reset"
     }, {
-      text: "Payment request successfully reset"
+      text: pageTitle
     }]
   })}}
 {% endblock %}
 
 {% block content %}
-  <main class="govuk-main-wrapper " id="main-content" role="main">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-width-container">
-          <div class="govuk-panel govuk-panel--confirmation">
-            <h1 class="govuk-panel__title">
-              Payment request successfully reset
-            </h1>
-            <div class="govuk-panel__body">
-              Invoice number<br><strong>{{ invoiceNumber }}</strong>
-            </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-width-container">
+        <div class="govuk-panel govuk-panel--confirmation">
+          <h1 class="govuk-panel__title">
+            {{ pageTitle }}
+          </h1>
+          <div class="govuk-panel__body">
+            Invoice number<br><strong>{{ invoiceNumber }}</strong>
           </div>
-
-          <h2 class="govuk-heading-m">What happens next</h2>
-
-          <p class="govuk-body">
-            The payment request will be reprocessed and resent to D365.
-          </p>
-          <p class="govuk-body">
-            <a class="govuk-link" href="/">Perform another action</a>
-          </p>
-
         </div>
+
+        <h2 class="govuk-heading-m">What happens next</h2>
+
+        <p class="govuk-body">
+          The payment request will be reprocessed and resent to D365.
+        </p>
+        <p class="govuk-body">
+          <a class="govuk-link" href="/">Perform another action</a>
+        </p>
+
       </div>
     </div>
-  </main>
+  </div>
 {% endblock %}
