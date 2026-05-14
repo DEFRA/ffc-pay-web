@@ -1,18 +1,29 @@
 {% extends '_layout.njk' %}
 
-{% set mainClasses = "govuk-main-wrapper--l" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% block content %}
+{% set pageTitle = "Hold report unavailable" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
       href: "/"
+    },{
+      text: "Reports",
+      href: "/report-list"
+    }, {
+      text: {{ pageTitle }}
     }]
   })}}
+{% endblock %}
+
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Hold report unavailable</h1>
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
         <p class="govuk-body">
           There are currently no holds.
         </p>

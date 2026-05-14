@@ -1,21 +1,26 @@
 {% extends '_layout.njk' %}
 
-{% set mainClasses = "govuk-main-wrapper--l" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "macros/unavailable.njk" import contentBlock %}
 
-{% block content %}
+{% set pageTitle = "Payment report unavailable" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
       href: "/"
+    },{
+      text: "Reports",
+      href: "/report-list"
+    }, {
+      text: pageTitle
     }]
   })}}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Payment report unavailable</h1>
-        <p class="govuk-body">
-          The payment report is not currently available.  Please try again later.
-        </p>
-    </div>
-  </div>
+{% endblock %}
+
+{% block content %}
+  {{ contentBlock(pageTitle, "The payment report is not currently available.  Please try again later.") }}
 {% endblock %}

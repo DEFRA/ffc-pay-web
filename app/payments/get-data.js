@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid')
+const { randomUUID } = require('node:crypto')
 const util = require('node:util')
 const { TYPE } = require('../constants/type')
 const config = require('../config')
@@ -19,7 +19,7 @@ const streamToString = async (readableStream) => {
 }
 
 const getData = async (category, value) => {
-  const messageId = uuidv4()
+  const messageId = randomUUID()
   const request = { category, value }
 
   await sendMessage(request, TYPE, config.messageConfig.dataTopic, {

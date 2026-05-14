@@ -1,23 +1,32 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% block content %}
+{% set pageTitle = "Add agreement closure" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
       href: "/"
     },{
-      text: "Closures",
+      text: "Agreement closures",
       href: "/closure"
+    },{
+      text: pageTitle
     }]
   })}}
+{% endblock %}
+
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <form method="POST" action="/closure/add" autocomplete="off" novalidate>
         <input type="hidden" name="crumb" value="{{crumb}}"/>
-        <h1 class="govuk-heading-l">Agreement closure</h1>
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
         <p class="govuk-body">Any details you provide here will result in a suppression being applied to payments against a given FRN and agreement number.</p>
         <p class="govuk-body">If a 0 value request is provided to the Payment Hub, following the date supplied, any amount repayable will be suppressed and Dynamics 365 will be informed that the outstanding value should be reduced to 0.</p>

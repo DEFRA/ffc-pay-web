@@ -1,0 +1,177 @@
+{% extends "_layout.njk" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% set pageTitle = "Privacy notice" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "/"
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body">
+        Payment management is provided by Defra.
+      </P>
+
+      <p class="govuk-body">
+        Defra is the data controller for pages starting with ffc-pay-web - 
+        for example, the site's <a href="/accessibility">accessibility statement</a>.
+      </P>
+
+      <p class="govuk-body">If you follow a link to a service provided by another government department, agency or local authority, that organisation will:</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>be the data controller</li>
+        <li>be responsible for processing any data you share with them</li>
+        <li>publish and manage their own privacy notice with details of how to contact them</li>
+      </ul>
+
+      <p class="govuk-body">
+        A data controller determines how and why personal data is processed. 
+        For more information, read the Cabinet Office’s entry in the <a rel="external" href="https://ico.org.uk/ESDWebPages/Entry/Z7414053">Data Protection Public Register</a>.
+      </p>
+
+      <h2 class="govuk-heading-m">What data we collect</h2>
+
+      <p class="govuk-body">The personal data we collect from you includes:</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>your Internet Protocol (IP) address, and details of which version of <a rel="external" href="https://www.gov.uk/help/browsers">web browser you used</a>
+        </li>
+        <li>information on how you use the site, using <a href="/cookies">cookies and page tagging techniques</a>
+        </li>
+      </ul>
+
+      <p class="govuk-body">
+        Where you provide your consent, we use <a rel="external" href="https://support.google.com/analytics/topic/2919631">Google Analytics</a> to collect information about how you use GOV.UK. 
+        This includes <abbr title="Internet Protocol">IP</abbr> addresses.
+      </p>
+
+      <p class="govuk-body">Google Analytics processes information about:</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>the pages you visit on GOV.UK</li>
+        <li>how long you spend on each GOV.UK page</li>
+        <li>how you got to the site</li>
+        <li>what you click on while you’re visiting the site</li>
+      </ul>
+
+      <p class="govuk-body">We will not combine analytics information with other data sets in a way that would directly identify who you are.</p>
+
+      <p class="govuk-body">
+        <a href="/cookies">Find out more about how we use Google Analytics and other cookies on this service</a>.</p>
+
+      <h2 class="govuk-heading-m">Why we need your data</h2>
+
+      <p class="govuk-body">We collect your personal data in order to:</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>gather feedback to improve our services</li>
+        <li>monitor use of the site to identify security threats</li>
+        <li>monitor the performance of the site to identify inefficiencies and JavaScript errors</li>
+      </ul>
+
+      <p class="govuk-body">
+        We use the information we collect through Google Analytics to see how you use the service and to see how well the site performs on your device.
+      </p>
+
+      <p class="govuk-body">We do this to help:</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>make sure the service is meeting the needs of its users</li>
+        <li>make improvements</li>
+        <li>make performance improvements, for example improving page load time and data usage</li>
+      </ul>
+
+      <h2 class="govuk-heading-m">What we do with your data</h2>
+
+      <p class="govuk-body">
+        The data we collect with Google Analytics cookies is transferred and stored with Google where we analyse it with Google Analytics software (Universal Analytics). 
+        We do not allow Google to use or share this data for their own purposes.
+      </p>
+
+      <p class="govuk-body">We will not:</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>sell or rent your data to third parties</li>
+        <li>share your data with third parties for marketing purposes</li>
+      </ul>
+
+      <h2 class="govuk-heading-m">Where your data is processed and stored</h2>
+
+      <p class="govuk-body">
+        All personal data is stored in the <a rel="external" href="https://www.gov.uk/eu-eea">European Economic Area</a> (EEA). 
+        Data collected by Google Analytics may be transferred outside the EEA for processing.
+      </p>
+
+      <h2 class="govuk-heading-m">How we protect your data and keep it secure</h2>
+
+      <p class="govuk-body">
+        We are committed to doing all that we can to keep your data secure. 
+        We have set up systems and processes to prevent unauthorised access or disclosure of your data - 
+        for example, we protect your data using varying levels of encryption.
+      </p>
+
+      <h2 class="govuk-heading-m">Your rights</h2>
+
+      <p class="govuk-body">You have the right to request:</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>information about how your personal data is processed</li>
+        <li>a copy of that personal data</li>
+        <li>that anything inaccurate in your personal data is corrected immediately</li>
+      </ul>
+
+      <p class="govuk-body">You can also:</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>raise an objection about how your personal data is processed</li>
+        <li>request that your personal data is erased if there is no longer a justification for it</li>
+        <li>ask that the processing of your personal data is restricted in certain circumstances</li>
+      </ul>
+
+      <p class="govuk-body">If you have any of these requests, get in contact with our Privacy Team.</p>
+
+      <h2 class="govuk-heading-m">Links to other websites</h2>
+
+      <p class="govuk-body">This service contains links to other websites.</p>
+
+      <p class="govuk-body">
+        This privacy notice only applies to Calculate my progressive reductions, and does not cover other government services and transactions that we link to. 
+        These services, have their own terms and conditions and privacy policies.
+      </p>
+
+      <h3 class="govuk-heading-s">Following a link to another website</h3>
+
+      <p class="govuk-body">If you go to another website from this one, read the privacy policy on that website to find out what it does with your information.</p>
+
+      <h2 class="govuk-heading-m">Contact us or make a complaint</h2>
+
+      <p class="govuk-body">You can contact our Data Protection Officer (DPO):</p>
+
+      <p class="govuk-body">
+        DPO<br>
+        <a href="mailto:DefraGroupDataProtectionOfficer@defra.gov.uk">DefraGroupDataProtectionOfficer@defra.gov.uk</a><br>
+        Defra<br>
+        Department for the Environment, Food and Rural Affairs<br>
+        2 Marsham Street<br>
+        London<br>
+        SW1P 4DF
+      </p>
+
+      <div class="govuk-inset-text">
+        This notice was last updated on 06/05/2026
+      </div>
+
+    </div>
+  </div>
+{% endblock %}

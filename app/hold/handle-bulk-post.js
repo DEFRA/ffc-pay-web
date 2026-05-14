@@ -3,13 +3,13 @@ const { handleFileError } = require('./handle-error')
 const { processHoldData } = require('./process-hold-data')
 const { processUpload } = require('./process-upload')
 const { setLoadingStatus } = require('../helpers/set-loading-status')
-const { v4: uuidv4 } = require('uuid')
+const { randomUUID } = require('node:crypto')
 
 const HOLDS_VIEWS = require('../constants/holds-views')
 
 const handleBulkPost = async (request, h) => {
   try {
-    const jobId = uuidv4()
+    const jobId = randomUUID()
     const fileContent = readFileContent(request.payload.file.path)
 
     if (!fileContent) {

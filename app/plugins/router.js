@@ -26,7 +26,11 @@ let routes = [].concat(
   require('../routes/manual-payments'),
   require('../routes/alerts'),
   require('../routes/metrics'),
-  require('../routes/download-statements')
+  require('../routes/download-statements'),
+  require('../routes/accessibility'),
+  require('../routes/privacy'),
+  require('../routes/cookies'),
+  require('../routes/sitemap')
 )
 
 if (config.legacyReportsEnabled) {

@@ -1,10 +1,13 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% macro alertBreadcrumbs() %}
-  {{ govukBreadcrumbs({
-    items: [
-      { text: "Home", href: "/" },
-      { text: "Manage alerts", href: "/alerts" }
-    ]
-  }) }}
-{% endmacro %}
+{{ govukBreadcrumbs({
+  items: [{
+    text: "Home",
+    href: "/"
+  }, {
+    text: "Manage alerts",
+    href: "/alerts"
+  }, {
+    text: pageTitle
+  }]
+}) }}

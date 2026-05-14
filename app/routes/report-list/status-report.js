@@ -22,7 +22,7 @@ const reportTypes = {
 
 const getReportTitle = (type, year) => {
   const displayName = reportTypes[type]?.display || type
-  return `${displayName} Payment Status Reports - ${year}`
+  return `${displayName} payment status reports - ${year}`
 }
 
 module.exports = [

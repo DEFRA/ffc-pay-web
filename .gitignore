@@ -16,3 +16,4 @@ dist/
 # Generated views
 _layout.njk
 .gitleaks-shared/
+_cookie-banner.njk

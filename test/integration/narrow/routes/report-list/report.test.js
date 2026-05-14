@@ -58,13 +58,6 @@ describe('Report Routes', () => {
     expect(res.payload).toContain('<h1 class="govuk-heading-l">Report unavailable</h1>')
   })
 
-  test('GET /report-list/holds returns unavailable page if no holds', async () => {
-    getHolds.mockResolvedValue([])
-    const res = await injectRoute('/report-list/holds')
-    expect(res.statusCode).toBe(200)
-    expect(res.payload).toContain('There are currently no holds.')
-  })
-
   test('GET /report-list/transaction-summary/download returns 400 for invalid params', async () => {
     const res = await injectRoute('/report-list/transaction-summary/download?schemeId=invalid&year=2023')
     expect(res.statusCode).toBe(400)

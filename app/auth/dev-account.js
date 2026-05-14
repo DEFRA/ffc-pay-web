@@ -1,3 +1,3 @@
-const { v4: uuidv4 } = require('uuid')
+const { randomUUID } = require('node:crypto')
 
-module.exports = { homeAccountId: uuidv4(), name: 'Developer' }
+module.exports = { homeAccountId: randomUUID(), name: 'Developer' }

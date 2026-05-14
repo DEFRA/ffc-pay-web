@@ -1,23 +1,29 @@
 {% extends "_layout.njk" %}
-{% from 'macros/report-form-fields.njk' import reportPageTitle %}
 
+{% from 'macros/report-form-fields.njk' import reportPageTitle %}
 {% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% block content %}
-  {{ govukBreadcrumbs({
-    items: [
-      { text: "Home", href: "/" },
-      { text: "Report List", href: "/report-list" },
-      { text: 'Payment Statement Status', href: '/report-list/status-report' },
-      { 
-        text: reportTitle, 
-        href: "#", 
-        attributes: { 'aria-disabled': 'true', 'class': 'govuk-breadcrumbs__link--disabled' } 
-      }
-    ]
-  }) }}
+{% block pageTitle %}{{ reportTitle }} - {{ serviceName }}{% endblock %}
 
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Reports",
+      href: "/report-list"
+    }, {
+      text: "Payment statement status report",
+      href: "/report-list/status-report"
+    }, {
+      text: reportTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
   {{ reportPageTitle(reportTitle) }}
 
   {% if govukTaskListData.items.length %}

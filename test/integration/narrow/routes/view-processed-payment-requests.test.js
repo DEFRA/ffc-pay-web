@@ -39,7 +39,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
   describe('GET /monitoring/schemes', () => {
     const method = 'GET'
     const url = '/monitoring/schemes'
-    const pageH1 = 'Schemes'
+    const pageH1 = 'Monitoring by scheme'
 
     test('returns 200 when schemes load successfully', async () => {
       mockGetSchemes(mockSchemes)
