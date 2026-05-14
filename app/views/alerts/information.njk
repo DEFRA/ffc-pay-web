@@ -8,17 +8,7 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    }, { 
-      text: "Manage alerts",
-      href: "/alerts"
-    }, { 
-      text: pageTitle
-    }]
-  }) }}
+  {% include "macros/alert-breadcrumbs.njk" %}
 {% endblock %}
 
 {% block content %}

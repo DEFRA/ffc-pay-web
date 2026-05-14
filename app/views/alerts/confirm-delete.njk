@@ -1,24 +1,13 @@
 {% extends '_layout.njk' %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% set pageTitle = "Delete user" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    }, { 
-      text: "Manage alerts",
-      href: "/alerts"
-    }, { 
-      text: pageTitle
-    }]
-  }) }}
+  {% include "macros/alert-breadcrumbs.njk" %}
 {% endblock %}
 
 {% block content %}
