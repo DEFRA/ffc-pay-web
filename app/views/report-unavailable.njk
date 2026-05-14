@@ -1,6 +1,7 @@
 {% extends '_layout.njk' %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "macros/unavailable.njk" import contentBlock %}
 
 {% set pageTitle = "Report unavailable" %}
 
@@ -21,12 +22,5 @@
 {% endblock %}
 
 {% block content %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-      <p class="govuk-body">
-        This report is no longer available or does not contain any associated data.
-      </p>
-    </div>
-  </div>
+  {{ contentBlock(pageTitle, "This report is no longer available or does not contain any associated data.") }}
 {% endblock %}
