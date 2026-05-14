@@ -78,5 +78,5 @@
 </div>
 
 <% htmlWebpackPlugin.files.js.forEach(file => { %>
-  <script src="<%= file.replace('../dist/', 'static/') %>"></script>
+  <script src="<%= file.replace('../dist/', '/static/') %>"></script>
 <% }) %>
