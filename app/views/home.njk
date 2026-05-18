@@ -32,6 +32,18 @@
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{ serviceName }}</h1>
 
+      {% for card in cards %}
+        {% set visibleCards = cards | select(card => card.show is not defined or card.show) | list %}
+        {% macro chunk(arr, size) %}
+          {% set chunks = [] %}
+          {% for i in range(0, (arr | length), size) %}
+            {% set chunk = arr | slice(i, size) %}
+            {% do chunks.append(chunk) %}
+          {% endfor %}
+          {{- chunks -}}
+        {% endmacro %}
+
+      {% set cardRows = chunk(visibleCards, 2) %}
       <!-- Row 1: Payment holds + Reports -->
       <div class="govuk-cards govuk-cards--2">
         {% if auth.isApplicationAdmin or auth.isHoldAdminUser %}
