@@ -32,7 +32,7 @@
   "license": "OGL-UK-3.0",
   "dependencies": {
     "@azure/identity": "4.13.1",
-    "@azure/monitor-opentelemetry": "1.17.0",
+    "@azure/monitor-opentelemetry": "1.18.0",
     "@azure/msal-node": "5.1.5",
     "@azure/storage-blob": "12.31.0",
     "@fast-csv/format": "5.0.2",
@@ -78,6 +78,9 @@
     "style-loader": "2.0.0",
     "webpack": "5.105.3",
     "webpack-cli": "4.10.0"
+  },
+  "overrides": {
+    "protobufjs": "8.0.2"
   },
   "nodemonConfig": {
     "ignore": [

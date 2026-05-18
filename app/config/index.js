@@ -17,7 +17,7 @@ const schema = Joi.object({
   port: Joi.number().default(portNumber),
   env: Joi.string().valid('development', 'test', 'production').default('development'),
   staticCacheTimeoutMillis: Joi.number().default(staticCacheTimeout),
-  googleTagManagerKey: Joi.string().default('GTM-5XJKV8F'),
+  googleTagManagerKey: Joi.string().default(''),
   cookieOptions: Joi.object({
     ttl: Joi.number().default(1000 * 60 * 60 * 24 * 365),
     isSameSite: Joi.string().valid('Lax').default('Lax'),
