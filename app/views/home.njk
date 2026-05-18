@@ -1,5 +1,4 @@
 {% extends '_layout.njk' %}
-
 {% from "./macros/logout.njk" import logout %}
 
 {% block content %}
@@ -8,12 +7,27 @@
       display: flex;
       flex-direction: row;
       flex-wrap: nowrap;
-      gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
+      padding: 0;
     }
 
     .govuk-cards--2__item {
-      flex: 1 1;
+      flex: 1 1 50%;
+      margin-bottom: 40px;
+      position: relative;
+      padding: 25px;
+      list-style-type: none;
+      margin-bottom: 0;
+    }
+
+    .card__heading {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    .govuk-u-hidden {
+      visibility: hidden;
+      pointer-events: none;
     }
 
     /* Mobile layout: stack cards vertically */
@@ -21,6 +35,7 @@
       .govuk-cards {
         flex-direction: column;
         flex-wrap: nowrap;
+        margin-bottom: 30px;
       }
 
       .govuk-cards--2__item {
@@ -28,127 +43,35 @@
       }
     }
   </style>
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{ serviceName }}</h1>
 
-      {% for card in cards %}
-        {% set visibleCards = cards | select(card => card.show is not defined or card.show) | list %}
-        {% macro chunk(arr, size) %}
-          {% set chunks = [] %}
-          {% for i in range(0, (arr | length), size) %}
-            {% set chunk = arr | slice(i, size) %}
-            {% do chunks.append(chunk) %}
+      {% set cardGroups = [] %}
+      {% for i in range(0, cards | length, 2) %}
+        {% set cardGroups = cardGroups.concat([cards.slice(i, i + 2)]) %}
+      {% endfor %}
+
+      {% for group in cardGroups %}
+        <div class="govuk-cards govuk-cards--2">
+          {% for card in group %}
+            <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+              <h2 class="govuk-heading-m card__heading">{{ card.title }}</h2>
+              <ul class="govuk-list">
+                {% for link in card.links %}
+                  <li>
+                    <a href="{{ link.href }}" class="govuk-link">{{ link.text }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
           {% endfor %}
-          {{- chunks -}}
-        {% endmacro %}
-
-      {% set cardRows = chunk(visibleCards, 2) %}
-      <!-- Row 1: Payment holds + Reports -->
-      <div class="govuk-cards govuk-cards--2">
-        {% if auth.isApplicationAdmin or auth.isHoldAdminUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Payment holds</h2>
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              <a href="/payment-holds" class="govuk-link">Manage holds</a>
-            </p>
-          </div>
-        {% endif %}
-
-        {% if auth.isApplicationAdmin or auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser or auth.isStatusReportUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Finance reports</h2>
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              <a href="/report-list" class="govuk-link">Reports</a>
-            </p>
-          </div>
-        {% endif %}
-      </div>
-
-      <!-- Row 2: Schemes + Monitoring -->
-      <div class="govuk-cards govuk-cards--2">
-        {% if auth.isApplicationAdmin or auth.isAlertAdminUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Payment alerts</h2>
-            <ul class="govuk-list">
-              <li>
-                <a href="/alerts" class="govuk-link">View all alert recipients</a>
-              </li>
-            </ul>
-          </div>
-        {% endif %}
-        {% if auth.isApplicationAdmin or auth.isClosureAdminUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Agreement closures</h2>
-            <ul class="govuk-list">
-              <li>
-                <a href="/closure" class="govuk-link">Manage closures</a>
-              </li>
-              <li>
-                <a href="/closure/add" class="govuk-link">Add closure</a>
-              </li>
-              <li>
-                <a href="/closure/bulk" class="govuk-link">Add bulk closures</a>
-              </li>
-            </ul>
-          </div>
-        {% endif %}
-      </div>
-
-      <!-- Row 3: Agreement closures + Manual payment upload -->
-      <div class="govuk-cards govuk-cards--2">
-        {% if auth.isApplicationAdmin or auth.isHoldAdminUser or auth.isSchemeAdminUser or auth.isDataViewUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Payment event monitoring</h2>
-            <ul class="govuk-list">
-              <li>
-                <a href="/monitoring" class="govuk-link">View events</a>
-              </li>
-              <li>
-                <a href="/monitoring/schemes" class="govuk-link">View processed payment requests</a>
-              </li>
-            </ul>
-          </div>
-        {% endif %}
-        {% if auth.isApplicationAdmin or auth.isManualPaymentsUser and manualPaymentsActive %}
-          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Manual payment upload</h2>
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              <a href="/manual-payments" class="govuk-link">Upload manual payment file</a>
-            </p>
-          </div>
-        {% endif %}
-      </div>
-      <!-- Row 4: Schemes + Metrics -->
-      <div class="govuk-cards govuk-cards--2">
-        {% if auth.isApplicationAdmin or auth.isSchemeAdminUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Reset payment requests</h2>
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              <a href="/payment-request/reset" class="govuk-link">Reset payment request</a>
-            </p>
-          </div>
-        {% endif %}
-        {% if auth.isApplicationAdmin or auth.isSchemeAdminUser %}
-          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Management Information</h2>
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              <a href="/metrics" class="govuk-link">View management information</a>
-            </p>
-          </div>
-        {% endif %}
-      </div>
-      <!-- Row 5: Retrieve Statements -->
-      <div class="govuk-cards govuk-cards--2">
-        {% if auth.isApplicationAdmin %}
-          <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Download Statements</h2>
-            <p class="govuk-body govuk-!-margin-bottom-8">
-              <a href="download-statements" class="govuk-link">Download statements</a>
-            </p>
-          </div>
-        {% endif %}
-      </div>
+          {% if group | length == 1 %}
+            <div class="govuk-cards--2__item govuk-u-hidden"></div>
+          {% endif %}
+        </div>
+      {% endfor %}
     </div>
   </div>
 {% endblock %}

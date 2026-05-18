@@ -10,7 +10,7 @@ module.exports = {
   path: '/',
   options: {
     auth: AUTH_SCOPE,
-    handler: async (_request, h) => {
+    handler: async (request, h) => {
       const reportTypes = Object.keys(getReportTypes())
       const cards = [...sitemap]
       cards.shift()
@@ -18,12 +18,17 @@ module.exports = {
       for (const card of cards) {
         if (Array.isArray(card.links)) {
           card.links = card.links.filter(link => link.homeAuth)
+          card.hasAccess = card.links.some(link => {
+            return link.homeAuth.some(authFlag => request.auth.credentials.scope.includes(authFlag))
+          })
         }
       }
+
+      const accessibleCards = cards.filter(card => card.hasAccess)
       return h.view('home', {
         reportTypes,
         manualPaymentsActive: config.manualPaymentsActive,
-        cards
+        cards: accessibleCards
       })
     }
   }
