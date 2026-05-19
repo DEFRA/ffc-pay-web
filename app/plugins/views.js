@@ -32,6 +32,13 @@ module.exports = {
             return Number(num).toLocaleString('en-GB')
           })
 
+          env.addGlobal('getAssetPath', function (assetPath) {
+            const base = options?.context?.assetPath || '/static'
+            const normalizedBase = String(base).replace(/\/+$/, '')
+            const normalizedAsset = String(assetPath || '').replace(/^\/+/, '')
+            return normalizedBase + (normalizedAsset ? '/' + normalizedAsset : '')
+          })
+
           options.compileOptions.environment = env
           return next()
         }

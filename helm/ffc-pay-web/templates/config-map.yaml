@@ -28,6 +28,7 @@ data:
   STATEMENT_PUBLISHER_ENDPOINT: {{ quote .Values.container.statementPublisherEndpoint }}
   {{- end }}
   REDIRECT_URL: https://{{ .Values.ingress.endpoint }}.{{ .Values.ingress.server }}/{{ .Values.container.azureAppRegistrationRedirectUrl }}
+  SITE_HOSTNAME: https://{{ .Values.ingress.endpoint }}.{{ .Values.ingress.server }}
   AUTHENTICATION_ENABLED: {{ quote .Values.container.azureAppRegistrationEnabled }}
   {{- if .Values.container.azureAppRegistrationEnabled }}
   AZUREID_CLIENT_ID: {{ quote .Values.container.azureAppRegistrationClientId }}
@@ -56,4 +57,5 @@ data:
   APPROVED_EMAIL_DOMAINS: {{ quote .Values.container.approvedEmailDomains }}
   ENABLE_LEGACY_REPORTS: {{ quote .Values.container.enableLegacyReports }}
   {{- end }}
+  GOOGLE_TAG_MANAGER_KEY: {{ quote .Values.container.googleTagManagerKey }}
 {{- end -}}

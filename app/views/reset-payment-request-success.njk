@@ -3,19 +3,31 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% block content %}
+{% set pageTitle = "Payment request successfully reset" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
       href: "/"
+    },{
+      text: "Reset payment request",
+      href: "/payment-request/reset"
+    }, {
+      text: pageTitle
     }]
   })}}
+{% endblock %}
+
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <div class="govuk-width-container">
         <div class="govuk-panel govuk-panel--confirmation">
           <h1 class="govuk-panel__title">
-            Payment request successfully reset
+            {{ pageTitle }}
           </h1>
           <div class="govuk-panel__body">
             Invoice number<br><strong>{{ invoiceNumber }}</strong>
@@ -25,7 +37,7 @@
         <h2 class="govuk-heading-m">What happens next</h2>
 
         <p class="govuk-body">
-          The payment request will be reprocessed and resent to DAX.
+          The payment request will be reprocessed and resent to D365.
         </p>
         <p class="govuk-body">
           <a class="govuk-link" href="/">Perform another action</a>

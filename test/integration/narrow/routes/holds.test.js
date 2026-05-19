@@ -134,7 +134,6 @@ describe('Payment Holds', () => {
     test.each([{ viewCrumb: 'incorrect' }, { viewCrumb: undefined }])('invalid crumb %p', async ({ viewCrumb }) => {
       mockGet('paymentHoldCategories', categories)
 
-      // Debug: Make a direct GET request first
       const debugRes = await server.inject({ method: 'GET', url: BULK_PAGE, auth })
       console.log('=== DEBUG INFO ===')
       console.log('Status Code:', debugRes.statusCode)

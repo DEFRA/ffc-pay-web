@@ -1,20 +1,30 @@
 {% extends '_layout.njk' %}
+
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% block content %}
+{% set pageTitle = "Monitoring by correlation ID" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
   {{ govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      }, {
-        text: "Monitoring",
-        href: "/monitoring"
-      }]
-    })}}
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Monitoring",
+      href: "/monitoring"
+    },{
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <span class="govuk-caption-l">{{ events.frn }} - {{ events.agreementNumber }} - PR{{ events.paymentRequestNumber }}</span>
-      <h1 class="govuk-heading-l">Monitoring</h1>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
       {% if events %}
         <table class="govuk-table">
@@ -46,6 +56,6 @@
       {% else %}
         <p id="no-hold-text" class="govuk-body">No events found for FRN {{events.frn}}.</p>
       {% endif %}
+    </div>
   </div>
-</div>
 {% endblock %}

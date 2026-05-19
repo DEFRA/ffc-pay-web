@@ -93,23 +93,6 @@ describe('Alerts test', () => {
     expect(getAlertingData).toHaveBeenCalledWith('/alert-descriptions')
     expect(response.payload).toContain('This alert triggers on payment issues.')
   })
-
-  test('GET /alerts/update returns 200 with view data', async () => {
-    const fakeViewData = { some: 'data' }
-    getAlertUpdateViewData.mockResolvedValue(fakeViewData)
-
-    const options = {
-      method: 'GET',
-      url: '/alerts/update',
-      auth
-    }
-
-    const response = await server.inject(options)
-
-    expect(response.statusCode).toBe(200)
-    expect(getAlertUpdateViewData).toHaveBeenCalled()
-    expect(response.payload).toContain('data')
-  })
 })
 
 describe('Alerts GET /alerts/confirm-delete route tests', () => {

@@ -4,24 +4,33 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
-
 {% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
 
-{% block content %}
-  {{ govukBreadcrumbs({
-    items: [
-      { text: "Home", href: "/" },
-      { text: "Holds", href: "/payment-holds" },
-      { text: "Add", href: "/add-payment-hold" }
-    ]
-  }) }}
+{% set pageTitle = "Add payment hold" %}
 
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Payment holds",
+      href: "/payment-holds"
+    }, {
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <form method="POST" action="/add-payment-hold" autocomplete="off" novalidate>
         <input type="hidden" name="crumb" value="{{ crumb }}"/>
         
-        <h1 class="govuk-heading-l">Add payment hold</h1>
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
         {% if errors %}
           {% set errorList = [] %}

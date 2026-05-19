@@ -1,14 +1,20 @@
 {% extends '_layout.njk' %}
 
-{% set mainClasses = "govuk-main-wrapper--l" %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from 'macros/alert-breadcrumbs.njk' import alertBreadcrumbs %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% set pageTitle = "Alerts information" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {% include "macros/alert-breadcrumbs.njk" %}
+{% endblock %}
 
 {% block content %}
-  {{ alertBreadcrumbs() }}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <h1 class="govuk-heading-l">Alerts information</h1>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
       <p class="govuk-body">
         This page details the various alert types utilised by Payment Hub, as well as guidance on the expected outcomes from each alert type.
       </p>
