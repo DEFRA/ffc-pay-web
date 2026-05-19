@@ -26,30 +26,39 @@ const getAuthenticationUrl = () => {
 }
 
 const authenticate = async (redirectCode, cookieAuth) => {
-  const token = await msalClientApplication.acquireTokenByCode({
-    code: redirectCode,
-    redirectUri: config.authConfig.redirectUrl,
-    scopes: ['openid', 'profile', 'offline_access']
-  })
+  try {
+    const token = await msalClientApplication.acquireTokenByCode({
+      code: redirectCode,
+      redirectUri: config.authConfig.redirectUrl,
+      scopes: ['openid', 'profile', 'offline_access']
+    })
 
-  cookieAuth.set({
-    scope: token.idTokenClaims.roles,
-    account: token.account
-  })
+    cookieAuth.set({
+      scope: token.idTokenClaims.roles || [],
+      account: token.account
+    })
+  } catch (err) {
+    console.error('Failed to acquire token by code:', err)
+  }
 }
 
 const refresh = async (account, cookieAuth, forceRefresh = true) => {
-  const token = await msalClientApplication.acquireTokenSilent({
-    account,
-    forceRefresh
-  })
+  try {
+    const token = await msalClientApplication.acquireTokenSilent({
+      account,
+      scopes: ['openid', 'profile', 'offline_access'],
+      forceRefresh
+    })
 
-  cookieAuth.set({
-    scope: token.idTokenClaims.roles,
-    account: token.account
-  })
+    cookieAuth.set({
+      scope: token.idTokenClaims.roles || [],
+      account: token.account
+    })
 
-  return token.idTokenClaims.roles
+    return token.idTokenClaims.roles
+  } catch (err) {
+    console.error('Failed to acquire token on silent refresh:', err)
+  }
 }
 
 const logout = async (account) => {
