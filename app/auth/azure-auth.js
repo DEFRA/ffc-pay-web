@@ -28,7 +28,8 @@ const getAuthenticationUrl = () => {
 const authenticate = async (redirectCode, cookieAuth) => {
   const token = await msalClientApplication.acquireTokenByCode({
     code: redirectCode,
-    redirectUri: config.authConfig.redirectUrl
+    redirectUri: config.authConfig.redirectUrl,
+    scopes: ['openid', 'profile', 'offline_access']
   })
 
   cookieAuth.set({
