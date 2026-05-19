@@ -22,7 +22,7 @@
 
     .card__heading {
       margin-top: 0;
-      margin-bottom: 15px;
+      margin-bottom: 0;
     }
 
     .govuk-u-hidden {
@@ -58,6 +58,9 @@
           {% for card in group %}
             <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
               <h2 class="govuk-heading-m card__heading">{{ card.title }}</h2>
+              <div class="govuk-hint">
+                {{ card.description }}
+              </div>
               <ul class="govuk-list">
                 {% for link in card.links %}
                   <li>
