@@ -48,7 +48,7 @@ const getData = async (category, value) => {
   }
 
   const parsedData = JSON.parse(downloadedData)
-  console.info(`Data response received: ${request.category}=${request.value}`)
+  console.info('Data response received:', parsedData)
 
   if (!Array.isArray(parsedData.data)) {
     return parsedData.data
