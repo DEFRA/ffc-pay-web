@@ -1,13 +1,15 @@
+const permissions = require('../auth/permissions')
+
 const HOME = { href: '/', text: 'Home' }
 
 const PAYMENT_HOLDS_LINKS = [
-  { href: '/payment-holds', text: 'Manage holds', homeAuth: ['Payment.Application.Admin', 'Payment.Hold.Admin'] },
+  { href: '/payment-holds', text: 'Manage holds', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin] },
   { href: '/add-payment-hold', text: 'Add payment hold' },
   { href: '/payment-holds/bulk', text: 'Bulk payment holds' },
 ]
 
 const FINANCE_REPORTS_LINKS = [
-  { href: '/report-list', text: 'Reports', homeAuth: ['Payment.Application.Admin', 'Payment.Hold.Admin', 'Payment.Scheme.Admin', 'Payment.Data.View', 'Statements.Status-Reports.Delinked', 'Statements.Status-Reports.SFI-23'] },
+  { href: '/report-list', text: 'Reports', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
   { href: '/report-list/payment-requests-v2', text: 'Payment request statuses report' },
   { href: '/report-list/ap-ar-report', text: 'AP/AR listing report' },
   { href: '/report-list/request-editor-report', text: 'Request editor report' },
@@ -15,36 +17,36 @@ const FINANCE_REPORTS_LINKS = [
 ]
 
 const PAYMENT_ALERTS_LINKS = [
-  { href: '/alerts', text: 'Alerts', homeAuth: ['Payment.Application.Admin', 'Payment.Alert.Admin'] },
+  { href: '/alerts', text: 'Alerts', homeAuth: [permissions.applicationAdmin, permissions.alertAdmin] },
   { href: '/alerts/information', text: 'Alerts information' },
   { href: '/alerts/update', text: 'Add new alert recipient' },
 ]
 
 const AGREEMENT_CLOSURES_LINKS = [
-  { href: '/closure', text: 'Manage closures', homeAuth: ['Payment.Application.Admin', 'Payment.Closure.Admin'] },
+  { href: '/closure', text: 'Manage closures', homeAuth: [permissions.applicationAdmin, permissions.closureAdmin] },
   { href: '/closure/add', text: 'Agreement closure', homeAuth: [] },
   { href: '/closure/bulk', text: 'Bulk agreement closure', homeAuth: [] },
 ]
 
 const MONITORING_LINKS = [
-  { href: '/monitoring', text: 'Monitoring', homeAuth: ['Payment.Application.Admin', 'Payment.Hold.Admin', 'Payment.Scheme.Admin', 'Payment.Data.View'] },
+  { href: '/monitoring', text: 'Monitoring', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
   { href: '/monitoring/schemes', text: 'Schemes', homeAuth: [] },
 ]
 
 const MANUAL_PAYMENTS_LINKS = [
-  { href: '/manual-payments', text: 'Manual payment upload', homeAuth: ['Payment.Application.Admin', 'Payment.Manual-Payments.Admin'] }
+  { href: '/manual-payments', text: 'Manual payment upload', homeAuth: [permissions.applicationAdmin, permissions.manualPaymentsAdmin] }
 ]
 
 const RESET_PAYMENT_REQUEST_LINKS = [
-  { href: '/payment-request/reset', text: 'Reset payment request', homeAuth: ['Payment.Application.Admin', 'Payment.Scheme.Admin'] }
+  { href: '/payment-request/reset', text: 'Reset payment request', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin] }
 ]
 
 const METRICS_LINKS = [
-  { href: '/metrics', text: 'Management information', homeAuth: ['Payment.Application.Admin', 'Payment.Scheme.Admin'] }
+  { href: '/metrics', text: 'Management information', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin] }
 ]
 
 const DOWNLOAD_STATEMENTS_LINKS = [
-  { href: '/download-statements', text: 'Download statements', homeAuth: ['Payment.Application.Admin'] }
+  { href: '/download-statements', text: 'Download statements', homeAuth: [permissions.applicationAdmin] }
 ]
 
 const HELP_LINKS = [
