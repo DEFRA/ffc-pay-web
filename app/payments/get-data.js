@@ -1,5 +1,4 @@
 const { randomUUID } = require('node:crypto')
-const util = require('node:util')
 const { TYPE } = require('../constants/type')
 const config = require('../config')
 const { sendMessage, receiveMessage } = require('../messaging')
