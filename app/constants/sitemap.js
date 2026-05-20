@@ -24,13 +24,13 @@ const PAYMENT_ALERTS_LINKS = [
 
 const AGREEMENT_CLOSURES_LINKS = [
   { href: '/closure', text: 'Manage closures', homeAuth: [permissions.applicationAdmin, permissions.closureAdmin] },
-  { href: '/closure/add', text: 'Agreement closure', homeAuth: [] },
-  { href: '/closure/bulk', text: 'Bulk agreement closure', homeAuth: [] },
+  { href: '/closure/add', text: 'Agreement closure' },
+  { href: '/closure/bulk', text: 'Bulk agreement closure' },
 ]
 
 const MONITORING_LINKS = [
   { href: '/monitoring', text: 'Monitoring', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
-  { href: '/monitoring/schemes', text: 'Schemes', homeAuth: [] },
+  { href: '/monitoring/schemes', text: 'Schemes' },
 ]
 
 const MANUAL_PAYMENTS_LINKS = [
