@@ -1,19 +1,14 @@
 {% extends "_layout.njk" %}
+
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% block content %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    }, {
-      text: "Report List",
-      href: "/report-list"
-    }]
-  }) }}
+{% set pageTitle = "Unable to load report" %}
 
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block content %}
   {{ govukErrorSummary({
     titleText: "There is a problem",
     errorList: errors or [{
@@ -22,7 +17,7 @@
     }]
   }) }}
 
-  <h1 class="govuk-heading-l">Unable to load report</h1>
+  <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
   <p class="govuk-body">We couldn’t load the report due to a technical issue or missing information.</p>
 
   {{ govukButton({

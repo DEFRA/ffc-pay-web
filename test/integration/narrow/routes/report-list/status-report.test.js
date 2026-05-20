@@ -108,7 +108,7 @@ describe('Status Report Routes', () => {
 
       expect(res.statusCode).toBe(200)
       const $ = loadPayload(res.payload)
-      expect($('h1').text()).toContain('SFI-23 Payment Status Reports - 2025')
+      expect($('h1').text()).toContain('SFI-23 payment status reports - 2025')
       expect($('.govuk-task-list__item').length).toBe(1)
     })
   })

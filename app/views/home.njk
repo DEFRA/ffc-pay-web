@@ -1,5 +1,7 @@
 {% extends '_layout.njk' %}
+
 {% from "./macros/logout.njk" import logout %}
+
 {% block content %}
   <style>
     .govuk-cards {
@@ -26,7 +28,6 @@
       }
     }
   </style>
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{ serviceName }}</h1>

@@ -1,11 +1,12 @@
 const { generateReportHandler } = require('../../../app/helpers/generate-report-handler')
-const uuid = require('uuid')
+jest.mock('node:crypto')
+const { randomUUID } = require('node:crypto')
 const setReportStatus = require('../../../app/helpers/set-report-status')
 const { buildReportUrl } = require('../../../app/helpers/build-query-url')
 const { queryTrackingApi } = require('../../../app/helpers/query-tracking-api')
 const { normaliseQuery } = require('../../../app/helpers/normalise-query')
 
-jest.mock('uuid', () => ({ v4: jest.fn() }))
+randomUUID.mockReturnValue('70cb0f07-e0cf-449c-86e8-0344f2c6cc6c')
 jest.mock('../../../app/helpers/set-report-status')
 jest.mock('../../../app/helpers/build-query-url')
 jest.mock('../../../app/helpers/query-tracking-api')
@@ -16,7 +17,6 @@ describe('generateReportHandler', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    uuid.v4.mockReturnValue('job-1234')
     request = {
       query: {
         'report-url': 'http://query.url',
@@ -36,22 +36,22 @@ describe('generateReportHandler', () => {
 
   const expectCommonFlow = async (handler, expectedReportType, expectedTitle, expectedUrl) => {
     const result = await handler(request, h)
-    expect(uuid.v4).toHaveBeenCalled()
+    expect(randomUUID).toHaveBeenCalled()
     expect(normaliseQuery).toHaveBeenCalledWith(request.query)
     expect(buildReportUrl).toHaveBeenCalledWith(expectedReportType, { normalized: true })
-    expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', {
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', {
       status: 'pending',
       reportType: expectedReportType
     })
     expect(h.view).toHaveBeenCalledWith('report-list/report-loading', {
-      jobId: 'job-1234',
+      jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
       reportTitle: expectedTitle,
       reportUrl: expectedUrl
     })
     expect(result).toBe('view-result')
     await Promise.resolve()
     expect(queryTrackingApi).toHaveBeenCalledWith('http://built.url')
-    expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', {
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', {
       status: 'download',
       reportType: expectedReportType,
       returnedFilename: 'valid.json',
@@ -78,10 +78,10 @@ describe('generateReportHandler', () => {
     await handler(request, h)
     await Promise.resolve()
     expect(console.error).toHaveBeenCalledWith(
-      expect.stringMatching(/^Error generating report job-1234:/),
+      expect.stringMatching(/^Error generating report 70cb0f07-e0cf-449c-86e8-0344f2c6cc6c:/),
       expect.any(Error)
     )
-    expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', { status: 'failed' })
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', { status: 'failed' })
   })
 
   test('handles rejection from queryTrackingApi and sets status to failed', async () => {
@@ -91,10 +91,10 @@ describe('generateReportHandler', () => {
     await handler(request, h)
     await Promise.resolve()
     expect(console.error).toHaveBeenCalledWith(
-      'Error generating report job-1234:',
+      'Error generating report 70cb0f07-e0cf-449c-86e8-0344f2c6cc6c:',
       new Error('tracking error')
     )
-    expect(setReportStatus).toHaveBeenCalledWith(request, 'job-1234', { status: 'failed' })
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', { status: 'failed' })
   })
 
   test('handles undefined reportType parameter and falls back to query values', async () => {

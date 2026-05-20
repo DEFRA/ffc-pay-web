@@ -38,6 +38,7 @@ const createServer = async () => {
   await server.register(require('./plugins/crumb'))
   await server.register(require('./plugins/logging'))
   await server.register(require('./plugins/view-context'))
+  await server.register(require('./plugins/cookies'))
 
   if (config.isDev) {
     await server.register(require('blipp'))

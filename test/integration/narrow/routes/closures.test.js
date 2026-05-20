@@ -43,8 +43,8 @@ describe('Closures', () => {
   })
 
   const getRoutes = [
-    { url: '/closure/add', h1: 'Agreement closure' },
-    { url: '/closure/bulk', h1: 'Bulk agreement closure' }
+    { url: '/closure/add', h1: 'Add agreement closure' },
+    { url: '/closure/bulk', h1: 'Add agreement closures in bulk' }
   ]
 
   describe('GET pages', () => {
@@ -70,7 +70,7 @@ describe('Closures', () => {
   describe('POST /closure/add', () => {
     const method = 'POST'
     const url = '/closure/add'
-    const h1 = 'Agreement closure'
+    const h1 = 'Add agreement closure'
 
     const postReq = async (payload, cookieCrumb) => server.inject({
       method,
@@ -170,7 +170,7 @@ describe('Closures', () => {
   describe('POST /closure/bulk', () => {
     const method = 'POST'
     const url = '/closure/bulk'
-    const h1 = 'Bulk agreement closure'
+    const h1 = 'Add agreement closures in bulk'
 
     test('returns 400 when file exceeds max bytes', async () => {
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, url, auth)

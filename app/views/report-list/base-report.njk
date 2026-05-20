@@ -1,21 +1,25 @@
 {% extends '_layout.njk' %}
+
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from 'macros/report-form-fields.njk' import submitButton %}
 
-{% block content %}
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
       href: "/"
-    }, {
-      text: "Report List",
+    },{
+      text: "Reports",
       href: "/report-list"
     }, {
-      text: reportTitle,
-      href: reportUrl
+      text: reportTitle
     }]
-  }) }}
+  })}}
+{% endblock %}
 
+{% block content %}
   {% if errors %}
     {{ govukErrorSummary({
       titleText: "There is a problem",

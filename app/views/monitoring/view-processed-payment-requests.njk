@@ -1,29 +1,29 @@
 {% extends '_layout.njk' %}
+
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% block content %}
+{% set pageTitle = "View processed payment requests" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
   {{ govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      },
-      {
-        text: "Monitoring",
-        href: "/monitoring"
-      },
-      {
-        text: "Schemes",
-        href: "/monitoring/schemes"
-      },
-      {
-        text: "View processed payment requests",
-        href: "#", 
-        attributes: { 'aria-disabled': 'true', 'class': 'govuk-breadcrumbs__link--disabled' } 
-      }]
-    })}}
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Monitoring by scheme",
+      href: "/monitoring/schemes"
+    }, {
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">View processed payment requests</h1>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
       {% if data.length %}
         <table class="govuk-table">
           <caption class="govuk-table__caption govuk-table__caption--l">Processed payment requests</caption>
@@ -47,6 +47,6 @@
       {% else %}
         <p id="no-hold-text" class="govuk-body">No processed payment requests found.</p>
       {% endif %}
+    </div>
   </div>
-</div>
 {% endblock %}

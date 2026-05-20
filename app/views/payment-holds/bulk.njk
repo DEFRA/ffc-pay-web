@@ -5,22 +5,32 @@
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-
 {% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
 
-{% block content %}
+{% set pageTitle = "Add/remove payment holds in bulk" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
   {{ govukBreadcrumbs({
-    items: [      
-      { text: "Home", href: "/" },
-      { text: "Holds", href: "/payment-holds" },
-      { text: "Add Bulk", href: "/payment-holds/bulk" }
-    ]
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Payment holds",
+      href: "/payment-holds"
+    }, {
+      text: pageTitle
+    }]
   })}}
+{% endblock %}
+
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <form method="POST" action="/payment-holds/bulk" autocomplete="off" novalidate enctype="multipart/form-data">
         <input type="hidden" name="crumb" value="{{crumb}}"/>
-        <h1 class="govuk-heading-l">Bulk payment holds</h1>
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
         <p class="govuk-body">
           Any FRNs provided here will have holds applied or removed depending on your input.
         </p>

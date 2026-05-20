@@ -6,17 +6,25 @@
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 
-{% block content %}
-  {{ govukBreadcrumbs({
-    items: [
-      { text: "Home", href: "/" },
-      { text: "Holds", href: "/payment-holds" }
-    ]
-  }) }}
+{% set pageTitle = "Payment holds" %}
 
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }, {
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">Payment holds</h1>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
       <p class="govuk-body">
         Payment holds will pause all payment requests for a customer and scheme.

@@ -4,17 +4,25 @@
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% block content %}
-  {{ govukBreadcrumbs({
-    items: [
-      { text: "Home", href: "/" },
-      { text: "Management information", href: "/management-information" }
-    ]
-  })}}
+{% set pageTitle = "Management information" %}
 
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-xl">Management Information</h1>
+      <h1 class="govuk-heading-xl">{{ pageTitle }}</h1>
 
       <p class="govuk-body-l">
         View payment and document metrics filtered by time period.
@@ -317,7 +325,6 @@
       {% endif %}
     </div>
   </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const periodSelect = document.getElementById('period')

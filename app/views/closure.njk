@@ -4,17 +4,25 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
 
-{% block content %}
+{% set pageTitle = "Agreement closures" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
       href: "/"
+    }, {
+      text: pageTitle
     }]
-  }) }}
+  })}}
+{% endblock %}
 
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">Agreement closures</h1>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
       <p class="govuk-body">
         Any agreements listed here are considered closed. Following the closure date listed, no accounts repayable will be processed.

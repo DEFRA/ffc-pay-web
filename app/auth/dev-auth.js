@@ -1,5 +1,5 @@
 const { applicationAdmin } = require('./permissions')
-const { v4: uuidv4 } = require('uuid')
+const { randomUUID } = require('node:crypto')
 const devAccount = require('./dev-account')
 const devAuthRoles = [applicationAdmin]
 
@@ -24,7 +24,7 @@ const refresh = async (_account, cookieAuth, _forceRefresh = true) => {
 }
 
 const logout = async (_account) => {
-  devAccount.homeAccountId = uuidv4()
+  devAccount.homeAccountId = randomUUID()
 }
 
 module.exports = {
