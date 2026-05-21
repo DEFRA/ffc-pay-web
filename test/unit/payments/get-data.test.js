@@ -1,5 +1,6 @@
-jest.mock('randomUUID')
+jest.mock('node:crypto')
 const { randomUUID } = require('node:crypto')
+
 jest.mock('../../../app/messaging')
 const {
   sendMessage: mockSendMessage,
