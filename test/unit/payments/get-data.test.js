@@ -1,6 +1,5 @@
-jest.mock('uuid')
-const { v4: uuidv4 } = require('uuid')
-
+jest.mock('randomUUID')
+const { randomUUID } = require('node:crypto')
 jest.mock('../../../app/messaging')
 const {
   sendMessage: mockSendMessage,
@@ -21,7 +20,7 @@ jest.mock('../../../app/storage/pay-reports')
 describe('get data', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    uuidv4.mockReturnValue(MESSAGE_ID)
+    randomUUID.mockReturnValue(MESSAGE_ID)
     mockReceiveMessage.mockResolvedValue(RESPONSE)
     getDataRequestFile.mockResolvedValue({
       readableStreamBody: {
