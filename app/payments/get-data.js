@@ -1,4 +1,5 @@
-const { randomUUID } = require('node:crypto')
+const { v4: uuidv4 } = require('uuid')
+const util = require('node:util')
 const { TYPE } = require('../constants/type')
 const config = require('../config')
 const { sendMessage, receiveMessage } = require('../messaging')
@@ -18,13 +19,13 @@ const streamToString = async (readableStream) => {
 }
 
 const getData = async (category, value) => {
-  const messageId = randomUUID()
+  const messageId = uuidv4()
   const request = { category, value }
 
   await sendMessage(request, TYPE, config.messageConfig.dataTopic, {
     messageId
   })
-  console.info(`Data request sent: category=${request.category}, value=${request.value}`)
+  console.info('Data request sent:', util.inspect(request, false, null, true))
 
   const response = await receiveMessage(
     messageId,
@@ -48,7 +49,8 @@ const getData = async (category, value) => {
   }
 
   const parsedData = JSON.parse(downloadedData)
-  console.info('Data response received:', parsedData)
+
+  console.info('Data response received')
 
   if (!Array.isArray(parsedData.data)) {
     return parsedData.data

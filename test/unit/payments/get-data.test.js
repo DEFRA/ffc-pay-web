@@ -1,5 +1,5 @@
-jest.mock('node:crypto')
-const { randomUUID } = require('node:crypto')
+jest.mock('uuid')
+const { v4: uuidv4 } = require('uuid')
 
 jest.mock('../../../app/messaging')
 const {
@@ -21,7 +21,7 @@ jest.mock('../../../app/storage/pay-reports')
 describe('get data', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    randomUUID.mockReturnValue(MESSAGE_ID)
+    uuidv4.mockReturnValue(MESSAGE_ID)
     mockReceiveMessage.mockResolvedValue(RESPONSE)
     getDataRequestFile.mockResolvedValue({
       readableStreamBody: {
@@ -109,11 +109,22 @@ describe('get data', () => {
   test('should log data response received', async () => {
     const consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation(() => {})
     await getData(CATEGORY, VALUE)
-    expect(consoleInfoSpy).toHaveBeenCalledWith(
-      'Data response received:',
-      expect.anything()
-    )
+    expect(consoleInfoSpy).toHaveBeenCalledWith('Data response received')
     consoleInfoSpy.mockRestore()
+  })
+
+  test('should reject if stream emits an error', async () => {
+    const mockError = new Error('stream error')
+    getDataRequestFile.mockResolvedValue({
+      readableStreamBody: {
+        on: jest.fn((event, callback) => {
+          if (event === 'error') {
+            callback(mockError)
+          }
+        })
+      }
+    })
+    await expect(getData(CATEGORY, VALUE)).rejects.toThrow('stream error')
   })
 
   test('should return parsed data if it is not an array', async () => {
