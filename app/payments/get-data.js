@@ -50,10 +50,7 @@ const getData = async (category, value) => {
 
   const parsedData = JSON.parse(downloadedData)
 
-  console.info(
-    'Data response received:',
-    util.inspect(parsedData, false, null, true)
-  )
+  console.info('Data response received')
 
   if (!Array.isArray(parsedData.data)) {
     return parsedData.data

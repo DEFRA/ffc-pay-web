@@ -1,6 +1,6 @@
 {
   "name": "ffc-pay-web",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "FFC payment management service",
   "homepage": "https://github.com/DEFRA/ffc-pay-web",
   "main": "app/index.js",
@@ -80,7 +80,7 @@
     "webpack-cli": "4.10.0"
   },
   "overrides": {
-    "protobufjs": "8.0.2"
+    "protobufjs": "8.2.0"
   },
   "nodemonConfig": {
     "ignore": [
