@@ -35,7 +35,7 @@ secretProviderClass:
         objectType: secret
       - objectName: prd-redisPassword
         objectType: secret
-      - objectName: prd-ffcPayWebClientSecret
+      - objectName: PRD-ffc-pay-web-Secret
         objectType: secret
 
   secretObjects:
@@ -48,5 +48,5 @@ secretProviderClass:
           key: COOKIE_PASSWORD
         - objectName: prd-redisPassword
           key: REDIS_PASSWORD
-        - objectName: prd-ffcPayWebClientSecret
+        - objectName: PRD-ffc-pay-web-Secret
           key: AZUREID_CLIENT_SECRET
