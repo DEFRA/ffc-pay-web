@@ -3,7 +3,8 @@ const permissions = require('../auth/permissions')
 const HOME = { href: '/', text: 'Home' }
 
 const PAYMENT_HOLDS_LINKS = [
-  { href: '/payment-holds', text: 'Manage holds', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin] },
+  { href: '/payment-holds', text: 'Manage payment holds', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin] },
+  { href: '/payment-hold-types', text: 'Manage payment hold types', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin] },
   { href: '/add-payment-hold', text: 'Add payment hold' },
   { href: '/payment-holds/bulk', text: 'Bulk payment holds' },
 ]
@@ -30,7 +31,7 @@ const AGREEMENT_CLOSURES_LINKS = [
 
 const MONITORING_LINKS = [
   { href: '/monitoring', text: 'Monitoring', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
-  { href: '/monitoring/schemes', text: 'Schemes' },
+  { href: '/monitoring/schemes', text: 'Schemes', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
 ]
 
 const MANUAL_PAYMENTS_LINKS = [
