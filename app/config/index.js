@@ -37,7 +37,11 @@ const schema = Joi.object({
   timeoutMs: Joi.number().default(TIMEOUT_MS),
   failureThreshold: Joi.number().default(FAILURE_THRESHOLD),
   resetTimeoutMs: Joi.number().default(RESET_TIMEOUT_MS),
-  legacyReportsEnabled: Joi.bool().default(false)
+  legacyReportsEnabled: Joi.bool().default(false),
+  bannerEnabled: Joi.bool().default(false),
+  bannerHeader: Joi.string().allow(null),
+  bannerText: Joi.string().allow(null),
+  bannerEmail: Joi.string().allow(null)
 })
 
 // Build config
@@ -66,7 +70,11 @@ const config = {
   timeoutMs: process.env.STMT_DB_TIMEOUT_MS,
   failureThreshold: process.env.STMT_DB_FAILURES,
   resetTimeoutMs: process.env.STMT_DB_RESET_MS,
-  legacyReportsEnabled: process.env.ENABLE_LEGACY_REPORTS
+  legacyReportsEnabled: process.env.ENABLE_LEGACY_REPORTS,
+  bannerEnabled: process.env.BANNER_ENABLED,
+  bannerHeader: process.env.BANNER_HEADER,
+  bannerText: process.env.BANNER_TEXT,
+  bannerEmail: process.env.BANNER_EMAIL
 }
 
 // Validate config

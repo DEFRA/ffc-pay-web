@@ -36,6 +36,10 @@ services:
       PDS_TEAM_EMAILS: ${PDS_TEAM_EMAILS}
       APPROVED_EMAIL_DOMAINS: ${APPROVED_EMAIL_DOMAINS}
       ENABLE_LEGACY_REPORTS: "false"
+      BANNER_ENABLED: ${BANNER_ENABLED:-false}
+      BANNER_HEADER: ${BANNER_HEADER}
+      BANNER_TEXT: ${BANNER_TEXT}
+      BANNER_EMAIL: ${BANNER_EMAIL}
     networks:
       - default
       - docs
