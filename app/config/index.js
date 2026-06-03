@@ -39,9 +39,9 @@ const schema = Joi.object({
   resetTimeoutMs: Joi.number().default(RESET_TIMEOUT_MS),
   legacyReportsEnabled: Joi.bool().default(false),
   bannerEnabled: Joi.bool().default(false),
-  bannerHeader: Joi.string().allow(null),
-  bannerText: Joi.string().allow(null),
-  bannerEmail: Joi.string().allow(null)
+  bannerHeader: Joi.string().allow(null, ''),
+  bannerText: Joi.string().allow(null, ''),
+  bannerEmail: Joi.string().allow(null, '')
 })
 
 // Build config
