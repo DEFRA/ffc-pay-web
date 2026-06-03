@@ -32,7 +32,7 @@ module.exports = {
             return Number(num).toLocaleString('en-GB')
           })
 
-          const sentenceSplitRe = /[^.!?]+[.!?]*/g
+          const sentenceSplitRegex = /[^.!?]+[.!?]*/g
           env.addFilter('sentences', function (text) {
             if (!text && text !== 0) {
               return []
@@ -40,7 +40,7 @@ module.exports = {
             if (Array.isArray(text)) {
               return text
             }
-            return String(text).match(sentenceSplitRe)?.map(s => s.trim()).filter(Boolean) || []
+            return String(text).match(sentenceSplitRegex)?.map(s => s.trim()).filter(Boolean) || []
           })
 
           env.addGlobal('getAssetPath', function (assetPath) {
