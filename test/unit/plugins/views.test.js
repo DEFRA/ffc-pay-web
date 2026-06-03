@@ -94,4 +94,46 @@ describe('app/plugins/views.js', () => {
       done()
     })
   })
+
+  test('sentences filter handles arrays, numbers, empty and non-string inputs', (done) => {
+    const options = {
+      path: ['../views'],
+      relativeTo: path.join(__dirname, '..'),
+      compileOptions: {},
+      context: {}
+    }
+
+    viewsPlugin.options.engines.njk.prepare(options, (err) => {
+      expect(err).toBeUndefined()
+      const env = options.compileOptions.environment
+      const sentencesFilter = env.getFilter ? env.getFilter('sentences') : null
+
+      if (sentencesFilter) {
+        const arr = ['One.', 'Two!']
+        expect(sentencesFilter(arr)).toEqual(arr)
+        expect(sentencesFilter(0)).toEqual(['0'])
+        expect(sentencesFilter('')).toEqual([])
+        expect(sentencesFilter(undefined)).toEqual([])
+        expect(sentencesFilter(null)).toEqual([])
+        const complex = ' First sentence!  Second sentence... Third?  '
+        expect(sentencesFilter(complex)).toEqual(['First sentence!', 'Second sentence...', 'Third?'])
+      } else {
+        const tpl = [
+          '{{ ["One.","Two!"] | sentences | join("|") }}',
+          '{{ 0 | sentences | join("|") }}',
+          '{{ "" | sentences | join("|") }}',
+          '{{ null | sentences | join("|") }}',
+          '{{ " First sentence!  Second sentence... Third?  " | sentences | join("||") }}'
+        ].join('\n')
+        const rendered = env.renderString ? env.renderString(tpl) : ''
+        expect(rendered.split('\n')[0]).toBe('One.|Two!')
+        expect(rendered.split('\n')[1]).toBe('0')
+        expect(rendered.split('\n')[2]).toBe('')
+        expect(rendered.split('\n')[3]).toBe('')
+        expect(rendered.split('\n')[4]).toBe('First sentence!||Second sentence...||Third?')
+      }
+
+      done()
+    })
+  })
 })
