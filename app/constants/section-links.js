@@ -26,8 +26,8 @@ const PAYMENT_ALERTS_LINKS = [
 
 const AGREEMENT_CLOSURES_LINKS = [
   { href: '/closure', text: 'Manage closures', homeAuth: [permissions.applicationAdmin, permissions.closureAdmin] },
-  { href: '/closure/add', text: 'Agreement closure' },
-  { href: '/closure/bulk', text: 'Bulk agreement closure' },
+  { href: '/closure/add', text: 'Agreement closure', homeAuth: [permissions.applicationAdmin, permissions.closureAdmin] },
+  { href: '/closure/bulk', text: 'Bulk agreement closure', homeAuth: [permissions.applicationAdmin, permissions.closureAdmin] },
 ]
 
 const MONITORING_LINKS = [

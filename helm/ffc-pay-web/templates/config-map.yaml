@@ -58,4 +58,8 @@ data:
   ENABLE_LEGACY_REPORTS: {{ quote .Values.container.enableLegacyReports }}
   {{- end }}
   GOOGLE_TAG_MANAGER_KEY: {{ quote .Values.container.googleTagManagerKey }}
+  BANNER_ENABLED: {{ quote .Values.container.bannerEnabled }}
+  BANNER_HEADER: {{ quote .Values.container.bannerHeader }}
+  BANNER_TEXT: {{ quote .Values.container.bannerText }}
+  BANNER_EMAIL: {{ quote .Values.container.bannerEmail }}
 {{- end -}}

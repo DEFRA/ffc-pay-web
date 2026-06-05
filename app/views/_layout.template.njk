@@ -1,6 +1,7 @@
 {% extends "govuk/template.njk" %}
 {% block pageTitle %}{{ serviceName }}{% endblock %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% block headIcons %}
   <link rel="icon" sizes="48x48" href="{{ getAssetPath('/images/favicon.png') }}">
@@ -63,6 +64,16 @@
         flex: 1 1 100%;
         margin-bottom: 30px;
       }
+
+      .govuk-notification-banner__content > * { 
+        max-width: none !important; width: 100%;
+      }
+
+    }
+    .govuk-notification-banner__content > * {
+      box-sizing: border-box;
+      max-width: none !important;
+      width: 100%;
     }
   </style>
 {% endblock %}
@@ -105,6 +116,31 @@
 
   {% if cookiesPolicy and cookiesPolicy.analytics %}
     {% include "./tag-manager/_body-content.njk" %}
+  {% endif %}
+{% endblock %}
+
+{% block beforeContent %}
+  {% if bannerEnabled %}
+    <div class="govuk-!-margin-top-6">
+      <section class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+            Important
+          </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">
+            {{ bannerHeader }}
+          </p>
+          {% for sentence in bannerText | sentences %}
+            <p class="govuk-body">{{ sentence }}</p>
+          {% endfor %}
+          <p class="govuk-body">
+            If you have any feedback, you can <a class="govuk-link" href="mailto:{{ bannerEmail }}">email the team</a>.
+          </p>
+        </div>
+      </section>
+    </div>
   {% endif %}
 {% endblock %}
 
