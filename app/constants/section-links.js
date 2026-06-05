@@ -1,0 +1,72 @@
+const permissions = require('../auth/permissions')
+
+const HOME = { href: '/', text: 'Home' }
+
+const PAYMENT_HOLDS_LINKS = [
+  { href: '/manage-payment-holds', text: 'Manage payment holds', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin] },
+  { href: '/add-payment-hold', text: 'Create a new payment hold', description: 'Create a new hold for a payment' },
+  { href: '/payment-holds', text: 'Search for a payment hold', description: 'Search, view or remove an exsisting payment hold' },
+  { href: '/payment-holds/bulk', text: 'Manage payment holds in bulk', description: 'Manage multiple payment holds at the same time' },
+  { href: '/payment-hold-types', text: 'Manage payment hold types', description: 'Create, edit and remove payment hold types' },
+]
+
+const FINANCE_REPORTS_LINKS = [
+  { href: '/report-list', text: 'Reports', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
+  { href: '/report-list/payment-requests-v2', text: 'Payment request statuses report' },
+  { href: '/report-list/ap-ar-report', text: 'AP/AR listing report' },
+  { href: '/report-list/request-editor-report', text: 'Request editor report' },
+  { href: '/report-list/status-report', text: 'Payment statement status report' },
+]
+
+const PAYMENT_ALERTS_LINKS = [
+  { href: '/alerts', text: 'Alerts', homeAuth: [permissions.applicationAdmin, permissions.alertAdmin] },
+  { href: '/alerts/information', text: 'Alerts information' },
+  { href: '/alerts/update', text: 'Add new alert recipient' },
+]
+
+const AGREEMENT_CLOSURES_LINKS = [
+  { href: '/closure', text: 'Manage closures', homeAuth: [permissions.applicationAdmin, permissions.closureAdmin] },
+  { href: '/closure/add', text: 'Agreement closure' },
+  { href: '/closure/bulk', text: 'Bulk agreement closure' },
+]
+
+const MONITORING_LINKS = [
+  { href: '/monitoring', text: 'Monitoring', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
+  { href: '/monitoring/schemes', text: 'Schemes', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
+]
+
+const MANUAL_PAYMENTS_LINKS = [
+  { href: '/manual-payments', text: 'Manual payment upload', homeAuth: [permissions.applicationAdmin, permissions.manualPaymentsAdmin] }
+]
+
+const RESET_PAYMENT_REQUEST_LINKS = [
+  { href: '/payment-request/reset', text: 'Reset payment request', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin] }
+]
+
+const METRICS_LINKS = [
+  { href: '/metrics', text: 'Management information', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin] }
+]
+
+const DOWNLOAD_STATEMENTS_LINKS = [
+  { href: '/download-statements', text: 'Download statements', homeAuth: [permissions.applicationAdmin] }
+]
+
+const HELP_LINKS = [
+  { href: '/accessibility', text: 'Accessibility statement' },
+  { href: '/cookies', text: 'Cookies' },
+  { href: '/privacy', text: 'Privacy' },
+]
+
+module.exports = {
+  HOME,
+  PAYMENT_HOLDS_LINKS,
+  FINANCE_REPORTS_LINKS,
+  PAYMENT_ALERTS_LINKS,
+  AGREEMENT_CLOSURES_LINKS,
+  MONITORING_LINKS,
+  MANUAL_PAYMENTS_LINKS,
+  RESET_PAYMENT_REQUEST_LINKS,
+  METRICS_LINKS,
+  DOWNLOAD_STATEMENTS_LINKS,
+  HELP_LINKS
+}

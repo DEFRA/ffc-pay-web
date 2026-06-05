@@ -11,7 +11,7 @@ const mapHoldCategoriesToRadios = (schemes, categories, options = {}) => {
     return accumulator
   }, {})
 
-  const sortedSchemes = [...schemes].sort((a, b) => b.id - a.id)
+  const sortedSchemes = [...schemes].sort((a, b) => a.id - b.id)
 
   return sortedSchemes.map(scheme => {
     const categoriesForScheme = grouped[scheme.id] || []

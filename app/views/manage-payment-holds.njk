@@ -1,11 +1,30 @@
 {% extends '_layout.njk' %}
 
-{% from "./macros/logout.njk" import logout %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% set pageTitle = "Manage payment holds" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }, {
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">{{ serviceName }}</h1>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body">
+        A payment hold will stop a payment from being made and hold the payment in the system until further action is taken. 
+      </p>
 
       {% set cardGroups = [] %}
       {% for i in range(0, cards | length, 2) %}
@@ -16,17 +35,10 @@
         <div class="govuk-cards govuk-cards--2">
           {% for card in group %}
             <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
-              <h2 class="govuk-heading-m card__heading">{{ card.title }}</h2>
+              <h2 class="govuk-heading-m card__heading"><a href="{{ card.href }}" class="govuk-link">{{ card.text }}</a></h2>
               <div class="govuk-hint">
                 {{ card.description }}
               </div>
-              <ul class="govuk-list">
-                {% for link in card.links %}
-                  <li>
-                    <a href="{{ link.href }}" class="govuk-link">{{ link.text }}</a>
-                  </li>
-                {% endfor %}
-              </ul>
             </div>
           {% endfor %}
           {% if group | length == 1 %}

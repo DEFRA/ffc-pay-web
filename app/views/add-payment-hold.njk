@@ -6,7 +6,7 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
 
-{% set pageTitle = "Add payment hold" %}
+{% set pageTitle = "Create a payment hold" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
@@ -16,8 +16,8 @@
       text: "Home",
       href: "/"
     },{
-      text: "Payment holds",
-      href: "/payment-holds"
+      text: "Manage payment holds",
+      href: "/manage-payment-holds"
     }, {
       text: pageTitle
     }]
@@ -27,11 +27,18 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <form method="POST" action="/add-payment-hold" autocomplete="off" novalidate>
+      <form method="POST" action="/add-payment-hold/confirm" autocomplete="off" novalidate>
         <input type="hidden" name="crumb" value="{{ crumb }}"/>
         
         <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
+        <p class="govuk-body">
+          To create a new payment hold enter the 10 digit Firm Reference Number (FRN), select the scheme and the hold type. 
+        </p>
+
+        <p class="govuk-body">
+          If you want to add more than one hold, you can <a href="/payment-holds/bulk" class="govuk-link">bulk add holds</a>.
+        </p>
         {% if errors %}
           {% set errorList = [] %}
           {% for errorDetail in errors.details %}
@@ -58,11 +65,8 @@
 
         {{ govukInput({
           label: {
-            text: "Firm reference number (FRN)",
+            text: "FRN (Firm reference number)",
             classes: "govuk-label--s"
-          },
-          hint: {
-            text: "Enter a 10-digit FRN"
           },
           id: "frn",
           name: "frn",
@@ -75,12 +79,15 @@
 
         {{ holdSelectionRadios(holdCategoryRadios, selectScheme) }}
 
-        {{ govukButton({
-          text: "Create",
-          attributes: {
-            id: "submit"
-          }
-        }) }}
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue",
+            attributes: {
+              id: "submit"
+            }
+          }) }}
+          <a class="govuk-link" href="/manage-payment-holds">Cancel</a>
+        </div>
       </form>
     </div>
   </div>
