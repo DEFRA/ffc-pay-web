@@ -5,7 +5,7 @@ const HOME = { href: '/', text: 'Home' }
 const PAYMENT_HOLDS_LINKS = [
   { href: '/manage-payment-holds', text: 'Manage payment holds', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin] },
   { href: '/add-payment-hold', text: 'Create a new payment hold', description: 'Create a new hold for a payment' },
-  { href: '/payment-holds', text: 'Search for a payment hold', description: 'Search, view or remove an exsisting payment hold' },
+  { href: '/search-payment-holds', text: 'Search for a payment hold', description: 'Search, view or remove an existing payment hold' },
   { href: '/payment-holds/bulk', text: 'Manage payment holds in bulk', description: 'Manage multiple payment holds at the same time' },
   { href: '/payment-hold-types', text: 'Manage payment hold types', description: 'Create, edit and remove payment hold types' },
 ]

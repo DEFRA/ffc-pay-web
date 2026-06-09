@@ -8,7 +8,7 @@ const getSchemes = async () => {
       scheme.name = 'SFI22'
     }
   })
-  schemesPayload.sort((a, b) => a.name.localeCompare(b.name))
+  schemesPayload.sort((a, b) => a.schemeId > b.schemeId)
   return schemesPayload
 }
 

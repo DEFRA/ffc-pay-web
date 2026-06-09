@@ -3,7 +3,9 @@ module.exports = {
   HOLDS: 'payment-holds',
   ADD: 'add-payment-hold',
   ADD_CONFIRM: 'add-payment-hold-confirm',
-  BULK: 'payment-holds/bulk',
+  SEARCH: 'search-payment-holds',
+  REMOVE_CONFIRM: 'remove-payment-hold-confirm',
   REMOVE: 'remove-payment-hold',
+  BULK: 'payment-holds/bulk',
   LOADING: 'payment-holds/holds-loading'
 }

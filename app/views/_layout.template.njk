@@ -14,7 +14,7 @@
     {% include "./tag-manager/_head-content.njk" %}
   {% endif %}
   <% htmlWebpackPlugin.files.css.forEach(file => { %>
-    <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
+    <link href="<%= file %>" rel="stylesheet">
   <% }) %>
   <style>
     .govuk-service-navigation__container { display: flex; align-items: center; gap: 1rem; width: 100%; }
@@ -213,6 +213,6 @@
 {% block bodyEnd %}
   {# Run JavaScript at end of the body to avoid blocking the initial render #}
   <% htmlWebpackPlugin.files.js.forEach(file => { %>
-    <script src="<%= file.replace('../dist/', '/static/') %>"></script>
+    <script src="<%= file %>"></script>
   <% }) %>
 {% endblock %}

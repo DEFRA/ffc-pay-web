@@ -7,11 +7,19 @@ module.exports = Joi.object({
     .integer()
     .min(minFRN)
     .max(maxFRN)
-    .required()
+    .empty('')
     .error(errors => {
       errors.forEach(err => {
-        err.message = 'Enter a 10-digit FRN'
+        err.message = 'FRN (Firm Reference Number) must be 10 digits'
       })
       return errors
     })
+    .optional(),
+  name: Joi.string()
+    .empty('')
+    .optional()
 })
+  .or('frn', 'name')
+  .messages({
+    'object.missing': 'Enter an FRN or select a scheme'
+  })

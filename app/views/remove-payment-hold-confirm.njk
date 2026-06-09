@@ -1,0 +1,56 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% set pageTitle = "Remove payment hold for " ~ frn ~ " | " ~ holdCategoryName %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Manage payment holds",
+      href: "/manage-payment-holds"
+    },{
+      text: "Search for a payment hold",
+      href: "/search-payment-holds"
+    }, {
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <div class="interruption-card">
+        <div class="interruption-card__content">
+          <h1 class="interruption-card__heading">Are you sure you want to remove this payment hold?</h1>
+          <div class="interruption-card__body">
+            <p>Removing this payment hold for {{ frn }} | {{ holdCategoryName }} means it will no longer be in place.</p>
+            <p>You will not be able to restore it and will need to create it as a new payment hold.</p>
+            <p>Any related payment requests will be processed immediately.</p>
+          </div>
+          <div class="govuk-button-group interruption-card__actions">
+            <form method="POST" action="/remove-payment-hold" autocomplete="off" novalidate>
+              <input type="hidden" name="crumb" value="{{ crumb }}"/>
+              <input type="hidden" name="frn" value="{{ frn }}"/>
+              <input type="hidden" name="name" value="{{ schemeName }}"/>
+              <input type="hidden" name="holdCategoryName" value="{{ holdCategoryName }}"/>
+              <input type="hidden" name="holdId" value="{{ holdId }}"/>
+              <div class="govuk-button-group moj-interruption-card__actions">
+                <button id="submit" role="button" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">
+                  Yes, remove
+                </button>
+                <a class="govuk-link govuk-link--inverse" href="/manage-payment-holds">Cancel</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

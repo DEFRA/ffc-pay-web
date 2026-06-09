@@ -1,4 +1,3 @@
-const ViewModel = require('./models/search')
 const schema = require('./schemas/hold')
 const searchSchema = require('./schemas/hold-search')
 const bulkSchema = require('./schemas/bulk-hold')
@@ -12,7 +11,7 @@ const { applicationAdmin, holdAdmin } = require('../auth/permissions')
 const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost, mapHoldCategoriesToRadios } = require('../hold')
 const { PAYMENT_HOLDS_LINKS } = require('../constants/section-links')
-const searchLabelText = 'Search for a hold by FRN number'
+const { getSchemes } = require('../helpers')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin] }
 
@@ -27,66 +26,6 @@ module.exports = [
         cards.shift()
         const holdAdded = request.query.holdAdded
         return h.view(HOLDS_VIEWS.MANAGE, { cards, holdAdded })
-      }
-    }
-  },
-  {
-    method: 'GET',
-    path: HOLDS_ROUTES.HOLDS,
-    options: {
-      auth: AUTH_SCOPE,
-      handler: async (request, h) => {
-        const page = Number.parseInt(request.query.page) || 1
-        const perPage = Number.parseInt(request.query.perPage || 100)
-        const paymentHolds = await getHolds(page, perPage)
-        return h.view(HOLDS_VIEWS.HOLDS, {
-          paymentHolds,
-          page,
-          perPage,
-          ...new ViewModel(searchLabelText)
-        })
-      }
-    }
-  },
-  {
-    method: 'POST',
-    path: HOLDS_ROUTES.HOLDS,
-    options: {
-      auth: AUTH_SCOPE,
-      validate: {
-        payload: searchSchema,
-        failAction: async (request, h, error) => {
-          const paymentHolds = await getHolds()
-          return h
-            .view(HOLDS_VIEWS.HOLDS, {
-              paymentHolds,
-              ...new ViewModel(searchLabelText, request.payload.frn, error)
-            })
-            .code(HTTP_STATUS.BAD_REQUEST)
-            .takeover()
-        }
-      },
-      handler: async (request, h) => {
-        const frn = request.payload.frn
-        const paymentHolds = await getHolds(undefined, undefined, false)
-        const filteredPaymentHolds = paymentHolds.filter(
-          x => x.frn === String(frn)
-        )
-        if (filteredPaymentHolds.length) {
-          return h.view(HOLDS_VIEWS.HOLDS, {
-            paymentHolds: filteredPaymentHolds,
-            ...new ViewModel(searchLabelText, frn)
-          })
-        }
-
-        return h
-          .view(
-            HOLDS_VIEWS.HOLDS,
-            new ViewModel(searchLabelText, frn, {
-              message: 'No holds match the FRN provided.'
-            })
-          )
-          .code(HTTP_STATUS.BAD_REQUEST)
       }
     }
   },
@@ -114,24 +53,6 @@ module.exports = [
         }
 
         return h.view(HOLDS_VIEWS.ADD, { schemes, holdCategoryRadios, frn, selectScheme })
-      }
-    }
-  },
-  {
-    method: 'GET',
-    path: HOLDS_ROUTES.BULK,
-    options: {
-      auth: AUTH_SCOPE,
-
-      handler: async (_request, h) => {
-        const { schemes, paymentHoldCategories } = await getHoldCategories()
-
-        const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
-          valueKey: 'holdCategoryId',
-          textKey: 'name'
-        })
-
-        return h.view(HOLDS_VIEWS.BULK, { holdCategoryRadios })
       }
     }
   },
@@ -210,6 +131,71 @@ module.exports = [
         return h.redirect(`${HOLDS_ROUTES.MANAGE}?holdAdded=true`)
       }
     }
+  }, {
+    method: 'GET',
+    path: HOLDS_ROUTES.SEARCH,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const schemes = await getSchemes()
+        const frn = request.query.frn
+        const schemeId = request.query.schemeId
+        return h.view(HOLDS_VIEWS.SEARCH, { schemes, frn, schemeId })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: HOLDS_ROUTES.HOLDS,
+    options: {
+      auth: AUTH_SCOPE,
+      validate: {
+        payload: searchSchema,
+        failAction: async (request, h, errors) => {
+          const frn = request.payload?.frn
+          const schemeId = request.payload?.schemeId
+          const schemes = await getSchemes()
+
+          return h
+            .view(HOLDS_VIEWS.SEARCH, { schemes, frn, schemeId, errors })
+            .code(HTTP_STATUS.BAD_REQUEST)
+            .takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const frn = request.payload.frn
+        const schemeName = request.payload.name
+        const paymentHolds = await getHolds(undefined, undefined, false)
+        let filteredPaymentHolds = []
+        if (frn) {
+          filteredPaymentHolds = paymentHolds.filter(
+            x => x.frn === String(frn)
+          )
+        }
+        if (schemeName) {
+          filteredPaymentHolds = paymentHolds.filter(
+            x => x.holdCategorySchemeName === schemeName
+          )
+        }
+        return h.view(HOLDS_VIEWS.HOLDS, {
+          paymentHolds: filteredPaymentHolds,
+          numberOfHolds: filteredPaymentHolds.length,
+          frn,
+          schemeName
+        })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: HOLDS_ROUTES.REMOVE_CONFIRM,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const { holdId, frn, holdCategoryName, schemeName } = request.payload
+        return h.view(HOLDS_VIEWS.REMOVE_CONFIRM, { holdId, frn, schemeName, holdCategoryName })
+      }
+    }
   },
   {
     method: 'POST',
@@ -218,7 +204,47 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
         await postProcessing(HOLDS_ROUTES.REMOVE, { holdId: request.payload.holdId })
-        return h.redirect('/')
+        const frn = request.payload?.frn
+        const schemeName = request.payload?.name
+        const holdCategoryName = request.payload?.holdCategoryName
+        const paymentHolds = await getHolds(undefined, undefined, false)
+        let filteredPaymentHolds = []
+        if (frn) {
+          filteredPaymentHolds = paymentHolds.filter(
+            x => x.frn === String(frn)
+          )
+        }
+        if (schemeName) {
+          filteredPaymentHolds = paymentHolds.filter(
+            x => x.holdCategorySchemeName === schemeName
+          )
+        }
+        return h.view(HOLDS_VIEWS.HOLDS, {
+          paymentHolds: filteredPaymentHolds,
+          numberOfHolds: filteredPaymentHolds.length,
+          frn,
+          schemeName,
+          holdRemoved: true,
+          holdCategoryName
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: HOLDS_ROUTES.BULK,
+    options: {
+      auth: AUTH_SCOPE,
+
+      handler: async (_request, h) => {
+        const { schemes, paymentHoldCategories } = await getHoldCategories()
+
+        const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
+          valueKey: 'holdCategoryId',
+          textKey: 'name'
+        })
+
+        return h.view(HOLDS_VIEWS.BULK, { holdCategoryRadios })
       }
     }
   },
