@@ -28,7 +28,9 @@ const search = async (criteria = {}, limit = 100, offset = 0) => {
   const rows = payload?.statements ?? payload?.rows ?? (Array.isArray(payload) ? payload : [])
   const continuationToken = payload?.continuationToken ?? (rows.length < limit ? null : offset + rows.length)
 
-  return { statements: rows, continuationToken }
+  const totalCount = payload?.total ?? null
+
+  return { statements: rows, continuationToken, totalCount }
 }
 
 const getCircuitState = () => breaker.getState()

@@ -19,7 +19,7 @@ describe('get-statement-parts helpers', () => {
         scheme: 'SFI',
         year: '2024',
         frn: '100',
-        timestamp: '20240101120000'
+        timestamp: '01-01-2024 12:00'
       })
     })
 
@@ -44,7 +44,7 @@ describe('get-statement-parts helpers', () => {
         scheme: 'SFI',
         year: '2024',
         frn: '100',
-        timestamp: '20240101120000'  // .pdf trimmed, extra ignored
+        timestamp: '01-01-2024 12:00'  // .pdf trimmed, extra ignored
       })
     })
 
@@ -55,7 +55,7 @@ describe('get-statement-parts helpers', () => {
         scheme: 'SFI',
         year: '2024',
         frn: '100',
-        timestamp: '20240101120000'
+        timestamp: '01-01-2024 12:00'
       })
     })
   })

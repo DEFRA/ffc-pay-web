@@ -195,10 +195,23 @@ describe('download-statements route - GET', () => {
 
       expect(getStatementSchemes).toHaveBeenCalled()
       expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, {
-        additionalContext: { statements: [{ filename: 'test.pdf' }], searchPerformed: true, continuationToken: 'token' },
+        additionalContext: { statements: [{ filename: 'test.pdf' }], searchPerformed: true, continuationToken: 'token', totalCount: undefined },
         crumb: MOCK_CRUMB
       })
       expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.any(Object))
+    })
+
+    test('should pass totalCount to view context when returned by search', async () => {
+      const helperMock = require('../../../app/statement-downloader/search-helpers/download-helper')
+      helperMock.prepareSearchParams.mockReturnValue({ searchCriteria: { filename: null }, limit: 50, offsetOrToken: undefined })
+      helperMock.performSearch.mockResolvedValue({ statements: [{ filename: 'test.pdf' }], continuationToken: 'token', totalCount: 150 })
+
+      await handler(mockRequest, mockH)
+
+      expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, {
+        additionalContext: { statements: [{ filename: 'test.pdf' }], searchPerformed: true, continuationToken: 'token', totalCount: 150 },
+        crumb: MOCK_CRUMB
+      })
     })
 
     test('should handle search error', async () => {

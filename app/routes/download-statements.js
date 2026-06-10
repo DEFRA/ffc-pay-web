@@ -58,12 +58,13 @@ const handleStatementNotFound = (schemes, request, h) => {
   }))
 }
 
-const handleSuccessfulSearch = (schemes, request, statements, nextToken, h) => {
+const handleSuccessfulSearch = (schemes, request, statements, nextToken, totalCount, h) => {
   return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, {
     additionalContext: {
       statements,
       searchPerformed: true,
-      continuationToken: nextToken
+      continuationToken: nextToken,
+      totalCount
     },
     crumb: request.plugins.crumb
   }))
@@ -92,13 +93,13 @@ const handlePostDownloadStatements = async (request, h) => {
       return handleSearchError(searchResult, schemes, request, h)
     }
 
-    const { statements, continuationToken: nextToken } = searchResult
+    const { statements, continuationToken: nextToken, totalCount } = searchResult
 
     if (searchCriteria.filename && (!Array.isArray(statements) || statements.length === 0)) {
-      return handleStatementNotFound(schemes, request, h)
+      return handleStatementNotFound(schemes, request, statements, nextToken, totalCount, h)
     }
 
-    return handleSuccessfulSearch(schemes, request, statements, nextToken, h)
+    return handleSuccessfulSearch(schemes, request, statements, nextToken, totalCount, h)
   } catch (err) {
     console.error('Error in POST handler:', err)
     return handlePostError(err, undefined, request, h)

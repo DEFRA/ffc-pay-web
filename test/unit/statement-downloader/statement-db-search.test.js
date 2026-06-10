@@ -243,6 +243,7 @@ describe('statement-db-search', () => {
 
         expect(result).toEqual({
           statements: mockStatements,
+          totalCount: null,
           continuationToken: 'token-123'
         })
       })
@@ -597,6 +598,48 @@ describe('statement-db-search', () => {
       const searchResult = await search(criteria, 100, 0)
 
       expect(searchResult.statements).toEqual([{ id: 1, frn: '1234567890' }])
+    })
+  })
+
+  describe('totalCount', () => {
+    test('should return totalCount from API response when present', async () => {
+      buildSearchQueryPath.mockReturnValue('/statements?limit=50&offset=0')
+      executeApiCall.mockResolvedValue({ statements: [{ id: 1 }], continuationToken: null, total: 75 })
+
+      const result = await search({}, 50, 0)
+
+      expect(result.totalCount).toBe(75)
+    })
+
+    test('should return null totalCount when API response omits total', async () => {
+      buildSearchQueryPath.mockReturnValue('/statements?limit=50&offset=0')
+      executeApiCall.mockResolvedValue({ statements: [{ id: 1 }], continuationToken: null })
+
+      const result = await search({}, 50, 0)
+
+      expect(result.totalCount).toBeNull()
+    })
+
+    test('should return null totalCount when API response total is null', async () => {
+      buildSearchQueryPath.mockReturnValue('/statements?limit=50&offset=0')
+      executeApiCall.mockResolvedValue({ statements: [{ id: 1 }], continuationToken: null, total: null })
+
+      const result = await search({}, 50, 0)
+
+      expect(result.totalCount).toBeNull()
+    })
+
+    test('should return totalCount alongside statements and continuationToken', async () => {
+      buildSearchQueryPath.mockReturnValue('/statements?limit=50&offset=0')
+      executeApiCall.mockResolvedValue({ statements: [{ id: 1 }, { id: 2 }], continuationToken: '50', total: 120 })
+
+      const result = await search({}, 50, 0)
+
+      expect(result).toEqual({
+        statements: [{ id: 1 }, { id: 2 }],
+        continuationToken: '50',
+        totalCount: 120
+      })
     })
   })
 })
