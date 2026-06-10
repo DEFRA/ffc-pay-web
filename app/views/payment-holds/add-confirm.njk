@@ -13,10 +13,10 @@
       href: "/"
     },{
       text: "Manage payment holds",
-      href: "/manage-payment-holds"
+      href: "/payment-holds/manage"
     },{
       text: "Create a payment hold",
-      href: "/add-payment-hold"
+      href: "/payment-holds/add"
     }, {
       text: pageTitle
     }]
@@ -35,7 +35,7 @@
           </h2>
           <ul class="govuk-summary-card__actions">
             <li class="govuk-summary-card__action">
-              <a class="govuk-link" href="/add-payment-hold?frn={{ frn }}&holdCategoryId={{ holdCategoryId }}">Change<span class="govuk-visually-hidden"> payment hold</span></a>
+              <a class="govuk-link" href="/payment-holds/add?frn={{ frn }}&holdCategoryId={{ holdCategoryId }}">Change<span class="govuk-visually-hidden"> payment hold</span></a>
             </li>
           </ul>
         </div>
@@ -69,7 +69,7 @@
         </div>
       </div>
 
-      <form method="POST" action="/add-payment-hold" autocomplete="off" novalidate>
+      <form method="POST" action="/payment-holds/add" autocomplete="off" novalidate>
         <input type="hidden" name="crumb" value="{{ crumb }}"/>
         <input type="hidden" name="frn" value="{{ frn }}"/>
         <input type="hidden" name="holdCategoryId" value="{{ holdCategoryId }}"/>

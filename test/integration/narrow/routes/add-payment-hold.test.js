@@ -6,7 +6,7 @@ const createServer = require('../../../../app/server')
 const getCrumbs = require('../../../helpers/get-crumbs')
 const { holdAdmin } = require('../../../../app/auth/permissions')
 
-const url = '/add-payment-hold'
+const url = '/payment-holds/add'
 const pageH1 = 'Add payment hold'
 const validFrn = 1000000000
 let server

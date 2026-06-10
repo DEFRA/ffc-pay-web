@@ -1,8 +1,8 @@
 const Joi = require('joi')
 
 module.exports = Joi.object({
-  remove: Joi.boolean().required().error(errors => {
-    errors.forEach(err => { err.message = 'Select add to add holds in bulk' })
+  type: Joi.string().required().valid('add', 'remove').error(errors => {
+    errors.forEach(err => { err.message = 'An error has occurred. Please return to the manage payment holds in bulk page.' })
     return errors
   }),
   holdCategoryId: Joi.number().integer().required().error(errors => {

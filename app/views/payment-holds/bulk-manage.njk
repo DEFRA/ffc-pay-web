@@ -1,0 +1,60 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% set pageTitle = "Manage payment holds in bulk" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Manage payment holds",
+      href: "/payment-holds/manage"
+    }, {
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {% if bulkStatus %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title-hold-added">
+              Success
+            </h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <h3 class="govuk-notification-banner__heading">
+              Bulk payment holds successfully {% if bulkStatus == 'remove' %}removed{% else %}added{% endif %}.
+            </h3>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body">
+        Add or remove multiple payment holds for a scheme and a hold category.
+      </p>
+      <p class="govuk-body">
+        Alternatively, you can <a href="/payment-holds/add" class="govuk-link">create and remove an individual payment hold</a>.
+      </p>
+
+      <div class="govuk-cards govuk-cards--2">
+        <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+          <h2 class="govuk-heading-m card__heading"><a href="/payment-holds/bulk?type=add" class="govuk-link">Add payment holds in bulk</a></h2>
+        </div>
+        <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+          <h2 class="govuk-heading-m card__heading"><a href="/payment-holds/bulk?type=remove" class="govuk-link">Remove payment holds in bulk</a></h2>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

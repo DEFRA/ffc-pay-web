@@ -17,7 +17,7 @@
       href: "/"
     },{
       text: "Manage payment holds",
-      href: "/manage-payment-holds"
+      href: "/payment-holds/manage"
     }, {
       text: pageTitle
     }]
@@ -27,7 +27,7 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <form method="POST" action="/add-payment-hold/confirm" autocomplete="off" novalidate>
+      <form method="POST" action="/payment-holds/add-confirm" autocomplete="off" novalidate>
         <input type="hidden" name="crumb" value="{{ crumb }}"/>
         
         <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
@@ -86,7 +86,7 @@
               id: "submit"
             }
           }) }}
-          <a class="govuk-link" href="/manage-payment-holds">Cancel</a>
+          <a class="govuk-link" href="/payment-holds/manage">Cancel</a>
         </div>
       </form>
     </div>

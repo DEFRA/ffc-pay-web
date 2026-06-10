@@ -14,7 +14,7 @@ const getCrumbs = require('../../../helpers/get-crumbs')
 let server
 let auth
 
-const PAGE = '/payment-holds'
+const PAGE = '/payment-holds/results'
 const PAGE_H1 = 'Payment holds'
 const BULK_PAGE = '/payment-holds/bulk'
 
@@ -68,7 +68,7 @@ describe('Payment Holds', () => {
     return $
   }
 
-  describe('GET /payment-holds', () => {
+  describe('GET /payment-holds/results', () => {
     test('shows "no holds" when empty', async () => {
       const $ = await doGetTest(PAGE, PAGE_H1, 'paymentHolds', [])
       expect($('#no-hold-text').text()).toBe('There are no payment holds.')

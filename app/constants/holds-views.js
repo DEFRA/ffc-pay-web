@@ -1,11 +1,12 @@
 module.exports = {
-  MANAGE: 'manage-payment-holds',
-  HOLDS: 'payment-holds',
-  ADD: 'add-payment-hold',
-  ADD_CONFIRM: 'add-payment-hold-confirm',
-  SEARCH: 'search-payment-holds',
-  REMOVE_CONFIRM: 'remove-payment-hold-confirm',
+  MANAGE: 'payment-holds/manage',
+  HOLDS: 'payment-holds/results',
+  ADD: 'payment-holds/add',
+  ADD_CONFIRM: 'payment-holds/add-confirm',
+  SEARCH: 'payment-holds/search',
+  REMOVE_CONFIRM: 'payment-holds/remove-confirm',
   REMOVE: 'remove-payment-hold',
+  BULK_LANDING: 'payment-holds/bulk-manage',
   BULK: 'payment-holds/bulk',
   LOADING: 'payment-holds/holds-loading'
 }

@@ -7,7 +7,7 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
 
-{% set pageTitle = "Add/remove payment holds in bulk" %}
+{% set pageTitle = type | capitalize ~ ' payment holds in bulk' %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
@@ -17,8 +17,11 @@
       text: "Home",
       href: "/"
     },{
-      text: "Payment holds",
-      href: "/payment-holds"
+      text: "Manage payment holds",
+      href: "/payment-holds/manage"
+    },{
+      text: "Manage payment holds in bulk",
+      href: "/payment-holds/bulk-manage"
     }, {
       text: pageTitle
     }]
@@ -30,62 +33,57 @@
     <div class="govuk-grid-column-full">
       <form method="POST" action="/payment-holds/bulk" autocomplete="off" novalidate enctype="multipart/form-data">
         <input type="hidden" name="crumb" value="{{crumb}}"/>
+        <input type="hidden" name="type" value="{{type}}"/>
         <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
         <p class="govuk-body">
-          Any FRNs provided here will have holds applied or removed depending on your input.
+          {% if type == 'add' %}
+            Add multiple payment holds to a scheme and a hold type by uploading a CSV file.
+          {% else %}
+            Remove multiple payment holds from a scheme and a hold type by uploading a CSV file.
+          {% endif %}
         </p>
-    {% if errors %}
-      {% set errorList = [] %}
-      {% for error in errors.details %}
-        {% set errorList = (errorList.push({
-          text: error.message
-        }), errorList) %}
-      {% endfor %}
-      
-      {{ govukErrorSummary({
-        titleText: "There is a problem",
-        errorList: errorList
-      }) }}
-    {% endif %}
-
-        {{ govukSelect({
-          id: "remove",
-          name: "remove",
-          label: {
-            text: "Do you want to add or remove holds?"
-          },
-          items: [
-            {
-              value: "false",
-              text: "Add",
-              selected: remove === "false" or not remove
-            },
-            {
-              value: "true",
-              text: "Remove",
-              selected: remove === "true"
-            }
-          ]
-        }) }}
+        <details class="govuk-details">
+          <summary class="govuk-details__summary">
+            <span class="govuk-details__summary-text">
+              Help with CSV file format
+            </span>
+          </summary>
+          <div class="govuk-details__text">
+            CSVs should only contain a list of ten-digit FRNs to be placed on hold, with each separated by a comma. Other formats may not be read correctly.
+          </div>
+        </details>
+        {% if errors %}
+          {% set errorList = [] %}
+          {% for error in errors.details %}
+            {% set errorList = (errorList.push({
+              text: error.message
+            }), errorList) %}
+          {% endfor %}
+          
+          {{ govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: errorList
+          }) }}
+        {% endif %}
 
         {{ govukFileUpload({
           id: "file",
           name: "file",
           label: {
-            text: "Upload a file",
+            text: "Upload a CSV file",
             classes: "govuk-label--s"
-          },
-          hint: {
-            text: "File should be in CSV format, containing only FRNs to be placed on hold, separated with commas."
           },
           value: file
         }) }}
         
         {{ holdSelectionRadios(holdCategoryRadios, selectScheme) }}
 
-        {{ govukButton({
-          text: "Create"
-        }) }}
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: (type | capitalize) ~ " holds"
+          }) }}
+          <a class="govuk-link" href="/payment-holds/bulk-manage">Cancel</a>
+        </div>
       </form>
     </div>
   </div>

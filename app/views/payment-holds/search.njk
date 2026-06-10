@@ -17,7 +17,7 @@
       href: "/"
     },{
       text: "Manage payment holds",
-      href: "/manage-payment-holds"
+      href: "/payment-holds/manage"
     }, {
       text: pageTitle
     }]
@@ -33,7 +33,7 @@
         Search for an existing payment hold using the Firm Reference Number (FRN), scheme or a combination of both.
       </p>
 
-      <form class="govuk-!-margin-bottom-6" action="/payment-holds" method="post" role="search">
+      <form class="govuk-!-margin-bottom-6" action="/payment-holds/results" method="post" role="search">
         <input type="hidden" name="crumb" value="{{ crumb }}"/>
 
         {{ govukInput({

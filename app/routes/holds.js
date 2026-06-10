@@ -121,7 +121,7 @@ module.exports = [
       },
       handler: async (request, h) => {
         await postProcessing(
-          HOLDS_ROUTES.ADD,
+          '/add-payment-hold',
           {
             holdCategoryId: request.payload.holdCategoryId,
             frn: request.payload.frn
@@ -232,19 +232,33 @@ module.exports = [
   },
   {
     method: 'GET',
+    path: HOLDS_ROUTES.BULK_LANDING,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const bulkStatus = request.query?.bulk
+        return h.view(HOLDS_VIEWS.BULK_LANDING, { bulkStatus })
+      }
+    }
+  },
+  {
+    method: 'GET',
     path: HOLDS_ROUTES.BULK,
     options: {
       auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const type = request.query?.type
+        if (!type || !['add', 'remove'].includes(type)) {
+          return h.redirect(HOLDS_ROUTES.BULK_LANDING)
+        }
 
-      handler: async (_request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-
         const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
           valueKey: 'holdCategoryId',
           textKey: 'name'
         })
 
-        return h.view(HOLDS_VIEWS.BULK, { holdCategoryRadios })
+        return h.view(HOLDS_VIEWS.BULK, { holdCategoryRadios, type })
       }
     }
   },

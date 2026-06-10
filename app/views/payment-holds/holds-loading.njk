@@ -13,10 +13,13 @@
       text: "Home",
       href: "/"
     },{
-      text: "Payment holds",
-      href: "/payment-holds"
+      text: "Manage payment holds",
+      href: "/payment-holds/manage"
+    },{
+      text: "Manage payment holds in bulk",
+      href: "/payment-holds/bulk-manage"
     }, {
-      text: "Add/remove payment holds in bulk",
+      text: "{{ type | capitalize }} payment holds in bulk",
       href: "/payment-holds/bulk"
     }, {
       text: pageTitle
@@ -28,7 +31,7 @@
   {{ renderLoadingPage(
     jobId=jobId,
     checkUrl="/loading/" + jobId,
-    redirectUrl="/payment-holds",
+    redirectUrl="/payment-holds/bulk-manage?bulk=" + type,
     title=pageTitle,
     statusMessage="We're processing your payment holds. This can take a few minutes for large files.",
     completedMessage="Your payment holds have been successfully processed. You will be redirected to the payment holds page.",

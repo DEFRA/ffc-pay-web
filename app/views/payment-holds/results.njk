@@ -25,10 +25,10 @@
       href: "/"
     },{
       text: "Manage payment holds",
-      href: "/manage-payment-holds"
+      href: "/payment-holds/manage"
     },{
       text: "Search for a payment hold",
-      href: "/search-payment-holds"
+      href: "/payment-holds/search"
     }, {
       text: pageTitle
     }]
@@ -137,7 +137,7 @@
                 <td class="govuk-table__cell">{{ paymentHold.dateTimeAdded }}</td>
                 <td class="govuk-table__cell">
                   {% if paymentHold.canBeRemoved %}
-                    <form method="post" action="/remove-payment-hold-confirm">
+                    <form method="post" action="/payment-holds/remove-confirm">
                       <input type="hidden" name="crumb" value="{{ crumb }}"/>
                       <input type="hidden" name="holdId" value="{{ paymentHold.holdId }}">
                       <input type="hidden" name="frn" value="{{ paymentHold.frn }}">
@@ -191,13 +191,13 @@
       {% else %}
         <p class="govuk-body">
           {% if frn and schemeName %}
-            No payment holds found for {{ schemeName }} and {{ frn }}. <a class="govuk-link" href="/search-payment-holds">Start a new search</a>.
+            No payment holds found for {{ schemeName }} and {{ frn }}. <a class="govuk-link" href="/payment-holds/search">Start a new search</a>.
           {% elseif frn %}
-            No payment holds found for FRN {{ frn }}. <a class="govuk-link" href="/search-payment-holds">Start a new search</a>.
+            No payment holds found for FRN {{ frn }}. <a class="govuk-link" href="/payment-holds/search">Start a new search</a>.
           {% elseif schemeName %}
-            No payment holds found for {{ schemeName }}. <a class="govuk-link" href="/search-payment-holds">Start a new search</a>.
+            No payment holds found for {{ schemeName }}. <a class="govuk-link" href="/payment-holds/search">Start a new search</a>.
           {% else %}
-            No payment holds found. <a class="govuk-link" href="/search-payment-holds">Start a new search</a>.
+            No payment holds found. <a class="govuk-link" href="/payment-holds/search">Start a new search</a>.
           {% endif %}
         </p>
       {% endif %}
