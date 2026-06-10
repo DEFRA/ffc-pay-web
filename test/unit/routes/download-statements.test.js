@@ -235,7 +235,7 @@ describe('download-statements route - GET', () => {
       await handler(mockRequest, mockH)
 
       expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, {
-        additionalContext: { error: { message: 'Statement not found' }, searchPerformed: false },
+        additionalContext: { error: { message: 'Statement not found' }, continuationToken: null, searchPerformed: false, statements: [], totalCount: undefined },
         crumb: MOCK_CRUMB
       })
     })

@@ -48,11 +48,14 @@ const handleSearchError = (searchResult, schemes, request, h) => {
   }))
 }
 
-const handleStatementNotFound = (schemes, request, h) => {
+const handleStatementNotFound = (schemes, request, statements, nextToken, totalCount, h) => {
   return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, {
     additionalContext: {
       error: { message: 'Statement not found' },
-      searchPerformed: false
+      searchPerformed: false,
+      statements,
+      continuationToken: nextToken,
+      totalCount
     },
     crumb: request.plugins.crumb
   }))
