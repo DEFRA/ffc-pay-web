@@ -1,5 +1,15 @@
 const config = require('../../config')
 const { getContainerClient } = require('../../storage/container-manager')
+const YEAR_START = 0
+const YEAR_END = 4
+const MONTH_START = 4
+const MONTH_END = 6
+const DAY_START = 6
+const DAY_END = 8
+const HOUR_START = 8
+const HOUR_END = 10
+const MINUTE_START = 10
+const MINUTE_END = 12
 let _cachedStatementsContainer = null
 
 const getStatementsContainer = async () => {
@@ -31,11 +41,11 @@ const parseFilename = (blobName) => {
     return null
   }
   const timestamp16 = filenameParts[FILENAME_PARTS.TIMESTAMP].replace('.pdf', '')
-  const timestampYear = timestamp16.substring(0, 4)
-  const timestampMonth = timestamp16.substring(4, 6)
-  const timestampDay = timestamp16.substring(6, 8)
-  const timestampHour = timestamp16.substring(8, 10)
-  const timestampMinute = timestamp16.substring(10, 12)
+  const timestampYear = timestamp16.substring(YEAR_START, YEAR_END)
+  const timestampMonth = timestamp16.substring(MONTH_START, MONTH_END)
+  const timestampDay = timestamp16.substring(DAY_START, DAY_END)
+  const timestampHour = timestamp16.substring(HOUR_START, HOUR_END)
+  const timestampMinute = timestamp16.substring(MINUTE_START, MINUTE_END)
   const readableDate = `${timestampDay}-${timestampMonth}-${timestampYear} ${timestampHour}:${timestampMinute}`
 
   return {
