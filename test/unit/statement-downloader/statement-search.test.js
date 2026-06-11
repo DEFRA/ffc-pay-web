@@ -105,7 +105,7 @@ describe('statement-search', () => {
 
         expect(filenameSearch).toHaveBeenCalled()
         expect(constructedFilenameSearch).toHaveBeenCalled()
-        expect(dbSearch).toHaveBeenCalledWith(50, 0, { schemeId: 1 })
+        expect(dbSearch).toHaveBeenCalledWith(100, 0, { schemeId: 1 })
         expect(apiBlobSearch).not.toHaveBeenCalled()
         expect(result).toEqual(mockResult)
       })
@@ -125,7 +125,7 @@ describe('statement-search', () => {
         expect(filenameSearch).toHaveBeenCalled()
         expect(constructedFilenameSearch).toHaveBeenCalled()
         expect(dbSearch).toHaveBeenCalled()
-        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { schemeId: 1 })
+        expect(apiBlobSearch).toHaveBeenCalledWith(100, null, { schemeId: 1 })
         expect(result).toEqual(mockResult)
       })
 
@@ -181,8 +181,8 @@ describe('statement-search', () => {
 
         await searchStatements({ schemeId: 1 })
 
-        expect(dbSearch).toHaveBeenCalledWith(50, 0, { schemeId: 1 })
-        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { schemeId: 1 })
+        expect(dbSearch).toHaveBeenCalledWith(100, 0, { schemeId: 1 })
+        expect(apiBlobSearch).toHaveBeenCalledWith(100, null, { schemeId: 1 })
       })
 
       test('should pass marketingYear to strategies', async () => {
@@ -193,8 +193,8 @@ describe('statement-search', () => {
 
         await searchStatements({ marketingYear: 2025 })
 
-        expect(dbSearch).toHaveBeenCalledWith(50, 0, { marketingYear: 2025 })
-        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { marketingYear: 2025 })
+        expect(dbSearch).toHaveBeenCalledWith(100, 0, { marketingYear: 2025 })
+        expect(apiBlobSearch).toHaveBeenCalledWith(100, null, { marketingYear: 2025 })
       })
 
       test('should pass frn to strategies', async () => {
@@ -205,8 +205,8 @@ describe('statement-search', () => {
 
         await searchStatements({ frn: '1234567890' })
 
-        expect(dbSearch).toHaveBeenCalledWith(50, 0, { frn: '1234567890' })
-        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { frn: '1234567890' })
+        expect(dbSearch).toHaveBeenCalledWith(100, 0, { frn: '1234567890' })
+        expect(apiBlobSearch).toHaveBeenCalledWith(100, null, { frn: '1234567890' })
       })
 
       test('should pass timestamp to strategies', async () => {
@@ -217,7 +217,7 @@ describe('statement-search', () => {
 
         await searchStatements({ schemeId: 1, timestamp: '2025081908254124' })
 
-        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, { schemeId: 1, timestamp: '2025081908254124' })
+        expect(apiBlobSearch).toHaveBeenCalledWith(100, null, { schemeId: 1, timestamp: '2025081908254124' })
       })
 
       test('should pass all criteria to strategies', async () => {
@@ -235,8 +235,8 @@ describe('statement-search', () => {
         await searchStatements(criteria)
 
         expect(constructedFilenameSearch).toHaveBeenCalledWith(criteria)
-        expect(dbSearch).toHaveBeenCalledWith(50, 0, criteria)
-        expect(apiBlobSearch).toHaveBeenCalledWith(50, null, criteria)
+        expect(dbSearch).toHaveBeenCalledWith(100, 0, criteria)
+        expect(apiBlobSearch).toHaveBeenCalledWith(100, null, criteria)
       })
     })
 

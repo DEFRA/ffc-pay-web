@@ -4,7 +4,6 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% set pageTitle = "Download payment statements" %}
 
@@ -39,7 +38,7 @@
 
       <p class="govuk-body">
         Statements provide customers with payment details. <br/>
-        You can search for a specific statement by entering the full file name, or search for all of a customer’s statements using the Firm Reference Number (FRN).<br/>
+        You can search for a specific statement by entering the full file name, or search for all of a customer's statements using the Firm Reference Number (FRN).<br/>
         If you want to find statements for multiple customers, search using the scheme and/or marketing year
       </p>
 
@@ -76,104 +75,6 @@
         }) }}
         {{ submitButton('Search') }}
       </form>
-
-      {% if searchPerformed %}
-        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible"/>
-        {% if statements and statements.length > 0 %}
-          {% set resultCount = statements.length %}
-          {% set itemLimit = limit or 50 %}
-          {% set startItem = ((pageNumber - 1) * itemLimit) + 1 %}
-          {% set endItem = startItem + resultCount - 1 %}
-          {% if totalCount %}
-            <div class="govuk-grid-row govuk-!-margin-bottom-4">
-              <div class="govuk-grid-column-one-half">
-                <h2 class="govuk-heading-m govuk-!-margin-bottom-0">Statements</h2>
-              </div>
-              <div class="govuk-grid-column-one-half govuk-!-text-align-right">
-                <p class="govuk-body govuk-!-margin-bottom-0">
-                  {{ startItem }}–{{ endItem }} of <strong>{{ totalCount }}</strong>
-                </p>
-              </div>
-            </div>
-          {% endif %}
-
-          <table class="govuk-table">
-            <caption class="govuk-visually-hidden">Search results for payment statements</caption>
-            <thead class="govuk-table__head">
-              <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header">Scheme</th>
-                <th scope="col" class="govuk-table__header">Year</th>
-                <th scope="col" class="govuk-table__header">FRN</th>
-                <th scope="col" class="govuk-table__header">Timestamp</th>
-                <th scope="col" class="govuk-table__header">Action</th>
-              </tr>
-            </thead>
-            <tbody class="govuk-table__body">
-              {% for statement in statements %}
-                <tr class="govuk-table__row">
-                  <td class="govuk-table__cell">{{ statement.scheme }}</td>
-                  <td class="govuk-table__cell">{{ statement.year }}</td>
-                  <td class="govuk-table__cell">{{ statement.frn }}</td>
-                  <td class="govuk-table__cell">{{ statement.timestamp }}</td>
-                  <td class="govuk-table__cell">
-                    {% if statement.filename %}
-                      <a href="/download-statements/download/{{ statement.filename }}" class="govuk-link">
-                        Download <span class="govuk-visually-hidden">statement for {{ statement.scheme }} {{ statement.year }} FRN {{ statement.frn }}</span>
-                      </a>
-                    {% else %}
-                      <span class="govuk-body-s">File unavailable</span>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-
-        {% if totalCount or continuationToken or pageNumber > 1 %}
-          <form id="pagination-form" method="POST" action="/download-statements" style="display: none;">
-            <input type="hidden" name="crumb" value="{{ crumb }}"/>
-            <input type="hidden" name="schemeId" value="{{ schemeId }}"/>
-            <input type="hidden" name="marketingYear" value="{{ marketingYear }}"/>
-            <input type="hidden" name="frn" value="{{ frn }}"/>
-            <input type="hidden" name="filename" value="{{ filename }}"/>
-            <input type="hidden" name="timestamp" value="{{ timestamp }}"/>
-            <input type="hidden" name="limit" value="{{ itemLimit }}"/>
-            <input type="hidden" name="pageNumber" id="pagination-page-number" value="0"/>
-          </form>
-
-          {% if totalCount %}
-            {% set totalPages = (totalCount / itemLimit) | round(0, 'ceil') %}
-            {% set paginationItems = [] %}
-            {% for i in range(1, totalPages + 1) %}
-              {% set pageIndex = i - 1 %}
-              {% set _ = paginationItems.push({
-                number: i,
-                href: '#',
-                current: (i === pageNumber),
-                attributes: { 'onclick': "document.getElementById('pagination-page-number').value = " ~ pageIndex ~ "; document.getElementById('pagination-form').submit(); return false;" }
-              }) %}
-            {% endfor %}
-            {{ govukPagination({ items: paginationItems }) }}
-
-          {% else %}
-            {# Fallback prev/next if totalCount is unavailable #}
-            {% set prevAttrs = {'onclick': "document.getElementById('pagination-page-number').value = " ~ (pageNumber - 2) ~ "; document.getElementById('pagination-form').submit(); return false;"} %}
-            {% set nextAttrs = {'onclick': "document.getElementById('pagination-page-number').value = " ~ pageNumber ~ "; document.getElementById('pagination-form').submit(); return false;"} %}
-
-            {% if pageNumber > 1 and continuationToken %}
-              {{ govukPagination({ previous: { href: '#', attributes: prevAttrs }, next: { href: '#', attributes: nextAttrs } }) }}
-            {% elif pageNumber > 1 %}
-              {{ govukPagination({ previous: { href: '#', attributes: prevAttrs } }) }}
-            {% else %}
-              {{ govukPagination({ next: { href: '#', attributes: nextAttrs } }) }}
-            {% endif %}
-          {% endif %}
-        {% endif %}
-        {% else %}
-          <h2 class="govuk-heading-m">Statement Search Results</h2>
-          <p class="govuk-body">No statements found.</p>
-        {% endif %}
-      {% endif %}
     </div>
   </div>
 {% endblock %}

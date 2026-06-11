@@ -3,16 +3,10 @@ const { downloadStatement } = require('../statement-downloader/statement-search'
 const { BAD_REQUEST, SUCCESS, NOT_FOUND, INTERNAL_SERVER_ERROR, FORBIDDEN } = require('../constants/http-status-codes')
 const { applicationAdmin, statusReportsDelinked } = require('../auth/permissions')
 const { getStatementSchemes } = require('../helpers/get-statement-schemes')
-const {
-  buildViewContext,
-  handleSchemesError,
-  prepareSearchParams,
-  performSearch
-} = require('../statement-downloader/search-helpers/download-helper')
+const { buildViewContext, handleSchemesError } = require('../statement-downloader/search-helpers/download-helper')
 
 const DOWNLOAD_VIEW = 'download-statements'
 const SCHEMES_ERROR = 'Unable to load schemes. Please try again later.'
-const fileLimit = 50
 const AUTH_SCOPE = { scope: [applicationAdmin, statusReportsDelinked] }
 
 const handleGetDownloadStatements = async (_request, h) => {
@@ -38,75 +32,17 @@ const handleValidationFailure = async (request, h, error) => {
   }
 }
 
-const handleSearchError = (searchResult, schemes, request, h) => {
-  return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, {
-    additionalContext: {
-      error: { message: searchResult.error },
-      searchPerformed: false
-    },
-    crumb: request.plugins.crumb
-  }))
-}
-
-const handleStatementNotFound = (schemes, request, statements, nextToken, totalCount, h) => {
-  return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, {
-    additionalContext: {
-      error: { message: 'Statement not found' },
-      searchPerformed: false,
-      statements,
-      continuationToken: nextToken,
-      totalCount
-    },
-    crumb: request.plugins.crumb
-  }))
-}
-
-const handleSuccessfulSearch = (schemes, request, statements, nextToken, totalCount, h) => {
-  return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, {
-    additionalContext: {
-      statements,
-      searchPerformed: true,
-      continuationToken: nextToken,
-      totalCount
-    },
-    crumb: request.plugins.crumb
-  }))
-}
-
-const handlePostError = async (err, schemes, request, h) => {
-  const error = { message: err.message || 'An error occurred while searching for statements' }
-  if (!schemes) {
-    try {
-      schemes = await getStatementSchemes()
-    } catch (e) {
-      console.error('Error fetching schemes after search failure:', e)
-      return handleSchemesError(h, SCHEMES_ERROR)
+const handlePostDownloadStatements = (request, h) => {
+  const params = new URLSearchParams()
+  const fields = ['filename', 'schemeId', 'marketingYear', 'frn', 'timestamp', 'limit']
+  for (const field of fields) {
+    const val = request.payload[field]
+    if (val !== undefined && val !== null && String(val) !== '') {
+      params.set(field, val)
     }
   }
-  return h.view(DOWNLOAD_VIEW, buildViewContext(schemes, request.payload, { additionalContext: { error }, crumb: request.plugins.crumb }))
-}
-
-const handlePostDownloadStatements = async (request, h) => {
-  try {
-    const { searchCriteria, limit, offsetOrToken } = prepareSearchParams(request, fileLimit)
-    const schemes = await getStatementSchemes()
-    const searchResult = await performSearch(searchCriteria, limit, offsetOrToken)
-
-    if (searchResult?.error) {
-      return handleSearchError(searchResult, schemes, request, h)
-    }
-
-    const { statements, continuationToken: nextToken, totalCount } = searchResult
-
-    if (searchCriteria.filename && (!Array.isArray(statements) || statements.length === 0)) {
-      return handleStatementNotFound(schemes, request, statements, nextToken, totalCount, h)
-    }
-
-    return handleSuccessfulSearch(schemes, request, statements, nextToken, totalCount, h)
-  } catch (err) {
-    console.error('Error in POST handler:', err)
-    return handlePostError(err, undefined, request, h)
-  }
+  params.set('pageNumber', '0')
+  return h.redirect(`/statement-results?${params.toString()}`).code(303)
 }
 
 const handleDownloadFile = async (request, h) => {

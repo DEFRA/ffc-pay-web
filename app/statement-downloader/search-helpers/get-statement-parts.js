@@ -52,6 +52,7 @@ const parseFilename = (blobName) => {
     scheme: filenameParts[FILENAME_PARTS.SCHEME],
     year: filenameParts[FILENAME_PARTS.YEAR],
     frn: filenameParts[FILENAME_PARTS.FRN],
+    timestamp16,
     timestamp: readableDate
   }
 }

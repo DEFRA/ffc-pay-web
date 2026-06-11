@@ -5,7 +5,7 @@ const { apiBlobSearch } = require('./search-helpers/api-blob-search')
 const { downloadStatement } = require('./search-helpers/download-statement')
 const { validateAndNormalizeLimit, validateContinuationToken, hasCriteria } = require('./search-helpers/search-validators')
 
-const DEFAULT_SEARCH_LIMIT = 50
+const DEFAULT_SEARCH_LIMIT = 100
 
 const safeDbSearch = async (pageLimit, token, criteria) => {
   const offset = (token !== null && /^\d+$/.test(String(token))) ? Number(token) : 0

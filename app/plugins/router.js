@@ -27,6 +27,7 @@ let routes = [].concat(
   require('../routes/alerts'),
   require('../routes/metrics'),
   require('../routes/download-statements'),
+  require('../routes/statement-results'),
   require('../routes/accessibility'),
   require('../routes/privacy'),
   require('../routes/cookies'),

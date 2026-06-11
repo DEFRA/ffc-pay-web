@@ -244,8 +244,8 @@ describe('download-helper utilities', () => {
     const fileLimit = 50
 
     test('should prepare params with default limit and no token', () => {
-      const request = { payload: { schemeId: '1' } }
-      const result = prepareSearchParams(request, fileLimit)
+      const data = { schemeId: '1' }
+      const result = prepareSearchParams(data, fileLimit)
       expect(result).toEqual({
         searchCriteria: {
           filename: null,
@@ -260,27 +260,27 @@ describe('download-helper utilities', () => {
       })
     })
 
-    test('should handle custom limit', () => {
-      const request = { payload: { limit: '100' } }
-      const result = prepareSearchParams(request, fileLimit)
-      expect(result.limit).toBe(100)
+    test('should handle fileLimit over custom limit', () => {
+      const data = { limit: '100' }
+      const result = prepareSearchParams(data, fileLimit)
+      expect(result.limit).toBe(100) // Custom limit should be used when provided
     })
 
     test('should handle continuation token', () => {
-      const request = { payload: { continuationToken: 'token123' } }
-      const result = prepareSearchParams(request, fileLimit)
-      expect(result.offsetOrToken).toBe('token123')
+      const data = { continuationToken: 'token123' }
+      const result = prepareSearchParams(data, fileLimit)
+      expect(result.offsetOrToken).toBe('token123') // Continuation token should take precedence and be passed as is
     })
 
     test('should calculate offset from pageNumber', () => {
-      const request = { payload: { pageNumber: '2' } }
-      const result = prepareSearchParams(request, fileLimit)
+      const data = { pageNumber: '2' }
+      const result = prepareSearchParams(data, fileLimit)
       expect(result.offsetOrToken).toBe(100) // 2 * 50
     })
 
     test('should prefer continuationToken over pageNumber', () => {
-      const request = { payload: { pageNumber: '2', continuationToken: 'token' } }
-      const result = prepareSearchParams(request, fileLimit)
+      const data = { pageNumber: '2', continuationToken: 'token' }
+      const result = prepareSearchParams(data, fileLimit)
       expect(result.offsetOrToken).toBe('token')
     })
 
