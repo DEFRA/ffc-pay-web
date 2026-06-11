@@ -8,5 +8,10 @@ module.exports = {
   REMOVE: 'remove-payment-hold',
   BULK_LANDING: 'payment-holds/bulk-manage',
   BULK: 'payment-holds/bulk',
-  LOADING: 'payment-holds/holds-loading'
+  LOADING: 'payment-holds/holds-loading',
+  TYPES: 'payment-holds/types',
+  ADD_TYPE: 'payment-holds/add-type',
+  EDIT_TYPE: 'payment-holds/edit-type',
+  REMOVE_TYPE: 'payment-holds/remove-type',
+  REMOVE_TYPE_API: 'remove-hold-type'
 }

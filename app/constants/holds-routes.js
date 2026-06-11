@@ -7,5 +7,10 @@ module.exports = {
   REMOVE_CONFIRM: '/payment-holds/remove-confirm',
   REMOVE: '/remove-payment-hold',
   BULK_LANDING: '/payment-holds/bulk-manage',
-  BULK: '/payment-holds/bulk'
+  BULK: '/payment-holds/bulk',
+  TYPES: '/payment-holds/types',
+  ADD_TYPE: '/payment-holds/add-type',
+  EDIT_TYPE: '/payment-holds/edit-type',
+  REMOVE_TYPE: '/payment-holds/remove-type',
+  REMOVE_TYPE_API: '/remove-hold-type'
 }

@@ -13,6 +13,7 @@ const { renderErrorPage } = require('./render-error-page')
 const { createFormRoute, createDownloadRoute } = require('./report-route-generator')
 const { generateReportHandler } = require('./generate-report-handler')
 const { sanitizeSchemes } = require('./sanitize-schemes')
+const { groupHoldCategoriesByScheme } = require('./group-hold-categories-by-scheme')
 
 module.exports = {
   addDetailsToFilename,
@@ -24,6 +25,7 @@ module.exports = {
   getPoundValue,
   getSchemes,
   getView,
+  groupHoldCategoriesByScheme,
   handleCSVResponse,
   handleStreamResponse,
   readableStreamReturn,

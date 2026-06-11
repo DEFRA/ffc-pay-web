@@ -1,3 +1,4 @@
+const Joi = require('joi')
 const schema = require('./schemas/hold')
 const searchSchema = require('./schemas/hold-search')
 const bulkSchema = require('./schemas/bulk-hold')
@@ -11,7 +12,7 @@ const { applicationAdmin, holdAdmin } = require('../auth/permissions')
 const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost, mapHoldCategoriesToRadios } = require('../hold')
 const { PAYMENT_HOLDS_LINKS } = require('../constants/section-links')
-const { getSchemes } = require('../helpers')
+const { getSchemes, groupHoldCategoriesByScheme } = require('../helpers')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin] }
 
@@ -282,6 +283,202 @@ module.exports = [
         payload: bulkSchema,
         failAction: async (request, h, error) => {
           return bulkFailAction(request, h, error)
+        }
+      }
+    }
+  }, {
+    method: 'GET',
+    path: HOLDS_ROUTES.TYPES,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const { paymentHoldCategories } = await getHoldCategories()
+        const organisedHoldCategories = groupHoldCategoriesByScheme(paymentHoldCategories)
+
+        return h.view(HOLDS_VIEWS.TYPES, {
+          paymentHoldCategories: organisedHoldCategories,
+          createdCategory: request.query?.createdCategory,
+          editedCategory: request.query?.editedCategory,
+          removedCategory: request.query?.removedCategory,
+          error: request.query?.error
+        })
+      }
+    }
+  }, {
+    method: 'GET',
+    path: HOLDS_ROUTES.ADD_TYPE,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (_request, h) => {
+        const schemes = await getSchemes()
+        return h.view(HOLDS_VIEWS.ADD_TYPE, { schemes })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: HOLDS_ROUTES.ADD_TYPE,
+    options: {
+      auth: AUTH_SCOPE,
+      validate: {
+        payload: Joi.object({
+          schemeId: Joi.number()
+            .integer()
+            .required()
+            .error(errors => {
+              errors.forEach(err => {
+                err.message = 'A scheme must be selected'
+              })
+              return errors
+            }),
+          categoryName: Joi.string()
+            .required()
+            .error(errors => {
+              errors.forEach(err => {
+                err.message = 'Provide a hold type name'
+              })
+              return errors
+            })
+        }),
+        failAction: async (request, h, error) => {
+          const schemes = await getSchemes()
+          return h.view(HOLDS_VIEWS.ADD_TYPE, {
+            schemes,
+            errors: error,
+            schemeId: request.payload.schemeId,
+            categoryName: request.payload.categoryName
+          })
+            .code(HTTP_STATUS.BAD_REQUEST)
+            .takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const { categoryName, schemeId } = request.payload
+        await postProcessing(
+          '/add-hold-type',
+          {
+            categoryName,
+            schemeId
+          },
+          null
+        )
+        return h.redirect(`${HOLDS_ROUTES.TYPES}?createdCategory=${encodeURIComponent(categoryName)}`)
+      }
+    }
+  }, {
+    method: 'GET',
+    path: HOLDS_ROUTES.EDIT_TYPE,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const holdCategoryId = request.query?.holdCategoryId
+        if (!holdCategoryId) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
+
+        const { paymentHoldCategories } = await getHoldCategories()
+        const category = paymentHoldCategories.find(s => String(s.holdCategoryId) === String(holdCategoryId))
+        if (['Bank account anomaly', 'DAX rejection'].includes(category.name)) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
+        return h.view(HOLDS_VIEWS.EDIT_TYPE, { schemeName: category.schemeName, categoryName: category.name, holdCategoryId })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: HOLDS_ROUTES.EDIT_TYPE,
+    options: {
+      auth: AUTH_SCOPE,
+      validate: {
+        payload: Joi.object({
+          holdCategoryId: Joi.number()
+            .integer()
+            .required()
+            .error(errors => {
+              errors.forEach(err => {
+                err.message = 'A hold category must be selected to edit'
+              })
+              return errors
+            }),
+          categoryName: Joi.string()
+            .required()
+            .error(errors => {
+              errors.forEach(err => {
+                err.message = 'Provide a hold type name'
+              })
+              return errors
+            })
+        }),
+        failAction: async (request, h, error) => {
+          const holdCategoryId = request.payload?.holdCategoryId
+          const { paymentHoldCategories } = await getHoldCategories()
+          const category = paymentHoldCategories.find(s => String(s.holdCategoryId) === String(holdCategoryId))
+          return h.view(HOLDS_VIEWS.EDIT_TYPE, {
+            errors: error,
+            schemeName: category.schemeName,
+            categoryName: request.payload.categoryName
+          })
+            .code(HTTP_STATUS.BAD_REQUEST)
+            .takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const { categoryName, holdCategoryId } = request.payload
+        await postProcessing(
+          '/edit-hold-type',
+          {
+            categoryName,
+            holdCategoryId
+          },
+          null
+        )
+        return h.redirect(`${HOLDS_ROUTES.TYPES}?editedCategory=${encodeURIComponent(categoryName)}`)
+      }
+    }
+  }, {
+    method: 'GET',
+    path: HOLDS_ROUTES.REMOVE_TYPE,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const holdCategoryId = request.query?.holdCategoryId
+        if (!holdCategoryId) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
+
+        const { paymentHoldCategories } = await getHoldCategories()
+        const category = paymentHoldCategories.find(s => String(s.holdCategoryId) === String(holdCategoryId))
+        if (['Bank account anomaly', 'DAX rejection'].includes(category.name)) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
+        return h.view(HOLDS_VIEWS.REMOVE_TYPE, { schemeName: category.schemeName, categoryName: category.name, holdCategoryId })
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: HOLDS_ROUTES.REMOVE_TYPE_API,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const holdCategoryId = request.payload?.holdCategoryId
+        if (!holdCategoryId) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
+
+        const { paymentHoldCategories } = await getHoldCategories()
+        const category = paymentHoldCategories.find(s => String(s.holdCategoryId) === String(holdCategoryId))
+        if (['Bank account anomaly', 'DAX rejection'].includes(category.name)) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
+
+        try {
+          await postProcessing(HOLDS_ROUTES.REMOVE_TYPE_API, { holdCategoryId: request.payload.holdCategoryId })
+          return h.redirect(`${HOLDS_ROUTES.TYPES}?removedCategory=${encodeURIComponent(category.name)}`)
+        } catch (error) {
+          console.error(`A hold category could not be removed: ${error.message}`)
+          return h.redirect(`${HOLDS_VIEWS.TYPES}?error=true`)
         }
       }
     }

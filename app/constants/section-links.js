@@ -7,7 +7,7 @@ const PAYMENT_HOLDS_LINKS = [
   { href: '/payment-holds/add', text: 'Create a new payment hold', description: 'Create a new hold for a payment' },
   { href: '/payment-holds/search', text: 'Search for a payment hold', description: 'Search, view or remove an existing payment hold' },
   { href: '/payment-holds/bulk-manage', text: 'Manage payment holds in bulk', description: 'Manage multiple payment holds at the same time' },
-  { href: '/payment-hold-types', text: 'Manage payment hold types', description: 'Create, edit and remove payment hold types' },
+  { href: '/payment-holds/types', text: 'Manage payment hold types', description: 'Create, edit and remove payment hold types' },
 ]
 
 const FINANCE_REPORTS_LINKS = [
