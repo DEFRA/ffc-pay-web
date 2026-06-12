@@ -22,7 +22,7 @@ jest.mock('../../../app/constants/mandatory-hold-types', () => ['MANDATORY'])
 const { getSchemes, groupHoldCategoriesByScheme } = require('../../../app/helpers')
 const { getHolds, getHoldCategories } = require('../../../app/holds')
 const { postProcessing } = require('../../../app/api')
-const { mapHoldCategoriesToRadios } = require('../../../app/hold')
+const { mapHoldCategoriesToRadios, handleBulkPost } = require('../../../app/hold')
 const HOLDS_ROUTES = require('../../../app/constants/holds-routes')
 const HOLDS_VIEWS = require('../../../app/constants/holds-views')
 
@@ -36,6 +36,7 @@ beforeEach(() => {
   getHoldCategories.mockReset()
   postProcessing.mockReset()
   mapHoldCategoriesToRadios.mockReset()
+  handleBulkPost.mockReset()
   routes = require('../../../app/routes/holds')
 })
 
@@ -45,12 +46,162 @@ function findRouteByPath (path, method) {
 
 function makeH () {
   return {
-    view: jest.fn((view, ctx) => ({ view, ctx })),
+    view: jest.fn((view, ctx) => {
+      const resp = {
+        view,
+        ctx,
+        code: jest.fn().mockReturnThis(),
+        takeover: jest.fn().mockReturnThis()
+      }
+      return resp
+    }),
     redirect: jest.fn(url => ({ redirect: url })),
     code: jest.fn().mockReturnThis(),
     takeover: jest.fn().mockReturnThis()
   }
 }
+
+test('GET manage handler returns manage view with query param', async () => {
+  const route = findRouteByPath(HOLDS_ROUTES.MANAGE, 'GET')
+  const h = makeH()
+  const req = { query: { holdAdded: 'true' } }
+  const res = await route.options.handler(req, h)
+  expect(res.view).toEqual(HOLDS_VIEWS.MANAGE)
+  expect(res.ctx.holdAdded).toEqual('true')
+})
+
+test('GET add handler renders schemes, radios and selected scheme when holdCategoryId passed', async () => {
+  const schemes = [{ schemeId: 1, name: 'S1' }]
+  const paymentHoldCategories = [{ holdCategoryId: 2, name: 'Name', schemeName: 'S1' }]
+  getHoldCategories.mockResolvedValue({ schemes, paymentHoldCategories })
+  mapHoldCategoriesToRadios.mockReturnValue([{ value: 2, text: 'Name' }])
+  const route = findRouteByPath(HOLDS_ROUTES.ADD, 'GET')
+  const h = makeH()
+  const req = { query: { holdCategoryId: 2, frn: '123' } }
+  const res = await route.options.handler(req, h)
+  expect(getHoldCategories).toHaveBeenCalled()
+  expect(mapHoldCategoriesToRadios).toHaveBeenCalledWith(schemes, paymentHoldCategories, { valueKey: 'holdCategoryId', textKey: 'name' })
+  expect(res.view).toEqual(HOLDS_VIEWS.ADD)
+  expect(res.ctx.selectScheme).toEqual('S1')
+  expect(res.ctx.frn).toEqual('123')
+})
+
+test('POST add-confirm handler shows confirmation for selected category', async () => {
+  const schemes = [{ name: 'SchemeA' }]
+  const paymentHoldCategories = [{ holdCategoryId: 5, name: 'HoldA', schemeName: 'SchemeA' }]
+  getHoldCategories.mockResolvedValue({ schemes, paymentHoldCategories })
+  const route = findRouteByPath(HOLDS_ROUTES.ADD_CONFIRM, 'POST')
+  const h = makeH()
+  const req = { payload: { holdCategoryId: 5, frn: '999' } }
+  const res = await route.options.handler(req, h)
+  expect(res.view).toEqual(HOLDS_VIEWS.ADD_CONFIRM)
+  expect(res.ctx.holdCategoryName).toEqual('HoldA')
+  expect(res.ctx.selectedScheme).toEqual('SchemeA')
+  expect(res.ctx.frn).toEqual('999')
+})
+
+test('POST add handler calls postProcessing and redirects on success', async () => {
+  postProcessing.mockResolvedValue()
+  const route = findRouteByPath(HOLDS_ROUTES.ADD, 'POST')
+  const h = makeH()
+  const req = { payload: { holdCategoryId: 3, frn: '321' } }
+  const res = await route.options.handler(req, h)
+  expect(postProcessing).toHaveBeenCalledWith('/add-payment-hold', { holdCategoryId: 3, frn: '321' }, null)
+  expect(res).toEqual({ redirect: `${HOLDS_ROUTES.MANAGE}?holdAdded=true` })
+})
+
+test('ADD POST validation failAction returns view with errors and takes over', async () => {
+  getHoldCategories.mockResolvedValue({ schemes: [], paymentHoldCategories: [] })
+  const route = findRouteByPath(HOLDS_ROUTES.ADD, 'POST')
+  const h = makeH()
+  const fakeError = new Error('validation')
+  const req = { payload: { frn: 'x' } }
+  const out = await route.options.validate.failAction(req, h, fakeError)
+  expect(getHoldCategories).toHaveBeenCalled()
+  expect(h.view).toHaveBeenCalled()
+  expect(out).toHaveProperty('takeover')
+})
+
+test('GET search handler renders search view with schemes and query', async () => {
+  const schemes = [{ schemeId: 7, name: 'Sch' }]
+  getSchemes.mockResolvedValue(schemes)
+  const route = findRouteByPath(HOLDS_ROUTES.SEARCH, 'GET')
+  const h = makeH()
+  const req = { query: { frn: '55', schemeId: '7' } }
+  const res = await route.options.handler(req, h)
+  expect(getSchemes).toHaveBeenCalled()
+  expect(res.view).toEqual(HOLDS_VIEWS.SEARCH)
+  expect(res.ctx.frn).toEqual('55')
+  expect(res.ctx.schemeId).toEqual('7')
+})
+
+test('POST holds handler filters by frn and schemeName', async () => {
+  const holds = [
+    { frn: '10', holdCategorySchemeName: 'A' },
+    { frn: '20', holdCategorySchemeName: 'B' },
+    { frn: '10', holdCategorySchemeName: 'B' }
+  ]
+  getHolds.mockResolvedValue(holds)
+  const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'POST')
+  const h = makeH()
+  const reqFRN = { payload: { frn: '10' } }
+  const resFRN = await route.options.handler(reqFRN, h)
+  expect(resFRN.view).toEqual(HOLDS_VIEWS.HOLDS)
+  expect(resFRN.ctx.paymentHolds.length).toBe(2)
+  const reqScheme = { payload: { name: 'B' } }
+  const resScheme = await route.options.handler(reqScheme, h)
+  expect(resScheme.ctx.paymentHolds.length).toBe(2)
+})
+
+test('POST remove handler calls postProcessing and returns holds view with holdRemoved', async () => {
+  postProcessing.mockResolvedValue()
+  getHolds.mockResolvedValue([])
+  const route = findRouteByPath(HOLDS_ROUTES.REMOVE, 'POST')
+  const h = makeH()
+  const req = { payload: { holdId: 1, frn: '222', name: 'SchemeX', holdCategoryName: 'XName' } }
+  const res = await route.options.handler(req, h)
+  expect(postProcessing).toHaveBeenCalledWith(HOLDS_ROUTES.REMOVE, { holdId: 1 })
+  expect(res.view).toEqual(HOLDS_VIEWS.HOLDS)
+  expect(res.ctx.holdRemoved).toBe(true)
+  expect(res.ctx.holdCategoryName).toBe('XName')
+})
+
+test('GET bulk landing renders view with bulk query', async () => {
+  const route = findRouteByPath(HOLDS_ROUTES.BULK_LANDING, 'GET')
+  const h = makeH()
+  const req = { query: { bulk: 'done' } }
+  const res = await route.options.handler(req, h)
+  expect(res.view).toEqual(HOLDS_VIEWS.BULK_LANDING)
+  expect(res.ctx.bulkStatus).toEqual('done')
+})
+
+test('GET bulk redirects to landing when invalid type', async () => {
+  const route = findRouteByPath(HOLDS_ROUTES.BULK, 'GET')
+  const h = makeH()
+  const req = { query: { type: 'invalid' } }
+  const res = await route.options.handler(req, h)
+  expect(res).toEqual({ redirect: HOLDS_ROUTES.BULK_LANDING })
+})
+
+test('GET bulk renders with radios when type valid', async () => {
+  const paymentHoldCategories = [{ holdCategoryId: 1, name: 'A' }]
+  const schemes = [{ schemeId: 9, name: 'S9' }]
+  getHoldCategories.mockResolvedValue({ schemes, paymentHoldCategories })
+  mapHoldCategoriesToRadios.mockReturnValue([{ value: 1, text: 'A' }])
+  const route = findRouteByPath(HOLDS_ROUTES.BULK, 'GET')
+  const h = makeH()
+  const req = { query: { type: 'add' } }
+  const res = await route.options.handler(req, h)
+  expect(getHoldCategories).toHaveBeenCalled()
+  expect(mapHoldCategoriesToRadios).toHaveBeenCalled()
+  expect(res.view).toEqual(HOLDS_VIEWS.BULK)
+  expect(res.ctx.type).toEqual('add')
+})
+
+test('POST bulk route uses handleBulkPost as top-level handler', () => {
+  const route = findRouteByPath(HOLDS_ROUTES.BULK, 'POST')
+  expect(route.handler).toBe(handleBulkPost)
+})
 
 test('GET types handler renders organised categories', async () => {
   const organised = [{ scheme: 'S', categories: [] }]
@@ -60,15 +211,13 @@ test('GET types handler renders organised categories', async () => {
   const h = makeH()
   const req = {}
   const result = await route.options.handler(req, h)
-  expect(result).toEqual({
-    view: HOLDS_VIEWS.TYPES,
-    ctx: {
-      paymentHoldCategories: organised,
-      createdCategory: undefined,
-      editedCategory: undefined,
-      removedCategory: undefined,
-      error: undefined
-    }
+  expect(result.view).toEqual(HOLDS_VIEWS.TYPES)
+  expect(result.ctx).toEqual({
+    paymentHoldCategories: organised,
+    createdCategory: undefined,
+    editedCategory: undefined,
+    removedCategory: undefined,
+    error: undefined
   })
 })
 
@@ -80,7 +229,8 @@ test('GET add-type handler renders schemes', async () => {
   const req = {}
   const result = await route.options.handler(req, h)
   expect(getSchemes).toHaveBeenCalled()
-  expect(result).toEqual({ view: HOLDS_VIEWS.ADD_TYPE, ctx: { schemes } })
+  expect(result.view).toEqual(HOLDS_VIEWS.ADD_TYPE)
+  expect(result.ctx).toEqual({ schemes })
 })
 
 test('POST add-type handler calls postProcessing and redirects on success', async () => {
@@ -91,6 +241,18 @@ test('POST add-type handler calls postProcessing and redirects on success', asyn
   const outcome = await route.options.handler(req, h)
   expect(postProcessing).toHaveBeenCalledWith('/add-hold-type', { categoryName: 'New', schemeId: 2 }, null)
   expect(outcome).toEqual({ redirect: `${HOLDS_ROUTES.TYPES}?createdCategory=${encodeURIComponent('New')}` })
+})
+
+test('ADD_TYPE validation failAction returns view with errors and BAD_REQUEST', async () => {
+  getSchemes.mockResolvedValue([{ schemeId: 1, name: 'S' }])
+  const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+  const h = makeH()
+  const fakeError = new Error('v')
+  const req = { payload: { schemeId: undefined, categoryName: '' } }
+  const out = await route.options.validate.failAction(req, h, fakeError)
+  expect(getSchemes).toHaveBeenCalled()
+  expect(h.view).toHaveBeenCalled()
+  expect(out).toHaveProperty('takeover')
 })
 
 test('GET edit-type without id redirects to types', async () => {
@@ -116,7 +278,8 @@ test('GET edit-type renders view for editable category', async () => {
   const h = makeH()
   const req = { query: { holdCategoryId: 7 } }
   const result = await route.options.handler(req, h)
-  expect(result).toEqual({ view: HOLDS_VIEWS.EDIT_TYPE, ctx: { schemeName: 'SchemeX', categoryName: 'Custom', holdCategoryId: 7 } })
+  expect(result.view).toEqual(HOLDS_VIEWS.EDIT_TYPE)
+  expect(result.ctx).toEqual({ schemeName: 'SchemeX', categoryName: 'Custom', holdCategoryId: 7 })
 })
 
 test('POST edit-type calls postProcessing and redirects on success', async () => {
@@ -127,6 +290,18 @@ test('POST edit-type calls postProcessing and redirects on success', async () =>
   const result = await route.options.handler(req, h)
   expect(postProcessing).toHaveBeenCalledWith('/edit-hold-type', { categoryName: 'Updated', holdCategoryId: 9 }, null)
   expect(result).toEqual({ redirect: `${HOLDS_ROUTES.TYPES}?editedCategory=${encodeURIComponent('Updated')}` })
+})
+
+test('EDIT_TYPE validation failAction returns view with errors and BAD_REQUEST', async () => {
+  getHoldCategories.mockResolvedValue({ paymentHoldCategories: [{ holdCategoryId: 20, name: 'X', schemeName: 'S' }] })
+  const route = findRouteByPath(HOLDS_ROUTES.EDIT_TYPE, 'POST')
+  const h = makeH()
+  const fakeError = new Error('v')
+  const req = { payload: { holdCategoryId: 20, categoryName: '' } }
+  const out = await route.options.validate.failAction(req, h, fakeError)
+  expect(getHoldCategories).toHaveBeenCalled()
+  expect(h.view).toHaveBeenCalled()
+  expect(out).toHaveProperty('takeover')
 })
 
 test('GET remove-type without id redirects to types', async () => {
@@ -144,6 +319,16 @@ test('GET remove-type redirects when category is mandatory', async () => {
   const req = { query: { holdCategoryId: 11 } }
   const result = await route.options.handler(req, h)
   expect(result).toEqual({ redirect: HOLDS_ROUTES.TYPES })
+})
+
+test('GET remove-type renders remove view for editable category', async () => {
+  getHoldCategories.mockResolvedValue({ paymentHoldCategories: [{ holdCategoryId: 13, name: 'ToRemove', schemeName: 'S' }] })
+  const route = findRouteByPath(HOLDS_ROUTES.REMOVE_TYPE, 'GET')
+  const h = makeH()
+  const req = { query: { holdCategoryId: 13 } }
+  const result = await route.options.handler(req, h)
+  expect(result.view).toEqual(HOLDS_VIEWS.REMOVE_TYPE)
+  expect(result.ctx).toEqual({ schemeName: 'S', categoryName: 'ToRemove', holdCategoryId: 13 })
 })
 
 test('POST remove-type-api removes and redirects on success', async () => {
