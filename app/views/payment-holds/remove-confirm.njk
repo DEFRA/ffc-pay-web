@@ -1,26 +1,13 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/hold-breadcrumbs-with-search.njk' import holdBreadcrumbsWithSearch %}
 
 {% set pageTitle = "Remove payment hold for " ~ frn ~ " | " ~ holdCategoryName %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Manage payment holds",
-      href: "/payment-holds/manage"
-    },{
-      text: "Search for a payment hold",
-      href: "/payment-holds/search"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{ holdBreadcrumbsWithSearch(pageTitle) }}
 {% endblock %}
 
 {% block content %}

@@ -1,6 +1,6 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% macro holdBreadcrumbs(pageTitle) %}
+{% macro holdTypeBreadcrumbs(pageTitle) %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
@@ -8,6 +8,9 @@
     },{
       text: "Manage payment holds",
       href: "/payment-holds/manage"
+    },{
+      text: "Manage payment hold types",
+      href: "/payment-holds/types"
     }, {
       text: pageTitle
     }]

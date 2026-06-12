@@ -1,6 +1,6 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/hold-breadcrumbs.njk' import holdBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
@@ -11,17 +11,7 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Manage payment holds",
-      href: "/payment-holds/manage"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{ holdBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}

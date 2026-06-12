@@ -1,6 +1,6 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% macro holdBreadcrumbs(pageTitle) %}
+{% macro holdBreadcrumbsWithSearch(pageTitle) %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
