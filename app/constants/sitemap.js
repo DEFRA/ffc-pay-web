@@ -13,7 +13,6 @@ const FINANCE_REPORTS_LINKS = [
   { href: '/report-list/payment-requests-v2', text: 'Payment request statuses report' },
   { href: '/report-list/ap-ar-report', text: 'AP/AR listing report' },
   { href: '/report-list/request-editor-report', text: 'Request editor report' },
-  { href: '/report-list/status-report', text: 'Payment statement status report' },
 ]
 
 const PAYMENT_ALERTS_LINKS = [
@@ -46,7 +45,8 @@ const METRICS_LINKS = [
 ]
 
 const DOWNLOAD_STATEMENTS_LINKS = [
-  { href: '/download-statements', text: 'Download statements', homeAuth: [permissions.applicationAdmin] }
+  { href: '/download-statements', text: 'Download payment statements', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
+  { href: '/status-report', text: 'Download statement status report', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] }
 ]
 
 const HELP_LINKS = [
@@ -63,7 +63,7 @@ module.exports = [
   { title: 'Manual payments', description: 'Manually upload payment files', links: MANUAL_PAYMENTS_LINKS },
   { title: 'Agreement closures', description: 'Update, add and remove payment suppressions', links: AGREEMENT_CLOSURES_LINKS },
   { title: 'Email alerts', description: 'Manage where payment alerts are sent by the scheme or recipient', links: PAYMENT_ALERTS_LINKS },
-  { title: 'Statements', description: 'Download payment statements and view payment status reports', links: DOWNLOAD_STATEMENTS_LINKS },
+  { title: 'Statements', description: 'Find and download payment statements and statement status reports.', links: DOWNLOAD_STATEMENTS_LINKS },
   { title: 'Metrics', description: 'View payment and document metrics by scheme', links: METRICS_LINKS },
   { title: 'Reset payment requests', description: 'Manually reset payment requests', links: RESET_PAYMENT_REQUEST_LINKS },
   { title: 'Help', links: HELP_LINKS }

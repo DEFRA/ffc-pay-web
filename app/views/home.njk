@@ -46,9 +46,12 @@
     }
   </style>
   <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full govuk-!-margin-bottom-4">
+      <h1 class="govuk-heading-l">Payments and Documents Services</h1>
+      <p class="govuk-body">The Payments and Documents Services site hosts a collection of services for the Farming Delivery group and is maintained by the Payments and Documents Services team.</p>
+      <p class="govuk-body">You'll see different content on this page depending on your access levels. If you need access to something that isn't displayed, you can email the team at <a href="mailto:payment-document-services@defra.gov.uk"> payment-document-services@defra.gov.uk</p>
+    </div>
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">{{ serviceName }}</h1>
-
       {% set cardGroups = [] %}
       {% for i in range(0, cards | length, 2) %}
         {% set cardGroups = cardGroups.concat([cards.slice(i, i + 2)]) %}
