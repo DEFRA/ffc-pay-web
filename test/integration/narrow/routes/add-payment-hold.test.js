@@ -23,15 +23,6 @@ describe('Payment holds', () => {
     await server.stop()
   })
 
-  const mockPaymentHoldCategories = [
-    {
-      holdCategoryId: 1,
-      name: 'btn-text',
-      schemeId: 1,
-      schemeName: 'scheme-name'
-    }
-  ]
-
   const mockGetPaymentHoldCategories = (categories) => {
     getProcessingData.mockResolvedValue({ payload: { paymentHoldCategories: categories } })
   }
