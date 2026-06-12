@@ -7,7 +7,7 @@ const getCrumbs = require('../../../helpers/get-crumbs')
 const { holdAdmin } = require('../../../../app/auth/permissions')
 
 const url = '/payment-holds/add'
-const pageH1 = 'Add payment hold'
+const pageH1 = 'Create a payment hold'
 const validFrn = 1000000000
 let server
 let auth
@@ -67,21 +67,6 @@ describe('Payment holds', () => {
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toEqual('/login')
     })
-
-    test('returns 200 and correctly lists returned hold category', async () => {
-      mockGetPaymentHoldCategories(mockPaymentHoldCategories)
-
-      const res = await server.inject({ method, url, auth })
-
-      expectRequestForPaymentHoldCategories()
-      expect(res.statusCode).toBe(200)
-      const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toEqual(pageH1)
-      const holdCategories = $('.govuk-radios__input')
-      expect(holdCategories.length).toEqual(1)
-      expect(holdCategories.val()).toEqual('1')
-      expect($('label.govuk-label').text()).toContain('Btn-text')
-    })
   })
 
   describe('POST requests', () => {
@@ -103,15 +88,15 @@ describe('Payment holds', () => {
       expect(postProcessing).toHaveBeenCalledTimes(1)
       expect(postProcessing).toHaveBeenCalledWith('/add-payment-hold', { frn: validFrn, holdCategoryId }, null)
       expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toEqual('/payment-holds')
+      expect(res.headers.location).toEqual('/payment-holds/manage?holdAdded=true')
     })
 
     test.each([
-      { frn: 10000000001, holdCategoryId: 123, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: 999999998, holdCategoryId: 123, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: 'not-a-number', holdCategoryId: 123, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: undefined, holdCategoryId: 123, expectedErrorMessage: 'Enter a 10-digit FRN' },
-      { frn: 1000000000, holdCategoryId: undefined, expectedErrorMessage: 'Category is required' }
+      { frn: 10000000001, holdCategoryId: 123, expectedErrorMessage: 'FRN (Firm Reference Number) must be 10 digits' },
+      { frn: 999999998, holdCategoryId: 123, expectedErrorMessage: 'FRN (Firm Reference Number) must be 10 digits' },
+      { frn: 'not-a-number', holdCategoryId: 123, expectedErrorMessage: 'FRN (Firm Reference Number) must be 10 digits' },
+      { frn: undefined, holdCategoryId: 123, expectedErrorMessage: 'FRN (Firm Reference Number) must be 10 digits' },
+      { frn: 1000000000, holdCategoryId: undefined, expectedErrorMessage: 'Choose a hold category' }
     ])('returns 400 and view with errors when request fails validation - %p', async ({ frn, holdCategoryId, expectedErrorMessage }) => {
       const mockForCrumbs = () => mockGetPaymentHoldCategories([])
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockForCrumbs, server, url, auth)

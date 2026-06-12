@@ -21,8 +21,8 @@ describe('Get holds', () => {
   })
 
   test.each([
-    [2, 50, true, '/payment-holds/results?page=2&pageSize=50'],
-    [2, 50, false, '/payment-holds/results']
+    [2, 50, true, '/payment-holds?page=2&pageSize=50'],
+    [2, 50, false, '/payment-holds']
   ])('pagination params: page=%i, size=%i, usePagination=%p', async (page, size, usePagination, expected) => {
     await getHolds(page, size, usePagination)
     expect(getProcessingData).toHaveBeenCalledWith(expected)

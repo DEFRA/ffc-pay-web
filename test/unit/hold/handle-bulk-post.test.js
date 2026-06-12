@@ -64,7 +64,7 @@ describe('handleBulkPost', () => {
             'content-type': 'text/csv'
           }
         },
-        remove: false,
+        type: 'add',
         holdCategoryId: '124'
       }
     }
@@ -74,7 +74,7 @@ describe('handleBulkPost', () => {
   describe('successful processing', () => {
     test('should generate a jobId and render loading view', async () => {
       await handleBulkPost(request, h)
-      expect(h.view).toHaveBeenCalledWith('payment-holds/holds-loading', { jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c' })
+      expect(h.view).toHaveBeenCalledWith('payment-holds/holds-loading', { jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', type: 'add' })
     })
 
     test('should set initial loading status to processing', async () => {
@@ -94,8 +94,8 @@ describe('handleBulkPost', () => {
       }, null)
     })
 
-    test('should call remove endpoint when remove is true', async () => {
-      request.payload.remove = true
+    test('should call remove endpoint when type is remove', async () => {
+      request.payload.type = 'remove'
       await handleBulkPost(request, h)
       expect(postProcessing).toHaveBeenCalledWith('/payment-holds/bulk/remove', {
         data: [FRN],

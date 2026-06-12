@@ -6,7 +6,7 @@ test('should return error when FRN is not 10 digits', () => {
 
   const { error } = searchSchema.validate(data)
 
-  expect(error.details[0].message).toEqual('Enter a 10-digit FRN')
+  expect(error.details[0].message).toEqual('FRN (Firm Reference Number) must be 10 digits')
 })
 
 test('should not return error when FRN is 10 digits', () => {
