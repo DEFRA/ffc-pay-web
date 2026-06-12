@@ -1,76 +1,29 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-{% from "govuk/components/input/macro.njk" import govukInput %}
-{% from 'macros/hold-selection-radios.njk' import holdSelectionRadios %}
+{% from 'macros/hold-breadcrumbs.njk' import holdTypeBreadcrumbs %}
+{% from 'macros/hold-type-form.njk' import holdTypeForm %}
 
 {% set pageTitle = "Edit " ~ schemeName ~ " " ~ categoryName %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Manage payment holds",
-      href: "/payment-holds/manage"
-    },{
-      text: "Manage payment hold types",
-      href: "/payment-holds/types"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{ holdTypeBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <form method="POST" action="/payment-holds/edit-type" autocomplete="off" novalidate>        
-        <input type="hidden" name="crumb" value="{{crumb}}"/>
-        <input type="hidden" name="holdCategoryId" value="{{holdCategoryId}}"/>
-        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-
-        <p class="govuk-body">
-          Edit the name of the existing payment hold type.
-        </p>
-
-        {% if errors %}
-          {% set errorList = [] %}
-          {% for errorDetail in errors.details %}
-            {% set errorList = (errorList.push({
-              text: errorDetail.message,
-              href: "#" + (errorDetail.context.key if errorDetail.context.key else "frn")
-            }), errorList) %}
-          {% endfor %}
-          
-          {{ govukErrorSummary({
-            titleText: "There is a problem",
-            errorList: errorList
-          }) }}
-        {% endif %}
-
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="categoryName">
-            Payment hold type name
-          </label>
-          <input class="govuk-input" id="categoryName" name="categoryName" type="text" value="{{ categoryName }}">
-        </div>
-
-        <div class="govuk-button-group">
-          {{ govukButton({
-            text: "Save",
-            attributes: {
-              id: "submit"
-            }
-          }) }}
-          <a class="govuk-link" href="/payment-holds/types">Cancel</a>
-        </div>
-      </form>
+      {{ holdTypeForm({
+        action: "/payment-holds/edit-type",
+        crumb: crumb,
+        holdCategoryId: holdCategoryId,
+        pageTitle: pageTitle,
+        paragraphText: "Edit the name of the existing payment hold type.",
+        errors: errors,
+        showSchemeSelect: false,
+        categoryName: categoryName
+      }) }}
     </div>
   </div>
 {% endblock %}

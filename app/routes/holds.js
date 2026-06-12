@@ -13,6 +13,7 @@ const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost, mapHoldCategoriesToRadios } = require('../hold')
 const { PAYMENT_HOLDS_LINKS } = require('../constants/section-links')
 const { getSchemes, groupHoldCategoriesByScheme } = require('../helpers')
+const mandatoryHoldTypes = require('../constants/mandatory-hold-types')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin] }
 
@@ -333,9 +334,14 @@ module.exports = [
             }),
           categoryName: Joi.string()
             .required()
+            .invalid(...mandatoryHoldTypes)
             .error(errors => {
               errors.forEach(err => {
-                err.message = 'Provide a hold type name'
+                if (err.code === 'any.invalid') {
+                  err.message = 'This hold type name is reserved and cannot be used'
+                } else {
+                  err.message = 'Provide a hold type name'
+                }
               })
               return errors
             })
@@ -378,7 +384,7 @@ module.exports = [
 
         const { paymentHoldCategories } = await getHoldCategories()
         const category = paymentHoldCategories.find(s => String(s.holdCategoryId) === String(holdCategoryId))
-        if (['Bank account anomaly', 'DAX rejection'].includes(category.name)) {
+        if (mandatoryHoldTypes.includes(category.name)) {
           return h.redirect(HOLDS_ROUTES.TYPES)
         }
         return h.view(HOLDS_VIEWS.EDIT_TYPE, { schemeName: category.schemeName, categoryName: category.name, holdCategoryId })
@@ -403,9 +409,14 @@ module.exports = [
             }),
           categoryName: Joi.string()
             .required()
+            .invalid(...mandatoryHoldTypes)
             .error(errors => {
               errors.forEach(err => {
-                err.message = 'Provide a hold type name'
+                if (err.code === 'any.invalid') {
+                  err.message = 'This hold type name is reserved and cannot be used'
+                } else {
+                  err.message = 'Provide a hold type name'
+                }
               })
               return errors
             })
@@ -449,7 +460,7 @@ module.exports = [
 
         const { paymentHoldCategories } = await getHoldCategories()
         const category = paymentHoldCategories.find(s => String(s.holdCategoryId) === String(holdCategoryId))
-        if (['Bank account anomaly', 'DAX rejection'].includes(category.name)) {
+        if (mandatoryHoldTypes.includes(category.name)) {
           return h.redirect(HOLDS_ROUTES.TYPES)
         }
         return h.view(HOLDS_VIEWS.REMOVE_TYPE, { schemeName: category.schemeName, categoryName: category.name, holdCategoryId })
@@ -469,7 +480,7 @@ module.exports = [
 
         const { paymentHoldCategories } = await getHoldCategories()
         const category = paymentHoldCategories.find(s => String(s.holdCategoryId) === String(holdCategoryId))
-        if (['Bank account anomaly', 'DAX rejection'].includes(category.name)) {
+        if (mandatoryHoldTypes.includes(category.name)) {
           return h.redirect(HOLDS_ROUTES.TYPES)
         }
 

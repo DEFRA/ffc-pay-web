@@ -1,26 +1,13 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/hold-breadcrumbs.njk' import holdTypeBreadcrumbs %}
 
 {% set pageTitle = "Remove hold type " ~ categoryName ~ " from " ~ schemeName %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Manage payment holds",
-      href: "/payment-holds/manage"
-    },{
-      text: "Manage payment hold types",
-      href: "/payment-holds/types"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{ holdTypeBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}
@@ -38,7 +25,7 @@
               <input type="hidden" name="crumb" value="{{ crumb }}"/>
               <input type="hidden" name="holdCategoryId" value="{{ holdCategoryId }}"/>
               <div class="govuk-button-group moj-interruption-card__actions">
-                <button id="submit" role="button" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">
+                <button id="submit" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">
                   Yes, remove
                 </button>
                 <a class="govuk-link govuk-link--inverse" href="/payment-holds/types">Cancel</a>
