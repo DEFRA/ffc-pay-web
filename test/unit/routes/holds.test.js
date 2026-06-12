@@ -19,10 +19,15 @@ jest.mock('../../../app/hold', () => ({
 
 jest.mock('../../../app/constants/mandatory-hold-types', () => ['MANDATORY'])
 
+jest.mock('../../../app/helpers/bulk-fail-action', () => ({
+  bulkFailAction: jest.fn()
+}))
+
 const { getSchemes, groupHoldCategoriesByScheme } = require('../../../app/helpers')
 const { getHolds, getHoldCategories } = require('../../../app/holds')
 const { postProcessing } = require('../../../app/api')
 const { mapHoldCategoriesToRadios, handleBulkPost } = require('../../../app/hold')
+const { bulkFailAction } = require('../../../app/helpers/bulk-fail-action')
 const HOLDS_ROUTES = require('../../../app/constants/holds-routes')
 const HOLDS_VIEWS = require('../../../app/constants/holds-views')
 
@@ -37,14 +42,15 @@ beforeEach(() => {
   postProcessing.mockReset()
   mapHoldCategoriesToRadios.mockReset()
   handleBulkPost.mockReset()
+  bulkFailAction.mockReset()
   routes = require('../../../app/routes/holds')
 })
 
-function findRouteByPath (path, method) {
+const findRouteByPath = (path, method) => {
   return routes.find(r => r.path === path && (method ? r.method === method : true))
 }
 
-function makeH () {
+const makeH = () => {
   return {
     view: jest.fn((view, ctx) => {
       const resp = {
@@ -100,6 +106,18 @@ test('POST add-confirm handler shows confirmation for selected category', async 
   expect(res.ctx.frn).toEqual('999')
 })
 
+test('POST add-confirm validation failAction returns view with errors and takes over', async () => {
+  getHoldCategories.mockResolvedValue({ schemes: [], paymentHoldCategories: [] })
+  const route = findRouteByPath(HOLDS_ROUTES.ADD_CONFIRM, 'POST')
+  const h = makeH()
+  const fakeError = new Error('validation')
+  const req = { payload: { frn: 'x', selectScheme: 'S' } }
+  const out = await route.options.validate.failAction(req, h, fakeError)
+  expect(getHoldCategories).toHaveBeenCalled()
+  expect(mapHoldCategoriesToRadios).toHaveBeenCalled()
+  expect(out).toHaveProperty('takeover')
+})
+
 test('POST add handler calls postProcessing and redirects on success', async () => {
   postProcessing.mockResolvedValue()
   const route = findRouteByPath(HOLDS_ROUTES.ADD, 'POST')
@@ -153,6 +171,18 @@ test('POST holds handler filters by frn and schemeName', async () => {
   expect(resScheme.ctx.paymentHolds.length).toBe(2)
 })
 
+test('POST holds validation failAction returns search view with errors and takes over', async () => {
+  getSchemes.mockResolvedValue([{ schemeId: 1, name: 'S' }])
+  const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'POST')
+  const h = makeH()
+  const fakeError = new Error('v')
+  const req = { payload: { frn: '1', schemeId: '2' } }
+  const out = await route.options.validate.failAction(req, h, fakeError)
+  expect(getSchemes).toHaveBeenCalled()
+  expect(h.view).toHaveBeenCalled()
+  expect(out).toHaveProperty('takeover')
+})
+
 test('POST remove handler calls postProcessing and returns holds view with holdRemoved', async () => {
   postProcessing.mockResolvedValue()
   getHolds.mockResolvedValue([])
@@ -201,6 +231,28 @@ test('GET bulk renders with radios when type valid', async () => {
 test('POST bulk route uses handleBulkPost as top-level handler', () => {
   const route = findRouteByPath(HOLDS_ROUTES.BULK, 'POST')
   expect(route.handler).toBe(handleBulkPost)
+})
+
+test('POST bulk payload failAction delegates to bulkFailAction', async () => {
+  const route = findRouteByPath(HOLDS_ROUTES.BULK, 'POST')
+  const h = makeH()
+  const req = { payload: {} }
+  const fakeError = new Error('boom')
+  bulkFailAction.mockReturnValue({ delegated: true })
+  const out = await route.options.payload.failAction(req, h, fakeError)
+  expect(bulkFailAction).toHaveBeenCalledWith(req, h, fakeError)
+  expect(out).toEqual({ delegated: true })
+})
+
+test('POST bulk validate failAction delegates to bulkFailAction', async () => {
+  const route = findRouteByPath(HOLDS_ROUTES.BULK, 'POST')
+  const h = makeH()
+  const req = { payload: {} }
+  const fakeError = new Error('boom2')
+  bulkFailAction.mockReturnValue({ delegatedValidate: true })
+  const out = await route.options.validate.failAction(req, h, fakeError)
+  expect(bulkFailAction).toHaveBeenCalledWith(req, h, fakeError)
+  expect(out).toEqual({ delegatedValidate: true })
 })
 
 test('GET types handler renders organised categories', async () => {
