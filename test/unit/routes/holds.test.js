@@ -39,11 +39,11 @@ beforeEach(() => {
   routes = require('../../../app/routes/holds')
 })
 
-function findRouteByPath(path, method) {
+function findRouteByPath (path, method) {
   return routes.find(r => r.path === path && (method ? r.method === method : true))
 }
 
-function makeH() {
+function makeH () {
   return {
     view: jest.fn((view, ctx) => ({ view, ctx })),
     redirect: jest.fn(url => ({ redirect: url })),
@@ -61,7 +61,8 @@ test('GET types handler renders organised categories', async () => {
   const req = {}
   const result = await route.options.handler(req, h)
   expect(result).toEqual({
-    view: HOLDS_VIEWS.TYPES, ctx: {
+    view: HOLDS_VIEWS.TYPES,
+    ctx: {
       paymentHoldCategories: organised,
       createdCategory: undefined,
       editedCategory: undefined,
