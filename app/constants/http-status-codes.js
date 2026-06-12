@@ -1,6 +1,7 @@
 module.exports = {
   SUCCESS: 200,
   ACCEPTED: 202,
+  SEE_OTHER: 303,
   BAD_REQUEST: 400,
   NOT_AUTHORIZED: 401,
   FORBIDDEN: 403,

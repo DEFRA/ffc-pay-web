@@ -1,6 +1,6 @@
 const schema = require('./schemas/download-statements')
 const { downloadStatement } = require('../statement-downloader/statement-search')
-const { BAD_REQUEST, SUCCESS, NOT_FOUND, INTERNAL_SERVER_ERROR, FORBIDDEN } = require('../constants/http-status-codes')
+const { BAD_REQUEST, SEE_OTHER, SUCCESS, NOT_FOUND, INTERNAL_SERVER_ERROR, FORBIDDEN } = require('../constants/http-status-codes')
 const { applicationAdmin, statusReportsDelinked } = require('../auth/permissions')
 const { getStatementSchemes } = require('../helpers/get-statement-schemes')
 const { buildViewContext, handleSchemesError } = require('../statement-downloader/search-helpers/download-helper')
@@ -42,7 +42,7 @@ const handlePostDownloadStatements = (request, h) => {
     }
   }
   params.set('pageNumber', '0')
-  return h.redirect(`/statement-results?${params.toString()}`).code(303)
+  return h.redirect(`/statement-results?${params.toString()}`).code(SEE_OTHER)
 }
 
 const handleDownloadFile = async (request, h) => {
