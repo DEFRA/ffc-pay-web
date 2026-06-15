@@ -523,6 +523,22 @@ describe('holds route methods', () => {
     expect(res.ctx.numberOfHolds).toBe(1)
   })
 
+  test('POST holds handler filters when payload.name matches holdCategorySchemeName', async () => {
+    const holds = [
+      { frn: '100', holdCategorySchemeName: 'SchemeX' },
+      { frn: '101', holdCategorySchemeName: 'SchemeY' },
+      { frn: '102', holdCategorySchemeName: 'SchemeX' }
+    ]
+    getHolds.mockResolvedValue(holds)
+    const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'POST')
+    const h = makeH()
+    const req = { payload: { name: 'SchemeX' } }
+    const res = await route.options.handler(req, h)
+    expect(res.view).toEqual(HOLDS_VIEWS.HOLDS)
+    expect(res.ctx.paymentHolds).toEqual([{ frn: '100', holdCategorySchemeName: 'SchemeX' }, { frn: '102', holdCategorySchemeName: 'SchemeX' }])
+    expect(res.ctx.numberOfHolds).toBe(2)
+  })
+
   test('ADD_TYPE validation failAction returns view when categoryName is reserved', async () => {
     getSchemes.mockResolvedValue([{ schemeId: 1, name: 'S' }])
     const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
@@ -535,5 +551,38 @@ describe('holds route methods', () => {
     expect(out.ctx.schemeId).toEqual(1)
     expect(out.ctx.categoryName).toEqual('MANDATORY')
     expect(out).toHaveProperty('takeover')
+  })
+
+  test('ADD_TYPE schema: missing schemeId produces "A scheme must be selected"', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const schema = route.options.validate.payload
+    try {
+      await schema.validateAsync({ schemeId: undefined, categoryName: 'New' })
+      throw new Error('validation did not fail')
+    } catch (err) {
+      expect(err.details.some(d => d.message === 'A scheme must be selected')).toBeTruthy()
+    }
+  })
+
+  test('ADD_TYPE schema: empty categoryName produces "Provide a hold type name"', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const schema = route.options.validate.payload
+    try {
+      await schema.validateAsync({ schemeId: 1, categoryName: '' })
+      throw new Error('validation did not fail')
+    } catch (err) {
+      expect(err.details.some(d => d.message === 'Provide a hold type name')).toBeTruthy()
+    }
+  })
+
+  test('ADD_TYPE schema: reserved categoryName produces reserved-name message', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const schema = route.options.validate.payload
+    try {
+      await schema.validateAsync({ schemeId: 1, categoryName: 'MANDATORY' })
+      throw new Error('validation did not fail')
+    } catch (err) {
+      expect(err.details.some(d => d.message === 'This hold type name is reserved and cannot be used')).toBeTruthy()
+    }
   })
 })
