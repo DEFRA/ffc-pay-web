@@ -507,4 +507,33 @@ describe('holds route methods', () => {
     expect(res.view).toEqual(HOLDS_VIEWS.REMOVE_CONFIRM)
     expect(res.ctx).toEqual({ holdId: 123, frn: '999', schemeName: 'SchName', holdCategoryName: 'CatName' })
   })
+
+  test('POST holds handler filters by schemeName exact match', async () => {
+    const holds = [
+      { frn: '1', holdCategorySchemeName: 'Match' },
+      { frn: '2', holdCategorySchemeName: 'Nope' }
+    ]
+    getHolds.mockResolvedValue(holds)
+    const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'POST')
+    const h = makeH()
+    const req = { payload: { name: 'Match' } }
+    const res = await route.options.handler(req, h)
+    expect(res.view).toEqual(HOLDS_VIEWS.HOLDS)
+    expect(res.ctx.paymentHolds).toEqual([{ frn: '1', holdCategorySchemeName: 'Match' }])
+    expect(res.ctx.numberOfHolds).toBe(1)
+  })
+
+  test('ADD_TYPE validation failAction returns view when categoryName is reserved', async () => {
+    getSchemes.mockResolvedValue([{ schemeId: 1, name: 'S' }])
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const h = makeH()
+    const fakeError = new Error('reserved')
+    const req = { payload: { schemeId: 1, categoryName: 'MANDATORY' } }
+    const out = await route.options.validate.failAction(req, h, fakeError)
+    expect(getSchemes).toHaveBeenCalled()
+    expect(out.ctx.errors).toBe(fakeError)
+    expect(out.ctx.schemeId).toEqual(1)
+    expect(out.ctx.categoryName).toEqual('MANDATORY')
+    expect(out).toHaveProperty('takeover')
+  })
 })
