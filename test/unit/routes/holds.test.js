@@ -498,4 +498,13 @@ describe('holds route methods', () => {
     const result = await route.options.handler(req, h)
     expect(result).toEqual({ redirect: HOLDS_ROUTES.TYPES })
   })
+
+  test('POST remove-confirm handler renders remove confirmation view with payload', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.REMOVE_CONFIRM, 'POST')
+    const h = makeH()
+    const req = { payload: { holdId: 123, frn: '999', holdCategoryName: 'CatName', schemeName: 'SchName' } }
+    const res = await route.options.handler(req, h)
+    expect(res.view).toEqual(HOLDS_VIEWS.REMOVE_CONFIRM)
+    expect(res.ctx).toEqual({ holdId: 123, frn: '999', schemeName: 'SchName', holdCategoryName: 'CatName' })
+  })
 })
