@@ -1,0 +1,80 @@
+{% extends '_layout.njk' %}
+
+{% from 'macros/download-statement-fields.njk' import schemeSelect, yearInput, frnInput, submitButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% set pageTitle = "Download payment statements" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }, {
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [{ text: error.message }]
+        }) }}
+      {% endif %}
+
+      <p class="govuk-body">
+        Statements provide customers with payment details. <br/>
+        You can search for a specific statement by entering the full file name, or search for all of a customer's statements using the Firm Reference Number (FRN).<br/>
+        If you want to find statements for multiple customers, search using the scheme and/or marketing year
+      </p>
+
+      <h2 class="govuk-heading-l">Search Criteria</h2>
+      <form method="POST" action="/download-statements">
+        <input type="hidden" name="crumb" value="{{ crumb }}"/>
+        {{ govukInput({
+          id: "filename",
+          name: "filename",
+          label: {
+            text: "Full filename",
+            classes: "govuk-label--s"
+          },
+          classes: "govuk-input--width-30",
+          value: filename
+        }) }}
+
+        {{ schemeSelect(schemes, schemeId) }}
+
+        {{ yearInput(marketingYear) }}
+
+        {{ frnInput(frn) }}
+
+        {{ govukInput({
+          id: "timestamp",
+          name: "timestamp",
+          label: {
+            text: "Timestamp",
+            classes: "govuk-label--s"
+          },
+          hint: { text: "For example, 06-01-2026 18:00" },
+          classes: "govuk-input--width-20",
+          value: timestamp
+        }) }}
+        {{ submitButton('Search') }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
