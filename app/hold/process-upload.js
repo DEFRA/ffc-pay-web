@@ -7,7 +7,7 @@ const ENDPOINTS = {
 }
 
 const processUpload = async (request, jobId, uploadData) => {
-  const endpoint = request.payload.remove ? ENDPOINTS.REMOVE : ENDPOINTS.ADD
+  const endpoint = request.payload.type === 'remove' ? ENDPOINTS.REMOVE : ENDPOINTS.ADD
   const payload = {
     data: uploadData,
     holdCategoryId: request.payload.holdCategoryId

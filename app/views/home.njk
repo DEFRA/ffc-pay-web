@@ -3,48 +3,6 @@
 {% from "./macros/logout.njk" import logout %}
 
 {% block content %}
-  <style>
-    .govuk-cards {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      margin-bottom: 15px;
-      padding: 0;
-    }
-
-    .govuk-cards--2__item {
-      flex: 1 1 50%;
-      margin-bottom: 40px;
-      position: relative;
-      padding: 25px;
-      list-style-type: none;
-      margin-bottom: 0;
-    }
-
-    .card__heading {
-      margin-top: 0;
-      margin-bottom: 0;
-    }
-
-    .govuk-u-hidden {
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    /* Mobile layout: stack cards vertically */
-    @media (max-width: 640px) {
-      .govuk-cards {
-        flex-direction: column;
-        flex-wrap: nowrap;
-        margin-bottom: 0;
-      }
-
-      .govuk-cards--2__item {
-        flex: 1 1 100%;
-        margin-bottom: 30px;
-      }
-    }
-  </style>
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full govuk-!-margin-bottom-4">
       <h1 class="govuk-heading-l">Payments and Documents Services</h1>

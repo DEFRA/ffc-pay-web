@@ -23,7 +23,6 @@ module.exports = {
       {
         test: /\.(?:s[ac]|c)ss$/i,
         use: [
-          'style-loader',
           {
             loader: MiniCssExtractPlugin.loader,
             options: {
@@ -61,6 +60,7 @@ module.exports = {
     ]
   },
   output: {
+    publicPath: '/static/',
     filename: 'js/[name].[fullhash].js',
     path: path.resolve(__dirname, 'app/dist'),
     library: '[name]'

@@ -25,8 +25,8 @@ describe('getSchemes', () => {
 
     expect(result).toEqual([
       { name: 'Scheme A' },
-      { name: 'Scheme B' },
-      { name: 'SFI22' }
+      { name: 'SFI22' },
+      { name: 'Scheme B' }
     ])
   })
 
@@ -46,9 +46,9 @@ describe('getSchemes', () => {
     const result = await getSchemes()
 
     expect(result).toEqual([
-      { name: 'Non-SFI' },
       { name: 'SFI22' },
-      { name: 'SFI22' }
+      { name: 'SFI22' },
+      { name: 'Non-SFI' }
     ])
   })
 

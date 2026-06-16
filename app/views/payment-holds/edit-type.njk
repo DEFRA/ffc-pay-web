@@ -1,0 +1,29 @@
+{% extends '_layout.njk' %}
+
+{% from 'macros/hold-type-breadcrumbs.njk' import holdTypeBreadcrumbs %}
+{% from 'macros/hold-type-form.njk' import holdTypeForm %}
+
+{% set pageTitle = "Edit " ~ schemeName ~ " " ~ categoryName %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ holdTypeBreadcrumbs(pageTitle) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {{ holdTypeForm({
+        action: "/payment-holds/edit-type",
+        crumb: crumb,
+        holdCategoryId: holdCategoryId,
+        pageTitle: pageTitle,
+        paragraphText: "Edit the name of the existing payment hold type.",
+        errors: errors,
+        showSchemeSelect: false,
+        categoryName: categoryName
+      }) }}
+    </div>
+  </div>
+{% endblock %}

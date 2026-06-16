@@ -1,0 +1,15 @@
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% macro holdBreadcrumbsWithSearch(pageTitle) %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Manage payment holds",
+      href: "/payment-holds/manage"
+    }, {
+      text: pageTitle
+    }]
+  })}}
+{% endmacro %}

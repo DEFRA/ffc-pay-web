@@ -4,45 +4,57 @@
   {% if holdCategorys and holdCategorys.length > 0 %}
     <div class="govuk-form-group">
       <label class="govuk-label" for="selectScheme">
-        Select a scheme to filter the hold categories displayed
+        Scheme
       </label>
-      <select class="govuk-select" id="selectScheme" name="selectScheme">
-        <option value="all" {% if selectScheme == 'all' or not selectScheme %}selected{% endif %}>All</option>
+      <div id="scheme-hint" class="govuk-hint">
+        Select a scheme to view hold types
+      </div>
+      <select class="govuk-select" id="selectScheme" name="selectScheme" aria-describedby="scheme-hint">
         {% for category in holdCategorys %}
           <option value="{{ category.scheme.name }}" {% if selectScheme == category.scheme.name %}selected{% endif %}>{{ category.scheme.name }}</option>
         {% endfor %}
       </select>
     </div>
 
-    {% for category in holdCategorys %}
-      <div class="scheme-group" data-scheme-name="{{category.scheme.name}}">
-        {{ govukRadios({
-          classes: "govuk-radios--small",
-          name: "holdCategoryId",
-          fieldset: {
-            legend: {
-              text: "Select a hold category for " + category.scheme.name
-            }
-          },
-          items: category.radios
-        }) }}
+    <div class="govuk-inset-text">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="selectHoldCategory">
+          Hold type
+        </label>
+        <div id="hold-hint" class="govuk-hint">
+          Select the hold type
+        </div>
+        <select class="govuk-select" id="selectHoldCategory" name="holdCategoryId" aria-describedby="hold-hint">
+          {% for category in holdCategorys %}
+            {% for item in category.radios %}
+              <option value="{{ item.value }}" data-scheme-name="{{ category.scheme.name }}">{{ item.text or item.label or item.name or item.value }}</option>
+            {% endfor %}
+          {% endfor %}
+        </select>
       </div>
-    {% endfor %}
+    </div>
 
     <script>
       document.addEventListener('DOMContentLoaded', function () {
         const selectScheme = document.getElementById('selectScheme')
-        const schemeGroups = document.querySelectorAll('.scheme-group')
+        const selectHold = document.getElementById('selectHoldCategory')
 
         function filterSchemes() {
           const selected = selectScheme.value
-          schemeGroups.forEach(group => {
-            if (selected === 'all' || group.dataset.schemeName === selected) {
-              group.style.display = 'block'
+          let firstVisible = null
+          for (let i = 0; i < selectHold.options.length; i++) {
+            const opt = selectHold.options[i]
+            const schemeName = opt.dataset.schemeName
+            if (selected === 'all' || schemeName === selected) {
+              opt.hidden = false
+              opt.disabled = false
+              if (firstVisible === null) firstVisible = opt.value
             } else {
-              group.style.display = 'none'
+              opt.hidden = true
+              opt.disabled = true
             }
-          })
+          }
+          if (firstVisible !== null) selectHold.value = firstVisible
         }
 
         selectScheme.addEventListener('change', filterSchemes)
