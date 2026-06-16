@@ -1,0 +1,56 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% macro holdTypeForm(params) %}
+  <form method="POST" action="{{ params.action }}" autocomplete="off" novalidate>
+    <input type="hidden" name="crumb" value="{{ params.crumb }}"/>
+    {% if params.holdCategoryId %}
+      <input type="hidden" name="holdCategoryId" value="{{ params.holdCategoryId }}"/>
+    {% endif %}
+
+    <h1 class="govuk-heading-l">{{ params.pageTitle }}</h1>
+
+    {% if params.paragraphText %}
+      <p class="govuk-body">{{ params.paragraphText }}</p>
+    {% endif %}
+
+    {% if params.errors %}
+      {% set errorList = [] %}
+      {% for errorDetail in params.errors.details %}
+        {% set errorList = (errorList.push({
+          text: errorDetail.message,
+          href: "#" + (errorDetail.context.key if errorDetail.context.key else "frn")
+        }), errorList) %}
+      {% endfor %}
+
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    {% if params.showSchemeSelect %}
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="schemeId">Scheme</label>
+        <select class="govuk-select" id="schemeId" name="schemeId">
+          {% for scheme in params.schemes %}
+            <option value="{{ scheme.schemeId }}" {% if scheme.schemeId == params.selectedSchemeId %}selected{% endif %}>{{ scheme.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="categoryName">Payment hold type name</label>
+      <input class="govuk-input" id="categoryName" name="categoryName" type="text" value="{{ params.categoryName }}">
+    </div>
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: params.submitText or "Save",
+        attributes: { id: "submit" }
+      }) }}
+      <a class="govuk-link" href="{{ params.cancelHref or '/payment-holds/types' }}">Cancel</a>
+    </div>
+  </form>
+{% endmacro %}

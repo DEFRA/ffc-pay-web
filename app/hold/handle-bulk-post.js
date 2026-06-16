@@ -11,7 +11,7 @@ const handleBulkPost = async (request, h) => {
   try {
     const jobId = randomUUID()
     const fileContent = readFileContent(request.payload.file.path)
-
+    const type = request.payload.type
     if (!fileContent) {
       return await handleFileError(h)
     }
@@ -47,7 +47,7 @@ const handleBulkPost = async (request, h) => {
         })
       })
 
-    return h.view(HOLDS_VIEWS.LOADING, { jobId })
+    return h.view(HOLDS_VIEWS.LOADING, { jobId, type })
   } catch (err) {
     console.error('Unexpected error in handleBulkPost:', err)
     return handleFileError(h)

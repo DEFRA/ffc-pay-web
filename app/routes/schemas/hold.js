@@ -10,7 +10,7 @@ module.exports = Joi.object({
     .required()
     .error(errors => {
       errors.forEach(err => {
-        err.message = 'Enter a 10-digit FRN'
+        err.message = 'FRN (Firm Reference Number) must be 10 digits'
       })
       return errors
     }),
@@ -20,7 +20,7 @@ module.exports = Joi.object({
     .required()
     .error(errors => {
       errors.forEach(err => {
-        err.message = 'Category is required'
+        err.message = 'Choose a hold category'
       })
       return errors
     })

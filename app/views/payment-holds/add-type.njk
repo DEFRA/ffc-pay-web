@@ -1,0 +1,30 @@
+{% extends '_layout.njk' %}
+
+{% from 'macros/hold-type-breadcrumbs.njk' import holdTypeBreadcrumbs %}
+{% from 'macros/hold-type-form.njk' import holdTypeForm %}
+
+{% set pageTitle = "Create a new payment hold type" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ holdTypeBreadcrumbs(pageTitle) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {{ holdTypeForm({
+        action: "/payment-holds/add-type",
+        crumb: crumb,
+        pageTitle: pageTitle,
+        paragraphText: "Select the scheme and enter the name of the new payment hold type.",
+        errors: errors,
+        showSchemeSelect: true,
+        schemes: schemes,
+        selectedSchemeId: schemeId,
+        categoryName: categoryName
+      }) }}
+    </div>
+  </div>
+{% endblock %}

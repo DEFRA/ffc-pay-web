@@ -18,8 +18,8 @@ describe('processUpload', () => {
   })
 
   const runTestForRemoveFlag = (removeFlag, expectedEndpoint) => {
-    test(`calls postProcessing with ${expectedEndpoint} endpoint when remove=${removeFlag}`, async () => {
-      request.payload.remove = removeFlag
+    test(`calls postProcessing with ${expectedEndpoint} endpoint when type=${removeFlag}`, async () => {
+      request.payload.type = removeFlag
       await processUpload(request, jobId, uploadData)
       expect(postProcessing).toHaveBeenCalledWith(
         expectedEndpoint,
@@ -29,8 +29,8 @@ describe('processUpload', () => {
     })
   }
 
-  runTestForRemoveFlag(false, '/payment-holds/bulk/add')
-  runTestForRemoveFlag(true, '/payment-holds/bulk/remove')
+  runTestForRemoveFlag('add', '/payment-holds/bulk/add')
+  runTestForRemoveFlag('remove', '/payment-holds/bulk/remove')
 
   test('sets loading status to completed after successful upload', async () => {
     await processUpload(request, jobId, uploadData)

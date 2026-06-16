@@ -14,7 +14,7 @@
     {% include "./tag-manager/_head-content.njk" %}
   {% endif %}
   <% htmlWebpackPlugin.files.css.forEach(file => { %>
-    <link href="<%= file.replace('../dist/', '/static/') %>" rel="stylesheet">
+    <link href="<%= file %>" rel="stylesheet">
   <% }) %>
   <style>
     .govuk-service-navigation__container { display: flex; align-items: center; gap: 1rem; width: 100%; }
@@ -22,11 +22,53 @@
     .govuk-service-navigation__list { display: flex; align-items: center; padding: 0; margin: 0; list-style: none; width: 100%; }
     .govuk-service-navigation__item { margin: 0 0.5rem; }
     .govuk-service-navigation__item:last-child { margin-left: auto; }
+    .govuk-cards {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      margin-bottom: 15px;
+      padding: 0;
+    }
+
+    .govuk-cards--2__item {
+      flex: 1 1 50%;
+      margin-bottom: 40px;
+      position: relative;
+      padding: 25px;
+      list-style-type: none;
+      margin-bottom: 0;
+    }
+
+    .card__heading {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    .govuk-u-hidden {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
     @media (max-width: 640px) {
       .govuk-service-navigation__container { flex-direction: column; align-items: stretch; }
       .govuk-service-navigation__item:last-child { margin-left: 0; }
       .govuk-header__logotype { height: 20px; }
-      .govuk-notification-banner__content > * { max-width: none !important; width: 100%; }
+      /* Mobile layout: stack cards vertically */
+      .govuk-cards {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        margin-bottom: 0;
+      }
+
+      .govuk-cards--2__item {
+        flex: 1 1 100%;
+        margin-bottom: 30px;
+      }
+
+      .govuk-notification-banner__content > * { 
+        max-width: none !important; width: 100%;
+      }
+
     }
     .govuk-notification-banner__content > * {
       box-sizing: border-box;
@@ -171,6 +213,6 @@
 {% block bodyEnd %}
   {# Run JavaScript at end of the body to avoid blocking the initial render #}
   <% htmlWebpackPlugin.files.js.forEach(file => { %>
-    <script src="<%= file.replace('../dist/', '/static/') %>"></script>
+    <script src="<%= file %>"></script>
   <% }) %>
 {% endblock %}

@@ -1,0 +1,66 @@
+{% extends "_layout.njk" %}
+
+{% from 'macros/hold-breadcrumbs.njk' import holdBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+
+{% set pageTitle = "Search for a payment hold" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ holdBreadcrumbs(pageTitle) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body">
+        Search for an existing payment hold using the Firm Reference Number (FRN), scheme or a combination of both.
+      </p>
+
+      <form class="govuk-!-margin-bottom-6" action="/payment-holds/results" method="post" role="search">
+        <input type="hidden" name="crumb" value="{{ crumb }}"/>
+
+        {{ govukInput({
+          label: {
+            text: "FRN (Firm Reference Number)"
+          },
+          hint: {
+            text: "For example, 1234567890"
+          },
+          id: "payment-hold-search",
+          name: "frn",
+          type: "search",
+          classes: "govuk-input--width-20",
+          value: model.value
+        }) }}
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label-s" for="name">
+            Scheme
+          </label>
+          <select class="govuk-select" id="name" name="name">
+            <option value="" {% if not name %}selected{% endif %}></option>
+            {% for scheme in schemes %}
+              {% if scheme and scheme.name is defined and scheme.name is defined %}
+                <option value="{{ scheme.name }}" {% if scheme.name == name %}selected{% endif %}>
+                  {{ scheme.name }}
+                </option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+
+        {{ govukButton({
+          text: "Search",
+          type: "submit"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
