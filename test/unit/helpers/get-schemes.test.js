@@ -8,11 +8,11 @@ describe('getSchemes', () => {
     jest.clearAllMocks()
   })
 
-  test('fetches schemes and renames SFI to SFI22', async () => {
+  test('fetches schemes and renames SFI to SFI22, and Vet Visits to AHWR', async () => {
     const mockSchemes = [
       { name: 'Scheme A' },
       { name: 'SFI' },
-      { name: 'Scheme B' }
+      { name: 'Vet Visits' }
     ]
 
     api.getProcessingData.mockResolvedValue({
@@ -24,8 +24,8 @@ describe('getSchemes', () => {
     const result = await getSchemes()
 
     expect(result).toEqual([
+      { name: 'Annual Health and Welfare Review' },
       { name: 'Scheme A' },
-      { name: 'Scheme B' },
       { name: 'SFI22' }
     ])
   })
