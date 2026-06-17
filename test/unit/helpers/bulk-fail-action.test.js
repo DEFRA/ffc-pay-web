@@ -61,4 +61,48 @@ describe('bulkFailAction', () => {
 
     expectViewAndCode({}, 'state-crumb')
   })
+
+  test('includes selectHoldCategoryId when provided but schemeName missing', async () => {
+    request.payload.holdCategoryId = 'cat1'
+
+    await bulkFailAction(request, h, {})
+
+    expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
+      holdCategoryRadios: [
+        { scheme: { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] }, radios: [] }
+      ],
+      errors: {},
+      selectScheme: undefined,
+      selectHoldCategoryId: 'cat1',
+      crumb: 'test-crumb'
+    })
+    expect(h.code).toHaveBeenCalledWith(400)
+    expect(h.takeover).toHaveBeenCalled()
+  })
+
+  test('includes selectScheme when selected category has schemeName', async () => {
+    const holdCategoriesWithSchemeName = {
+      schemes: [
+        { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] }
+      ],
+      paymentHoldCategories: [{ holdCategoryId: 'cat1', schemeId: 'scheme1', schemeName: 'scheme1', name: 'Category 1' }]
+    }
+    getHoldCategories.mockResolvedValue(holdCategoriesWithSchemeName)
+
+    request.payload.holdCategoryId = 'cat1'
+
+    await bulkFailAction(request, h, {})
+
+    expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
+      holdCategoryRadios: [
+        { scheme: { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] }, radios: [] }
+      ],
+      errors: {},
+      selectScheme: 'scheme1',
+      selectHoldCategoryId: 'cat1',
+      crumb: 'test-crumb'
+    })
+    expect(h.code).toHaveBeenCalledWith(400)
+    expect(h.takeover).toHaveBeenCalled()
+  })
 })
