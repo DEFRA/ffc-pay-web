@@ -38,23 +38,22 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-
         const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
           valueKey: 'holdCategoryId',
           textKey: 'name'
         })
 
-        const frn = request.query.frn
-        const holdCategoryId = request.query.holdCategoryId
+        const frn = request.query?.frn
+        const selectHoldCategoryId = request.query?.holdCategoryId
         let selectScheme
-        if (holdCategoryId) {
-          const selectedCategory = paymentHoldCategories.find(c => String(c.holdCategoryId) === String(holdCategoryId))
+        if (selectHoldCategoryId) {
+          const selectedCategory = paymentHoldCategories.find(c => String(c.holdCategoryId) === String(selectHoldCategoryId))
           if (selectedCategory?.schemeName) {
             selectScheme = selectedCategory.schemeName
           }
         }
 
-        return h.view(HOLDS_VIEWS.ADD, { schemes, holdCategoryRadios, frn, selectScheme })
+        return h.view(HOLDS_VIEWS.ADD, { schemes, holdCategoryRadios, frn, selectScheme, selectHoldCategoryId })
       }
     }
   },
@@ -76,8 +75,9 @@ module.exports = [
               schemes,
               holdCategoryRadios,
               errors: error,
-              frn: request.payload.frn,
-              selectScheme: request.payload.selectScheme
+              frn: request.payload?.frn,
+              selectHoldCategoryId: request.payload?.holdCategoryId,
+              selectScheme: request.payload?.selectScheme
             })
             .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
@@ -88,9 +88,9 @@ module.exports = [
         const selectedCategory = paymentHoldCategories.find(c => String(c.holdCategoryId) === String(request.payload.holdCategoryId))
         const selectedScheme = schemes.find(scheme => String(scheme.name) === String(selectedCategory ? selectedCategory.schemeName : undefined))
         return h.view(HOLDS_VIEWS.ADD_CONFIRM, {
-          frn: request.payload.frn,
+          frn: request.payload?.frn,
           selectedScheme: selectedScheme ? selectedScheme.name : undefined,
-          holdCategoryId: request.payload.holdCategoryId,
+          holdCategoryId: request.payload?.holdCategoryId,
           holdCategoryName: selectedCategory ? selectedCategory.name : undefined
         })
       }
@@ -111,11 +111,22 @@ module.exports = [
             textKey: 'name'
           })
 
+          const selectHoldCategoryId = request.payload?.holdCategoryId
+          let selectScheme
+          if (selectHoldCategoryId) {
+            const selectedCategory = paymentHoldCategories.find(c => String(c.holdCategoryId) === String(selectHoldCategoryId))
+            if (selectedCategory?.schemeName) {
+              selectScheme = selectedCategory.schemeName
+            }
+          }
+
           return h
             .view(HOLDS_VIEWS.ADD, {
               holdCategoryRadios,
               errors: error,
-              frn: request.payload.frn
+              frn: request.payload?.frn,
+              selectHoldCategoryId,
+              selectScheme
             })
             .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
@@ -125,8 +136,8 @@ module.exports = [
         await postProcessing(
           '/add-payment-hold',
           {
-            holdCategoryId: request.payload.holdCategoryId,
-            frn: request.payload.frn
+            holdCategoryId: request.payload?.holdCategoryId,
+            frn: request.payload?.frn
           },
           null
         )
@@ -140,8 +151,8 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const schemes = await getSchemes()
-        const frn = request.query.frn
-        const schemeId = request.query.schemeId
+        const frn = request.query?.frn
+        const schemeId = request.query?.schemeId
         return h.view(HOLDS_VIEWS.SEARCH, { schemes, frn, schemeId })
       }
     }
@@ -165,8 +176,8 @@ module.exports = [
         }
       },
       handler: async (request, h) => {
-        const frn = request.payload.frn
-        const schemeName = request.payload.name
+        const frn = request.payload?.frn
+        const schemeName = request.payload?.name
         const paymentHolds = await getHolds(undefined, undefined, false)
         let filteredPaymentHolds = []
         if (frn) {
@@ -260,7 +271,16 @@ module.exports = [
           textKey: 'name'
         })
 
-        return h.view(HOLDS_VIEWS.BULK, { holdCategoryRadios, type })
+        const selectHoldCategoryId = request.query?.holdCategoryId
+        let selectScheme
+        if (selectHoldCategoryId) {
+          const selectedCategory = paymentHoldCategories.find(c => String(c.holdCategoryId) === String(selectHoldCategoryId))
+          if (selectedCategory?.schemeName) {
+            selectScheme = selectedCategory.schemeName
+          }
+        }
+
+        return h.view(HOLDS_VIEWS.BULK, { holdCategoryRadios, type, selectScheme, selectHoldCategoryId })
       }
     }
   },
@@ -351,15 +371,16 @@ module.exports = [
           return h.view(HOLDS_VIEWS.ADD_TYPE, {
             schemes,
             errors: error,
-            schemeId: request.payload.schemeId,
-            categoryName: request.payload.categoryName
+            schemeId: request.payload?.schemeId,
+            categoryName: request.payload?.categoryName
           })
             .code(HTTP_STATUS.BAD_REQUEST)
             .takeover()
         }
       },
       handler: async (request, h) => {
-        const { categoryName, schemeId } = request.payload
+        const schemeId = request.payload?.schemeId
+        const categoryName = request.payload?.categoryName
         await postProcessing(
           '/add-hold-type',
           {
@@ -435,7 +456,8 @@ module.exports = [
         }
       },
       handler: async (request, h) => {
-        const { categoryName, holdCategoryId } = request.payload
+        const holdCategoryId = request.payload?.holdCategoryId
+        const categoryName = request.payload?.categoryName
         await postProcessing(
           '/edit-hold-type',
           {
@@ -485,7 +507,7 @@ module.exports = [
         }
 
         try {
-          await postProcessing(HOLDS_ROUTES.REMOVE_TYPE_API, { holdCategoryId: request.payload.holdCategoryId })
+          await postProcessing(HOLDS_ROUTES.REMOVE_TYPE_API, { holdCategoryId: request.payload?.holdCategoryId })
           return h.redirect(`${HOLDS_ROUTES.TYPES}?removedCategory=${encodeURIComponent(category.name)}`)
         } catch (error) {
           console.error(`A hold category could not be removed: ${error.message}`)

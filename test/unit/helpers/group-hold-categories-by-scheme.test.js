@@ -5,7 +5,7 @@ describe('groupHoldCategoriesByScheme', () => {
     expect(groupHoldCategoriesByScheme([])).toEqual([])
   })
 
-  test('groups categories by scheme and sorts by numeric schemeId', () => {
+  test('groups categories by scheme and sorts by name', () => {
     const input = [
       { holdCategoryId: 1, name: 'A', schemeId: '10', schemeName: 'Scheme 10' },
       { holdCategoryId: 2, name: 'B', schemeId: '2', schemeName: 'Scheme 2' },
@@ -13,15 +13,15 @@ describe('groupHoldCategoriesByScheme', () => {
     ]
     const result = groupHoldCategoriesByScheme(input)
     expect(result).toHaveLength(2)
-    expect(result[0].schemeId).toBe('2')
-    expect(result[0].schemeName).toBe('Scheme 2')
-    expect(result[0].holdCategories).toEqual([{ holdCategoryId: 2, holdCategoryName: 'B' }])
-    expect(result[1].schemeId).toBe('10')
-    expect(result[1].schemeName).toBe('Scheme 10')
-    expect(result[1].holdCategories).toEqual(expect.arrayContaining([
+    expect(result[0].schemeId).toBe('10')
+    expect(result[0].schemeName).toBe('Scheme 10')
+    expect(result[0].holdCategories).toEqual(expect.arrayContaining([
       { holdCategoryId: 1, holdCategoryName: 'A' },
       { holdCategoryId: 3, holdCategoryName: 'C' }
     ]))
+    expect(result[1].schemeId).toBe('2')
+    expect(result[1].schemeName).toBe('Scheme 2')
+    expect(result[1].holdCategories).toEqual([{ holdCategoryId: 2, holdCategoryName: 'B' }])
   })
 
   test('maintains input order for categories within a scheme', () => {

@@ -14,8 +14,13 @@ const groupHoldCategoriesByScheme = (paymentHoldCategories) => {
     })
     return acc
   }, new Map())
-
-  return Array.from(map.values()).sort((a, b) => Number(a.schemeId) - Number(b.schemeId))
+  return Array.from(map.values()).map(group => {
+    group.holdCategories.sort((a, b) =>
+      a.holdCategoryName.localeCompare(b.holdCategoryName)
+    )
+    return group
+  })
+    .sort((a, b) => a.schemeName.localeCompare(b.schemeName))
 }
 
 module.exports = {
