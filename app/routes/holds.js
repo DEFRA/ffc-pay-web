@@ -38,10 +38,7 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
-          valueKey: 'holdCategoryId',
-          textKey: 'name'
-        })
+        const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, { valueKey: 'holdCategoryId', textKey: 'name' })
 
         const frn = request.query?.frn
         const selectHoldCategoryId = request.query?.holdCategoryId
@@ -66,10 +63,7 @@ module.exports = [
         payload: schema,
         failAction: async (request, h, error) => {
           const { schemes, paymentHoldCategories } = await getHoldCategories()
-          const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
-            valueKey: 'holdCategoryId',
-            textKey: 'name'
-          })
+          const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, { valueKey: 'holdCategoryId', textKey: 'name' })
           return h
             .view(HOLDS_VIEWS.ADD, {
               schemes,
@@ -106,10 +100,7 @@ module.exports = [
         failAction: async (request, h, error) => {
           const { schemes, paymentHoldCategories } = await getHoldCategories()
 
-          const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
-            valueKey: 'holdCategoryId',
-            textKey: 'name'
-          })
+          const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, { valueKey: 'holdCategoryId', textKey: 'name' })
 
           const selectHoldCategoryId = request.payload?.holdCategoryId
           let selectScheme
@@ -135,10 +126,7 @@ module.exports = [
       handler: async (request, h) => {
         await postProcessing(
           '/add-payment-hold',
-          {
-            holdCategoryId: request.payload?.holdCategoryId,
-            frn: request.payload?.frn
-          },
+          { holdCategoryId: request.payload?.holdCategoryId, frn: request.payload?.frn },
           null
         )
         return h.redirect(`${HOLDS_ROUTES.MANAGE}?holdAdded=true`)
@@ -181,14 +169,10 @@ module.exports = [
         const paymentHolds = await getHolds(undefined, undefined, false)
         let filteredPaymentHolds = []
         if (frn) {
-          filteredPaymentHolds = paymentHolds.filter(
-            x => x.frn === String(frn)
-          )
+          filteredPaymentHolds = paymentHolds.filter(x => x.frn === String(frn))
         }
         if (schemeName) {
-          filteredPaymentHolds = paymentHolds.filter(
-            x => x.holdCategorySchemeName === schemeName
-          )
+          filteredPaymentHolds = paymentHolds.filter(x => x.holdCategorySchemeName === schemeName)
         }
         return h.view(HOLDS_VIEWS.HOLDS, {
           paymentHolds: filteredPaymentHolds,
@@ -223,14 +207,10 @@ module.exports = [
         const paymentHolds = await getHolds(undefined, undefined, false)
         let filteredPaymentHolds = []
         if (frn) {
-          filteredPaymentHolds = paymentHolds.filter(
-            x => x.frn === String(frn)
-          )
+          filteredPaymentHolds = paymentHolds.filter(x => x.frn === String(frn))
         }
         if (schemeName) {
-          filteredPaymentHolds = paymentHolds.filter(
-            x => x.holdCategorySchemeName === schemeName
-          )
+          filteredPaymentHolds = paymentHolds.filter(x => x.holdCategorySchemeName === schemeName)
         }
         return h.view(HOLDS_VIEWS.HOLDS, {
           paymentHolds: filteredPaymentHolds,
@@ -266,10 +246,7 @@ module.exports = [
         }
 
         const { schemes, paymentHoldCategories } = await getHoldCategories()
-        const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, {
-          valueKey: 'holdCategoryId',
-          textKey: 'name'
-        })
+        const holdCategoryRadios = mapHoldCategoriesToRadios(schemes, paymentHoldCategories, { valueKey: 'holdCategoryId', textKey: 'name' })
 
         const selectHoldCategoryId = request.query?.holdCategoryId
         let selectScheme
@@ -383,10 +360,7 @@ module.exports = [
         const categoryName = request.payload?.categoryName
         await postProcessing(
           '/add-hold-type',
-          {
-            categoryName,
-            schemeId
-          },
+          { categoryName, schemeId },
           null
         )
         return h.redirect(`${HOLDS_ROUTES.TYPES}?createdCategory=${encodeURIComponent(categoryName)}`)
@@ -460,10 +434,7 @@ module.exports = [
         const categoryName = request.payload?.categoryName
         await postProcessing(
           '/edit-hold-type',
-          {
-            categoryName,
-            holdCategoryId
-          },
+          { categoryName, holdCategoryId },
           null
         )
         return h.redirect(`${HOLDS_ROUTES.TYPES}?editedCategory=${encodeURIComponent(categoryName)}`)
