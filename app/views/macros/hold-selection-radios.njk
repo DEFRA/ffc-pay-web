@@ -26,6 +26,7 @@
           Select the hold type
         </div>
         <select class="govuk-select" id="selectHoldCategoryId" name="holdCategoryId" aria-describedby="hold-hint">
+          <option value="" {% if not selectedHoldCategoryId %}selected{% endif %}>Select a scheme</option>
           {% for category in holdCategorys %}
             {% for item in category.radios %}
               <option value="{{ item.value }}" data-scheme-name="{{ category.scheme.name }}" {% if selectedHoldCategoryId == item.value %}selected{% endif %}>{{ item.text or item.label or item.name or item.value }}</option>
