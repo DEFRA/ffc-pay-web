@@ -33,13 +33,16 @@ const getHoldCategories = async () => {
     ...category,
     schemeName: normalizeSchemeName(category.schemeName)
   }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 
   const schemesMap = Object.fromEntries(
     mappedCategories.map(c => [c.schemeId, { id: c.schemeId, name: c.schemeName }])
   )
 
+  const schemes = Object.values(schemesMap).sort((a, b) => a.name.localeCompare(b.name))
+
   return {
-    schemes: Object.values(schemesMap),
+    schemes,
     paymentHoldCategories: mappedCategories
   }
 }

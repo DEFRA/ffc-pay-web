@@ -79,7 +79,7 @@ describe('mapHoldCategoriesToRadios', () => {
     expect(radioButtonMapper).not.toHaveBeenCalled()
   })
 
-  test('returns schemes ordered by id ascending', () => {
+  test('returns schemes with no ordering applied - as ordering is done upstream.', () => {
     const unorderedSchemes = [
       { id: 3, name: 'LUMP_SUMS' },
       { id: 15, name: 'CSHT_REVENUE' },
@@ -94,11 +94,11 @@ describe('mapHoldCategoriesToRadios', () => {
 
     const result = mapHoldCategoriesToRadios(unorderedSchemes, categories, { valueKey: 'holdCategoryId' })
 
-    expect(result.map(r => r.scheme.id)).toEqual([3, 8, 15])
+    expect(result.map(r => r.scheme.id)).toEqual([3, 15, 8])
     expect(result).toEqual([
       { scheme: { id: 3, name: 'LUMP_SUMS' }, radios: [{ id: '3_Cat X_id', value: 'X', text: 'Cat X' }] },
-      { scheme: { id: 8, name: 'MANUAL' }, radios: [{ id: '8_Cat Z_id', value: 'Z', text: 'Cat Z' }] },
-      { scheme: { id: 15, name: 'CSHT_REVENUE' }, radios: [{ id: '15_Cat Y_id', value: 'Y', text: 'Cat Y' }] }
+      { scheme: { id: 15, name: 'CSHT_REVENUE' }, radios: [{ id: '15_Cat Y_id', value: 'Y', text: 'Cat Y' }] },
+      { scheme: { id: 8, name: 'MANUAL' }, radios: [{ id: '8_Cat Z_id', value: 'Z', text: 'Cat Z' }] }
     ])
   })
 })

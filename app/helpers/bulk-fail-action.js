@@ -15,11 +15,22 @@ const bulkFailAction = async (request, h, error) => {
   // Try getting the crumb from request.payload and fallback to the crumb in state
   const crumb = request.payload?.crumb ?? request.state.crumb
 
+  const selectHoldCategoryId = request.payload?.holdCategoryId
+  let selectScheme
+  if (selectHoldCategoryId) {
+    const selectedCategory = paymentHoldCategories.find(c => String(c.holdCategoryId) === String(selectHoldCategoryId))
+    if (selectedCategory?.schemeName) {
+      selectScheme = selectedCategory.schemeName
+    }
+  }
+
   if (error?.output?.statusCode === HTTP_STATUS.CONTENT_TOO_LARGE) {
     return h
       .view(BULK, {
         holdCategoryRadios,
         errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }] },
+        selectScheme,
+        selectHoldCategoryId,
         crumb
       })
       .code(HTTP_STATUS.BAD_REQUEST)
@@ -30,6 +41,8 @@ const bulkFailAction = async (request, h, error) => {
     .view(BULK, {
       holdCategoryRadios,
       errors: error,
+      selectScheme,
+      selectHoldCategoryId,
       crumb
     })
     .code(HTTP_STATUS.BAD_REQUEST)

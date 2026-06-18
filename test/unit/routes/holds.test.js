@@ -585,4 +585,43 @@ describe('holds route methods', () => {
       expect(err.details.some(d => d.message === 'This hold type name is reserved and cannot be used')).toBeTruthy()
     }
   })
+
+  test('ADD_TYPE schema: non-integer schemeId produces "A scheme must be selected"', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const schema = route.options.validate.payload
+    try {
+      await schema.validateAsync({ schemeId: 'x', categoryName: 'Name' })
+      throw new Error('validation did not fail')
+    } catch (err) {
+      expect(err.details.some(d => d.message === 'A scheme must be selected')).toBeTruthy()
+    }
+  })
+
+  test('GET bulk handler sets selectScheme when holdCategoryId matches category with schemeName', async () => {
+    const paymentHoldCategories = [{ holdCategoryId: '2', name: 'Name', schemeName: 'S1' }]
+    const schemes = [{ schemeId: 1, name: 'S1' }]
+    getHoldCategories.mockResolvedValue({ schemes, paymentHoldCategories })
+    mapHoldCategoriesToRadios.mockReturnValue([{ value: '2', text: 'Name' }])
+    const route = findRouteByPath(HOLDS_ROUTES.BULK, 'GET')
+    const h = makeH()
+    const req = { query: { type: 'add', holdCategoryId: '2' } }
+    const res = await route.options.handler(req, h)
+    expect(getHoldCategories).toHaveBeenCalled()
+    expect(res.view).toEqual(HOLDS_VIEWS.BULK)
+    expect(res.ctx.selectScheme).toEqual('S1')
+    expect(res.ctx.selectHoldCategoryId).toEqual('2')
+  })
+
+  test('POST add-confirm validation failAction includes selectScheme from payload', async () => {
+    getHoldCategories.mockResolvedValue({ schemes: [], paymentHoldCategories: [] })
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_CONFIRM, 'POST')
+    const h = makeH()
+    const fakeError = new Error('validation')
+    const req = { payload: { frn: 'x', selectScheme: 'MyScheme', holdCategoryId: '42' } }
+    const out = await route.options.validate.failAction(req, h, fakeError)
+    expect(getHoldCategories).toHaveBeenCalled()
+    expect(out.ctx.selectScheme).toEqual('MyScheme')
+    expect(out.ctx.selectHoldCategoryId).toEqual('42')
+    expect(out).toHaveProperty('takeover')
+  })
 })
