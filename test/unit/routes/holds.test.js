@@ -200,7 +200,7 @@ describe('holds route methods', () => {
     expect(resScheme.ctx.paymentHolds.length).toBe(2)
   })
 
-  test('POST holds handler filters by schemeName when both frn and name provided (name takes precedence)', async () => {
+  test('POST holds handler filters by both schemeName and frn when both frn and name provided', async () => {
     const holds = [
       { frn: '10', holdCategorySchemeName: 'A' },
       { frn: '10', holdCategorySchemeName: 'B' },
@@ -212,11 +212,12 @@ describe('holds route methods', () => {
     const reqBoth = { payload: { frn: '10', name: 'B' } }
     const resBoth = await route.options.handler(reqBoth, h)
     expect(resBoth.view).toEqual(HOLDS_VIEWS.HOLDS)
+    expect(resBoth.ctx.paymentHolds.every(p => p.frn === '10')).toBeTruthy()
     expect(resBoth.ctx.paymentHolds.every(p => p.holdCategorySchemeName === 'B')).toBeTruthy()
-    expect(resBoth.ctx.paymentHolds.length).toBe(2)
+    expect(resBoth.ctx.paymentHolds.length).toBe(1)
   })
 
-  test('POST holds handler returns empty results when no frn or name provided', async () => {
+  test('POST holds handler returns all results when no frn or name provided', async () => {
     const holds = [
       { frn: '10', holdCategorySchemeName: 'A' },
       { frn: '20', holdCategorySchemeName: 'B' }
@@ -227,8 +228,8 @@ describe('holds route methods', () => {
     const reqNone = { payload: {} }
     const resNone = await route.options.handler(reqNone, h)
     expect(resNone.view).toEqual(HOLDS_VIEWS.HOLDS)
-    expect(resNone.ctx.paymentHolds.length).toBe(0)
-    expect(resNone.ctx.numberOfHolds).toBe(0)
+    expect(resNone.ctx.paymentHolds.length).toBe(2)
+    expect(resNone.ctx.numberOfHolds).toBe(2)
   })
 
   test('POST holds validation failAction returns search view with errors and takes over', async () => {
