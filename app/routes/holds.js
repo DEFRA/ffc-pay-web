@@ -166,17 +166,16 @@ module.exports = [
       handler: async (request, h) => {
         const frn = request.payload?.frn
         const schemeName = request.payload?.name
-        const paymentHolds = await getHolds(undefined, undefined, false)
-        let filteredPaymentHolds = []
+        let paymentHolds = await getHolds(undefined, undefined, false)
         if (frn) {
-          filteredPaymentHolds = paymentHolds.filter(x => x.frn === String(frn))
+          paymentHolds = paymentHolds.filter(x => x.frn === String(frn))
         }
         if (schemeName) {
-          filteredPaymentHolds = paymentHolds.filter(x => x.holdCategorySchemeName === schemeName)
+          paymentHolds = paymentHolds.filter(x => x.holdCategorySchemeName === schemeName)
         }
         return h.view(HOLDS_VIEWS.HOLDS, {
-          paymentHolds: filteredPaymentHolds,
-          numberOfHolds: filteredPaymentHolds.length,
+          paymentHolds,
+          numberOfHolds: paymentHolds.length,
           frn,
           schemeName
         })
