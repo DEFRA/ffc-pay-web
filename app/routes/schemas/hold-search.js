@@ -19,7 +19,3 @@ module.exports = Joi.object({
     .empty('')
     .optional()
 })
-  .or('frn', 'name')
-  .messages({
-    'object.missing': 'Enter an FRN or select a scheme'
-  })

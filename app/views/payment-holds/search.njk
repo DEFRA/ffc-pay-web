@@ -45,7 +45,7 @@
             Scheme
           </label>
           <select class="govuk-select" id="name" name="name">
-            <option value="" {% if not name %}selected{% endif %}>Select a scheme</option>
+            <option value="" {% if not name %}selected{% endif %}>Search all schemes</option>
             {% for scheme in schemes %}
               {% if scheme and scheme.name is defined %}
                 <option value="{{ scheme.name }}" {% if scheme.name == name %}selected{% endif %}>
