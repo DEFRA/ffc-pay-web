@@ -6,6 +6,7 @@ data:
   APPINSIGHTS_CLOUDROLE: {{ quote .Values.name }}
   REDIS_HOSTNAME: {{ quote .Values.container.redisHostname }}
   REDIS_PORT: {{ quote .Values.container.redisPort }}
+  AZURE_LOG_LEVEL: {{ quote .Values.container.azureLogLevel }}
   {{- if (.Values.environmentCode) }}
     {{- if ne .Values.environmentCode "snd" }}
   PAYMENTS_SERVICE_ENDPOINT: {{ .Values.container.paymentsEndpoint }}-{{ .Values.environmentCode }}
