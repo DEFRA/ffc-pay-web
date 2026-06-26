@@ -49,6 +49,14 @@ describe('Get hold categories', () => {
 
     expect(result.schemes[0].name).toBeUndefined()
   })
+
+  test('returns paymentHoldCategories sorted by name', async () => {
+    const categories = [{ holdCategoryId: 2, name: 'Zoo', schemeName: 'Scheme Z' }, { holdCategoryId: 1, name: 'Alpha', schemeName: 'Scheme A' }, { holdCategoryId: 3, name: 'middle', schemeName: 'Scheme M' }]
+    setupMockCategories(categories)
+    const result = await getHoldCategories()
+    const names = result.paymentHoldCategories.map(c => c.name)
+    expect(names).toEqual(['Alpha', 'middle', 'Zoo'])
+  })
 })
 
 describe('Get holds', () => {

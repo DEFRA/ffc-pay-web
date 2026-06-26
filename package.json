@@ -1,6 +1,6 @@
 {
   "name": "ffc-pay-web",
-  "version": "2.1.1",
+  "version": "2.1.4",
   "description": "FFC payment management service",
   "homepage": "https://github.com/DEFRA/ffc-pay-web",
   "main": "app/index.js",
@@ -27,12 +27,13 @@
     "Sam Plackett samuel.plackett@atos.net",
     "Amirs Ishmuhametovs amirs.ishmuhametovs@defra.gov.uk",
     "Leigh Godson leigh.godson@atos.net",
-    "Oliver Lewington oliver.lewington@atos.net"
+    "Oliver Lewington oliver.lewington@atos.net",
+    "Alistair Wishart alistair.wishart@atos.net"
   ],
   "license": "OGL-UK-3.0",
   "dependencies": {
     "@azure/identity": "4.13.1",
-    "@azure/monitor-opentelemetry": "1.18.1",
+    "@azure/monitor-opentelemetry": "1.18.0",
     "@azure/msal-node": "5.1.5",
     "@azure/storage-blob": "12.31.0",
     "@fast-csv/format": "5.0.2",
@@ -81,6 +82,7 @@
   },
   "overrides": {
     "protobufjs": "8.6.3",
+    "uuid": "11.1.1",
     "joi": "18.2.1",
     "js-yaml": "4.2.0",
     "@opentelemetry/core": "2.8.0"

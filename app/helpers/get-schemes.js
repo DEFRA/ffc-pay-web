@@ -7,8 +7,11 @@ const getSchemes = async () => {
     if (scheme.name === 'SFI') {
       scheme.name = 'SFI22'
     }
+    if (scheme.name === 'Vet Visits') {
+      scheme.name = 'Annual Health and Welfare Review'
+    }
   })
-  schemesPayload.sort((a, b) => a.schemeId > b.schemeId)
+  schemesPayload.sort((a, b) => a.name.localeCompare(b.name))
   return schemesPayload
 }
 

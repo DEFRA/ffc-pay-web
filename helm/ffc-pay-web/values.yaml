@@ -64,6 +64,7 @@ container:
   azureAppRegistrationRedirectUrl: authenticate
   enableLegacyReports: false
   googleTagManagerKey: GTM-5XJKV8F
+  azureLogLevel: error
 
 ingress:
   class: nginx

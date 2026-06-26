@@ -200,7 +200,7 @@ describe('holds route methods', () => {
     expect(resScheme.ctx.paymentHolds.length).toBe(2)
   })
 
-  test('POST holds handler filters by schemeName when both frn and name provided (name takes precedence)', async () => {
+  test('POST holds handler filters by both schemeName and frn when both frn and name provided', async () => {
     const holds = [
       { frn: '10', holdCategorySchemeName: 'A' },
       { frn: '10', holdCategorySchemeName: 'B' },
@@ -212,11 +212,12 @@ describe('holds route methods', () => {
     const reqBoth = { payload: { frn: '10', name: 'B' } }
     const resBoth = await route.options.handler(reqBoth, h)
     expect(resBoth.view).toEqual(HOLDS_VIEWS.HOLDS)
+    expect(resBoth.ctx.paymentHolds.every(p => p.frn === '10')).toBeTruthy()
     expect(resBoth.ctx.paymentHolds.every(p => p.holdCategorySchemeName === 'B')).toBeTruthy()
-    expect(resBoth.ctx.paymentHolds.length).toBe(2)
+    expect(resBoth.ctx.paymentHolds.length).toBe(1)
   })
 
-  test('POST holds handler returns empty results when no frn or name provided', async () => {
+  test('POST holds handler returns all results when no frn or name provided', async () => {
     const holds = [
       { frn: '10', holdCategorySchemeName: 'A' },
       { frn: '20', holdCategorySchemeName: 'B' }
@@ -227,8 +228,8 @@ describe('holds route methods', () => {
     const reqNone = { payload: {} }
     const resNone = await route.options.handler(reqNone, h)
     expect(resNone.view).toEqual(HOLDS_VIEWS.HOLDS)
-    expect(resNone.ctx.paymentHolds.length).toBe(0)
-    expect(resNone.ctx.numberOfHolds).toBe(0)
+    expect(resNone.ctx.paymentHolds.length).toBe(2)
+    expect(resNone.ctx.numberOfHolds).toBe(2)
   })
 
   test('POST holds validation failAction returns search view with errors and takes over', async () => {
@@ -584,5 +585,44 @@ describe('holds route methods', () => {
     } catch (err) {
       expect(err.details.some(d => d.message === 'This hold type name is reserved and cannot be used')).toBeTruthy()
     }
+  })
+
+  test('ADD_TYPE schema: non-integer schemeId produces "A scheme must be selected"', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const schema = route.options.validate.payload
+    try {
+      await schema.validateAsync({ schemeId: 'x', categoryName: 'Name' })
+      throw new Error('validation did not fail')
+    } catch (err) {
+      expect(err.details.some(d => d.message === 'A scheme must be selected')).toBeTruthy()
+    }
+  })
+
+  test('GET bulk handler sets selectScheme when holdCategoryId matches category with schemeName', async () => {
+    const paymentHoldCategories = [{ holdCategoryId: '2', name: 'Name', schemeName: 'S1' }]
+    const schemes = [{ schemeId: 1, name: 'S1' }]
+    getHoldCategories.mockResolvedValue({ schemes, paymentHoldCategories })
+    mapHoldCategoriesToRadios.mockReturnValue([{ value: '2', text: 'Name' }])
+    const route = findRouteByPath(HOLDS_ROUTES.BULK, 'GET')
+    const h = makeH()
+    const req = { query: { type: 'add', holdCategoryId: '2' } }
+    const res = await route.options.handler(req, h)
+    expect(getHoldCategories).toHaveBeenCalled()
+    expect(res.view).toEqual(HOLDS_VIEWS.BULK)
+    expect(res.ctx.selectScheme).toEqual('S1')
+    expect(res.ctx.selectHoldCategoryId).toEqual('2')
+  })
+
+  test('POST add-confirm validation failAction includes selectScheme from payload', async () => {
+    getHoldCategories.mockResolvedValue({ schemes: [], paymentHoldCategories: [] })
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_CONFIRM, 'POST')
+    const h = makeH()
+    const fakeError = new Error('validation')
+    const req = { payload: { frn: 'x', selectScheme: 'MyScheme', holdCategoryId: '42' } }
+    const out = await route.options.validate.failAction(req, h, fakeError)
+    expect(getHoldCategories).toHaveBeenCalled()
+    expect(out.ctx.selectScheme).toEqual('MyScheme')
+    expect(out.ctx.selectHoldCategoryId).toEqual('42')
+    expect(out).toHaveProperty('takeover')
   })
 })
