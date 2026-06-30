@@ -5,7 +5,7 @@ const { applicationAdmin, schemeAdmin, dataView, statusReportSfi23, statusReport
 const { getStatementSchemes } = require('../../helpers/get-statement-schemes')
 const { buildViewContext, handleSchemesError } = require('../../statement-downloader/search-helpers/download-helper')
 
-const DOWNLOAD_VIEW = 'download-statements'
+const DOWNLOAD_VIEW = 'statements/download-statements'
 const SCHEMES_ERROR = 'Unable to load schemes. Please try again later.'
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, dataView, statusReportsDelinked, statusReportSfi23] }
 
