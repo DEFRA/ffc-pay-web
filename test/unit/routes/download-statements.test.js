@@ -120,7 +120,7 @@ describe('download-statements route - GET', () => {
 
       expect(getStatementSchemes).toHaveBeenCalledTimes(1)
       expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, {}, { crumb: MOCK_CRUMB })
-      expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.any(Object))
+      expect(mockH.view).toHaveBeenCalledWith('statements/download-statements', expect.any(Object))
     })
 
     test('should handle empty schemes array', async () => {
@@ -164,7 +164,7 @@ describe('download-statements route - GET', () => {
 
       expect(getStatementSchemes).toHaveBeenCalledTimes(1)
       expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, { additionalContext: { error }, crumb: MOCK_CRUMB })
-      expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.any(Object))
+      expect(mockH.view).toHaveBeenCalledWith('statements/download-statements', expect.any(Object))
       expect(mockResponse.code).toHaveBeenCalledWith(require('../../../app/constants/http-status-codes').BAD_REQUEST)
       expect(mockResponse.takeover).toHaveBeenCalled()
     })
