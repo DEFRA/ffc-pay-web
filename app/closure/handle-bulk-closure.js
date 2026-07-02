@@ -1,8 +1,8 @@
-const fs = require('fs')
+const fs = require('node:fs')
 const { postProcessing } = require('../api')
 const { processClosureData } = require('../closure')
 const { handleBulkClosureError } = require('./handle-bulk-closure-error')
-const { BULK, BASE } = require('../constants/closures-routes')
+const { BULK, MANAGE } = require('../constants/closures-routes')
 
 const handleBulkClosure = async (request, h) => {
   const file = request.payload.file
@@ -30,7 +30,7 @@ const handleBulkClosure = async (request, h) => {
   }
 
   await postProcessing(BULK, { data: uploadData }, null)
-  return h.redirect(BASE)
+  return h.redirect(MANAGE)
 }
 
 module.exports = { handleBulkClosure }

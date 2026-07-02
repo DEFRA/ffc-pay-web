@@ -9,9 +9,36 @@ const { handleBulkClosure } = require('../closure/handle-bulk-closure')
 
 const CLOSURES_VIEWS = require('../constants/closures-views')
 const CLOSURES_ROUTES = require('../constants/closures-routes')
+const { AGREEMENT_CLOSURES_LINKS } = require('../constants/section-links')
+const { getClosures } = require('../closure')
+
 const AUTH_SCOPE = { scope: [applicationAdmin, closureAdmin] }
 
 module.exports = [
+  {
+    method: 'GET',
+    path: CLOSURES_ROUTES.MANAGE,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const cards = [...AGREEMENT_CLOSURES_LINKS]
+        cards.shift()
+        const closureAdded = request.query.closureAdded
+        return h.view(CLOSURES_VIEWS.MANAGE, { cards, closureAdded })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: CLOSURES_ROUTES.UPDATE,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (_request, h) => {
+        const closures = await getClosures()
+        return h.view(CLOSURES_VIEWS.UPDATE, { closures })
+      }
+    }
+  },
   {
     method: 'GET',
     path: CLOSURES_ROUTES.ADD,
@@ -72,7 +99,7 @@ module.exports = [
           },
           null
         )
-        return h.redirect(CLOSURES_ROUTES.BASE)
+        return h.redirect(CLOSURES_ROUTES.MANAGE)
       }
     }
   },
@@ -99,6 +126,17 @@ module.exports = [
           const crumb = request.payload?.crumb ?? request.state.crumb
           return handleBulkClosureError(h, `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`, crumb)
         }
+      }
+    }
+  },
+  {
+    method: 'POST',
+    path: CLOSURES_ROUTES.REMOVE,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        await postProcessing('/closure/remove', { closedId: request.payload.closedId })
+        return h.redirect(CLOSURES_ROUTES.MANAGE)
       }
     }
   }

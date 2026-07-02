@@ -1,0 +1,73 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% set pageTitle = "Manage agreement closures" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }, {
+      text: pageTitle
+    }]
+  })}}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {% if closureAdded %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title-hold-added">
+              Success
+            </h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <h3 class="govuk-notification-banner__heading">
+              Agreement closure successfully created.
+            </h3>
+          </div>
+        </div>
+      {% endif %}
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body">
+        To comply with privacy laws and regulations we need to record agreement closure dates in the system.
+      </p>
+
+      <p class="govuk-body">
+        Agreement closures are automatically provided for most schemes; however some schemes and scenarios need a manual process. You can search for and update an existing closure, or add new closures individually or in bulk.
+      </p>
+
+      <p class="govuk-body">
+        Any data stored following an agreement closure will be kept in line with our data retention policy.
+      </p>
+
+      {% set cardGroups = [] %}
+      {% for i in range(0, cards | length, 2) %}
+        {% set cardGroups = cardGroups.concat([cards.slice(i, i + 2)]) %}
+      {% endfor %}
+
+      {% for group in cardGroups %}
+        <div class="govuk-cards govuk-cards--2">
+          {% for card in group %}
+            <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+              <h2 class="govuk-heading-m card__heading"><a href="{{ card.href }}" class="govuk-link">{{ card.text }}</a></h2>
+              <div class="govuk-hint">
+                {{ card.description }}
+              </div>
+            </div>
+          {% endfor %}
+          {% if group | length == 1 %}
+            <div class="govuk-cards--2__item govuk-u-hidden"></div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,4 +1,4 @@
-const fs = require('fs')
+const fs = require('node:fs')
 const { handleBulkClosure } = require('../../../app/closure/handle-bulk-closure')
 const { handleBulkClosureError } = require('../../../app/closure/handle-bulk-closure-error')
 const { postProcessing } = require('../../../app/api')
@@ -37,7 +37,7 @@ describe('handleBulkClosure', () => {
     expect(handleBulkClosureError).toHaveBeenCalledWith(h, expectedMessage, 'test-crumb')
   })
 
-  test('redirects to BASE when processing is successful', async () => {
+  test('redirects to MANAGE when processing is successful', async () => {
     const mockUploadData = { key: 'value' }
     fs.readFileSync.mockReturnValue('file content')
     processClosureData.mockResolvedValue({ uploadData: mockUploadData, errors: null })
@@ -45,6 +45,6 @@ describe('handleBulkClosure', () => {
     await handleBulkClosure(request, h)
 
     expect(postProcessing).toHaveBeenCalledWith('/closure/bulk', { data: mockUploadData }, null)
-    expect(h.redirect).toHaveBeenCalledWith('/closure')
+    expect(h.redirect).toHaveBeenCalledWith('/closure/manage')
   })
 })

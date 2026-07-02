@@ -1,5 +1,7 @@
 module.exports = {
-  BASE: '/closure',
+  MANAGE: '/closure/manage',
+  UPDATE: '/closure/update',
   ADD: '/closure/add',
-  BULK: '/closure/bulk'
+  BULK: '/closure/bulk',
+  REMOVE: '/closure/remove'
 }

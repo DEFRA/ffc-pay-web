@@ -3,7 +3,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set pageTitle = "Add agreement closure" %}
+{% set pageTitle = "Create new closure" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
@@ -12,9 +12,6 @@
     items: [{
       text: "Home",
       href: "/"
-    },{
-      text: "Agreement closures",
-      href: "/closure"
     },{
       text: pageTitle
     }]
