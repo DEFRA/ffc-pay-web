@@ -75,9 +75,9 @@ const prepareSearchParams = (data, fileLimit) => {
   return { searchCriteria, limit, offsetOrToken, mergedPayload }
 }
 
-const performSearch = async (searchCriteria, limit, offsetOrToken) => {
+const performSearch = async (searchCriteria, limit, offsetOrToken, username) => {
   console.info('Download-statements search criteria: %o', searchCriteria)
-  return searchStatements(searchCriteria, limit, offsetOrToken)
+  return searchStatements(searchCriteria, limit, offsetOrToken, username)
 }
 
 module.exports = {

@@ -21,7 +21,10 @@ const handleValidationFailure = (request, h, error) => {
 const handleGetStatementResults = async (request, h) => {
   try {
     const { searchCriteria, limit, offsetOrToken } = prepareSearchParams(request.query, fileLimit)
-    const searchResult = await performSearch(searchCriteria, limit, offsetOrToken)
+
+    const user = request.auth?.credentials.account
+    const userNameOrEmail = user?.name || user?.username || user?.email
+    const searchResult = await performSearch(searchCriteria, limit, offsetOrToken, userNameOrEmail)
 
     if (searchResult?.error) {
       return h.view(RESULTS_VIEW, buildViewContext(null, request.query, {

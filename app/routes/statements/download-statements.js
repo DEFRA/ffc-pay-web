@@ -4,6 +4,7 @@ const { BAD_REQUEST, SEE_OTHER, SUCCESS, NOT_FOUND, INTERNAL_SERVER_ERROR, FORBI
 const { applicationAdmin, schemeAdmin, dataView, statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
 const { getStatementSchemes } = require('../../helpers/get-statement-schemes')
 const { buildViewContext, handleSchemesError } = require('../../statement-downloader/search-helpers/download-helper')
+const { sendRequestsLog } = require('../../statement-downloader/statement-db-search')
 
 const DOWNLOAD_VIEW = 'statements/download-statements'
 const SCHEMES_ERROR = 'Unable to load schemes. Please try again later.'
@@ -48,7 +49,19 @@ const handlePostDownloadStatements = (request, h) => {
 const handleDownloadFile = async (request, h) => {
   try {
     const { filename } = request.params
+    const user = request.auth?.credentials.account
+    const userNameOrEmail = user?.name || user?.username || user?.email
+    const requestType = 'Download'
+
+    await sendRequestsLog({
+      username: userNameOrEmail,
+      filename,
+      type: requestType,
+      timestamp: new Date().toISOString()
+    })
+
     const download = await downloadStatement(filename)
+
     return h.response(download.readableStreamBody)
       .type('application/pdf')
       .header('Content-Disposition', `attachment; filename="${filename}"`)

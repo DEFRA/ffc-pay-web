@@ -34,6 +34,14 @@ const postAlerting = async (url, data, token) => {
   return { statusCode: res.statusCode, payload }
 }
 
+const postStatementPublisher = async (url, data, token) => {
+  const { res, payload } = await wreck.post(`${config.statementPublisherEndpoint}${url}`, {
+    payload: data,
+    ...getConfiguration(token)
+  })
+  return { statusCode: res.statusCode, payload }
+}
+
 const getProcessingData = async (url, token) => {
   return wreck.get(`${config.paymentsEndpoint}${url}`, getConfiguration(token))
 }
@@ -72,6 +80,7 @@ module.exports = {
   postProcessing,
   postInjection,
   postAlerting,
+  postStatementPublisher,
   getProcessingData,
   getTrackingData,
   getAlertingData,

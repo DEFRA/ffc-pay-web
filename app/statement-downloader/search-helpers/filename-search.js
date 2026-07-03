@@ -13,7 +13,7 @@ const createBasicStatementResult = (filename, props) => ({
   continuationToken: null
 })
 
-const searchBlobByFilename = async (blobPath, filename) => {
+const searchBlobByFilename = async (username, blobPath, filename) => {
   const statementsContainer = await getStatementsContainer()
   const blobClient = statementsContainer.getBlockBlobClient(blobPath)
   const props = await blobClient.getProperties()
@@ -27,10 +27,11 @@ const searchBlobByFilename = async (blobPath, filename) => {
   return createBasicStatementResult(filename, props)
 }
 
-const searchDbByFilename = async (filename) => {
+const searchDbByFilename = async (username, filename) => {
   try {
-    const row = await db.getByFilename(filename)
+    const row = await db.getByFilename(username, filename)
     const rowResult = createStatementResultFromDBRow(row)
+
     return rowResult ? { statements: [rowResult], continuationToken: null } : { statements: [], continuationToken: null }
   } catch (error) {
     console.warn('DB filename search failed:', error?.message || error)
@@ -43,7 +44,7 @@ const isBlobNotFoundError = (err) => {
   return status === NOT_FOUND || err?.code === 'BlobNotFound'
 }
 
-const filenameSearch = async (criteria) => {
+const filenameSearch = async (username, criteria) => {
   if (!criteria?.filename) {
     return null
   }
@@ -52,10 +53,10 @@ const filenameSearch = async (criteria) => {
   const blobPath = filename.includes('/') ? filename : `outbound/${filename}`
 
   try {
-    return await searchBlobByFilename(blobPath, filename)
+    return await searchBlobByFilename(username, blobPath, filename)
   } catch (err) {
     if (isBlobNotFoundError(err)) {
-      return searchDbByFilename(filename)
+      return searchDbByFilename(username, filename)
     }
     throw err
   }

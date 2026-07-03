@@ -19,7 +19,7 @@ const safeDbSearch = async (pageLimit, token, criteria) => {
   }
 }
 
-const searchStatements = async (criteria, limit = DEFAULT_SEARCH_LIMIT, continuationToken = null) => {
+const searchStatements = async (criteria, limit = DEFAULT_SEARCH_LIMIT, continuationToken = null, username = 'unknown') => {
   const pageLimit = validateAndNormalizeLimit(limit)
   const token = validateContinuationToken(continuationToken)
 
@@ -28,7 +28,7 @@ const searchStatements = async (criteria, limit = DEFAULT_SEARCH_LIMIT, continua
   }
 
   const steps = [
-    () => { return filenameSearch(criteria) },
+    () => { return filenameSearch(username, criteria) },
     () => { return constructedFilenameSearch(criteria) },
     () => { return safeDbSearch(pageLimit, token, criteria) },
     () => { return apiBlobSearch(pageLimit, token, criteria) }
