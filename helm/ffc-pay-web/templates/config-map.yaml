@@ -14,12 +14,14 @@ data:
   INJECTION_SERVICE_ENDPOINT: {{ .Values.container.injectionEndpoint }}-{{ .Values.environmentCode }}
   ALERTING_SERVICE_ENDPOINT: {{ .Values.container.alertingEndpoint }}-{{ .Values.environmentCode }}
   STATEMENT_PUBLISHER_ENDPOINT: {{ .Values.container.statementPublisherEndpoint }}-{{ .Values.environmentCode }}
+  RETENTION_SERVICE_ENDPOINT: {{ .Values.container.retentionEndpoint }}-{{ .Values.environmentCode }}
     {{ else }}
   PAYMENTS_SERVICE_ENDPOINT: {{ quote .Values.container.paymentsEndpoint }}
   TRACKING_SERVICE_ENDPOINT: {{ quote .Values.container.trackingEndpoint }}
   INJECTION_SERVICE_ENDPOINT: {{ quote .Values.container.injectionEndpoint }}
   ALERTING_SERVICE_ENDPOINT: {{ quote .Values.container.alertingEndpoint }}
   STATEMENT_PUBLISHER_ENDPOINT: {{ quote .Values.container.statementPublisherEndpoint }}
+  RETENTION_SERVICE_ENDPOINT: {{ .Values.container.retentionEndpoint }}
     {{- end }}
   {{ else }}
   PAYMENTS_SERVICE_ENDPOINT: {{ quote .Values.container.paymentsEndpoint }}
@@ -27,6 +29,7 @@ data:
   INJECTION_SERVICE_ENDPOINT: {{ quote .Values.container.injectionEndpoint }}
   ALERTING_SERVICE_ENDPOINT: {{ quote .Values.container.alertingEndpoint }}
   STATEMENT_PUBLISHER_ENDPOINT: {{ quote .Values.container.statementPublisherEndpoint }}
+  RETENTION_SERVICE_ENDPOINT: {{ quote .Values.container.retentionEndpoint }}  
   {{- end }}
   REDIRECT_URL: https://{{ .Values.ingress.endpoint }}.{{ .Values.ingress.server }}/{{ .Values.container.azureAppRegistrationRedirectUrl }}
   SITE_HOSTNAME: https://{{ .Values.ingress.endpoint }}.{{ .Values.ingress.server }}

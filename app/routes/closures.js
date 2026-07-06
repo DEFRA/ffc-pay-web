@@ -1,7 +1,7 @@
 const { applicationAdmin, closureAdmin } = require('../auth/permissions')
 const schema = require('./schemas/closure')
 const bulkSchema = require('./schemas/bulk-closure')
-const { postProcessing } = require('../api')
+const { postProcessing, postRetention } = require('../api')
 const { MAX_BYTES, MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
 const { handleBulkClosureError } = require('../closure/handle-bulk-closure-error')
@@ -11,6 +11,8 @@ const CLOSURES_VIEWS = require('../constants/closures-views')
 const CLOSURES_ROUTES = require('../constants/closures-routes')
 const { AGREEMENT_CLOSURES_LINKS } = require('../constants/section-links')
 const { getClosures } = require('../closure')
+const { getSchemes } = require('../helpers')
+const { SFI } = require('../constants/schemes')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, closureAdmin] }
 
@@ -45,17 +47,45 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (_request, h) => {
-        return h.view(CLOSURES_VIEWS.ADD)
+        const schemes = await getSchemes()
+        return h.view(CLOSURES_VIEWS.ADD, { schemes })
       }
     }
   },
   {
-    method: 'GET',
-    path: CLOSURES_ROUTES.BULK,
+    method: 'POST',
+    path: CLOSURES_ROUTES.ADD_CONFIRM,
     options: {
       auth: AUTH_SCOPE,
-      handler: async (_request, h) => {
-        return h.view(CLOSURES_VIEWS.BULK)
+      validate: {
+        payload: schema,
+        failAction: async (request, h, error) => {
+          return h
+            .view(CLOSURES_VIEWS.ADD, {
+              errors: error,
+              frn: request.payload.frn,
+              agreement: request.payload.agreement,
+              schemeId: request.payload.schemeId,
+              day: request.payload.day,
+              month: request.payload.month,
+              year: request.payload.year
+            })
+            .code(BAD_REQUEST)
+            .takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const schemes = await getSchemes()
+        const selectedScheme = schemes.find(scheme => String(scheme.schemeId) === String(request.payload.schemeId))
+        return h.view(CLOSURES_VIEWS.ADD_CONFIRM, {
+          frn: request.payload?.frn,
+          agreement: request.payload.agreement,
+          schemeId: request.payload.schemeId,
+          schemeName: selectedScheme?.name,
+          day: request.payload.day,
+          month: request.payload.month,
+          year: request.payload.year
+        })
       }
     }
   },
@@ -72,6 +102,7 @@ module.exports = [
               errors: error,
               frn: request.payload.frn,
               agreement: request.payload.agreement,
+              schemeId: request.payload.schemeId,
               day: request.payload.day,
               month: request.payload.month,
               year: request.payload.year
@@ -90,16 +121,38 @@ module.exports = [
           month = `0${request.payload.month}`
         }
         const date = `${request.payload.year}-${month}-${day}T00:00:00`
-        await postProcessing(
+        await postRetention(
           CLOSURES_ROUTES.ADD,
           {
             frn: request.payload.frn,
             agreement: request.payload.agreement,
+            schemeId: request.payload.schemeId,
             date
           },
           null
         )
+        if (request.payload.schemeId === SFI) {
+          await postProcessing(
+            CLOSURES_ROUTES.ADD,
+            {
+              frn: request.payload.frn,
+              agreement: request.payload.agreement,
+              date
+            },
+            null
+          )
+        }
         return h.redirect(CLOSURES_ROUTES.MANAGE)
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: CLOSURES_ROUTES.BULK,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (_request, h) => {
+        return h.view(CLOSURES_VIEWS.BULK)
       }
     }
   },

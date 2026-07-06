@@ -24,41 +24,51 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <form method="POST" action="/closure/bulk" autocomplete="off" novalidate enctype="multipart/form-data">
-        <input type="hidden" name="crumb" value="{{crumb}}"/>
-        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
-        <p class="govuk-body">Any details you provide here will result in a suppression being applied to payments against a given FRN and agreement number.</p>
-        <p class="govuk-body">If a 0 value request is provided to the Payment Hub, following the date supplied, any amount repayable will be suppressed and Dynamics 365 will be informed that the outstanding value should be reduced to 0.</p>
-        <p class="govuk-body">It is assumed that any details provided are applicable to SFI22.</p>
+      <p class="govuk-body">Any details you provide here will result in a suppression being applied to payments against a given FRN and agreement number.</p>
+      <p class="govuk-body">If a 0 value request is provided to the Payment Hub, following the date supplied, any amount repayable will be suppressed and Dynamics 365 will be informed that the outstanding value should be reduced to 0.</p>
+      <p class="govuk-body">It is assumed that any details provided are applicable to SFI22.</p>
 
-        <p class="govuk-body">Want to upload a single closure? Click <a href="/closure/add" class="govuk-link">here</a>.</p>
+      <p class="govuk-body">Want to upload a single closure? Click <a href="/closure/add" class="govuk-link">here</a>.</p>
 
-        {% if errors %}
-          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-            <h2 class="govuk-error-summary__title" id="error-summary-title">
-            There is a problem
-          </h2>
+      {% if errors %}
+        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
             <div class="govuk-error-summary__body">
               <ul class="govuk-list govuk-error-summary__list">
-                {% for errorDetail in errors.details %}
-                  <li>
-                    <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
-                  </li>
+                {% for err in errors.details %}
+                  <li><a href="#{{ err.path[0] or err.context.key }}">{{ err.message }}</a></li>
                 {% endfor %}
               </ul>
             </div>
           </div>
-        {% endif %}
+        </div>
 
-        <div class="govuk-form-group">
+        {# Build per-field error variables from errors.details #}
+        {% set fileError = null %}
+        {% for err in errors.details %}
+          {% set field = (err.path and err.path[0]) or (err.context and err.context.key) %}
+          {% if field == 'file' %}{% set fileError = err.message %}{% endif %}
+        {% endfor %}
+
+      {% endif %}
+
+      <form method="POST" action="/closure/bulk" autocomplete="off" novalidate enctype="multipart/form-data">
+        <input type="hidden" name="crumb" value="{{crumb}}"/>
+
+        <div class="govuk-form-group {% if fileError %}govuk-form-group--error{% endif %}">
           <label class="govuk-label govuk-label-s" for="file">
             Upload a file
           </label>
           <div class="govuk-hint">
             In case of any questions on the required format, please contact the Payment Hub team.
           </div>
-          <input class="govuk-file-upload" id="file" name="file" type="file" value="{{ file }}">
+          {% if fileError %}
+            <p id="file-error" class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ fileError }}</p>
+          {% endif %}
+          <input class="govuk-file-upload {% if fileError %}govuk-file-upload--error{% endif %}" id="file" name="file" type="file" value="{{ file }}" {% if fileError %}aria-describedby="file-error"{% endif %}>
         </div>
         
         {{ govukButton({

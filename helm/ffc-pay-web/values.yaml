@@ -38,6 +38,7 @@ container:
   injectionEndpoint: http://ffc-pay-injection.ffc-pay
   alertingEndpoint: http://ffc-pay-alerting.ffc-pay
   statementPublisherEndpoint: http://ffc-doc-statement-publisher.ffc-doc
+  retentionEndpoint: http://fcp-pds-data-retention.fcp-pds
   cookiePassword: cookiecookiecookiecookiecookiecookie
   azureStorageUseConnectionString: false
   azureStorageCreateContainers: false
