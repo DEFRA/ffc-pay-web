@@ -29,7 +29,7 @@ const searchStatements = async (criteria, limit = DEFAULT_SEARCH_LIMIT, continua
 
   const steps = [
     () => { return filenameSearch(username, criteria) },
-    () => { return constructedFilenameSearch(criteria) },
+    () => { return constructedFilenameSearch(username, criteria) },
     () => { return safeDbSearch(pageLimit, token, criteria) },
     () => { return apiBlobSearch(pageLimit, token, criteria) }
   ]

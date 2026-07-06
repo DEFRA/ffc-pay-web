@@ -12,6 +12,8 @@ jest.mock('../../../app/constants/schemes', () => ({
 }))
 
 describe('constructed-filename-search', () => {
+  const mockUser = 'Obi Wan Kenobi'
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -28,21 +30,21 @@ describe('constructed-filename-search', () => {
 
   describe('validation and early returns', () => {
     test('should return null when criteria is undefined', async () => {
-      const result = await constructedFilenameSearch(undefined)
+      const result = await constructedFilenameSearch(mockUser, undefined)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
     })
 
     test('should return null when criteria is null', async () => {
-      const result = await constructedFilenameSearch(null)
+      const result = await constructedFilenameSearch(mockUser, null)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
     })
 
     test('should return null when criteria is empty object', async () => {
-      const result = await constructedFilenameSearch({})
+      const result = await constructedFilenameSearch(mockUser, {})
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -55,7 +57,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -68,7 +70,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -81,7 +83,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -94,7 +96,7 @@ describe('constructed-filename-search', () => {
         frn: '1100021264'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -108,7 +110,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -122,7 +124,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -136,7 +138,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -150,7 +152,7 @@ describe('constructed-filename-search', () => {
         timestamp: null
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -164,7 +166,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -178,7 +180,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -192,7 +194,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -206,7 +208,7 @@ describe('constructed-filename-search', () => {
         timestamp: undefined
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -220,7 +222,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -234,7 +236,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -248,7 +250,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -262,7 +264,7 @@ describe('constructed-filename-search', () => {
         timestamp: ''
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -276,7 +278,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -290,7 +292,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -306,7 +308,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -320,7 +322,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -334,7 +336,7 @@ describe('constructed-filename-search', () => {
         timestamp: '2025081908254124'
       }
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
       expect(filenameSearch).not.toHaveBeenCalled()
@@ -357,9 +359,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue(mockResult)
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025081908254124.pdf'
       })
       expect(result).toEqual(mockResult)
@@ -380,9 +382,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue(mockResult)
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_BPS_2024_9999999999_2024101508224868.pdf'
       })
       expect(result).toEqual(mockResult)
@@ -403,9 +405,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue(mockResult)
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_CS_2025_1234567890_2025020315302020.pdf'
       })
       expect(result).toEqual(mockResult)
@@ -426,9 +428,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue(mockResult)
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_DP_2023_1000000000_2023091512000000.pdf'
       })
       expect(result).toEqual(mockResult)
@@ -444,9 +446,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2020_1100021264_2020081908254124.pdf'
       })
     })
@@ -461,9 +463,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_5555555555_2025081908254124.pdf'
       })
     })
@@ -478,9 +480,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2026123123595959.pdf'
       })
     })
@@ -495,9 +497,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025081908254124.pdf'
       })
     })
@@ -512,9 +514,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025081908254124.pdf'
       })
     })
@@ -529,9 +531,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025081908254124.pdf'
       })
     })
@@ -546,9 +548,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025081908254124.pdf'
       })
     })
@@ -570,7 +572,7 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue(mockResult)
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toEqual(mockResult)
       expect(result.statements).toHaveLength(1)
@@ -591,7 +593,7 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue(mockResult)
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toEqual(mockResult)
       expect(result.statements).toEqual([])
@@ -607,7 +609,7 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue(null)
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toBeNull()
     })
@@ -630,7 +632,7 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue(mockResult)
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toEqual(mockResult)
       expect(result.statements).toHaveLength(2)
@@ -651,7 +653,7 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue(mockResult)
 
-      const result = await constructedFilenameSearch(criteria)
+      const result = await constructedFilenameSearch(mockUser, criteria)
 
       expect(result).toEqual(mockResult)
       expect(result.continuationToken).toBe('next-token-123')
@@ -670,7 +672,7 @@ describe('constructed-filename-search', () => {
       const error = new Error('Filename search failed')
       filenameSearch.mockRejectedValue(error)
 
-      await expect(constructedFilenameSearch(criteria)).rejects.toThrow('Filename search failed')
+      await expect(constructedFilenameSearch(mockUser, criteria)).rejects.toThrow('Filename search failed')
     })
 
     test('should propagate blob not found error', async () => {
@@ -685,7 +687,7 @@ describe('constructed-filename-search', () => {
       error.code = 'BlobNotFound'
       filenameSearch.mockRejectedValue(error)
 
-      await expect(constructedFilenameSearch(criteria)).rejects.toThrow('BlobNotFound')
+      await expect(constructedFilenameSearch(mockUser, criteria)).rejects.toThrow('BlobNotFound')
     })
 
     test('should propagate network error', async () => {
@@ -700,7 +702,7 @@ describe('constructed-filename-search', () => {
       error.code = 'ETIMEDOUT'
       filenameSearch.mockRejectedValue(error)
 
-      await expect(constructedFilenameSearch(criteria)).rejects.toThrow('Network timeout')
+      await expect(constructedFilenameSearch(mockUser, criteria)).rejects.toThrow('Network timeout')
     })
   })
 
@@ -715,9 +717,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264_20250819082541241234567890.pdf'
       })
     })
@@ -732,9 +734,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_0000000001_2025081908254124.pdf'
       })
     })
@@ -749,9 +751,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_9999999999_2025081908254124.pdf'
       })
     })
@@ -766,9 +768,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_1000000000_2025081908254124.pdf'
       })
     })
@@ -783,9 +785,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2099_1100021264_2099081908254124.pdf'
       })
     })
@@ -800,9 +802,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2020_1100021264_2020081908254124.pdf'
       })
     })
@@ -827,9 +829,9 @@ describe('constructed-filename-search', () => {
 
         filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-        await constructedFilenameSearch(criteria)
+        await constructedFilenameSearch(mockUser, criteria)
 
-        expect(filenameSearch).toHaveBeenCalledWith({
+        expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
           filename: `outbound/FFC_PaymentDelinkedStatement_${scheme.abbrev}_2024_1100021264_2025081908254124.pdf`
         })
       }
@@ -849,9 +851,9 @@ describe('constructed-filename-search', () => {
 
       filenameSearch.mockResolvedValue({ statements: [], continuationToken: null })
 
-      await constructedFilenameSearch(criteria)
+      await constructedFilenameSearch(mockUser, criteria)
 
-      expect(filenameSearch).toHaveBeenCalledWith({
+      expect(filenameSearch).toHaveBeenCalledWith(mockUser, {
         filename: 'outbound/FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025081908254124.pdf'
       })
     })

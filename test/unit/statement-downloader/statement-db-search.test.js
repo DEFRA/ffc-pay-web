@@ -6,13 +6,15 @@ const { buildFilenameQueryPath, buildSearchQueryPath } = require('../../../app/s
 jest.mock('../../../app/config')
 jest.mock('../../../app/statement-downloader/search-helpers/api-client')
 jest.mock('../../../app/statement-downloader/search-helpers/query-builder')
+jest.mock('../../../app/api', () => ({
+  postStatementPublisher: jest.fn().mockResolvedValue({ statusCode: 200, payload: {} })
+}))
 // DO NOT mock CircuitBreaker - it's instantiated at module load time before jest.mock takes effect
 
 describe('statement-db-search', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    // Set config to actual values found in test environment
     config.timeoutMs = '2000'
     config.failureThreshold = '5'
     config.resetTimeoutMs = '30000'
@@ -26,7 +28,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=statement.pdf')
         executeApiCall.mockResolvedValue({ statements: [{ id: 1, name: 'statement.pdf' }] })
 
-        await getByFilename(filename)
+        await getByFilename('user', filename)
 
         expect(buildFilenameQueryPath).toHaveBeenCalledWith(filename)
       })
@@ -37,15 +39,13 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue(mockPath)
         executeApiCall.mockResolvedValue({ statements: [{ id: 1 }] })
 
-        await getByFilename(filename)
+        await getByFilename('user', filename)
 
-        // The CircuitBreaker instance is real and created at module load time
-        // We check that executeApiCall was called with the correct path and timeout value
         expect(executeApiCall).toHaveBeenCalledWith(
           mockPath,
           config.statementPublisherEndpoint,
-          expect.any(Object), // Real CircuitBreaker instance
-          2000 // Number(config.timeoutMs) = 2000
+          expect.any(Object),
+          2000
         )
       })
 
@@ -60,7 +60,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=statement.pdf')
         executeApiCall.mockResolvedValue(mockPayload)
 
-        const result = await getByFilename(filename)
+        const result = await getByFilename('user', filename)
 
         expect(result).toEqual({ id: 1, name: 'first.pdf' })
       })
@@ -73,7 +73,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue({ statements: [mockRow] })
 
-        const result = await getByFilename(filename)
+        const result = await getByFilename('user', filename)
 
         expect(result).toEqual(mockRow)
       })
@@ -84,7 +84,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue([mockRow])
 
-        const result = await getByFilename(filename)
+        const result = await getByFilename('user', filename)
 
         expect(result).toEqual(mockRow)
       })
@@ -95,7 +95,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue(mockRow)
 
-        const result = await getByFilename(filename)
+        const result = await getByFilename('user', filename)
 
         expect(result).toEqual(mockRow)
       })
@@ -105,7 +105,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue(null)
 
-        const result = await getByFilename(filename)
+        const result = await getByFilename('user', filename)
 
         expect(result).toBeNull()
       })
@@ -115,7 +115,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue(undefined)
 
-        const result = await getByFilename(filename)
+        const result = await getByFilename('user', filename)
 
         expect(result).toBeNull()
       })
@@ -125,7 +125,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue({ statements: [] })
 
-        const result = await getByFilename(filename)
+        const result = await getByFilename('user', filename)
 
         expect(result).toBeNull()
       })
@@ -138,7 +138,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockRejectedValue(error)
 
-        await expect(getByFilename(filename)).rejects.toThrow('API call failed')
+        await expect(getByFilename('user', filename)).rejects.toThrow('API call failed')
       })
 
       test('should propagate timeout error from executeApiCall', async () => {
@@ -148,7 +148,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockRejectedValue(error)
 
-        await expect(getByFilename(filename)).rejects.toThrow('Statement-publisher request timed out')
+        await expect(getByFilename('user', filename)).rejects.toThrow('Statement-publisher request timed out')
       })
 
       test('should propagate circuit open error', async () => {
@@ -158,7 +158,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockRejectedValue(error)
 
-        await expect(getByFilename(filename)).rejects.toThrow('Statement-publisher circuit open')
+        await expect(getByFilename('user', filename)).rejects.toThrow('Statement-publisher circuit open')
       })
     })
 
@@ -168,7 +168,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=outbound/test.pdf')
         executeApiCall.mockResolvedValue({ statements: [{ id: 1 }] })
 
-        await getByFilename(filename)
+        await getByFilename('user', filename)
 
         expect(buildFilenameQueryPath).toHaveBeenCalledWith(filename)
       })
@@ -178,7 +178,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test%20file%20%26%20more.pdf')
         executeApiCall.mockResolvedValue({ statements: [{ id: 1 }] })
 
-        await getByFilename(filename)
+        await getByFilename('user', filename)
 
         expect(buildFilenameQueryPath).toHaveBeenCalledWith(filename)
       })
@@ -188,7 +188,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=')
         executeApiCall.mockResolvedValue({ statements: [{ id: 1 }] })
 
-        await getByFilename(filename)
+        await getByFilename('user', filename)
 
         expect(buildFilenameQueryPath).toHaveBeenCalledWith(filename)
       })
@@ -229,8 +229,8 @@ describe('statement-db-search', () => {
         expect(executeApiCall).toHaveBeenCalledWith(
           mockPath,
           config.statementPublisherEndpoint,
-          expect.any(Object), // Real CircuitBreaker instance
-          2000 // Number(config.timeoutMs)
+          expect.any(Object),
+          2000
         )
       })
 
@@ -313,13 +313,13 @@ describe('statement-db-search', () => {
 
         const result = await search({}, limit, offset)
 
-        expect(result.continuationToken).toBe(76) // 75.9 rounded up
+        expect(result.continuationToken).toBe(76)
       })
 
       test('should return null continuation token when rows less than limit', async () => {
         const limit = 50
         const offset = 0
-        const mockStatements = [{ id: 1 }, { id: 2 }] // Less than limit
+        const mockStatements = [{ id: 1 }, { id: 2 }]
         buildSearchQueryPath.mockReturnValue(`/statements?limit=${limit}&offset=${offset}`)
         executeApiCall.mockResolvedValue({ statements: mockStatements })
 
@@ -331,14 +331,13 @@ describe('statement-db-search', () => {
       test('should calculate continuation token when rows equal limit (no payload token)', async () => {
         const limit = 2
         const offset = 0
-        const mockStatements = [{ id: 1 }, { id: 2 }] // Exactly equals limit
+        const mockStatements = [{ id: 1 }, { id: 2 }]
         buildSearchQueryPath.mockReturnValue(`/statements?limit=${limit}&offset=${offset}`)
         executeApiCall.mockResolvedValue({ statements: mockStatements })
 
         const result = await search({}, limit, offset)
 
-        // Implementation: rows.length (2) is NOT < limit (2), so it calculates offset + rows.length
-        expect(result.continuationToken).toBe(offset + limit) // 0 + 2 = 2
+        expect(result.continuationToken).toBe(offset + limit)
       })
 
       test('should prefer payload continuation token over calculated token', async () => {
@@ -555,7 +554,6 @@ describe('statement-db-search', () => {
       const limit = 20
       const offset = 0
 
-      // First page
       const firstPageStatements = Array.from({ length: 20 }, (_, i) => ({ id: i + 1 }))
       buildSearchQueryPath.mockReturnValue('/statements?schemeyear=2024&limit=20&offset=0')
       executeApiCall.mockResolvedValue({ statements: firstPageStatements })
@@ -563,10 +561,10 @@ describe('statement-db-search', () => {
       const firstResult = await search(criteria, limit, offset)
 
       expect(firstResult.statements.length).toBe(20)
-      expect(firstResult.continuationToken).toBe(20) // offset + limit = 0 + 20
+      expect(firstResult.continuationToken).toBe(20)
 
-      // Second page
       jest.clearAllMocks()
+
       const secondPageStatements = [{ id: 21 }]
       buildSearchQueryPath.mockReturnValue('/statements?schemeyear=2024&limit=20&offset=20')
       executeApiCall.mockResolvedValue({ statements: secondPageStatements })
@@ -574,23 +572,20 @@ describe('statement-db-search', () => {
       const secondResult = await search(criteria, limit, 20)
 
       expect(secondResult.statements.length).toBe(1)
-      expect(secondResult.continuationToken).toBeNull() // Less than limit
+      expect(secondResult.continuationToken).toBeNull()
     })
 
     test('should handle filename and search workflows', async () => {
-      // Filename search
       const filename = 'test-statement.pdf'
       buildFilenameQueryPath.mockReturnValue('/statements?filename=test-statement.pdf')
       executeApiCall.mockResolvedValue({ statements: [{ id: 1, frn: '1234567890' }] })
 
-      const filenameResult = await getByFilename(filename)
+      const filenameResult = await getByFilename('user', filename)
 
       expect(filenameResult).toEqual({ id: 1, frn: '1234567890' })
 
-      // Clear for next test
       jest.clearAllMocks()
 
-      // Criteria search
       const criteria = { frn: '1234567890' }
       buildSearchQueryPath.mockReturnValue('/statements?frn=1234567890&limit=100&offset=0')
       executeApiCall.mockResolvedValue({ statements: [{ id: 1, frn: '1234567890' }] })

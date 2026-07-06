@@ -12,6 +12,8 @@ jest.mock('../../../app/statement-downloader/search-helpers/api-blob-search')
 jest.mock('../../../app/statement-downloader/search-helpers/download-statement')
 
 describe('statement-search', () => {
+  const mockUser = 'Obi Wan Kenobi'
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -67,7 +69,7 @@ describe('statement-search', () => {
 
         const result = await searchStatements({ filename: 'test.pdf' })
 
-        expect(filenameSearch).toHaveBeenCalledWith({ filename: 'test.pdf' })
+        expect(filenameSearch).toHaveBeenCalledWith('unknown', { filename: 'test.pdf' })
         expect(constructedFilenameSearch).not.toHaveBeenCalled()
         expect(dbSearch).not.toHaveBeenCalled()
         expect(apiBlobSearch).not.toHaveBeenCalled()
@@ -83,10 +85,10 @@ describe('statement-search', () => {
         constructedFilenameSearch.mockResolvedValue(mockResult)
 
         const criteria = { schemeId: 1, marketingYear: 2024, frn: '1100021264', timestamp: '2025081908254124' }
-        const result = await searchStatements(criteria)
+        const result = await searchStatements(criteria, null, null, mockUser)
 
         expect(filenameSearch).toHaveBeenCalled()
-        expect(constructedFilenameSearch).toHaveBeenCalledWith(criteria)
+        expect(constructedFilenameSearch).toHaveBeenCalledWith(mockUser, criteria)
         expect(dbSearch).not.toHaveBeenCalled()
         expect(apiBlobSearch).not.toHaveBeenCalled()
         expect(result).toEqual(mockResult)
@@ -232,9 +234,9 @@ describe('statement-search', () => {
           frn: '1100021264',
           timestamp: '2025081908254124'
         }
-        await searchStatements(criteria)
+        await searchStatements(criteria, 100, null, mockUser)
 
-        expect(constructedFilenameSearch).toHaveBeenCalledWith(criteria)
+        expect(constructedFilenameSearch).toHaveBeenCalledWith(mockUser, criteria)
         expect(dbSearch).toHaveBeenCalledWith(100, 0, criteria)
         expect(apiBlobSearch).toHaveBeenCalledWith(100, null, criteria)
       })
@@ -334,55 +336,21 @@ describe('statement-search', () => {
   })
 
   describe('downloadStatement', () => {
-    test('should call downloadStatementHelper with filename', async () => {
+    test.each([
+      ['standard filename', 'test-file.pdf'],
+      ['filename with path', 'outbound/test-file.pdf'],
+      ['filename with special characters', 'file with spaces (1).pdf'],
+      ['empty filename', '']
+    ])('should pass %s to downloadStatementHelper', async (_label, filename) => {
       const mockDownloadResult = {
         readableStreamBody: 'mock-stream',
         contentLength: 1024
       }
       downloadStatementHelper.mockResolvedValue(mockDownloadResult)
 
-      const result = await downloadStatement('test-file.pdf')
+      const result = await downloadStatement(filename)
 
-      expect(downloadStatementHelper).toHaveBeenCalledWith('test-file.pdf')
-      expect(result).toEqual(mockDownloadResult)
-    })
-
-    test('should handle filename with path', async () => {
-      const mockDownloadResult = {
-        readableStreamBody: 'mock-stream',
-        contentLength: 1024
-      }
-      downloadStatementHelper.mockResolvedValue(mockDownloadResult)
-
-      const result = await downloadStatement('outbound/test-file.pdf')
-
-      expect(downloadStatementHelper).toHaveBeenCalledWith('outbound/test-file.pdf')
-      expect(result).toEqual(mockDownloadResult)
-    })
-
-    test('should handle special characters in filename', async () => {
-      const mockDownloadResult = {
-        readableStreamBody: 'mock-stream',
-        contentLength: 1024
-      }
-      downloadStatementHelper.mockResolvedValue(mockDownloadResult)
-
-      const result = await downloadStatement('file with spaces (1).pdf')
-
-      expect(downloadStatementHelper).toHaveBeenCalledWith('file with spaces (1).pdf')
-      expect(result).toEqual(mockDownloadResult)
-    })
-
-    test('should handle empty filename', async () => {
-      const mockDownloadResult = {
-        readableStreamBody: 'mock-stream',
-        contentLength: 1024
-      }
-      downloadStatementHelper.mockResolvedValue(mockDownloadResult)
-
-      const result = await downloadStatement('')
-
-      expect(downloadStatementHelper).toHaveBeenCalledWith('')
+      expect(downloadStatementHelper).toHaveBeenCalledWith(filename)
       expect(result).toEqual(mockDownloadResult)
     })
 

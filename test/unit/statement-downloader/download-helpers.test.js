@@ -76,7 +76,7 @@ describe('download-helper utilities', () => {
       const result = parseAndMergeFilename(payload)
       expect(result).toEqual({
         filename: 'test.pdf',
-        schemeId: '1', // payload takes precedence
+        schemeId: '1',
         marketingYear: '2024',
         frn: '1234567890',
         timestamp: '20240101120000'
@@ -222,7 +222,7 @@ describe('download-helper utilities', () => {
         continuationToken: undefined,
         pageNumber: 1,
         crumb: null,
-        ...null // This will spread null, but test accordingly
+        ...null
       })
     })
   })
@@ -263,19 +263,19 @@ describe('download-helper utilities', () => {
     test('should handle fileLimit over custom limit', () => {
       const data = { limit: '100' }
       const result = prepareSearchParams(data, fileLimit)
-      expect(result.limit).toBe(100) // Custom limit should be used when provided
+      expect(result.limit).toBe(100)
     })
 
     test('should handle continuation token', () => {
       const data = { continuationToken: 'token123' }
       const result = prepareSearchParams(data, fileLimit)
-      expect(result.offsetOrToken).toBe('token123') // Continuation token should take precedence and be passed as is
+      expect(result.offsetOrToken).toBe('token123')
     })
 
     test('should calculate offset from pageNumber', () => {
       const data = { pageNumber: '2' }
       const result = prepareSearchParams(data, fileLimit)
-      expect(result.offsetOrToken).toBe(100) // 2 * 50
+      expect(result.offsetOrToken).toBe(100)
     })
 
     test('should prefer continuationToken over pageNumber', () => {
@@ -299,7 +299,7 @@ describe('download-helper utilities', () => {
         continuationToken: undefined,
         pageNumber: 1,
         crumb: null,
-        ...null // This will spread null, but test accordingly
+        ...null
       })
     })
   })
@@ -310,17 +310,17 @@ describe('download-helper utilities', () => {
       const limit = 50
       const offsetOrToken = null
 
-      await performSearch(searchCriteria, limit, offsetOrToken)
+      await performSearch(searchCriteria, limit, offsetOrToken, 'Obi-Wan Kenobi')
 
       expect(consoleInfoSpy).toHaveBeenCalledWith('Download-statements search criteria: %o', searchCriteria)
-      expect(searchStatements).toHaveBeenCalledWith(searchCriteria, limit, offsetOrToken)
+      expect(searchStatements).toHaveBeenCalledWith(searchCriteria, limit, offsetOrToken, 'Obi-Wan Kenobi')
     })
 
     test('should return search result', async () => {
       const mockResult = { statements: [{ id: 1 }], continuationToken: 'next' }
       searchStatements.mockResolvedValue(mockResult)
 
-      const result = await performSearch({}, 10, 'token')
+      const result = await performSearch({}, 10, 'token', 'Obi-Wan Kenobi')
 
       expect(result).toEqual(mockResult)
     })
@@ -329,12 +329,12 @@ describe('download-helper utilities', () => {
       const error = new Error('Search failed')
       searchStatements.mockRejectedValue(error)
 
-      await expect(performSearch({}, 10, null)).rejects.toThrow('Search failed')
+      await expect(performSearch({}, 10, null, 'Obi-Wan Kenobi')).rejects.toThrow('Search failed')
     })
 
     test('should handle undefined offsetOrToken', async () => {
-      await performSearch({ schemeId: 1 }, 50, undefined)
-      expect(searchStatements).toHaveBeenCalledWith({ schemeId: 1 }, 50, undefined)
+      await performSearch({ schemeId: 1 }, 50, undefined, 'Obi-Wan Kenobi')
+      expect(searchStatements).toHaveBeenCalledWith({ schemeId: 1 }, 50, undefined, 'Obi-Wan Kenobi')
     })
   })
 })

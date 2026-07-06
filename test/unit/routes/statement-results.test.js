@@ -41,6 +41,13 @@ describe('statement-results route', () => {
       query: {
         schemeId: '1',
         pageNumber: '2'
+      },
+      auth: {
+        credentials: {
+          account: {
+            name: 'test-user'
+          }
+        }
       }
     }
 
@@ -119,7 +126,7 @@ describe('statement-results route', () => {
       await handler(mockRequest, mockH)
 
       expect(prepareSearchParams).toHaveBeenCalledWith(mockRequest.query, FILE_LIMIT)
-      expect(performSearch).toHaveBeenCalledWith(params.searchCriteria, params.limit, params.offsetOrToken)
+      expect(performSearch).toHaveBeenCalledWith(params.searchCriteria, params.limit, params.offsetOrToken, mockRequest.auth.credentials.account.name)
       expect(buildViewContext).toHaveBeenCalledWith(null, mockRequest.query, {
         additionalContext: {
           statements: searchResult.statements,

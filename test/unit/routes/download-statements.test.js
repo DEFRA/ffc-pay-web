@@ -1,6 +1,9 @@
 jest.mock('../../../app/statement-downloader/statement-search')
 jest.mock('../../../app/helpers/get-statement-schemes')
 jest.mock('../../../app/statement-downloader/search-helpers/download-helper')
+jest.mock('../../../app/statement-downloader/statement-db-search', () => ({
+  sendRequestsLog: jest.fn().mockResolvedValue({})
+}))
 
 const downloadStatementsRoute = require('../../../app/routes/statements/download-statements')
 const { getStatementSchemes } = require('../../../app/helpers/get-statement-schemes')
