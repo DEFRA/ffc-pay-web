@@ -2,7 +2,7 @@ const config = require('../config')
 const { CircuitBreaker } = require('./search-helpers/circuit-breaker')
 const { executeApiCall } = require('./search-helpers/api-client')
 const { buildFilenameQueryPath, buildSearchQueryPath } = require('./search-helpers/query-builder')
-const api = require('../api')
+const { sendRequestsLog } = require('./search-helpers/send-requests-log')
 
 const TIMEOUT_MS = Number(config.timeoutMs)
 const FAILURE_THRESHOLD = Number(config.failureThreshold)
@@ -43,11 +43,6 @@ const search = async (criteria = {}, limit = 100, offset = 0) => {
   return { statements: rows, continuationToken, totalCount }
 }
 
-const sendRequestsLog = async (entry) => {
-  console.info('[Requests] Sending POST /requests with payload:', entry)
-  return await api.postStatementPublisher('/requests', entry, null)
-}
-
 const getCircuitState = () => breaker.getState()
 
-module.exports = { getByFilename, search, getCircuitState, sendRequestsLog }
+module.exports = { getByFilename, search, getCircuitState }

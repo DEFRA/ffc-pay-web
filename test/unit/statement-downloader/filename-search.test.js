@@ -2,11 +2,15 @@ const { filenameSearch } = require('../../../app/statement-downloader/search-hel
 const { getStatementsContainer, parseFilename } = require('../../../app/statement-downloader/search-helpers/get-statement-parts')
 const { createStatementResult, createStatementResultFromDBRow } = require('../../../app/statement-downloader/search-helpers/create-statement')
 const db = require('../../../app/statement-downloader/statement-db-search')
+const { sendRequestsLog } = require('../../../app/statement-downloader/search-helpers/send-requests-log')
 const { NOT_FOUND } = require('../../../app/constants/http-status-codes')
 
 jest.mock('../../../app/statement-downloader/search-helpers/get-statement-parts')
 jest.mock('../../../app/statement-downloader/search-helpers/create-statement')
 jest.mock('../../../app/statement-downloader/statement-db-search')
+jest.mock('../../../app/statement-downloader/search-helpers/send-requests-log', () => ({
+  sendRequestsLog: jest.fn()
+}))
 
 describe('filename-search', () => {
   let mockBlobClient
@@ -15,6 +19,7 @@ describe('filename-search', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    sendRequestsLog.mockResolvedValue({})
 
     mockBlobClient = {
       getProperties: jest.fn()

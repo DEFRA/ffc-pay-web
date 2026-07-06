@@ -1,8 +1,9 @@
 const { getStatementsContainer } = require('./get-statement-parts')
 const { createStatementResult, createStatementResultFromDBRow } = require('./create-statement')
-const db = require('../statement-db-search')
+const statementDBSearch = require('../statement-db-search')
 const { NOT_FOUND } = require('../../constants/http-status-codes')
 const { parseFilename } = require('./get-statement-parts')
+const { sendRequestsLog } = require('./send-requests-log')
 
 const createBasicStatementResult = (filename, props) => ({
   statements: [{
@@ -14,6 +15,13 @@ const createBasicStatementResult = (filename, props) => ({
 })
 
 const searchBlobByFilename = async (username, blobPath, filename) => {
+  await sendRequestsLog({
+    username,
+    filename,
+    type: 'Search',
+    timestamp: new Date().toISOString()
+  })
+
   const statementsContainer = await getStatementsContainer()
   const blobClient = statementsContainer.getBlockBlobClient(blobPath)
   const props = await blobClient.getProperties()
@@ -29,7 +37,7 @@ const searchBlobByFilename = async (username, blobPath, filename) => {
 
 const searchDbByFilename = async (username, filename) => {
   try {
-    const row = await db.getByFilename(username, filename)
+    const row = await statementDBSearch.getByFilename(username, filename)
     const rowResult = createStatementResultFromDBRow(row)
 
     return rowResult ? { statements: [rowResult], continuationToken: null } : { statements: [], continuationToken: null }
