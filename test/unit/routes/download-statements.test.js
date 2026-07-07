@@ -1,7 +1,7 @@
 jest.mock('../../../app/statement-downloader/statement-search')
 jest.mock('../../../app/helpers/get-statement-schemes')
 jest.mock('../../../app/statement-downloader/search-helpers/download-helper')
-jest.mock('../../../app/statement-downloader/statement-db-search', () => ({
+jest.mock('../../../app/statement-downloader/search-helpers/send-requests-log', () => ({
   sendRequestsLog: jest.fn().mockResolvedValue({})
 }))
 

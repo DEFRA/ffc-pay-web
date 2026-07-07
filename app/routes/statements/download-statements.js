@@ -4,7 +4,7 @@ const { BAD_REQUEST, SEE_OTHER, SUCCESS, NOT_FOUND, INTERNAL_SERVER_ERROR, FORBI
 const { applicationAdmin, schemeAdmin, dataView, statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
 const { getStatementSchemes } = require('../../helpers/get-statement-schemes')
 const { buildViewContext, handleSchemesError } = require('../../statement-downloader/search-helpers/download-helper')
-const { sendRequestsLog } = require('../../statement-downloader/statement-db-search')
+const { sendRequestsLog } = require('../../statement-downloader/search-helpers/send-requests-log')
 
 const DOWNLOAD_VIEW = 'statements/download-statements'
 const SCHEMES_ERROR = 'Unable to load schemes. Please try again later.'
