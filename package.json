@@ -80,9 +80,6 @@
     "webpack": "5.105.3",
     "webpack-cli": "4.10.0"
   },
-  "overrides": {
-    "uuid": "11.1.1"
-  },
   "nodemonConfig": {
     "ignore": [
       "**/test-output/**"
