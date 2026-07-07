@@ -66,7 +66,7 @@ const config = {
   injectionEndpoint: process.env.INJECTION_SERVICE_ENDPOINT,
   alertingEndpoint: process.env.ALERTING_SERVICE_ENDPOINT,
   statementPublisherEndpoint: process.env.STATEMENT_PUBLISHER_ENDPOINT,
-  retentionEndpoint: process.env.RETENTION_SERVICE_ENDPOINT,
+  retentionEndpoint: process.env.RETENTION_ENDPOINT,
   manualPaymentsActive: process.env.MANUAL_PAYMENTS_ACTIVE,
   approvedEmailDomains: process.env.APPROVED_EMAIL_DOMAINS,
   timeoutMs: process.env.STMT_DB_TIMEOUT_MS,

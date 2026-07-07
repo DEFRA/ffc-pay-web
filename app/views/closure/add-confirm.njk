@@ -51,30 +51,42 @@
             </div>
             <div class="govuk-summary-list__row">
               <dt class="govuk-summary-list__key">
-                Scheme
+                Agreement number
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ selectedScheme }}
+                {{ agreement }}
               </dd>
             </div>
             <div class="govuk-summary-list__row">
               <dt class="govuk-summary-list__key">
-                Hold type
+                Scheme
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ holdCategoryName }}
+                {{ schemeName }}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                Closure activation date
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {{ day }}/{{ month }}/{{ year }}
               </dd>
             </div>
           </dl>
         </div>
       </div>
 
-      <form method="POST" action="/payment-holds/add" autocomplete="off" novalidate>
+      <form method="POST" action="/closure/add" autocomplete="off" novalidate>
         <input type="hidden" name="crumb" value="{{ crumb }}"/>
         <input type="hidden" name="frn" value="{{ frn }}"/>
-        <input type="hidden" name="holdCategoryId" value="{{ holdCategoryId }}"/>
+        <input type="hidden" name="agreement" value="{{ agreement }}"/>
+        <input type="hidden" name="schemeId" value="{{ schemeId }}"/>
+        <input type="hidden" name="day" value="{{ day }}"/>
+        <input type="hidden" name="month" value="{{ month }}"/>
+        <input type="hidden" name="year" value="{{ year }}"/>
         <button class="govuk-button" id="submit">
-          Create payment hold
+          Add closure
         </button>
       </form>
     </div>

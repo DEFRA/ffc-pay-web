@@ -1,8 +1,9 @@
 const fs = require('node:fs')
-const { postProcessing } = require('../api')
+const { postProcessing, postRetention } = require('../api')
 const { processClosureData } = require('../closure')
 const { handleBulkClosureError } = require('./handle-bulk-closure-error')
 const { BULK, MANAGE } = require('../constants/closures-routes')
+const { SFI } = require('../constants/source-systems')
 
 const handleBulkClosure = async (request, h) => {
   const file = request.payload.file
@@ -29,8 +30,19 @@ const handleBulkClosure = async (request, h) => {
     return handleBulkClosureError(h, errors, request.payload?.crumb ?? request.state.crumb)
   }
 
-  await postProcessing(BULK, { data: uploadData }, null)
-  return h.redirect(MANAGE)
+  const user = request.auth?.credentials.account
+  const addedBy = user?.name || user?.username || user?.email
+
+  await postRetention(BULK, { data: uploadData, addedBy }, null)
+
+  const sfi22Data = uploadData.filter(item => item.source === SFI)
+  if (sfi22Data.length > 0) {
+    for (const data of sfi22Data) {
+      delete data.sourceSystem
+    }
+    await postProcessing(BULK, { data: sfi22Data }, null)
+  }
+  return h.redirect(`${MANAGE}?closureAdded=bulk`)
 }
 
 module.exports = { handleBulkClosure }

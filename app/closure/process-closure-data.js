@@ -13,9 +13,10 @@ const processClosureData = async (data) => {
       }
     } else {
       const parsedData = {
-        frn: clData[0],
-        agreementNumber: clData[1],
-        closureDate: clData[2]
+        sourceSystem: clData[0],
+        frn: clData[1],
+        agreementNumber: clData[2],
+        closureDate: clData[3]
       }
       const result = parsedSchema.validate(parsedData, {
         abortEarly: false

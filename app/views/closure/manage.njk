@@ -29,7 +29,11 @@
           </div>
           <div class="govuk-notification-banner__content">
             <h3 class="govuk-notification-banner__heading">
-              Agreement closure successfully created.
+              {% if closureAdded == bulk %}
+                Bulk agreement closures successfully created.
+              {% else %}
+                Agreement closure successfully created.
+              {% endif %}
             </h3>
           </div>
         </div>

@@ -25,7 +25,7 @@ module.exports = [
       handler: async (request, h) => {
         const cards = [...AGREEMENT_CLOSURES_LINKS]
         cards.shift()
-        const closureAdded = request.query.closureAdded
+        const closureAdded = request.query?.closureAdded
         return h.view(CLOSURES_VIEWS.MANAGE, { cards, closureAdded })
       }
     }
@@ -46,9 +46,17 @@ module.exports = [
     path: CLOSURES_ROUTES.ADD,
     options: {
       auth: AUTH_SCOPE,
-      handler: async (_request, h) => {
+      handler: async (request, h) => {
         const schemes = await getSchemes()
-        return h.view(CLOSURES_VIEWS.ADD, { schemes })
+        return h.view(CLOSURES_VIEWS.ADD, {
+          schemes,
+          frn: request.query?.frn,
+          agreement: request.query?.agreement,
+          schemeId: request.query?.schemeId,
+          day: request.query?.day,
+          month: request.query?.month,
+          year: request.query?.year
+        })
       }
     }
   },
@@ -60,9 +68,11 @@ module.exports = [
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
+          const schemes = await getSchemes()
           return h
             .view(CLOSURES_VIEWS.ADD, {
               errors: error,
+              schemes,
               frn: request.payload.frn,
               agreement: request.payload.agreement,
               schemeId: request.payload.schemeId,
@@ -121,13 +131,18 @@ module.exports = [
           month = `0${request.payload.month}`
         }
         const date = `${request.payload.year}-${month}-${day}T00:00:00`
+
+        const user = request.auth?.credentials.account
+        const addedBy = user?.name || user?.username || user?.email
+
         await postRetention(
           CLOSURES_ROUTES.ADD,
           {
             frn: request.payload.frn,
-            agreement: request.payload.agreement,
+            agreementNumber: request.payload.agreement,
             schemeId: request.payload.schemeId,
-            date
+            endDate: date,
+            addedBy
           },
           null
         )
@@ -142,7 +157,7 @@ module.exports = [
             null
           )
         }
-        return h.redirect(CLOSURES_ROUTES.MANAGE)
+        return h.redirect(`${CLOSURES_ROUTES.MANAGE}?closureAdded=single`)
       }
     }
   },
