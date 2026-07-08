@@ -3,7 +3,6 @@ const { createStatementResult, createStatementResultFromDBRow } = require('./cre
 const statementDBSearch = require('../statement-db-search')
 const { NOT_FOUND } = require('../../constants/http-status-codes')
 const { parseFilename } = require('./get-statement-parts')
-const { sendRequestsLog } = require('./send-requests-log')
 
 const createBasicStatementResult = (filename, props) => ({
   statements: [{
@@ -14,14 +13,7 @@ const createBasicStatementResult = (filename, props) => ({
   continuationToken: null
 })
 
-const searchBlobByFilename = async (username, blobPath, filename) => {
-  await sendRequestsLog({
-    username,
-    filename,
-    type: 'Search',
-    timestamp: new Date().toISOString()
-  })
-
+const searchBlobByFilename = async (blobPath, filename) => {
   const statementsContainer = await getStatementsContainer()
   const blobClient = statementsContainer.getBlockBlobClient(blobPath)
   const props = await blobClient.getProperties()
@@ -35,9 +27,9 @@ const searchBlobByFilename = async (username, blobPath, filename) => {
   return createBasicStatementResult(filename, props)
 }
 
-const searchDbByFilename = async (username, filename) => {
+const searchDbByFilename = async (filename) => {
   try {
-    const row = await statementDBSearch.getByFilename(username, filename)
+    const row = await statementDBSearch.getByFilename(filename)
     const rowResult = createStatementResultFromDBRow(row)
 
     return rowResult ? { statements: [rowResult], continuationToken: null } : { statements: [], continuationToken: null }
@@ -52,7 +44,7 @@ const isBlobNotFoundError = (err) => {
   return status === NOT_FOUND || err?.code === 'BlobNotFound'
 }
 
-const filenameSearch = async (username, criteria) => {
+const filenameSearch = async (criteria) => {
   if (!criteria?.filename) {
     return null
   }
@@ -61,10 +53,10 @@ const filenameSearch = async (username, criteria) => {
   const blobPath = filename.includes('/') ? filename : `outbound/${filename}`
 
   try {
-    return await searchBlobByFilename(username, blobPath, filename)
+    return await searchBlobByFilename(blobPath, filename)
   } catch (err) {
     if (isBlobNotFoundError(err)) {
-      return searchDbByFilename(username, filename)
+      return searchDbByFilename(filename,)
     }
     throw err
   }

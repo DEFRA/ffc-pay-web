@@ -2,24 +2,18 @@ const { filenameSearch } = require('../../../app/statement-downloader/search-hel
 const { getStatementsContainer, parseFilename } = require('../../../app/statement-downloader/search-helpers/get-statement-parts')
 const { createStatementResult, createStatementResultFromDBRow } = require('../../../app/statement-downloader/search-helpers/create-statement')
 const db = require('../../../app/statement-downloader/statement-db-search')
-const { sendRequestsLog } = require('../../../app/statement-downloader/search-helpers/send-requests-log')
 const { NOT_FOUND } = require('../../../app/constants/http-status-codes')
 
 jest.mock('../../../app/statement-downloader/search-helpers/get-statement-parts')
 jest.mock('../../../app/statement-downloader/search-helpers/create-statement')
 jest.mock('../../../app/statement-downloader/statement-db-search')
-jest.mock('../../../app/statement-downloader/search-helpers/send-requests-log', () => ({
-  sendRequestsLog: jest.fn()
-}))
 
 describe('filename-search', () => {
   let mockBlobClient
   let mockStatementsContainer
-  const mockUser = 'Obi Wan Kenobi'
 
   beforeEach(() => {
     jest.clearAllMocks()
-    sendRequestsLog.mockResolvedValue({})
 
     mockBlobClient = {
       getProperties: jest.fn()
@@ -43,7 +37,7 @@ describe('filename-search', () => {
         parseFilename.mockReturnValue(mockParsed)
         createStatementResult.mockReturnValue(mockStatement)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result).toEqual({
           statements: [mockStatement],
@@ -52,37 +46,37 @@ describe('filename-search', () => {
       })
 
       test('should return null when criteria is empty object', async () => {
-        const result = await filenameSearch(mockUser, {})
+        const result = await filenameSearch({})
 
         expect(result).toBeNull()
       })
 
       test('should return null when criteria is null', async () => {
-        const result = await filenameSearch(mockUser, null)
+        const result = await filenameSearch(null)
 
         expect(result).toBeNull()
       })
 
       test('should return null when criteria is undefined', async () => {
-        const result = await filenameSearch(mockUser, undefined)
+        const result = await filenameSearch(undefined)
 
         expect(result).toBeNull()
       })
 
       test('should return null when filename is null', async () => {
-        const result = await filenameSearch(mockUser, { filename: null })
+        const result = await filenameSearch({ filename: null })
 
         expect(result).toBeNull()
       })
 
       test('should return null when filename is undefined', async () => {
-        const result = await filenameSearch(mockUser, { filename: undefined })
+        const result = await filenameSearch({ filename: undefined })
 
         expect(result).toBeNull()
       })
 
       test('should return null when filename is empty string', async () => {
-        const result = await filenameSearch(mockUser, { filename: '' })
+        const result = await filenameSearch({ filename: '' })
 
         expect(result).toBeNull()
       })
@@ -94,7 +88,7 @@ describe('filename-search', () => {
         parseFilename.mockReturnValue(null)
         createStatementResult.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        await filenameSearch({ filename: 'statement.pdf' })
 
         expect(mockStatementsContainer.getBlockBlobClient).toHaveBeenCalledWith('outbound/statement.pdf')
       })
@@ -103,7 +97,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'outbound/statement.pdf' })
+        await filenameSearch({ filename: 'outbound/statement.pdf' })
 
         expect(mockStatementsContainer.getBlockBlobClient).toHaveBeenCalledWith('outbound/statement.pdf')
       })
@@ -112,7 +106,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'outbound/2024/09/statement.pdf' })
+        await filenameSearch({ filename: 'outbound/2024/09/statement.pdf' })
 
         expect(mockStatementsContainer.getBlockBlobClient).toHaveBeenCalledWith('outbound/2024/09/statement.pdf')
       })
@@ -123,7 +117,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        await filenameSearch({ filename: 'statement.pdf' })
 
         expect(getStatementsContainer).toHaveBeenCalled()
       })
@@ -132,7 +126,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'FFC_Statement_SFI_2024_1100021264_20240915120000.pdf' })
+        await filenameSearch({ filename: 'FFC_Statement_SFI_2024_1100021264_20240915120000.pdf' })
 
         expect(mockStatementsContainer.getBlockBlobClient).toHaveBeenCalledWith(
           'outbound/FFC_Statement_SFI_2024_1100021264_20240915120000.pdf'
@@ -143,7 +137,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        await filenameSearch({ filename: 'statement.pdf' })
 
         expect(mockBlobClient.getProperties).toHaveBeenCalled()
       })
@@ -153,7 +147,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'FFC_Statement_SFI_2024_1100021264_20240915120000.pdf' })
+        await filenameSearch({ filename: 'FFC_Statement_SFI_2024_1100021264_20240915120000.pdf' })
 
         expect(parseFilename).toHaveBeenCalledWith(blobPath)
       })
@@ -169,7 +163,7 @@ describe('filename-search', () => {
         parseFilename.mockReturnValue(mockParsed)
         createStatementResult.mockReturnValue(mockStatement)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(createStatementResult).toHaveBeenCalledWith(
           expect.objectContaining({ name: 'outbound/statement.pdf', properties: mockProps }),
@@ -183,7 +177,7 @@ describe('filename-search', () => {
         parseFilename.mockReturnValue({ scheme: 'SFI', year: '2024', frn: '1100021264', timestamp: '20240915120000' })
         createStatementResult.mockReturnValue({ filename: 'statement.pdf', scheme: 'SFI' })
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result.continuationToken).toBeNull()
       })
@@ -196,7 +190,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue(mockProps)
         parseFilename.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'invalid.pdf' })
+        const result = await filenameSearch({ filename: 'invalid.pdf' })
 
         expect(result).toEqual({
           statements: [{
@@ -212,7 +206,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result.statements[0].size).toBeNull()
       })
@@ -221,7 +215,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024 })
         parseFilename.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result.statements[0].lastModified).toBeNull()
       })
@@ -230,7 +224,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({})
         parseFilename.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result.statements[0].size).toBeNull()
         expect(result.statements[0].lastModified).toBeNull()
@@ -249,7 +243,7 @@ describe('filename-search', () => {
         db.getByFilename.mockResolvedValue(mockRow)
         createStatementResultFromDBRow.mockReturnValue(mockStatement)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result).toEqual({
           statements: [mockStatement],
@@ -268,9 +262,9 @@ describe('filename-search', () => {
         db.getByFilename.mockResolvedValue(mockRow)
         createStatementResultFromDBRow.mockReturnValue(mockStatement)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
-        expect(db.getByFilename).toHaveBeenCalledWith(mockUser, 'statement.pdf')
+        expect(db.getByFilename).toHaveBeenCalledWith('statement.pdf')
         expect(result.statements).toEqual([mockStatement])
       })
 
@@ -281,9 +275,9 @@ describe('filename-search', () => {
 
         db.getByFilename.mockResolvedValue(null)
 
-        await filenameSearch(mockUser, { filename: 'FFC_Statement_SFI_2024_1100021264_20240915120000.pdf' })
+        await filenameSearch({ filename: 'FFC_Statement_SFI_2024_1100021264_20240915120000.pdf' })
 
-        expect(db.getByFilename).toHaveBeenCalledWith(mockUser, 'FFC_Statement_SFI_2024_1100021264_20240915120000.pdf')
+        expect(db.getByFilename).toHaveBeenCalledWith('FFC_Statement_SFI_2024_1100021264_20240915120000.pdf')
       })
 
       test('should return empty statements when DB search returns null', async () => {
@@ -294,7 +288,7 @@ describe('filename-search', () => {
         db.getByFilename.mockResolvedValue(null)
         createStatementResultFromDBRow.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result).toEqual({
           statements: [],
@@ -314,7 +308,7 @@ describe('filename-search', () => {
 
         const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation()
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(consoleWarnSpy).toHaveBeenCalledWith('DB filename search failed:', 'Database connection failed')
         expect(result).toEqual({
@@ -335,7 +329,7 @@ describe('filename-search', () => {
 
         const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation()
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        await filenameSearch({ filename: 'statement.pdf' })
 
         expect(consoleWarnSpy).toHaveBeenCalledWith('DB filename search failed:', 'Query timeout')
 
@@ -352,7 +346,7 @@ describe('filename-search', () => {
 
         const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation()
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        await filenameSearch({ filename: 'statement.pdf' })
 
         expect(consoleWarnSpy).toHaveBeenCalledWith('DB filename search failed:', dbError)
 
@@ -366,7 +360,7 @@ describe('filename-search', () => {
 
         db.getByFilename.mockRejectedValue(new Error('DB error'))
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result).toEqual({
           statements: [],
@@ -381,7 +375,7 @@ describe('filename-search', () => {
         error.statusCode = 403
         mockBlobClient.getProperties.mockRejectedValue(error)
 
-        await expect(filenameSearch(mockUser, { filename: 'statement.pdf' })).rejects.toThrow('Access denied')
+        await expect(filenameSearch({ filename: 'statement.pdf' })).rejects.toThrow('Access denied')
       })
 
       test('should re-throw blob errors with different status code', async () => {
@@ -389,14 +383,14 @@ describe('filename-search', () => {
         error.status = 500
         mockBlobClient.getProperties.mockRejectedValue(error)
 
-        await expect(filenameSearch(mockUser, { filename: 'statement.pdf' })).rejects.toThrow('Server error')
+        await expect(filenameSearch({ filename: 'statement.pdf' })).rejects.toThrow('Server error')
       })
 
       test('should re-throw blob errors with no status code', async () => {
         const error = new Error('Unknown error')
         mockBlobClient.getProperties.mockRejectedValue(error)
 
-        await expect(filenameSearch(mockUser, { filename: 'statement.pdf' })).rejects.toThrow('Unknown error')
+        await expect(filenameSearch({ filename: 'statement.pdf' })).rejects.toThrow('Unknown error')
       })
 
       test('should re-throw blob errors with statusCode property', async () => {
@@ -404,7 +398,7 @@ describe('filename-search', () => {
         error.statusCode = 500
         mockBlobClient.getProperties.mockRejectedValue(error)
 
-        await expect(filenameSearch(mockUser, { filename: 'statement.pdf' })).rejects.toThrow('Container error')
+        await expect(filenameSearch({ filename: 'statement.pdf' })).rejects.toThrow('Container error')
       })
 
       test('should not attempt DB fallback on 403 error', async () => {
@@ -413,7 +407,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockRejectedValue(error)
 
         try {
-          await filenameSearch(mockUser, { filename: 'statement.pdf' })
+          await filenameSearch({ filename: 'statement.pdf' })
         } catch (e) {
           // Error thrown as expected
         }
@@ -430,7 +424,7 @@ describe('filename-search', () => {
 
         db.getByFilename.mockResolvedValue(null)
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        await filenameSearch({ filename: 'statement.pdf' })
 
         expect(db.getByFilename).toHaveBeenCalled()
       })
@@ -442,7 +436,7 @@ describe('filename-search', () => {
 
         db.getByFilename.mockResolvedValue(null)
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        await filenameSearch({ filename: 'statement.pdf' })
 
         expect(db.getByFilename).toHaveBeenCalled()
       })
@@ -454,7 +448,7 @@ describe('filename-search', () => {
 
         db.getByFilename.mockResolvedValue(null)
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        await filenameSearch({ filename: 'statement.pdf' })
 
         expect(db.getByFilename).toHaveBeenCalled()
       })
@@ -467,7 +461,7 @@ describe('filename-search', () => {
 
         db.getByFilename.mockResolvedValue(null)
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        await filenameSearch({ filename: 'statement.pdf' })
 
         expect(db.getByFilename).toHaveBeenCalled()
       })
@@ -478,7 +472,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result).toHaveProperty('statements')
         expect(result).toHaveProperty('continuationToken')
@@ -489,7 +483,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(Array.isArray(result.statements)).toBe(true)
       })
@@ -498,7 +492,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result.statements).toHaveLength(1)
       })
@@ -507,7 +501,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result.continuationToken).toBeNull()
       })
@@ -518,7 +512,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'FFC-Statement_2024.pdf' })
+        await filenameSearch({ filename: 'FFC-Statement_2024.pdf' })
 
         expect(mockStatementsContainer.getBlockBlobClient).toHaveBeenCalledWith('outbound/FFC-Statement_2024.pdf')
       })
@@ -527,7 +521,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'archive/old/statement.pdf' })
+        await filenameSearch({ filename: 'archive/old/statement.pdf' })
 
         expect(mockStatementsContainer.getBlockBlobClient).toHaveBeenCalledWith('archive/old/statement.pdf')
       })
@@ -536,7 +530,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: 'statement.pdf', extraProperty: 'ignored' })
+        await filenameSearch({ filename: 'statement.pdf', extraProperty: 'ignored' })
 
         expect(mockStatementsContainer.getBlockBlobClient).toHaveBeenCalledWith('outbound/statement.pdf')
       })
@@ -546,7 +540,7 @@ describe('filename-search', () => {
         mockBlobClient.getProperties.mockResolvedValue({ contentLength: 1024, lastModified: new Date() })
         parseFilename.mockReturnValue(null)
 
-        await filenameSearch(mockUser, { filename: longFilename })
+        await filenameSearch({ filename: longFilename })
 
         expect(mockStatementsContainer.getBlockBlobClient).toHaveBeenCalledWith(`outbound/${longFilename}`)
       })
@@ -570,7 +564,7 @@ describe('filename-search', () => {
         parseFilename.mockReturnValue(mockParsed)
         createStatementResult.mockReturnValue(mockStatement)
 
-        const result = await filenameSearch(mockUser, {
+        const result = await filenameSearch({
           filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1100021264_20240915120000.pdf'
         })
 
@@ -602,7 +596,7 @@ describe('filename-search', () => {
         db.getByFilename.mockResolvedValue(mockRow)
         createStatementResultFromDBRow.mockReturnValue(mockStatement)
 
-        const result = await filenameSearch(mockUser, { filename: 'statement.pdf' })
+        const result = await filenameSearch({ filename: 'statement.pdf' })
 
         expect(result.statements).toEqual([mockStatement])
         expect(result.continuationToken).toBeNull()
@@ -616,7 +610,7 @@ describe('filename-search', () => {
         db.getByFilename.mockResolvedValue(null)
         createStatementResultFromDBRow.mockReturnValue(null)
 
-        const result = await filenameSearch(mockUser, { filename: 'nonexistent.pdf' })
+        const result = await filenameSearch({ filename: 'nonexistent.pdf' })
 
         expect(result).toEqual({
           statements: [],

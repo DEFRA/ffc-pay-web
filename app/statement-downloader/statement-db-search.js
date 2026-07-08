@@ -2,7 +2,6 @@ const config = require('../config')
 const { CircuitBreaker } = require('./search-helpers/circuit-breaker')
 const { executeApiCall } = require('./search-helpers/api-client')
 const { buildFilenameQueryPath, buildSearchQueryPath } = require('./search-helpers/query-builder')
-const { sendRequestsLog } = require('./search-helpers/send-requests-log')
 
 const TIMEOUT_MS = Number(config.timeoutMs)
 const FAILURE_THRESHOLD = Number(config.failureThreshold)
@@ -10,18 +9,10 @@ const RESET_TIMEOUT_MS = Number(config.resetTimeoutMs)
 
 const breaker = new CircuitBreaker(TIMEOUT_MS, FAILURE_THRESHOLD, RESET_TIMEOUT_MS)
 
-const getByFilename = async (username, filename) => {
-  const requestType = 'Search'
+const getByFilename = async (filename) => {
   const path = buildFilenameQueryPath(filename)
   const payload = await executeApiCall(path, config.statementPublisherEndpoint, breaker, TIMEOUT_MS)
   console.log('POST payload:', payload)
-
-  await sendRequestsLog({
-    username,
-    filename,
-    type: requestType,
-    timestamp: new Date().toISOString()
-  })
 
   if (!payload) {
     return null

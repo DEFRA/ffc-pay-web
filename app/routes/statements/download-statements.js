@@ -55,7 +55,7 @@ const handleDownloadFile = async (request, h) => {
 
     await sendRequestsLog({
       username: userNameOrEmail,
-      filename,
+      searchTerms: { filename },
       type: requestType,
       timestamp: new Date().toISOString()
     })

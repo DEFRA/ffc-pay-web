@@ -28,7 +28,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=statement.pdf')
         executeApiCall.mockResolvedValue({ statements: [{ id: 1, name: 'statement.pdf' }] })
 
-        await getByFilename('user', filename)
+        await getByFilename(filename)
 
         expect(buildFilenameQueryPath).toHaveBeenCalledWith(filename)
       })
@@ -39,7 +39,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue(mockPath)
         executeApiCall.mockResolvedValue({ statements: [{ id: 1 }] })
 
-        await getByFilename('user', filename)
+        await getByFilename(filename)
 
         expect(executeApiCall).toHaveBeenCalledWith(
           mockPath,
@@ -60,7 +60,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=statement.pdf')
         executeApiCall.mockResolvedValue(mockPayload)
 
-        const result = await getByFilename('user', filename)
+        const result = await getByFilename(filename)
 
         expect(result).toEqual({ id: 1, name: 'first.pdf' })
       })
@@ -73,7 +73,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue({ statements: [mockRow] })
 
-        const result = await getByFilename('user', filename)
+        const result = await getByFilename(filename)
 
         expect(result).toEqual(mockRow)
       })
@@ -84,7 +84,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue([mockRow])
 
-        const result = await getByFilename('user', filename)
+        const result = await getByFilename(filename)
 
         expect(result).toEqual(mockRow)
       })
@@ -95,7 +95,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue(mockRow)
 
-        const result = await getByFilename('user', filename)
+        const result = await getByFilename(filename)
 
         expect(result).toEqual(mockRow)
       })
@@ -105,7 +105,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue(null)
 
-        const result = await getByFilename('user', filename)
+        const result = await getByFilename(filename)
 
         expect(result).toBeNull()
       })
@@ -115,7 +115,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue(undefined)
 
-        const result = await getByFilename('user', filename)
+        const result = await getByFilename(filename)
 
         expect(result).toBeNull()
       })
@@ -125,7 +125,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockResolvedValue({ statements: [] })
 
-        const result = await getByFilename('user', filename)
+        const result = await getByFilename(filename)
 
         expect(result).toBeNull()
       })
@@ -138,7 +138,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockRejectedValue(error)
 
-        await expect(getByFilename('user', filename)).rejects.toThrow('API call failed')
+        await expect(getByFilename(filename)).rejects.toThrow('API call failed')
       })
 
       test('should propagate timeout error from executeApiCall', async () => {
@@ -148,7 +148,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockRejectedValue(error)
 
-        await expect(getByFilename('user', filename)).rejects.toThrow('Statement-publisher request timed out')
+        await expect(getByFilename(filename)).rejects.toThrow('Statement-publisher request timed out')
       })
 
       test('should propagate circuit open error', async () => {
@@ -158,7 +158,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test.pdf')
         executeApiCall.mockRejectedValue(error)
 
-        await expect(getByFilename('user', filename)).rejects.toThrow('Statement-publisher circuit open')
+        await expect(getByFilename(filename)).rejects.toThrow('Statement-publisher circuit open')
       })
     })
 
@@ -168,7 +168,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=outbound/test.pdf')
         executeApiCall.mockResolvedValue({ statements: [{ id: 1 }] })
 
-        await getByFilename('user', filename)
+        await getByFilename(filename)
 
         expect(buildFilenameQueryPath).toHaveBeenCalledWith(filename)
       })
@@ -178,7 +178,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=test%20file%20%26%20more.pdf')
         executeApiCall.mockResolvedValue({ statements: [{ id: 1 }] })
 
-        await getByFilename('user', filename)
+        await getByFilename(filename)
 
         expect(buildFilenameQueryPath).toHaveBeenCalledWith(filename)
       })
@@ -188,7 +188,7 @@ describe('statement-db-search', () => {
         buildFilenameQueryPath.mockReturnValue('/statements?filename=')
         executeApiCall.mockResolvedValue({ statements: [{ id: 1 }] })
 
-        await getByFilename('user', filename)
+        await getByFilename(filename)
 
         expect(buildFilenameQueryPath).toHaveBeenCalledWith(filename)
       })
@@ -580,7 +580,7 @@ describe('statement-db-search', () => {
       buildFilenameQueryPath.mockReturnValue('/statements?filename=test-statement.pdf')
       executeApiCall.mockResolvedValue({ statements: [{ id: 1, frn: '1234567890' }] })
 
-      const filenameResult = await getByFilename('user', filename)
+      const filenameResult = await getByFilename(filename)
 
       expect(filenameResult).toEqual({ id: 1, frn: '1234567890' })
 

@@ -4,6 +4,8 @@ const { dbSearch } = require('./search-helpers/db-search')
 const { apiBlobSearch } = require('./search-helpers/api-blob-search')
 const { downloadStatement } = require('./search-helpers/download-statement')
 const { validateAndNormalizeLimit, validateContinuationToken, hasCriteria } = require('./search-helpers/search-validators')
+const unknown = require('../constants/unknown')
+const { sendRequestsLog } = require('./search-helpers/send-requests-log')
 
 const DEFAULT_SEARCH_LIMIT = 100
 
@@ -19,7 +21,7 @@ const safeDbSearch = async (pageLimit, token, criteria) => {
   }
 }
 
-const searchStatements = async (criteria, limit = DEFAULT_SEARCH_LIMIT, continuationToken = null, username = 'unknown') => {
+const searchStatements = async (criteria, limit = DEFAULT_SEARCH_LIMIT, continuationToken = null, username = unknown) => {
   const pageLimit = validateAndNormalizeLimit(limit)
   const token = validateContinuationToken(continuationToken)
 
@@ -27,9 +29,16 @@ const searchStatements = async (criteria, limit = DEFAULT_SEARCH_LIMIT, continua
     return { statements: [], continuationToken: null, error: 'At least one search criterion must be provided' }
   }
 
+  await sendRequestsLog({
+    username,
+    searchTerms: criteria,
+    type: 'Search',
+    timestamp: new Date().toISOString()
+  })
+
   const steps = [
-    () => { return filenameSearch(username, criteria) },
-    () => { return constructedFilenameSearch(username, criteria) },
+    () => { return filenameSearch(criteria) },
+    () => { return constructedFilenameSearch(criteria) },
     () => { return safeDbSearch(pageLimit, token, criteria) },
     () => { return apiBlobSearch(pageLimit, token, criteria) }
   ]
