@@ -5,6 +5,12 @@ const { handleBulkClosureError } = require('./handle-bulk-closure-error')
 const { BULK, MANAGE } = require('../constants/closures-routes')
 const { SFI } = require('../constants/source-systems')
 
+const checkFileStructure = (file, h, request) => {
+  if (!file || typeof file.path !== 'string') {
+    return handleBulkClosureError(h, 'Invalid file structure or missing file path.', request.payload?.crumb ?? request.state.crumb)
+  }
+}
+
 const handleSFI22Closures = async (data) => {
   const sfi22Data = data.filter(item => item.source === SFI)
   if (sfi22Data.length > 0) {
@@ -19,9 +25,7 @@ const handleBulkClosure = async (request, h) => {
   const file = request.payload.file
 
   // Validate file structure
-  if (!file || typeof file.path !== 'string') {
-    return handleBulkClosureError(h, 'Invalid file structure or missing file path.', request.payload?.crumb ?? request.state.crumb)
-  }
+  checkFileStructure(file, h, request)
 
   let data
   try {
