@@ -1,7 +1,7 @@
 const fs = require('node:fs')
 const { handleBulkClosure } = require('../../../app/closure/handle-bulk-closure')
 const { handleBulkClosureError } = require('../../../app/closure/handle-bulk-closure-error')
-const { postProcessing, postRetention } = require('../../../app/api')
+const { postRetention } = require('../../../app/api')
 const { processClosureData } = require('../../../app/closure')
 
 jest.mock('node:fs', () => ({ readFileSync: jest.fn() }))
