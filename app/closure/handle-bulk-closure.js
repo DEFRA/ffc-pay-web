@@ -5,6 +5,16 @@ const { handleBulkClosureError } = require('./handle-bulk-closure-error')
 const { BULK, MANAGE } = require('../constants/closures-routes')
 const { SFI } = require('../constants/source-systems')
 
+const handleSFI22Closures = async (data) => {
+  const sfi22Data = data.filter(item => item.source === SFI)
+  if (sfi22Data.length > 0) {
+    for (const item of sfi22Data) {
+      delete item.sourceSystem
+    }
+    await postProcessing(BULK, { data: sfi22Data }, null)
+  }
+}
+
 const handleBulkClosure = async (request, h) => {
   const file = request.payload.file
 
@@ -34,14 +44,8 @@ const handleBulkClosure = async (request, h) => {
   const addedBy = user?.name || user?.username || user?.email
 
   await postRetention(BULK, { data: uploadData, addedBy }, null)
+  await handleSFI22Closures(uploadData)
 
-  const sfi22Data = uploadData.filter(item => item.source === SFI)
-  if (sfi22Data.length > 0) {
-    for (const data of sfi22Data) {
-      delete data.sourceSystem
-    }
-    await postProcessing(BULK, { data: sfi22Data }, null)
-  }
   return h.redirect(`${MANAGE}?closureAdded=bulk`)
 }
 
