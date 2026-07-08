@@ -56,7 +56,7 @@ const filenameSearch = async (criteria) => {
     return await searchBlobByFilename(blobPath, filename)
   } catch (err) {
     if (isBlobNotFoundError(err)) {
-      return searchDbByFilename(filename,)
+      return searchDbByFilename(filename)
     }
     throw err
   }
