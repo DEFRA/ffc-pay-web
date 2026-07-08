@@ -8,7 +8,7 @@ const maxAgreementNumberLength = 50
 module.exports = Joi.object({
   sourceSystem: Joi.string()
     .required()
-    .valid(sourceSystems)
+    .valid(...Object.values(sourceSystems))
     .error(errors => {
       errors.forEach(err => {
         err.message = 'Enter a valid scheme name'

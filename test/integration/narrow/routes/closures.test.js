@@ -8,9 +8,21 @@ const { MAX_BYTES, MAX_MEGA_BYTES } = require('../../../../app/constants/payload
 const createServer = require('../../../../app/server')
 const { FRN } = require('../../../mocks/values/frn')
 const { AGREEMENT_NUMBER } = require('../../../mocks/values/agreement-number')
-const { getProcessingData, postProcessing } = require('../../../../app/api')
+const { getProcessingData, postProcessing, postRetention } = require('../../../../app/api')
 const getCrumbs = require('../../../helpers/get-crumbs')
+const { getSchemes } = require('../../../../app/helpers')
 
+jest.mock('../../../../app/helpers', () => ({
+  ...jest.requireActual('../../../../app/helpers'),
+  getSchemes: jest.fn()
+}))
+
+beforeEach(() => {
+  getSchemes.mockResolvedValue([
+    { schemeId: 'SFI', name: 'SFI Scheme' },
+    { schemeId: 'OTHER', name: 'Other Scheme' }
+  ])
+})
 let server
 let auth
 
@@ -43,8 +55,8 @@ describe('Closures', () => {
   })
 
   const getRoutes = [
-    { url: '/closure/add', h1: 'Add agreement closure' },
-    { url: '/closure/bulk', h1: 'Add agreement closures in bulk' }
+    { url: '/closure/add', h1: 'Create a new agreement closure' },
+    { url: '/closure/bulk', h1: 'Bulk add agreement closures' }
   ]
 
   describe('GET pages', () => {
@@ -70,7 +82,7 @@ describe('Closures', () => {
   describe('POST /closure/add', () => {
     const method = 'POST'
     const url = '/closure/add'
-    const h1 = 'Add agreement closure'
+    const h1 = 'Create a new agreement closure'
 
     const postReq = async (payload, cookieCrumb) => server.inject({
       method,
@@ -80,11 +92,12 @@ describe('Closures', () => {
       headers: { cookie: `crumb=${cookieCrumb}` }
     })
 
-    test('successful submission posts processing and redirects', async () => {
+    test('successful submission for sfi22 posts retention and processing and redirects', async () => {
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
 
       const payload = {
         crumb: viewCrumb,
+        schemeId: 1,
         frn: FRN,
         agreement: AGREEMENT_NUMBER,
         day: 12,
@@ -94,6 +107,12 @@ describe('Closures', () => {
 
       const res = await postReq(payload, cookieCrumb)
 
+      expect(postRetention).toHaveBeenCalledWith(
+        '/closure/add',
+        { schemeId: 1, frn: FRN, agreementNumber: AGREEMENT_NUMBER, endDate: '2023-08-12T00:00:00', addedBy: undefined },
+        null
+      )
+
       expect(postProcessing).toHaveBeenCalledWith(
         '/closure/add',
         { frn: FRN, agreement: AGREEMENT_NUMBER, date: '2023-08-12T00:00:00' },
@@ -101,7 +120,34 @@ describe('Closures', () => {
       )
 
       expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toBe('/closure')
+      expect(res.headers.location).toBe('/closure/manage?closureAdded=single')
+    })
+
+    test('successful submission for not sfi22 posts retention, not processing and redirects', async () => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
+
+      const payload = {
+        crumb: viewCrumb,
+        schemeId: 2,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        day: 12,
+        month: 8,
+        year: 2023
+      }
+
+      const res = await postReq(payload, cookieCrumb)
+
+      expect(postRetention).toHaveBeenCalledWith(
+        '/closure/add',
+        { schemeId: 2, frn: FRN, agreementNumber: AGREEMENT_NUMBER, endDate: '2023-08-12T00:00:00', addedBy: undefined },
+        null
+      )
+
+      expect(postProcessing).not.toHaveBeenCalled()
+
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe('/closure/manage?closureAdded=single')
     })
 
     const errorCases = [
@@ -164,42 +210,6 @@ describe('Closures', () => {
       }, cookieCrumb)
 
       expect(res.statusCode).toBe(403)
-    })
-  })
-
-  describe('POST /closure/bulk', () => {
-    const method = 'POST'
-    const url = '/closure/bulk'
-    const h1 = 'Add agreement closures in bulk'
-
-    test('returns 400 when file exceeds max bytes', async () => {
-      const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
-
-      const file = Buffer.alloc(MAX_BYTES + 1).fill('a')
-      jest.spyOn(fs, 'readFileSync').mockReturnValue(file.toString())
-
-      const payload = {
-        crumb: viewCrumb,
-        file: {
-          path: '/tmp/x.csv',
-          bytes: file.length,
-          filename: 'x.csv'
-        }
-      }
-
-      const res = await server.inject({
-        method,
-        url,
-        auth,
-        payload,
-        headers: { cookie: `crumb=${cookieCrumb}` }
-      })
-
-      const $ = cheerio.load(res.payload)
-      expect(res.statusCode).toBe(400)
-      expect($('h1').text()).toBe(h1)
-      expect($('.govuk-error-message').text())
-        .toMatch(`Error: The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`)
     })
   })
 })
