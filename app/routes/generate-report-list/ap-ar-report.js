@@ -34,7 +34,10 @@ module.exports = [
     GENERATE_REPORT_VIEWS.AP_AR,
     apArListingSchema,
     generateReportHandler(undefined, (payload) => addDetailsToFilename(getReportFilenameBasedOnType(payload), payload), {
-      loadingView: 'generate-report-list/report-loading'
+      reportTitle: 'AP/AR listing report',
+      reportUrl: GENERATE_REPORT_LIST.AP_AR,
+      loadingView: 'report-loading/report-loading',
+      reportsUrl: '/generate-report-list'
     })
   )
 ]

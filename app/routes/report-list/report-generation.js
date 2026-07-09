@@ -8,7 +8,7 @@ const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView]
 
 const createDownloadRoute = () => ({
   method: 'GET',
-  path: '/report-list/generation/download/{jobId}',
+  path: '/download-report-list/generation/download/{jobId}',
   options: {
     auth: AUTH_SCOPE,
     handler: async (request, h) => {

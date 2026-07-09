@@ -30,7 +30,7 @@ describe('Report Generation Routes', () => {
 
   test('GET download returns 202 if report not ready', async () => {
     get.mockResolvedValue({ status: 'preparing' })
-    const res = await server.inject({ method: 'GET', url: '/report-list/generation/download/job123' })
+    const res = await server.inject({ method: 'GET', url: '/download-report-list/generation/download/job123' })
     expect(res.statusCode).toBe(202)
     expect(res.payload).toBe('Report not ready')
   })
@@ -38,7 +38,7 @@ describe('Report Generation Routes', () => {
   test('returns 500 if generateReport fails', async () => {
     get.mockResolvedValue({ status: 'download', reportType: 'example', returnedFilename: 'returned.csv', reportFilename: 'final.csv' })
     generateReport.mockResolvedValue(null)
-    const res = await server.inject({ method: 'GET', url: '/report-list/generation/download/job-failed' })
+    const res = await server.inject({ method: 'GET', url: '/download-report-list/generation/download/job-failed' })
     expect(res.statusCode).toBe(500)
     expect(res.payload).toBe('Report generation failed')
   })
@@ -47,7 +47,7 @@ describe('Report Generation Routes', () => {
     const fakeStream = createFakeStream('some,data\n')
     get.mockResolvedValue({ status: 'download', reportType: 'example', returnedFilename: 'returned.csv', reportFilename: 'final.csv' })
     generateReport.mockResolvedValue(fakeStream)
-    const res = await server.inject({ method: 'GET', url: '/report-list/generation/download/job-ready' })
+    const res = await server.inject({ method: 'GET', url: '/download-report-list/generation/download/job-ready' })
     expect(res.statusCode).toBe(200)
     expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
     expect(res.headers['content-disposition']).toBe('attachment; filename="final.csv"')
@@ -60,7 +60,7 @@ describe('Report Generation Routes', () => {
     const mockCallback = jest.fn()
     setStatusCallback.mockReturnValue(mockCallback)
     generateReport.mockImplementation((filename, type, onComplete) => { onComplete(); return fakeStream })
-    await server.inject({ method: 'GET', url: '/report-list/generation/download/job-callback' })
+    await server.inject({ method: 'GET', url: '/download-report-list/generation/download/job-callback' })
     expect(setStatusCallback).toHaveBeenCalledWith(expect.any(Object), 'job-callback')
     expect(mockCallback).toHaveBeenCalled()
   })

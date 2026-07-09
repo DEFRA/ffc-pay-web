@@ -19,7 +19,8 @@ module.exports = [
       {
         reportTitle: 'Request Editor report',
         reportUrl: DOWNLOAD_REPORT_LIST.REQUEST_EDITOR_REPORT,
-        loadingView: 'download-report-list/report-loading'
+        loadingView: 'report-loading/report-loading',
+        reportsUrl: '/download-report-list'
       }
     )
   )

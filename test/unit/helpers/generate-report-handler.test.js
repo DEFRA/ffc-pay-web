@@ -43,10 +43,11 @@ describe('generateReportHandler', () => {
       status: 'pending',
       reportType: expectedReportType
     })
-    expect(h.view).toHaveBeenCalledWith('report-list/report-loading', {
+    expect(h.view).toHaveBeenCalledWith('report-loading/report-loading', {
       jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
       reportTitle: expectedTitle,
-      reportUrl: expectedUrl
+      reportUrl: expectedUrl,
+      reportsUrl: '/generate-report-list'
     })
     expect(result).toBe('view-result')
     await Promise.resolve()
@@ -72,7 +73,8 @@ describe('generateReportHandler', () => {
     expect(h.view).toHaveBeenCalledWith('custom/loading', {
       jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
       reportTitle: 'Option Title',
-      reportUrl: 'http://options.url'
+      reportUrl: 'http://options.url',
+      reportsUrl: '/generate-report-list'
     })
     expect(result).toBe('view-result')
   })
@@ -115,5 +117,18 @@ describe('generateReportHandler', () => {
     request.query['report-title'] = 'Query Derived Title'
     const handler = generateReportHandler(undefined, generateFinalFilenameFunc, options)
     await expectCommonFlow(handler, 'QueryDerived', 'Query Derived Title', 'http://option-url.com')
+  })
+
+  test('uses reportsUrl from options when provided', async () => {
+    options = { reportUrl: 'http://options.url', reportTitle: 'Option Title', reportsUrl: '/download-report-list' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    const result = await handler(request, h)
+    expect(h.view).toHaveBeenCalledWith('report-loading/report-loading', {
+      jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
+      reportTitle: 'Option Title',
+      reportUrl: 'http://options.url',
+      reportsUrl: '/download-report-list'
+    })
+    expect(result).toBe('view-result')
   })
 })

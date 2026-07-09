@@ -23,6 +23,7 @@ let routes = [].concat(
   require('../routes/generate-report-list/ap-ar-report'),
   require('../routes/generate-report-list/payment-requests-report-v2'),
   require('../routes/generate-report-list/status-report'),
+  require('../routes/report-list/report-generation'),
   require('../routes/manual-payments'),
   require('../routes/alerts'),
   require('../routes/metrics'),

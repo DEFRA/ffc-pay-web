@@ -29,7 +29,12 @@ module.exports = [
           storageConfig.paymentRequestsReportName,
           payload
         ),
-      { loadingView: 'generate-report-list/report-loading' }
+      {
+        reportTitle: 'Payment request statuses report',
+        reportUrl: GENERATE_REPORT_LIST.PAYMENT_REQUESTS_V2,
+        loadingView: 'report-loading/report-loading',
+        reportsUrl: '/generate-report-list'
+      }
     )
   )
 ]
