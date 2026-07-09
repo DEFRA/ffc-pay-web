@@ -41,7 +41,7 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
         })
       })
 
-    return h.view('report-list/report-loading', {
+    return h.view(options.loadingView ?? 'report-list/report-loading', {
       jobId,
       reportTitle,
       reportUrl

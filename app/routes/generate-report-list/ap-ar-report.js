@@ -1,6 +1,6 @@
-const REPORT_LIST = require('../../constants/report-list')
+const GENERATE_REPORT_LIST = require('../../constants/generate-report-list')
 const REPORT_TYPES = require('../../constants/report-types')
-const REPORTS_VIEWS = require('../../constants/report-views')
+const GENERATE_REPORT_VIEWS = require('../../constants/generate-report-views')
 
 const {
   generateReportHandler,
@@ -26,13 +26,15 @@ const getReportFilenameBasedOnType = (payload) => {
 
 module.exports = [
   createFormRoute(
-    REPORT_LIST.AP_AR,
-    REPORTS_VIEWS.AP_AR
+    GENERATE_REPORT_LIST.AP_AR,
+    GENERATE_REPORT_VIEWS.AP_AR
   ),
   createDownloadRoute(
-    REPORT_LIST.AP_AR_DOWNLOAD,
-    REPORTS_VIEWS.AP_AR,
+    GENERATE_REPORT_LIST.AP_AR_DOWNLOAD,
+    GENERATE_REPORT_VIEWS.AP_AR,
     apArListingSchema,
-    generateReportHandler(undefined, (payload) => addDetailsToFilename(getReportFilenameBasedOnType(payload), payload))
+    generateReportHandler(undefined, (payload) => addDetailsToFilename(getReportFilenameBasedOnType(payload), payload), {
+      loadingView: 'generate-report-list/report-loading'
+    })
   )
 ]

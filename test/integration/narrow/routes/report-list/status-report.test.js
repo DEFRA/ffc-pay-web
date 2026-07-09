@@ -1,11 +1,12 @@
 const cheerio = require('cheerio')
-const REPORT_LIST = require('../../../../../app/constants/report-list')
+const GENERATE_REPORT_LIST = require('../../../../../app/constants/generate-report-list')
 const { getValidReportYearsByType, getReportsByYearAndType, getStatusReport } = require('../../../../../app/storage/doc-reports')
 const { handleStreamResponse } = require('../../../../../app/helpers')
 const { statusReportSfi23, statusReportsDelinked, dataView, applicationAdmin } = require('../../../../../app/auth/permissions')
 const createServer = require('../../../../../app/server')
 
 jest.mock('../../../../../app/storage/doc-reports')
+jest.mock('../../../../../app/storage/pay-reports')
 jest.mock('../../../../../app/helpers/handle-stream-response.js', () => ({ handleStreamResponse: jest.fn() }))
 jest.mock('../../../../../app/auth')
 
@@ -45,7 +46,7 @@ describe('Status Report Routes', () => {
   }
 
   const injectGetStatus = (auth) => {
-    return server.inject({ method: 'GET', url: REPORT_LIST.STATUS, auth })
+    return server.inject({ method: 'GET', url: GENERATE_REPORT_LIST.STATUS, auth })
   }
 
   describe('GET /status-report', () => {
@@ -74,14 +75,14 @@ describe('Status Report Routes', () => {
       getValidReportYearsByType.mockRejectedValue(new Error('DB error'))
       const res = await injectGetStatus(getAuth([statusReportSfi23, statusReportsDelinked]))
       expect(res.statusCode).toBe(500)
-      expect(res.result).toContain('Unable to retrieve the report data')
+      expect(res.payload).toContain('Unable to retrieve the report data')
     })
 
     test('returns 403 if user not authorised', async () => {
       getValidReportYearsByType.mockResolvedValue([{ year: 2023, type: 'SFI-23' }])
       const res = await injectGetStatus(getAuth([dataView]))
       expect(res.statusCode).toBe(403)
-      expect(res.result).toContain('Sorry, you are not authorised')
+      expect(res.payload).toContain('Sorry, you are not authorised')
     })
 
     test('applicationAdmin sees all report types', async () => {
@@ -102,7 +103,7 @@ describe('Status Report Routes', () => {
 
       const res = await server.inject({
         method: 'GET',
-        url: `${REPORT_LIST.STATUS_SEARCH}?select-type=sustainable-farming-incentive&report-year=2025`,
+        url: `${GENERATE_REPORT_LIST.STATUS_SEARCH}?select-type=sustainable-farming-incentive&report-year=2025`,
         auth: getAuth([statusReportSfi23])
       })
 
@@ -110,6 +111,47 @@ describe('Status Report Routes', () => {
       const $ = loadPayload(res.payload)
       expect($('h1').text()).toContain('SFI-23 payment status reports - 2025')
       expect($('.govuk-task-list__item').length).toBe(1)
+      expect($('.govuk-task-list__item a').attr('href')).toContain('/generate-report-list/find-payment-statement-status-report/download')
+    })
+
+    test('renders no reports message when no results', async () => {
+      getReportsByYearAndType.mockResolvedValue([])
+
+      const res = await server.inject({
+        method: 'GET',
+        url: `${GENERATE_REPORT_LIST.STATUS_SEARCH}?select-type=sustainable-farming-incentive&report-year=2025`,
+        auth: getAuth([statusReportSfi23])
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.payload).toContain('No reports found for the selected year and type')
+    })
+
+    test('uses type display when report type unknown', async () => {
+      getReportsByYearAndType.mockResolvedValue([{ name: 'other.csv', date: new Date('2025-01-01') }])
+
+      const res = await server.inject({
+        method: 'GET',
+        url: `${GENERATE_REPORT_LIST.STATUS_SEARCH}?select-type=unknown-type&report-year=2025`,
+        auth: getAuth([applicationAdmin])
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.payload).toContain('unknown-type payment status reports - 2025')
+    })
+
+    test('renders report download links with new generate-report-list path', async () => {
+      const mockReports = [{ name: 'reports/DS1-Statement Status Report-170725-100746.pdf', date: new Date('2025-01-01'), type: 'SFI-23' }]
+      getReportsByYearAndType.mockResolvedValue(mockReports)
+
+      const res = await server.inject({
+        method: 'GET',
+        url: `${GENERATE_REPORT_LIST.STATUS_SEARCH}?select-type=sustainable-farming-incentive&report-year=2025`,
+        auth: getAuth([statusReportSfi23])
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.payload).toContain('/generate-report-list/find-payment-statement-status-report/download?file-name=reports%2FDS1-Statement%20Status%20Report-170725-100746.pdf')
     })
   })
 
@@ -123,7 +165,7 @@ describe('Status Report Routes', () => {
 
       const res = await server.inject({
         method: 'GET',
-        url: `${REPORT_LIST.STATUS_DOWNLOAD}?file-name=test-file.csv`,
+        url: `${GENERATE_REPORT_LIST.STATUS_DOWNLOAD}?file-name=test-file.csv`,
         auth: getAuth([statusReportSfi23])
       })
 

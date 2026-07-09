@@ -1,6 +1,6 @@
-const REPORT_LIST = require('../../constants/report-list')
+const GENERATE_REPORT_LIST = require('../../constants/generate-report-list')
 const REPORT_TYPES = require('../../constants/report-types')
-const REPORT_VIEWS = require('../../constants/report-views')
+const GENERATE_REPORT_VIEWS = require('../../constants/generate-report-views')
 
 const {
   addDetailsToFilename,
@@ -15,12 +15,12 @@ const storageConfig = require('../../config').storageConfig
 
 module.exports = [
   createFormRoute(
-    REPORT_LIST.PAYMENT_REQUESTS_V2,
-    REPORT_VIEWS.PAYMENT_REQUESTS_V2
+    GENERATE_REPORT_LIST.PAYMENT_REQUESTS_V2,
+    GENERATE_REPORT_VIEWS.PAYMENT_REQUESTS_V2
   ),
   createDownloadRoute(
-    REPORT_LIST.PAYMENT_REQUESTS_V2_DOWNLOAD,
-    REPORT_VIEWS.PAYMENT_REQUESTS_V2,
+    GENERATE_REPORT_LIST.PAYMENT_REQUESTS_V2_DOWNLOAD,
+    GENERATE_REPORT_VIEWS.PAYMENT_REQUESTS_V2,
     standardReportSchema,
     generateReportHandler(
       REPORT_TYPES.PAYMENT_REQUEST_STATUSES,
@@ -28,7 +28,8 @@ module.exports = [
         addDetailsToFilename(
           storageConfig.paymentRequestsReportName,
           payload
-        )
+        ),
+      { loadingView: 'generate-report-list/report-loading' }
     )
   )
 ]

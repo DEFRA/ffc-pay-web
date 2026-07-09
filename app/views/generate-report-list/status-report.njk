@@ -1,4 +1,4 @@
-{% extends 'report-list/base-report.njk' %}
+{% extends 'generate-report-list/base-report.njk' %}
 {% from 'macros/report-form-fields.njk' import reportPageTitle, typeSelect %}
 {% from "govuk/components/task-list/macro.njk" import govukTaskList %}
 
@@ -6,9 +6,9 @@
 
 {% set reportTitle = 'Payment statement status report' %}
 {% set reportSubmitLabel = 'Find Reports' %}
-{% set reportUrl = '/report-list/status-report' %}
-{% set formAction = '/report-list/status-report/search' %}
-{% set pdfDownloadLink = '/report-list/status-report/download?file-name=' ~ 'reports/DS1-Statement Status Report-170725-100746.pdf' | urlencode %}
+{% set reportUrl = '/generate-report-list/find-payment-statement-status-report' %}
+{% set formAction = '/generate-report-list/find-payment-statement-status-report/search' %}
+{% set pdfDownloadLink = '/generate-report-list/find-payment-statement-status-report/download?file-name=' ~ 'reports/DS1-Statement Status Report-170725-100746.pdf' | urlencode %}
 
 {% block reportContent %}
   {{ reportPageTitle(reportTitle) }}

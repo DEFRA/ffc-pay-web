@@ -1,7 +1,7 @@
 const Boom = require('@hapi/boom')
 const Path = require('node:path')
-const REPORT_LIST = require('../../constants/report-list')
-const REPORT_VIEWS = require('../../constants/report-views')
+const GENERATE_REPORT_LIST = require('../../constants/generate-report-list')
+const GENERATE_REPORT_VIEWS = require('../../constants/generate-report-views')
 const { mapStatusReportsToTaskList } = require('../../helpers/map-status-report-to-task-list')
 const { getStatusReport, getReportsByYearAndType, getValidReportYearsByType } = require('../../storage/doc-reports')
 const { applicationAdmin, statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
@@ -28,7 +28,7 @@ const getReportTitle = (type, year) => {
 module.exports = [
   {
     method: 'GET',
-    path: REPORT_LIST.STATUS,
+    path: GENERATE_REPORT_LIST.STATUS,
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
@@ -47,7 +47,7 @@ module.exports = [
               text: display
             }))
 
-          return h.view(REPORT_VIEWS.STATUS, {
+          return h.view(GENERATE_REPORT_VIEWS.STATUS, {
             reportTypeItems,
             yearTypeItems
           })
@@ -60,7 +60,7 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: REPORT_LIST.STATUS_SEARCH,
+    path: GENERATE_REPORT_LIST.STATUS_SEARCH,
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
@@ -73,13 +73,13 @@ module.exports = [
           items: mapStatusReportsToTaskList(reports)
         }
 
-        return h.view(REPORT_VIEWS.STATUS_RESULTS, { reportTitle, govukTaskListData })
+        return h.view(GENERATE_REPORT_VIEWS.STATUS_RESULTS, { reportTitle, govukTaskListData })
       }
     }
   },
   {
     method: 'GET',
-    path: REPORT_LIST.STATUS_DOWNLOAD,
+    path: GENERATE_REPORT_LIST.STATUS_DOWNLOAD,
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {

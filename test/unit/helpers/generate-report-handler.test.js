@@ -65,6 +65,18 @@ describe('generateReportHandler', () => {
     await expectCommonFlow(handler, 'ParamReport', 'Option Title', 'http://options.url')
   })
 
+  test('uses custom loading view from options', async () => {
+    options = { reportUrl: 'http://options.url', reportTitle: 'Option Title', loadingView: 'custom/loading' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    const result = await handler(request, h)
+    expect(h.view).toHaveBeenCalledWith('custom/loading', {
+      jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
+      reportTitle: 'Option Title',
+      reportUrl: 'http://options.url'
+    })
+    expect(result).toBe('view-result')
+  })
+
   test('falls back on query values when options not provided and reportType from query', async () => {
     options = {}
     const handler = generateReportHandler(undefined, generateFinalFilenameFunc, options)

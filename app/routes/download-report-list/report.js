@@ -1,11 +1,9 @@
-const { getMIReport, getSuppressedReport } = require('../../storage/pay-reports')
+const { getSuppressedReport } = require('../../storage/pay-reports')
 const { getHolds } = require('../../holds')
 const { applicationAdmin, holdAdmin, schemeAdmin, dataView } = require('../../auth/permissions')
 const { formatDateFromString } = require('../../helpers/date-time-formatter')
 const storageConfig = require('../../config/storage')
-const config = require('../../config')
-const REPORT_LIST = require('../../constants/report-list')
-const REPORT_VIEWS = require('../../constants/report-views')
+const DOWNLOAD_REPORT_LIST = require('../../constants/download-report-list')
 const {
   handleCSVResponse,
   handleStreamResponse
@@ -13,10 +11,10 @@ const {
 
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 
-const reportEndpoints = [
+module.exports = [
   {
     method: 'GET',
-    path: REPORT_LIST.SUPPRESSED_PAYMENTS,
+    path: DOWNLOAD_REPORT_LIST.SUPPRESSED_PAYMENTS,
     options: {
       auth: AUTH_SCOPE,
       handler: async (_request, h) =>
@@ -29,7 +27,7 @@ const reportEndpoints = [
   },
   {
     method: 'GET',
-    path: REPORT_LIST.HOLDS,
+    path: DOWNLOAD_REPORT_LIST.HOLDS,
     options: {
       auth: AUTH_SCOPE,
       handler: async (_request, h) => {
@@ -37,7 +35,7 @@ const reportEndpoints = [
           const paymentHolds = await getHolds(undefined, undefined, false)
 
           if (!paymentHolds) {
-            return h.view(REPORT_VIEWS.HOLD_REPORT_UNAVAILABLE)
+            return h.view('hold-report-unavailable')
           }
 
           const paymentHoldsData = paymentHolds.map(hold => ({
@@ -56,34 +54,9 @@ const reportEndpoints = [
           )(h)
         } catch (error) {
           console.error('Holds report generation failed.', error)
-          return h.view(REPORT_VIEWS.HOLD_REPORT_UNAVAILABLE)
+          return h.view('hold-report-unavailable')
         }
-      }
-    }
-  },
-  {
-    method: 'GET',
-    path: REPORT_LIST.REPORT_UNAVAILABLE,
-    options: {
-      auth: AUTH_SCOPE,
-      handler: async (_request, h) => {
-        return h.view(REPORT_VIEWS.REPORT_UNAVAILABLE)
       }
     }
   }
 ]
-
-if (config.legacyReportsEnabled) {
-  reportEndpoints.push({
-    method: 'GET',
-    path: REPORT_LIST.PAYMENT_REQUESTS,
-    options: {
-      auth: AUTH_SCOPE,
-      handler: async (_request, h) => {
-        return handleStreamResponse(getMIReport, storageConfig.miReportName, h)
-      }
-    }
-  })
-}
-
-module.exports = reportEndpoints

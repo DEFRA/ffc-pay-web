@@ -1,11 +1,11 @@
-{% extends 'report-list/base-report.njk' %}
+{% extends 'generate-report-list/base-report.njk' %}
 
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from 'macros/report-form-fields.njk' import reportPageTitle, typeSelect, submitButton, dateInput %}
 
 {% set reportTitle = 'AP/AR listing report' %}
-{% set reportUrl = '/report-list/ap-ar-report' %}
-{% set formAction = '/report-list/ap-ar-report/download' %}
+{% set reportUrl = '/generate-report-list/generate-ap-ar-listing-report' %}
+{% set formAction = '/generate-report-list/generate-ap-ar-listing-report/download' %}
 {% set reportTypeItems = [
   { value: "ap-listing-report", text: "AP Listing Report" },
   { value: "ar-listing-report", text: "AR Listing Report" }
