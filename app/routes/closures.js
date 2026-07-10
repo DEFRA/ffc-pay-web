@@ -1,12 +1,12 @@
 const { applicationAdmin, closureAdmin } = require('../auth/permissions')
-const schema = require('./schemas/closure')
-const bulkSchema = require('./schemas/bulk-closure')
+const schema = require('./schemas/closure/closure')
+const bulkSchema = require('./schemas/closure/bulk-closure')
+const removeConfirmSchema = require('./schemas/closure/remove-confirm')
 const { postProcessing, postRetention } = require('../api')
 const { MAX_BYTES, MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
 const { handleBulkClosureError } = require('../closure/handle-bulk-closure-error')
 const { handleBulkClosure } = require('../closure/handle-bulk-closure')
-
 const CLOSURES_VIEWS = require('../constants/closures-views')
 const CLOSURES_ROUTES = require('../constants/closures-routes')
 const { AGREEMENT_CLOSURES_LINKS } = require('../constants/section-links')
@@ -32,12 +32,43 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: CLOSURES_ROUTES.UPDATE,
+    path: CLOSURES_ROUTES.SEARCH,
     options: {
       auth: AUTH_SCOPE,
-      handler: async (_request, h) => {
-        const closures = await getClosures()
-        return h.view(CLOSURES_VIEWS.UPDATE, { closures })
+      handler: async (request, h) => {
+        const page = Number(request.query.page || 1)
+        const pageSize = Number(request.query.pageSize || 2500)
+        const frnAgreement = request.query.frnAgreement || null
+        const schemeId = request.query.schemeId || null
+
+        const isSearch = Boolean(frnAgreement || schemeId)
+
+        const [{ closures, count }, schemes] = await Promise.all([
+          getClosures({
+            page,
+            pageSize,
+            frnAgreement,
+            schemeId
+          }),
+          getSchemes()
+        ])
+
+        const totalPages = isSearch
+          ? 1
+          : Math.ceil(count / pageSize)
+
+        return h.view(CLOSURES_VIEWS.SEARCH, {
+          closures,
+          schemes,
+          page,
+          pageSize,
+          frnAgreement,
+          schemeId,
+          isSearch,
+          hasPreviousPage: !isSearch && page > 1,
+          hasNextPage: !isSearch && page < totalPages,
+          closureRemoved: request.query?.closureRemoved
+        })
       }
     }
   },
@@ -198,13 +229,44 @@ module.exports = [
     }
   },
   {
+    method: 'GET',
+    path: '/closure/remove-confirm',
+    options: {
+      auth: AUTH_SCOPE,
+      validate: {
+        query: removeConfirmSchema,
+        failAction: (_request, _h, error) => {
+          throw error
+        }
+      },
+      handler: async (request, h) => {
+        const {
+          retentionDataId,
+          frn,
+          agreementNumber,
+          schemeName
+        } = request.query
+
+        return h.view(CLOSURES_VIEWS.REMOVE_CONFIRM, {
+          retentionDataId,
+          frn,
+          agreementNumber,
+          schemeName
+        })
+      }
+    }
+  },
+  {
     method: 'POST',
     path: CLOSURES_ROUTES.REMOVE,
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
-        await postProcessing('/closure/remove', { closedId: request.payload.closedId })
-        return h.redirect(CLOSURES_ROUTES.MANAGE)
+        await postRetention('/closure/remove', { retentionDataId: request.payload.retentionDataId })
+        if (request.payload.schemeName === 'SFI22') {
+          await postProcessing('/closure/remove', { frn: request.payload.frn, agreementNumber: request.payload.agreementNumber })
+        }
+        return h.redirect(`${CLOSURES_ROUTES.SEARCH}?closureRemoved=true`)
       }
     }
   }

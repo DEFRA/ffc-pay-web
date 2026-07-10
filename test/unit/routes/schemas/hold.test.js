@@ -1,4 +1,4 @@
-const holdSchema = require('../../../../app/routes/schemas/hold')
+const holdSchema = require('../../../../app/routes/schemas/holds/hold')
 
 describe('hold schema validator', () => {
   const validInput = { frn: 1234567890, holdCategoryId: 1 }

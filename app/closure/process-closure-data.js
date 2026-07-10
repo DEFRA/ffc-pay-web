@@ -1,4 +1,4 @@
-const parsedSchema = require('../routes/schemas/parsed-closure')
+const parsedSchema = require('../routes/schemas/closure/parsed-closure')
 
 const sourceSystemIndex = 0
 const frnIndex = 1

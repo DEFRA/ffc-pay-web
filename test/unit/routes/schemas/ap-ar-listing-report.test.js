@@ -1,4 +1,4 @@
-const schema = require('../../../../app/routes/schemas/ap-ar-report-schema')
+const schema = require('../../../../app/routes/schemas/reports/ap-ar-report-schema')
 const { AP, AR } = require('../../../../app/constants/report-types')
 
 describe('AP‑AR Listing Schema', () => {

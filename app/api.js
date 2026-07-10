@@ -46,6 +46,10 @@ const getProcessingData = async (url, token) => {
   return wreck.get(`${config.paymentsEndpoint}${url}`, getConfiguration(token))
 }
 
+const getRetentionData = async (url, token) => {
+  return wreck.get(`${config.retentionEndpoint}${url}`, getConfiguration(token))
+}
+
 const getTrackingData = async (url, token) => {
   return wreck.get(`${config.trackingEndpoint}${url}`, getConfiguration(token))
 }
@@ -82,6 +86,7 @@ module.exports = {
   postAlerting,
   postRetention,
   getProcessingData,
+  getRetentionData,
   getTrackingData,
   getAlertingData,
   getInjectionData,

@@ -80,6 +80,9 @@
     "webpack": "5.105.3",
     "webpack-cli": "4.10.0"
   },
+  "overrides": {
+    "@opentelemetry/propagator-jaeger": "2.9.0"
+  },
   "nodemonConfig": {
     "ignore": [
       "**/test-output/**"

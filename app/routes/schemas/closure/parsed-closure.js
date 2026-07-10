@@ -1,5 +1,5 @@
 const Joi = require('joi').extend(require('@joi/date'))
-const sourceSystems = require('../../constants/source-systems')
+const sourceSystems = require('../../../constants/source-systems')
 
 const minFRN = 1000000000
 const maxFRN = 9999999999

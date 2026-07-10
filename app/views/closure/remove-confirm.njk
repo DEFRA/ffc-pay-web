@@ -1,0 +1,72 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% set pageTitle = "Remove agreement closure for " ~ frn ~ " | " ~ agreementNumber ~ " | " ~ schemeName %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }, {
+      text: "Manage agreement closures",
+      href: "/closure/manage"
+    }, {
+      text: "Search agreement closures",
+      href: "/closure/search"
+    }, {
+      text: pageTitle
+    }]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <div class="interruption-card">
+        <div class="interruption-card__content">
+          <h1 class="interruption-card__heading">
+            Are you sure you want to remove this agreement closure?
+          </h1>
+
+          <div class="interruption-card__body">
+            <p>
+              Removing this agreement closure for {{ frn }} | {{ agreementNumber }} | {{ schemeName }} means it will no longer be considered closed.
+            </p>
+            <p>
+              You will need to add it again if this agreement should be treated as closed in the future.
+            </p>
+            {% if schemeName == 'SFI22' %}
+              <p>
+                No suppression will be applied for future payment requests.
+              </p>
+            {% endif %}
+          </div>
+
+          <div class="govuk-button-group interruption-card__actions">
+            <form method="POST" action="/closure/remove">
+              <input type="hidden" name="crumb" value="{{ crumb }}"/>
+              <input type="hidden" name="retentionDataId" value="{{ retentionDataId }}"/>
+              <input type="hidden" name="frn" value="{{ frn }}"/>
+              <input type="hidden" name="agreementNumber" value="{{ agreementNumber }}"/>
+              <input type="hidden" name="schemeName" value="{{ schemeName }}"/>
+
+              <div class="govuk-button-group moj-interruption-card__actions">
+                <button id="submit" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">
+                  Yes, remove
+                </button>
+
+                <a class="govuk-link govuk-link--inverse" href="/closure/search">
+                  Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

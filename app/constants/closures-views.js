@@ -1,7 +1,8 @@
 module.exports = {
   MANAGE: 'closure/manage',
-  UPDATE: 'closure/update',
+  SEARCH: 'closure/search',
   ADD: 'closure/add',
   ADD_CONFIRM: 'closure/add-confirm',
-  BULK: 'closure/bulk'
+  BULK: 'closure/bulk',
+  REMOVE_CONFIRM: 'closure/remove-confirm'
 }
