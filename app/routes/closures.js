@@ -14,6 +14,8 @@ const { getClosures } = require('../closure')
 const { getSchemes } = require('../helpers')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, closureAdmin] }
+const defaultPage = 1
+const defaultPageSize = 2500
 
 module.exports = [
   {
@@ -35,8 +37,8 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
-        const page = Number(request.query.page || 1)
-        const pageSize = Number(request.query.pageSize || 2500)
+        const page = Number(request.query.page || defaultPage)
+        const pageSize = Number(request.query.pageSize || defaultPageSize)
         const frnAgreement = request.query.frnAgreement || null
         const schemeId = request.query.schemeId || null
 

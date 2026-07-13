@@ -1,9 +1,12 @@
 const moment = require('moment')
 const { getRetentionData } = require('../api')
 
+const defaultPage = 1
+const defaultPageSize = 2500
+
 const getClosures = async ({
-  page = 1,
-  pageSize = 2500,
+  page = defaultPage,
+  pageSize = defaultPageSize,
   frnAgreement = null,
   schemeId = null
 } = {}) => {

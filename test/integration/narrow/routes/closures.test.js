@@ -203,4 +203,148 @@ describe('Closures', () => {
       expect(res.statusCode).toBe(403)
     })
   })
+
+  // Additional tests to maximize coverage without changing existing tests
+  describe('Additional coverage tests', () => {
+    test('GET /closure/add passes through query params correctly', async () => {
+      const url = '/closure/add?frn=123&agreement=abc&schemeId=1&day=2&month=3&year=2024'
+      const { res, $ } = await loadPage('GET', url, auth)
+      expect(res.statusCode).toBe(200)
+      expect($('h1').text()).toBe('Create a new agreement closure')
+    })
+
+    test('POST /closure/add with padded day and month', async () => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+      const payload = {
+        crumb: viewCrumb,
+        schemeId: 1,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        day: 3,
+        month: 7,
+        year: 2023
+      }
+      const res = await server.inject({
+        method: 'POST',
+        url: '/closure/add',
+        auth,
+        payload,
+        headers: { cookie: `crumb=${cookieCrumb}` }
+      })
+      expect(postRetention).toHaveBeenCalledWith(
+        '/closure/add',
+        expect.objectContaining({ endDate: '2023-07-03T00:00:00' }),
+        null
+      )
+      expect(res.statusCode).toBe(302)
+    })
+
+    test('POST /closure/add with addedBy from user name', async () => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+      const payload = {
+        crumb: viewCrumb,
+        schemeId: 1,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        day: 12,
+        month: 8,
+        year: 2023
+      }
+      const authWithName = { strategy: 'session-auth', credentials: { scope: [closureAdmin], account: { name: 'Test User' } } }
+      const res = await server.inject({
+        method: 'POST',
+        url: '/closure/add',
+        auth: authWithName,
+        payload,
+        headers: { cookie: `crumb=${cookieCrumb}` }
+      })
+      expect(postRetention).toHaveBeenCalledWith(
+        '/closure/add',
+        expect.objectContaining({ addedBy: 'Test User' }),
+        null
+      )
+      expect(res.statusCode).toBe(302)
+    })
+
+    test('POST /closure/add with addedBy from username fallback', async () => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+      const payload = {
+        crumb: viewCrumb,
+        schemeId: 1,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        day: 12,
+        month: 8,
+        year: 2023
+      }
+      const authWithUsername = { strategy: 'session-auth', credentials: { scope: [closureAdmin], account: { username: 'user123' } } }
+      const res = await server.inject({
+        method: 'POST',
+        url: '/closure/add',
+        auth: authWithUsername,
+        payload,
+        headers: { cookie: `crumb=${cookieCrumb}` }
+      })
+      expect(postRetention).toHaveBeenCalledWith(
+        '/closure/add',
+        expect.objectContaining({ addedBy: 'user123' }),
+        null
+      )
+      expect(res.statusCode).toBe(302)
+    })
+
+    test('POST /closure/add with addedBy from email fallback', async () => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+      const payload = {
+        crumb: viewCrumb,
+        schemeId: 1,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        day: 12,
+        month: 8,
+        year: 2023
+      }
+      const authWithEmail = { strategy: 'session-auth', credentials: { scope: [closureAdmin], account: { email: 'email@example.com' } } }
+      const res = await server.inject({
+        method: 'POST',
+        url: '/closure/add',
+        auth: authWithEmail,
+        payload,
+        headers: { cookie: `crumb=${cookieCrumb}` }
+      })
+      expect(postRetention).toHaveBeenCalledWith(
+        '/closure/add',
+        expect.objectContaining({ addedBy: 'email@example.com' }),
+        null
+      )
+      expect(res.statusCode).toBe(302)
+    })
+
+    test('POST /closure/add with addedBy undefined if no account info', async () => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+      const payload = {
+        crumb: viewCrumb,
+        schemeId: 1,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        day: 12,
+        month: 8,
+        year: 2023
+      }
+      const authNoAccount = { strategy: 'session-auth', credentials: { scope: [closureAdmin], account: undefined } }
+      const res = await server.inject({
+        method: 'POST',
+        url: '/closure/add',
+        auth: authNoAccount,
+        payload,
+        headers: { cookie: `crumb=${cookieCrumb}` }
+      })
+      expect(postRetention).toHaveBeenCalledWith(
+        '/closure/add',
+        expect.objectContaining({ addedBy: undefined }),
+        null
+      )
+      expect(res.statusCode).toBe(302)
+    })
+  })
 })
