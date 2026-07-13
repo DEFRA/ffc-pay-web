@@ -6,7 +6,7 @@ const { closureAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
 const { FRN } = require('../../../mocks/values/frn')
 const { AGREEMENT_NUMBER } = require('../../../mocks/values/agreement-number')
-const { getProcessingData, postProcessing, postRetention } = require('../../../../app/api')
+const { getRetentionData, postRetention } = require('../../../../app/api')
 const getCrumbs = require('../../../helpers/get-crumbs')
 const { getSchemes } = require('../../../../app/helpers')
 
@@ -25,12 +25,13 @@ let server
 let auth
 
 const mockGetClosures = () => {
-  getProcessingData.mockResolvedValue({
+  getRetentionData.mockResolvedValue({
     payload: {
       closures: [{
         frn: FRN,
         agreementNumber: AGREEMENT_NUMBER,
-        closureDate: '2023-09-12'
+        schemeName: 'SFI22',
+        endDate: '2023-09-12'
       }]
     }
   })
@@ -90,7 +91,7 @@ describe('Closures', () => {
       headers: { cookie: `crumb=${cookieCrumb}` }
     })
 
-    test('successful submission for sfi22 posts retention and processing and redirects', async () => {
+    test('successful submission for sfi22 posts retention and redirects', async () => {
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
 
       const payload = {
@@ -111,17 +112,11 @@ describe('Closures', () => {
         null
       )
 
-      expect(postProcessing).toHaveBeenCalledWith(
-        '/closure/add',
-        { frn: FRN, agreement: AGREEMENT_NUMBER, date: '2023-08-12T00:00:00' },
-        null
-      )
-
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/closure/manage?closureAdded=single')
     })
 
-    test('successful submission for not sfi22 posts retention, not processing and redirects', async () => {
+    test('successful submission for not sfi22 posts retention and redirects', async () => {
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
 
       const payload = {
@@ -141,8 +136,6 @@ describe('Closures', () => {
         { schemeId: 2, frn: FRN, agreementNumber: AGREEMENT_NUMBER, endDate: '2023-08-12T00:00:00', addedBy: undefined },
         null
       )
-
-      expect(postProcessing).not.toHaveBeenCalled()
 
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/closure/manage?closureAdded=single')
