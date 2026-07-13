@@ -2,7 +2,7 @@ const { applicationAdmin, closureAdmin } = require('../auth/permissions')
 const schema = require('./schemas/closure/closure')
 const bulkSchema = require('./schemas/closure/bulk-closure')
 const removeConfirmSchema = require('./schemas/closure/remove-confirm')
-const { postProcessing, postRetention } = require('../api')
+const { postRetention } = require('../api')
 const { MAX_BYTES, MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
 const { handleBulkClosureError } = require('../closure/handle-bulk-closure-error')
@@ -12,7 +12,6 @@ const CLOSURES_ROUTES = require('../constants/closures-routes')
 const { AGREEMENT_CLOSURES_LINKS } = require('../constants/section-links')
 const { getClosures } = require('../closure')
 const { getSchemes } = require('../helpers')
-const { SFI } = require('../constants/schemes')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, closureAdmin] }
 
@@ -177,17 +176,6 @@ module.exports = [
           },
           null
         )
-        if (request.payload.schemeId === SFI) {
-          await postProcessing(
-            CLOSURES_ROUTES.ADD,
-            {
-              frn: request.payload.frn,
-              agreement: request.payload.agreement,
-              date
-            },
-            null
-          )
-        }
         return h.redirect(`${CLOSURES_ROUTES.MANAGE}?closureAdded=single`)
       }
     }
@@ -263,9 +251,6 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
         await postRetention('/closure/remove', { retentionDataId: request.payload.retentionDataId })
-        if (request.payload.schemeName === 'SFI22') {
-          await postProcessing('/closure/remove', { frn: request.payload.frn, agreementNumber: request.payload.agreementNumber })
-        }
         return h.redirect(`${CLOSURES_ROUTES.SEARCH}?closureRemoved=true`)
       }
     }

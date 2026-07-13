@@ -20,7 +20,7 @@ jest.mock('../../../../../app/helpers/render-error-page', () => ({ renderErrorPa
 jest.mock('../../../../../app/config', () => ({
   storageConfig: { apListingReportName: 'ap-report.csv', arListingReportName: 'ar-report.csv' }
 }))
-jest.mock('../../../../../app/routes/schemas/ap-ar-report-schema', () => {
+jest.mock('../../../../../app/routes/schemas/reports/ap-ar-report-schema', () => {
   const Joi = require('joi')
   return Joi.object({ reportType: Joi.string().valid('AP', 'AR').required() })
 })

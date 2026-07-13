@@ -19,7 +19,7 @@ jest.mock('../../../../../app/helpers', () => {
 jest.mock('../../../../../app/helpers/get-view', () => ({ getView: jest.fn() }))
 jest.mock('../../../../../app/helpers/render-error-page', () => ({ renderErrorPage: jest.fn() }))
 jest.mock('../../../../../app/config', () => ({ storageConfig: { claimLevelReportName: 'claim-level.csv' } }))
-jest.mock('../../../../../app/routes/schemas/claim-level-schema', () => {
+jest.mock('../../../../../app/routes/schemas/reports/claim-level-schema', () => {
   const Joi = require('joi')
   return Joi.object({ schemeId: Joi.string().required(), year: Joi.string().required() })
 })

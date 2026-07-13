@@ -66,36 +66,29 @@
             We’ve found {{ numberOfHolds }} {{ holdLabel }}.
           </p>
         {% endif %}
-        <div style="float: right;">
-          <form action="/payment-holds" method="get">
-            {{ govukSelect({
-              id: "records",
-              name: "perPage",
-              label: {
-                text: "Number of records per page"
-              },
-              attributes: {
-                onchange: "this.form.submit()"
-              },
-              items: [
-                {
-                  value: 100,
-                  text: "100",
-                  selected: perPage == 100
-                },
-                {
-                  value: 500,
-                  text: "500",
-                  selected: perPage == 500
-                },
-                {
-                  value: 1000,
-                  text: "1000",
-                  selected: perPage == 1000
-                }
-              ]
-            }) }}
-          </form>
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-half">
+            <div style="display:flex;align-items:baseline;gap:1rem;">
+              <h2 class="govuk-heading-m govuk-!-margin-0">Payment holds</h2>
+            </div>
+          </div>
+
+          <div class="govuk-grid-column-one-half govuk-!-padding-top-1">
+            <div style="display:flex;align-items:baseline;justify-content:flex-end;">
+              <div class="govuk-body-s" aria-label="Records per page" style="white-space:nowrap;vertical-align:baseline;">
+                <span>Number of records per page:</span>&nbsp;
+                {% set perPageOptions = [100, 500, 1000] %}
+                {% for opt in perPageOptions %}
+                  {% if perPage == opt %}
+                    <strong>{{ opt }}</strong>
+                  {% else %}
+                    <a href="/payment-holds?perPage={{ opt }}&page=1" class="govuk-link">{{ opt }}</a>
+                  {% endif %}
+                  {% if not loop.last %} &nbsp;|&nbsp; {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
         </div>
         <div style="clear: both;"></div>
 
