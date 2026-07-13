@@ -21,16 +21,6 @@ const readAndCheckFile = (path, request, h) => {
   return data
 }
 
-const handleSFI22Closures = async (data) => {
-  const sfi22Data = data.filter(item => item.sourceSystem === SFI)
-  if (sfi22Data.length > 0) {
-    for (const item of sfi22Data) {
-      delete item.sourceSystem
-    }
-    await postProcessing(BULK, { data: sfi22Data }, null)
-  }
-}
-
 const handleBulkClosure = async (request, h) => {
   const file = request.payload.file
 
@@ -54,7 +44,6 @@ const handleBulkClosure = async (request, h) => {
   const addedBy = user?.name || user?.username || user?.email
 
   await postRetention(BULK, { data: uploadData, addedBy }, null)
-  await handleSFI22Closures(uploadData)
 
   return h.redirect(`${MANAGE}?closureAdded=bulk`)
 }
