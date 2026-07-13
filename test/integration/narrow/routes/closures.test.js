@@ -9,10 +9,19 @@ const { AGREEMENT_NUMBER } = require('../../../mocks/values/agreement-number')
 const { getRetentionData, postRetention } = require('../../../../app/api')
 const getCrumbs = require('../../../helpers/get-crumbs')
 const { getSchemes } = require('../../../../app/helpers')
+const { getClosures } = require('../../../../app/closure')
+const CLOSURES_ROUTES = require('../../../../app/constants/closures-routes')
+const CLOSURES_VIEWS = require('../../../../app/constants/closures-views')
+const { AGREEMENT_CLOSURES_LINKS } = require('../../../../app/constants/section-links')
 
 jest.mock('../../../../app/helpers', () => ({
   ...jest.requireActual('../../../../app/helpers'),
   getSchemes: jest.fn()
+}))
+
+jest.mock('../../../../app/closure', () => ({
+  ...jest.requireActual('../../../../app/closure'),
+  getClosures: jest.fn()
 }))
 
 beforeEach(() => {
@@ -75,6 +84,43 @@ describe('Closures', () => {
       const { res } = await loadPage('GET', url)
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/login')
+    })
+
+    test('GET /closure/manage returns view with cards minus first and closureAdded query', async () => {
+      const url = `${CLOSURES_ROUTES.MANAGE}?closureAdded=addedValue`
+      const { res, $ } = await loadPage('GET', url, auth)
+      expect(res.statusCode).toBe(200)
+      expect($('h1').text()).toBe('Manage agreement closures')
+    })
+
+    test('GET /closure/search with search params returns correct view and flags', async () => {
+      const mockClosures = [{ id: 1 }]
+      const mockCount = 10
+      const mockSchemes = [{ schemeId: 'test', name: 'Test Scheme' }]
+
+      getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
+      getSchemes.mockResolvedValue(mockSchemes)
+
+      const url = `${CLOSURES_ROUTES.SEARCH}?page=1&pageSize=5&frnAgreement=someFrn&schemeId=someScheme&closureRemoved=true`
+      const { res, $ } = await loadPage('GET', url, auth)
+
+      expect(res.statusCode).toBe(200)
+      expect($('h1').text()).toBe('Search agreement closures')
+    })
+
+    test('GET /closure/search without search params returns correct pagination flags', async () => {
+      const mockClosures = [{ id: 1 }]
+      const mockCount = 45
+      const mockSchemes = []
+
+      getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
+      getSchemes.mockResolvedValue(mockSchemes)
+
+      const url = `${CLOSURES_ROUTES.SEARCH}?page=3&pageSize=10`
+      const { res, $ } = await loadPage('GET', url, auth)
+
+      expect(res.statusCode).toBe(200)
+      expect($('h1').text()).toBe('Search agreement closures')
     })
   })
 
@@ -204,7 +250,6 @@ describe('Closures', () => {
     })
   })
 
-  // Additional tests to maximize coverage without changing existing tests
   describe('Additional coverage tests', () => {
     test('GET /closure/add passes through query params correctly', async () => {
       const url = '/closure/add?frn=123&agreement=abc&schemeId=1&day=2&month=3&year=2024'
@@ -345,6 +390,118 @@ describe('Closures', () => {
         null
       )
       expect(res.statusCode).toBe(302)
+    })
+  })
+
+  describe('Direct handler tests for /closure/manage and /closure/search', () => {
+    let h, request, responseMock
+
+    beforeEach(() => {
+      responseMock = {
+        view: jest.fn().mockReturnThis(),
+        code: jest.fn().mockReturnThis(),
+        takeover: jest.fn().mockReturnThis(),
+        redirect: jest.fn().mockReturnThis(),
+        response: jest.fn(() => responseMock)
+      }
+      h = {
+        view: responseMock.view,
+        code: responseMock.code,
+        takeover: responseMock.takeover,
+        redirect: responseMock.redirect,
+        response: responseMock.response
+      }
+      auth = { strategy: 'session-auth', credentials: { scope: [closureAdmin] } }
+      request = { query: {}, payload: {}, auth, state: {} }
+      jest.clearAllMocks()
+    })
+
+    test('GET /closure/manage handler returns cards minus first and closureAdded', async () => {
+      const routes = require('../../../../app/routes/closures')
+      const manageRoute = routes.find(r => r.path === CLOSURES_ROUTES.MANAGE && r.method === 'GET')
+      request.query.closureAdded = 'addedValue'
+      const result = await manageRoute.options.handler(request, h)
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.MANAGE, {
+        cards: AGREEMENT_CLOSURES_LINKS.slice(1),
+        closureAdded: 'addedValue'
+      })
+      expect(result).toBe(h.view())
+    })
+
+    test('GET /closure/search handler returns correct view with search params', async () => {
+      const routes = require('../../../../app/routes/closures') // Adjust path if needed
+      const searchRoute = routes.find(r => r.path === CLOSURES_ROUTES.SEARCH && r.method === 'GET')
+
+      const mockClosures = [{ id: 1 }]
+      const mockCount = 10
+      const mockSchemes = [{ schemeId: 'test', name: 'Test Scheme' }]
+
+      getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
+      getSchemes.mockResolvedValue(mockSchemes)
+
+      request.query = {
+        page: '1',
+        pageSize: '5',
+        frnAgreement: 'someFrn',
+        schemeId: 'someScheme',
+        closureRemoved: 'true'
+      }
+
+      const result = await searchRoute.options.handler(request, h)
+
+      expect(getClosures).toHaveBeenCalledWith({
+        page: 1,
+        pageSize: 5,
+        frnAgreement: 'someFrn',
+        schemeId: 'someScheme'
+      })
+
+      expect(getSchemes).toHaveBeenCalled()
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.SEARCH, {
+        closures: mockClosures,
+        schemes: mockSchemes,
+        page: 1,
+        pageSize: 5,
+        frnAgreement: 'someFrn',
+        schemeId: 'someScheme',
+        isSearch: true,
+        hasPreviousPage: false,
+        hasNextPage: false,
+        closureRemoved: 'true'
+      })
+
+      expect(result).toBe(h.view())
+    })
+
+    test('GET /closure/search handler returns pagination flags correctly when no search params', async () => {
+      const routes = require('../../../../app/routes/closures') // Adjust path if needed
+      const searchRoute = routes.find(r => r.path === CLOSURES_ROUTES.SEARCH && r.method === 'GET')
+
+      const mockClosures = [{ id: 1 }]
+      const mockCount = 45
+      const mockSchemes = []
+
+      getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
+      getSchemes.mockResolvedValue(mockSchemes)
+
+      request.query = {
+        page: '3',
+        pageSize: '10'
+      }
+
+      const result = await searchRoute.options.handler(request, h)
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.SEARCH, expect.objectContaining({
+        page: 3,
+        pageSize: 10,
+        isSearch: false,
+        hasPreviousPage: true,
+        hasNextPage: true
+      }))
+
+      expect(result).toBe(h.view())
     })
   })
 })
