@@ -21,7 +21,7 @@ const frnValidation = Joi.number()
 
 const prnError = errors => {
   errors.forEach(err => {
-    err.message = 'Provide a payment request number'
+    err.message = 'Enter a payment request number'
   })
   return errors
 }
@@ -35,21 +35,21 @@ const schemeError = errors => {
 
 const yearError = errors => {
   errors.forEach(err => {
-    err.message = 'A valid year must be provided'
+    err.message = 'Enter a year'
   })
   return errors
 }
 
 const revCapErrorRequired = errors => {
   errors.forEach(err => {
-    err.message = 'Select Revenue or Capital'
+    err.message = "Choose 'revenue' or 'capital'"
   })
   return errors
 }
 
 const revCapErrorInvalid = errors => {
   errors.forEach(err => {
-    err.message = 'Revenue/Capital should not be selected for this scheme'
+    err.message = "Choose 'revenue' or 'capital'"
   })
   return errors
 }

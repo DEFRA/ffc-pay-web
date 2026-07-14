@@ -1,6 +1,9 @@
 const setReportStatus = require('../helpers/set-report-status')
 
-const setStatusCallback = (request, jobId) => (errorMessage = null) => {
+const setStatusCallback = (request, jobId) => (errorMessage = null, statusOverride = null) => {
+  if (statusOverride === 'no-results') {
+    return setReportStatus(request, jobId, { status: 'no-results' })
+  }
   if (errorMessage != null) {
     return setReportStatus(request, jobId, {
       status: 'failed',

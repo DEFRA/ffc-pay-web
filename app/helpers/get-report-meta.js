@@ -3,7 +3,7 @@ const REPORT_PATHS = require('../constants/report-list')
 
 const reportMeta = {
   [REPORT_TYPES.PAYMENT_REQUEST_STATUSES]: {
-    title: 'Payment request statuses',
+    title: 'Generate payment request statuses',
     url: REPORT_PATHS.PAYMENT_REQUESTS
   },
   [REPORT_TYPES.COMBINED_TRANSACTION]: {

@@ -1,17 +1,31 @@
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/error-message/macro.njk" import govukErrorMessage %}
 
 
 {% macro reportPageTitle(text) %}
   <h1 class="govuk-heading-l">{{ text }}</h1>
 {% endmacro %}
 
-{% macro schemeSelect(schemes, selectedSchemeId = '') %}
-  <div class="govuk-form-group">
-    <label class="govuk-label govuk-label-s" for="schemeId">
-      Select the scheme to view data for
+{% macro schemeSelect(schemes, selectedSchemeId = '', includeEmptyOption = false, hint = '', errorText = '') %}
+  <div class="govuk-form-group{% if errorText %} govuk-form-group--error{% endif %}">
+    <div class="govuk-body" for="schemeId">
+      For a report based on scheme, select the scheme and year. For an individual report use the Firm Reference Number (FRN).
+    </div>
+    <label class="govuk-label govuk-label--s govuk-!-font-weight-bold" for="schemeId">
+      Scheme
     </label>
-    <select class="govuk-select" id="schemeId" name="schemeId">
+    {% if hint %}
+      <div id="schemeId-hint" class="govuk-hint">{{ hint }}</div>
+    {% endif %}
+    {% if errorText %}
+      {{ govukErrorMessage({ text: errorText }) }}
+    {% endif %}
+    <select class="govuk-select" id="schemeId" name="schemeId" {% if hint %}aria-describedby="schemeId-hint"{% endif %}>
+      {% if includeEmptyOption %}
+        <option value="" {% if not selectedSchemeId %}selected{% endif %}></option>
+      {% endif %}
       {% for scheme in schemes %}
         {% if scheme and scheme.schemeId is defined and scheme.name is defined %}
           <option value="{{ scheme.schemeId }}" {% if scheme.schemeId == selectedSchemeId %}selected{% endif %}>
@@ -23,69 +37,84 @@
   </div>
 {% endmacro %}
 
-{% macro yearInput(yearValue = '') %}
-  <div class="govuk-form-group">
-    <label class="govuk-label govuk-label-s" for="year">
+{% macro yearInput(yearValue = '', errorText = '') %}
+  <div class="govuk-form-group{% if errorText %} govuk-form-group--error{% endif %}">
+    <label class="govuk-label govuk-label--s govuk-!-font-weight-bold" for="year">
       Year
     </label>
+    {% if errorText %}
+      {{ govukErrorMessage({ text: errorText }) }}
+    {% endif %}
     <input class="govuk-input govuk-input--width-4" id="year" name="year" type="text" value="{{ yearValue }}" inputmode="numeric">
   </div>
 {% endmacro %}
 
-{% macro revenueOrCapitalSelect(selectedValue = '') %}
-  <div class="govuk-form-group">
-    <label class="govuk-label govuk-label-s" for="revenueOrCapital">
-      Revenue/Capital (CS only)
-    </label>
-    <div class="govuk-hint">
-      Revenue/Capital is mandatory for CS only, and should not be selected for other schemes.
-    </div>
-    <select class="govuk-select" id="revenueOrCapital" name="revenueOrCapital">
-      <option value="" {% if selectedValue == '' %}selected{% endif %}></option>
-      <option value="Revenue" {% if selectedValue == 'Revenue' %}selected{% endif %}>Revenue</option>
-      <option value="Capital" {% if selectedValue == 'Capital' %}selected{% endif %}>Capital</option>
-    </select>
-  </div>
+{% macro revenueOrCapitalRadios(selectedValue = '', errorText = '') %}
+  {{ govukRadios({
+    idPrefix: "revenueOrCapital",
+    name: "revenueOrCapital",
+    fieldset: {
+      legend: {
+        text: "Revenue / Capital",
+        classes: "govuk-fieldset__legend--s"
+      }
+    },
+    errorMessage: errorText and { text: errorText },
+    items: [
+      {
+        value: "Revenue",
+        text: "Revenue",
+        checked: selectedValue == "Revenue"
+      },
+      {
+        value: "Capital",
+        text: "Capital",
+        checked: selectedValue == "Capital"
+      }
+    ]
+  }) }}
 {% endmacro %}
 
-{% macro frnInput(frnValue = '') %}
-  <div class="govuk-form-group">
-    <label class="govuk-label govuk-label-s" for="frn">
-      Firm reference number (FRN) (optional)
+{% macro frnInput(frnValue = '', errorText = '') %}
+  <div class="govuk-form-group{% if errorText %} govuk-form-group--error{% endif %}">
+    <label class="govuk-label govuk-label--s govuk-!-font-weight-bold" for="frn">
+      FRN (Firm Reference Number) (optional)
     </label>
-    <div class="govuk-hint">
-      Enter a 10-digit FRN
-    </div>
+    {% if errorText %}
+      {{ govukErrorMessage({ text: errorText }) }}
+    {% endif %}
     <input class="govuk-input govuk-input--width-10" id="frn" name="frn" type="text" value="{{ frnValue }}" inputmode="numeric">
   </div>
 {% endmacro %}
 
-{% macro submitButton(label = "Download report") %}
+{% macro submitButton(label = "Generate and Download report") %}
     <button id="report-submit" class="govuk-button" data-module="govuk-button">{{ label }}</button>
 {% endmacro %}
 
-{% macro prnInput(prnValue = '') %}
-  <div class="govuk-form-group">
-    <label class="govuk-label govuk-label-s" for="prn">
+{% macro prnInput(prnValue = '', errorText = '') %}
+  <div class="govuk-form-group{% if errorText %} govuk-form-group--error{% endif %}">
+    <label class="govuk-label govuk-label--s govuk-!-font-weight-bold" for="prn">
       Payment Request Number
     </label>
-    <div class="govuk-hint">
-      Due to the volume of data, payment request number is required for BPS, and optional for other schemes.
-    </div>
+    {% if errorText %}
+      {{ govukErrorMessage({ text: errorText }) }}
+    {% endif %}
     <input class="govuk-input govuk-input--width-1" id="prn" name="prn" type="text" value="{{ prnValue }}" inputmode="numeric">
   </div>
 {% endmacro %}
 
 {% macro typeSelect(selectedType = '', items = [], label = "Report Type") %}
-  {{ govukSelect({
-    id: "select-type",
+  {{ govukRadios({
+    idPrefix: "select-type",
     name: "select-type",
-    label: {
-      text: label
+    fieldset: {
+      legend: {
+        text: label,
+        classes: "govuk-fieldset__legend--s"
+      }
     },
     items: items,
-    value: selectedType,
-    disabled: items | length == 1
+    value: selectedType
   }) }}
 {% endmacro %}
 
@@ -96,7 +125,8 @@
     namePrefix: id,
     fieldset: {
       legend: {
-        text: text
+        text: text,
+        classes: "govuk-fieldset__legend--s"
       }
     },
     hint: {

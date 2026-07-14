@@ -1,6 +1,6 @@
 const getReportTypes = () => {
   return {
-    'Payment request statuses': 'payment-requests-v2',
+    'Generate payment request statuses': 'payment-requests-v2',
     'Suppressed payment requests': 'suppressed-payments',
     'AP-AR listing report': 'ap-ar-report',
     Holds: 'holds',

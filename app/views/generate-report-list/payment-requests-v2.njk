@@ -1,16 +1,56 @@
 {% extends 'generate-report-list/base-report.njk' %}
-{% from 'macros/report-form-fields.njk' import reportPageTitle, schemeSelect, yearInput, revenueOrCapitalSelect, frnInput, submitButton, prnInput %}
+{% from 'macros/report-form-fields.njk' import reportPageTitle, schemeSelect, yearInput, revenueOrCapitalRadios, frnInput, submitButton, prnInput %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
-{% set reportTitle = 'Payment request statuses report' %}
+{% set reportTitle = 'Generate payment request statuses report' %}
 {% set reportUrl = '/generate-report-list/generate-payment-request-statuses' %}
 {% set formAction = '/generate-report-list/generate-payment-request-statuses/download' %}
 
 {% block reportContent %}
     {{ reportPageTitle(reportTitle) }}
-    {{ schemeSelect(schemes, selectedSchemeId) }}
-    {{ yearInput(year) }}
-    {{ prnInput(prn) }}
-    {{ revenueOrCapitalSelect(revenueOrCapital) }}
+    {% if noResults %}
+      {{ govukInsetText({
+        text: "No reports matching your search were found. Check your criteria and try again."
+      }) }}
+    {% endif %}
+        {{ schemeSelect(schemes, selectedSchemeId, true, '', errorMessages.schemeId) }}
+        <div id="prn-container">
+            {{ prnInput(prn, errorMessages.prn) }}
+    </div>
+        <div id="revenue-or-capital-container">
+            {{ revenueOrCapitalRadios(revenueOrCapital, errorMessages.revenueOrCapital) }}
+    </div>
+        {{ yearInput(year, errorMessages.year) }}
     {{ frnInput(frn) }}
+    <div id="scheme-fields-status" class="govuk-visually-hidden" aria-live="polite"></div>
+
+        <script>
+            const schemeSelect = document.getElementById('schemeId')
+            const prnContainer = document.getElementById('prn-container')
+            const revenueOrCapitalContainer = document.getElementById('revenue-or-capital-container')
+            const schemeFieldsStatus = document.getElementById('scheme-fields-status')
+
+            const setFieldVisibility = (container, visible) => {
+                container.hidden = !visible
+                container.querySelectorAll('input, select').forEach(field => {
+                    field.disabled = !visible
+                })
+            }
+
+            const updateSchemeFields = () => {
+                const requiresPrn = schemeSelect.value === '6'
+                const requiresRevenueOrCapital = schemeSelect.value === '5'
+                setFieldVisibility(prnContainer, requiresPrn)
+                setFieldVisibility(revenueOrCapitalContainer, requiresRevenueOrCapital)
+                schemeFieldsStatus.textContent = requiresPrn
+                    ? 'Payment Request Number is now required.'
+                    : requiresRevenueOrCapital
+                            ? 'Select whether the payment is Revenue or Capital.'
+                            : ''
+            }
+
+            schemeSelect.addEventListener('change', updateSchemeFields)
+            updateSchemeFields()
+        </script>
 {% endblock %}

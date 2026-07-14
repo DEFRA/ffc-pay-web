@@ -8,13 +8,41 @@ function mapValidationErrors (details = []) {
   }))
 }
 
+function mapValidationErrorsByField (details = []) {
+  return details.reduce((acc, { message, path = [] }) => {
+    const key = path[0]
+    if (key && !acc[key]) {
+      acc[key] = message
+    }
+    return acc
+  }, {})
+}
+
 async function renderErrorPage (viewName, request, h, error) {
   request.log(['error', 'validation'], error)
-  const errors = mapValidationErrors(error.details)
+  const details = error.details || []
+  const errors = mapValidationErrors(details)
+  const errorMessages = mapValidationErrorsByField(details)
   const schemes = await getSchemes()
+  const {
+    schemeId = '',
+    year = '',
+    prn = '',
+    frn = '',
+    revenueOrCapital = ''
+  } = request.query || {}
 
   return h
-    .view(viewName, { schemes, errors })
+    .view(viewName, {
+      schemes,
+      errors,
+      errorMessages,
+      selectedSchemeId: schemeId,
+      year,
+      prn,
+      frn,
+      revenueOrCapital
+    })
     .code(BAD_REQUEST)
     .takeover()
 }

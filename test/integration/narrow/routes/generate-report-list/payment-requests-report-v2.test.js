@@ -12,7 +12,8 @@ jest.mock('../../../../../app/helpers', () => {
     }),
     addDetailsToFilename: jest.fn((base, payload) => `${base}-${payload.schemeId}-${payload.year}`),
     createFormRoute: actualRouteGen.createFormRoute,
-    createDownloadRoute: actualRouteGen.createDownloadRoute
+    createDownloadRoute: actualRouteGen.createDownloadRoute,
+    getView: jest.fn().mockResolvedValue('<html>payment-requests form</html>')
   }
 })
 
@@ -24,10 +25,8 @@ jest.mock('../../../../../app/routes/schemas/standard-report-schema', () => {
   return Joi.object({ schemeId: Joi.string().required(), year: Joi.string().required() })
 })
 
-const { getView } = require('../../../../../app/helpers/get-view')
 const { renderErrorPage } = require('../../../../../app/helpers/render-error-page')
 const GENERATE_REPORT_LIST = require('../../../../../app/constants/generate-report-list')
-const GENERATE_REPORT_VIEWS = require('../../../../../app/constants/generate-report-views')
 const routes = require('../../../../../app/routes/generate-report-list/payment-requests-report-v2')
 
 describe('Generate Payment Requests V2 Report Routes', () => {
@@ -42,13 +41,10 @@ describe('Generate Payment Requests V2 Report Routes', () => {
   afterAll(async () => { await server.stop() })
 
   test('GET form route returns view', async () => {
-    getView.mockResolvedValue('<html>payment-requests form</html>')
-
     const res = await server.inject({ method: 'GET', url: GENERATE_REPORT_LIST.PAYMENT_REQUESTS_V2 })
 
     expect(res.statusCode).toBe(200)
     expect(res.payload).toBe('<html>payment-requests form</html>')
-    expect(getView).toHaveBeenCalledWith(GENERATE_REPORT_VIEWS.PAYMENT_REQUESTS_V2, expect.any(Object))
   })
 
   test('GET download route with valid params returns CSV', async () => {

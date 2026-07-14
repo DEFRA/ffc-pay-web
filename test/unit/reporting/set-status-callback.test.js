@@ -42,4 +42,12 @@ describe('setStatusCallback', () => {
       status: 'completed'
     })
   })
+
+  test('calls setReportStatus with no-results status when statusOverride is no-results', async () => {
+    await callback(null, 'no-results')
+
+    expect(setReportStatus).toHaveBeenCalledWith(request, jobId, {
+      status: 'no-results'
+    })
+  })
 })

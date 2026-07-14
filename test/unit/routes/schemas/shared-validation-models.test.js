@@ -61,13 +61,13 @@ describe('Validation Schema - Comprehensive Tests', () => {
     test('Year less than valid range returns error', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ ...baseRequiredFields, year: 1993, schemeId: SFI })
-      expect(error.details[0].message).toBe('A valid year must be provided')
+      expect(error.details[0].message).toBe('Enter a year')
     })
 
     test('Year greater than valid range returns error', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ ...baseRequiredFields, year: 2100, schemeId: SFI })
-      expect(error.details[0].message).toBe('A valid year must be provided')
+      expect(error.details[0].message).toBe('Enter a year')
     })
 
     test('Empty year is allowed for CS scheme', () => {
@@ -109,13 +109,13 @@ describe('Validation Schema - Comprehensive Tests', () => {
     test('Rejects Revenue/Capital for non-CS scheme', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ ...baseRequiredFields, year: 2025, schemeId: BPS, revenueOrCapital: 'Revenue' })
-      expect(error.details[0].message).toBe('Revenue/Capital should not be selected for this scheme')
+      expect(error.details[0].message).toBe("Choose 'revenue' or 'capital'")
     })
 
     test('Invalid type for revenueOrCapital returns error', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ ...baseRequiredFields, schemeId: CS, revenueOrCapital: 123 })
-      expect(error.details[0].message).toBe('Select Revenue or Capital')
+      expect(error.details[0].message).toBe("Choose 'revenue' or 'capital'")
     })
 
     test('Allows empty revenueOrCapital when not required', () => {

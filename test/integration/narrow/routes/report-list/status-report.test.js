@@ -32,10 +32,8 @@ describe('Status Report Routes', () => {
   }
 
   const getReportTypes = ($) => {
-    return $('#select-type option').filter((_, el) => {
-      return !$(el).attr('hidden')
-    }).map((_, el) => {
-      return { value: $(el).attr('value'), text: $(el).text().trim() }
+    return $('input[name="select-type"]').map((_, el) => {
+      return { value: $(el).attr('value'), text: $(el).closest('.govuk-radios__item').find('.govuk-label').text().trim() }
     }).get()
   }
 

@@ -26,6 +26,9 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
 
     queryTrackingApi(url)
       .then((returnedFilename) => {
+        if (returnedFilename == null || returnedFilename === '') {
+          return setReportStatus(request, jobId, { status: 'no-results' })
+        }
         if (!isValidJsonFilename(returnedFilename)) { throw new Error(`Filename: ${returnedFilename} is not a valid format.`) }
         return setReportStatus(request, jobId, {
           status: 'download',
@@ -35,6 +38,9 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
         })
       })
       .catch((err) => {
+        if (err.output?.statusCode === 404) {
+          return setReportStatus(request, jobId, { status: 'no-results' })
+        }
         console.error(`Error generating report ${jobId}:`, err)
         return setReportStatus(request, jobId, {
           status: 'failed'
