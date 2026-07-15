@@ -40,19 +40,15 @@ const yearError = errors => {
   return errors
 }
 
-const revCapErrorRequired = errors => {
+const setRevCapError = errors => {
   errors.forEach(err => {
     err.message = "Choose 'revenue' or 'capital'"
   })
   return errors
 }
 
-const revCapErrorInvalid = errors => {
-  errors.forEach(err => {
-    err.message = "Choose 'revenue' or 'capital'"
-  })
-  return errors
-}
+const revCapErrorRequired = setRevCapError
+const revCapErrorInvalid = setRevCapError
 
 const createPRNValidation = (dependsOnFrn = false) => {
   const prnValidation = Joi.number().integer()

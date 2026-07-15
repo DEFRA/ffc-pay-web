@@ -3,6 +3,7 @@ const setReportStatus = require('./set-report-status')
 const { buildReportUrl } = require('./build-query-url')
 const { queryTrackingApi } = require('./query-tracking-api')
 const { normaliseQuery } = require('./normalise-query')
+const NOT_FOUND = 404
 
 const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, options = {}) => {
   return async (request, h) => {
@@ -38,7 +39,7 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
         })
       })
       .catch((err) => {
-        if (err.output?.statusCode === 404) {
+        if (err.output?.statusCode === NOT_FOUND) {
           return setReportStatus(request, jobId, { status: 'no-results' })
         }
         console.error(`Error generating report ${jobId}:`, err)

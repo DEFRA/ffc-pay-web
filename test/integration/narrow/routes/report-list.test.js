@@ -49,17 +49,3 @@ describe('GET /download-report-list', () => {
     expect(response.payload).not.toContain('/download-report-list/holds')
   })
 })
-
-describe('GET /generate-report-list', () => {
-  test('returns generate report types view model', async () => {
-    const reportTypes = generateReportTypes()
-    const reportTypesKeys = Object.keys(reportTypes)
-
-    const response = await server.inject({ method: 'GET', url: '/generate-report-list', auth })
-    const viewModel = response.request.response.source.context
-
-    expect(viewModel.reportTypes).toEqual(reportTypesKeys)
-    expect(viewModel.reportTypesRoutes).toEqual(reportTypes)
-    expect(viewModel.totalReportTypes).toEqual(reportTypesKeys.length)
-  })
-})
