@@ -84,5 +84,8 @@
     "ignore": [
       "**/test-output/**"
     ]
+  },
+  "overrides": {
+      "@opentelemetry/propagator-jaeger": "2.9.0"
   }
 }
