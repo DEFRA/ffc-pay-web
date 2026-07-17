@@ -1,6 +1,6 @@
 {
   "name": "ffc-pay-web",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "FFC payment management service",
   "homepage": "https://github.com/DEFRA/ffc-pay-web",
   "main": "app/index.js",
@@ -86,6 +86,6 @@
     ]
   },
   "overrides": {
-      "@opentelemetry/propagator-jaeger": "2.9.0"
+    "@opentelemetry/propagator-jaeger": "2.9.0"
   }
 }
