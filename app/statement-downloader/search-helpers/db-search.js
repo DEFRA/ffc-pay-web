@@ -18,7 +18,8 @@ const dbSearch = async (pageLimit, offset, criteria = {}) => {
 
   const mapped = rows.map((r) => createStatementResultFromDBRow(r)).filter(Boolean)
   const continuationToken = payload?.continuationToken ?? (mapped.length < pageLimit ? null : offset + mapped.length)
-  return { statements: mapped, continuationToken }
+  const totalCount = payload?.totalCount ?? null
+  return { statements: mapped, continuationToken, totalCount }
 }
 
 module.exports = { dbSearch }

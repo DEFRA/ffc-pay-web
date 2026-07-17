@@ -1,17 +1,35 @@
 {% macro renderLoadingPage(
-  jobId, 
-  checkUrl, 
-  downloadUrl, 
-  redirectUrl, 
-  title="Loading", 
-  statusMessage="Please wait.", 
+  jobId,
+  checkUrl,
+  downloadUrl,
+  redirectUrl,
+  title="Loading",
+  statusMessage="Please wait.",
   processingMessage="The task is being processed.",
   completedMessage="The task has been completed successfully.",
   errorMessage="We were unable to complete the task.",
-  autoRedirect=true
+  autoRedirect=true,
+  schemeName="",
+  reportFilename=""
 ) %}
 
   <h1 class="govuk-heading-l">{{ title }}</h1>
+
+  <style>
+    #progress-container.loading-success-banner {
+      border-color: #00703c !important;
+      background-color: #ffffff !important;
+    }
+
+    #progress-container.loading-success-banner .govuk-notification-banner__header {
+      background-color: #00703c !important;
+    }
+
+    #progress-container.loading-success-banner .govuk-notification-banner__content {
+      background-color: #ffffff !important;
+      color: #0b0c0c;
+    }
+  </style>
 
   <section id="progress-container" class="govuk-notification-banner govuk-notification-banner--info" aria-labelledby="progress-status-heading">
     <div class="govuk-notification-banner__header">
@@ -56,7 +74,9 @@
       autoRedirect: "{{ autoRedirect | string | lower }}" === 'true',
       processingMessage: "{{ processingMessage }}",
       errorMessage: "{{ errorMessage }}",
-      completedMessage: "{{ completedMessage }}"
+      completedMessage: "{{ completedMessage }}",
+      schemeName: "{{ schemeName }}",
+      reportFilename: "{{ reportFilename }}"
     },
     elements: {
       container: () => document.getElementById('progress-container'),
@@ -92,6 +112,17 @@
     }
   }
 
+  const buildCompletedMessage = (data = {}) => {
+    const filename = data.reportFilename || state.config.reportFilename
+    const scheme = data.schemeName || state.config.schemeName
+
+    if (filename && scheme) {
+      return `${filename} ${scheme} report has been successfully downloaded.`
+    }
+
+    return state.config.completedMessage
+  }
+
   const handleDownload = () => {
     if (!state.downloadStarted) {
       updateElement(state.elements.statusText(), { textContent: 'The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.' })
@@ -101,16 +132,19 @@
     setTimeout(checkStatus, 2500)
   }
 
-  const handleCompletion = async () => {
-    updateElement(state.elements.statusHeading(), { textContent: 'Processing complete' })
-    updateElement(state.elements.statusText(), { textContent: state.config.completedMessage })
+  const handleCompletion = async (data = {}) => {
+    updateElement(state.elements.statusHeading(), { textContent: 'Success' })
+    updateElement(state.elements.statusText(), { textContent: buildCompletedMessage(data) })
 
     const spinner = state.elements.spinner()
     if (spinner) {
       spinner.style.display = 'none'
     }
-    
-    updateClasses(state.elements.container(), { remove: ['govuk-notification-banner--info'], add: ['govuk-notification-banner--success'] })
+
+    updateClasses(state.elements.container(), {
+      remove: ['govuk-notification-banner--info'],
+      add: ['loading-success-banner']
+    })
 
     await cleanupCache(state.config.jobId)
 
@@ -144,7 +178,7 @@
   const handleStatus = async (data) => {
     const statusHandlers = {
       'download': handleDownload,
-      'completed': handleCompletion,
+      'completed': () => handleCompletion(data),
       'failed': () => showError(data?.message),
       'no-results': handleNoResults,
       'default': () => setTimeout(checkStatus, 2500)

@@ -46,6 +46,7 @@ describe('db-search', () => {
 
       expect(result).toEqual({
         statements: [mockStatement],
+        totalCount: null,
         continuationToken: 'token-123'
       })
     })
@@ -618,6 +619,54 @@ describe('db-search', () => {
       const result = await dbSearch(50, 0, {})
 
       expect(Array.isArray(result.statements)).toBe(true)
+    })
+
+    test('should include totalCount in result', async () => {
+      const mockRow = { filename: 'file.pdf' }
+      const mockStatement = { filename: 'file.pdf', scheme: 'SFI' }
+
+      db.search.mockResolvedValue({
+        statements: [mockRow],
+        continuationToken: null,
+        totalCount: 42
+      })
+      createStatementResultFromDBRow.mockReturnValue(mockStatement)
+
+      const result = await dbSearch(50, 0, {})
+
+      expect(result.totalCount).toBe(42)
+    })
+  })
+
+  describe('totalCount', () => {
+    test('should return totalCount from payload when present', async () => {
+      const mockRow = { filename: 'file.pdf' }
+      db.search.mockResolvedValue({ statements: [mockRow], continuationToken: null, totalCount: 100 })
+      createStatementResultFromDBRow.mockReturnValue({ filename: 'file.pdf' })
+
+      const result = await dbSearch(50, 0, {})
+
+      expect(result.totalCount).toBe(100)
+    })
+
+    test('should return null totalCount when payload does not include it', async () => {
+      const mockRow = { filename: 'file.pdf' }
+      db.search.mockResolvedValue({ statements: [mockRow], continuationToken: null })
+      createStatementResultFromDBRow.mockReturnValue({ filename: 'file.pdf' })
+
+      const result = await dbSearch(50, 0, {})
+
+      expect(result.totalCount).toBeNull()
+    })
+
+    test('should return null totalCount when payload totalCount is null', async () => {
+      const mockRow = { filename: 'file.pdf' }
+      db.search.mockResolvedValue({ statements: [mockRow], continuationToken: null, totalCount: null })
+      createStatementResultFromDBRow.mockReturnValue({ filename: 'file.pdf' })
+
+      const result = await dbSearch(50, 0, {})
+
+      expect(result.totalCount).toBeNull()
     })
   })
 })

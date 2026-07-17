@@ -55,7 +55,8 @@ const METRICS_LINKS = [
 ]
 
 const DOWNLOAD_STATEMENTS_LINKS = [
-  { href: '/download-statements', text: 'Download statements', homeAuth: [permissions.applicationAdmin] }
+  { href: '/download-statements', text: 'Download payment statements', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
+  { href: '/status-report', text: 'Download statement status report', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] }
 ]
 
 const HELP_LINKS = [

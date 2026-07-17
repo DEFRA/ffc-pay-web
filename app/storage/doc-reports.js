@@ -44,18 +44,19 @@ const getReportsByYearAndType = async (year, type) => {
   }
 
   const reports = []
-  for await (const { name } of statementsContainer.listBlobsFlat({ prefix: config.statusReportsFolder })) {
+  for await (const { name, properties } of statementsContainer.listBlobsFlat({ prefix: config.statusReportsFolder })) {
     const rawName = stripReportsFolder(name)
 
     if (rawName.startsWith(rawPrefix)) {
       const datePart = rawName.replace(rawPrefix, '').replace('.csv', '')
       const reportDate = new Date(datePart)
 
-      if (!isNaN(reportDate.getTime()) && reportDate.getFullYear() === Number(year)) {
+      if (!isNaN(reportDate.getTime()) && (!year || reportDate.getFullYear() === Number(year))) {
         reports.push({
           name,
           date: reportDate,
-          type
+          type,
+          contentLength: properties?.contentLength ?? 0
         })
       }
     }
