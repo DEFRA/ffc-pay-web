@@ -1,10 +1,13 @@
 jest.mock('../../../app/statement-downloader/statement-search')
 jest.mock('../../../app/helpers/get-statement-schemes')
 jest.mock('../../../app/statement-downloader/search-helpers/download-helper')
+jest.mock('../../../app/statement-downloader/search-helpers/send-requests-log', () => ({
+  sendRequestsLog: jest.fn().mockResolvedValue({})
+}))
 
-const downloadStatementsRoute = require('../../../app/routes/download-statements')
+const downloadStatementsRoute = require('../../../app/routes/statements/download-statements')
 const { getStatementSchemes } = require('../../../app/helpers/get-statement-schemes')
-const { applicationAdmin, statusReportsDelinked } = require('../../../app/auth/permissions')
+const { applicationAdmin, schemeAdmin, dataView, statusReportsDelinked, statusReportSfi23 } = require('../../../app/auth/permissions')
 
 describe('download-statements route - GET', () => {
   let mockRequest
@@ -34,7 +37,8 @@ describe('download-statements route - GET', () => {
 
     mockH = {
       view: jest.fn().mockReturnValue(mockResponse),
-      response: jest.fn().mockReturnValue(mockResponse)
+      response: jest.fn().mockReturnValue(mockResponse),
+      redirect: jest.fn().mockReturnValue(mockResponse)
     }
 
     mockRequest = {
@@ -87,14 +91,14 @@ describe('download-statements route - GET', () => {
       const getRoute = downloadStatementsRoute[0]
       expect(getRoute.method).toBe('GET')
       expect(getRoute.path).toBe('/download-statements')
-      expect(getRoute.options.auth.scope).toEqual([applicationAdmin, statusReportsDelinked])
+      expect(getRoute.options.auth.scope).toEqual([applicationAdmin, schemeAdmin, dataView, statusReportsDelinked, statusReportSfi23])
     })
 
     test('should have POST route for /download-statements', () => {
       const postRoute = downloadStatementsRoute[1]
       expect(postRoute.method).toBe('POST')
       expect(postRoute.path).toBe('/download-statements')
-      expect(postRoute.options.auth.scope).toEqual([applicationAdmin, statusReportsDelinked])
+      expect(postRoute.options.auth.scope).toEqual([applicationAdmin, schemeAdmin, dataView, statusReportsDelinked, statusReportSfi23])
       expect(postRoute.options.validate.payload).toBe(require('../../../app/routes/schemas/download-statements'))
       expect(typeof postRoute.options.validate.failAction).toBe('function')
     })
@@ -103,7 +107,7 @@ describe('download-statements route - GET', () => {
       const downloadRoute = downloadStatementsRoute[2]
       expect(downloadRoute.method).toBe('GET')
       expect(downloadRoute.path).toBe('/download-statements/download/{filename*}')
-      expect(downloadRoute.options.auth.scope).toEqual([applicationAdmin, statusReportsDelinked])
+      expect(downloadRoute.options.auth.scope).toEqual([applicationAdmin, schemeAdmin, dataView, statusReportsDelinked, statusReportSfi23])
     })
   })
 
@@ -119,7 +123,7 @@ describe('download-statements route - GET', () => {
 
       expect(getStatementSchemes).toHaveBeenCalledTimes(1)
       expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, {}, { crumb: MOCK_CRUMB })
-      expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.any(Object))
+      expect(mockH.view).toHaveBeenCalledWith('statements/download-statements', expect.any(Object))
     })
 
     test('should handle empty schemes array', async () => {
@@ -163,7 +167,7 @@ describe('download-statements route - GET', () => {
 
       expect(getStatementSchemes).toHaveBeenCalledTimes(1)
       expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, { additionalContext: { error }, crumb: MOCK_CRUMB })
-      expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.any(Object))
+      expect(mockH.view).toHaveBeenCalledWith('statements/download-statements', expect.any(Object))
       expect(mockResponse.code).toHaveBeenCalledWith(require('../../../app/constants/http-status-codes').BAD_REQUEST)
       expect(mockResponse.takeover).toHaveBeenCalled()
     })
@@ -186,76 +190,43 @@ describe('download-statements route - GET', () => {
       handler = downloadStatementsRoute[1].options.handler
     })
 
-    test('should handle successful search', async () => {
-      const helperMock = require('../../../app/statement-downloader/search-helpers/download-helper')
-      helperMock.prepareSearchParams.mockReturnValue({ searchCriteria: { filename: 'test.pdf' }, limit: 50, offsetOrToken: undefined })
-      helperMock.performSearch.mockResolvedValue({ statements: [{ filename: 'test.pdf' }], continuationToken: 'token' })
-
+    test('should redirect to statement-results with default pageNumber', async () => {
       await handler(mockRequest, mockH)
 
-      expect(getStatementSchemes).toHaveBeenCalled()
-      expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, {
-        additionalContext: { statements: [{ filename: 'test.pdf' }], searchPerformed: true, continuationToken: 'token' },
-        crumb: MOCK_CRUMB
-      })
-      expect(mockH.view).toHaveBeenCalledWith('download-statements', expect.any(Object))
+      expect(mockH.redirect).toHaveBeenCalledWith('/statement-results?pageNumber=0')
+      expect(mockResponse.code).toHaveBeenCalledWith(303)
     })
 
-    test('should handle search error', async () => {
-      const helperMock = require('../../../app/statement-downloader/search-helpers/download-helper')
-      helperMock.prepareSearchParams.mockReturnValue({ searchCriteria: {}, limit: 50, offsetOrToken: undefined })
-      helperMock.performSearch.mockResolvedValue({ error: 'Search failed' })
+    test('should include populated search fields in redirect query', async () => {
+      mockRequest.payload = {
+        filename: 'FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025101508224868.pdf',
+        schemeId: 1,
+        marketingYear: 2024,
+        frn: 1100021264,
+        timestamp: '2025101508224868',
+        limit: 50
+      }
 
       await handler(mockRequest, mockH)
 
-      expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, {
-        additionalContext: { error: { message: 'Search failed' }, searchPerformed: false },
-        crumb: MOCK_CRUMB
-      })
+      expect(mockH.redirect).toHaveBeenCalledWith('/statement-results?filename=FFC_PaymentDelinkedStatement_SFI_2024_1100021264_2025101508224868.pdf&schemeId=1&marketingYear=2024&frn=1100021264&timestamp=2025101508224868&limit=50&pageNumber=0')
+      expect(mockResponse.code).toHaveBeenCalledWith(303)
     })
 
-    test('should handle statement not found', async () => {
-      const helperMock = require('../../../app/statement-downloader/search-helpers/download-helper')
-      helperMock.prepareSearchParams.mockReturnValue({ searchCriteria: { filename: 'notfound.pdf' }, limit: 50, offsetOrToken: undefined })
-      helperMock.performSearch.mockResolvedValue({ statements: [], continuationToken: null })
+    test('should exclude empty and null values from redirect query', async () => {
+      mockRequest.payload = {
+        filename: '',
+        schemeId: null,
+        marketingYear: '',
+        frn: 1100021264,
+        timestamp: undefined,
+        limit: ''
+      }
 
       await handler(mockRequest, mockH)
 
-      expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, {
-        additionalContext: { error: { message: 'Statement not found' }, searchPerformed: false },
-        crumb: MOCK_CRUMB
-      })
-    })
-
-    test('should handle performSearch error', async () => {
-      const helperMock = require('../../../app/statement-downloader/search-helpers/download-helper')
-      helperMock.prepareSearchParams.mockReturnValue({ searchCriteria: {}, limit: 50, offsetOrToken: undefined })
-      helperMock.performSearch.mockRejectedValue(new Error('Perform error'))
-
-      await handler(mockRequest, mockH)
-
-      expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, { additionalContext: { error: { message: 'Perform error' } }, crumb: MOCK_CRUMB })
-    })
-
-    test('should handle post error', async () => {
-      const helperMock = require('../../../app/statement-downloader/search-helpers/download-helper')
-      helperMock.prepareSearchParams.mockImplementation(() => { throw new Error('Prepare error') })
-
-      await handler(mockRequest, mockH)
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error in POST handler:', expect.any(Error))
-      expect(buildViewContext).toHaveBeenCalledWith(MOCK_SCHEMES, mockRequest.payload, { additionalContext: { error: { message: 'Prepare error' } }, crumb: MOCK_CRUMB })
-    })
-
-    test('should handle post error with schemes fetch failure', async () => {
-      const helperMock = require('../../../app/statement-downloader/search-helpers/download-helper')
-      helperMock.prepareSearchParams.mockImplementation(() => { throw new Error('Prepare error') })
-      getStatementSchemes.mockRejectedValue(new Error('Schemes error'))
-
-      await handler(mockRequest, mockH)
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching schemes after search failure:', expect.any(Error))
-      expect(handleSchemesError).toHaveBeenCalledWith(mockH, 'Unable to load schemes. Please try again later.')
+      expect(mockH.redirect).toHaveBeenCalledWith('/statement-results?frn=1100021264&pageNumber=0')
+      expect(mockResponse.code).toHaveBeenCalledWith(303)
     })
   })
 

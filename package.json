@@ -1,6 +1,6 @@
 {
   "name": "ffc-pay-web",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "description": "FFC payment management service",
   "homepage": "https://github.com/DEFRA/ffc-pay-web",
   "main": "app/index.js",
@@ -33,7 +33,7 @@
   "license": "OGL-UK-3.0",
   "dependencies": {
     "@azure/identity": "4.13.1",
-    "@azure/monitor-opentelemetry": "1.18.0",
+    "@azure/monitor-opentelemetry": "1.18.2",
     "@azure/msal-node": "5.1.5",
     "@azure/storage-blob": "12.31.0",
     "@fast-csv/format": "5.0.2",
@@ -47,7 +47,7 @@
     "@hapi/vision": "6.1.0",
     "@hapi/wreck": "18.1.2",
     "@joi/date": "2.1.0",
-    "ffc-messaging": "2.10.7",
+    "ffc-messaging": "2.10.8",
     "govuk-frontend": "6.1.0",
     "hapi-pino": "13.0.0",
     "joi": "18.2.1",
@@ -80,16 +80,12 @@
     "webpack": "5.105.3",
     "webpack-cli": "4.10.0"
   },
-  "overrides": {
-    "protobufjs": "8.6.3",
-    "uuid": "11.1.1",
-    "joi": "18.2.1",
-    "js-yaml": "4.2.0",
-    "@opentelemetry/core": "2.8.0"
-  },
   "nodemonConfig": {
     "ignore": [
       "**/test-output/**"
     ]
+  },
+  "overrides": {
+      "@opentelemetry/propagator-jaeger": "2.9.0"
   }
 }

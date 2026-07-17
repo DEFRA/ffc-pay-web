@@ -14,8 +14,7 @@ const FINANCE_REPORTS_LINKS = [
   { href: '/report-list', text: 'Reports', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
   { href: '/report-list/payment-requests-v2', text: 'Payment request statuses report' },
   { href: '/report-list/ap-ar-report', text: 'AP/AR listing report' },
-  { href: '/report-list/request-editor-report', text: 'Request editor report' },
-  { href: '/report-list/status-report', text: 'Payment statement status report' },
+  { href: '/report-list/request-editor-report', text: 'Request editor report' }
 ]
 
 const PAYMENT_ALERTS_LINKS = [
@@ -48,7 +47,8 @@ const METRICS_LINKS = [
 ]
 
 const DOWNLOAD_STATEMENTS_LINKS = [
-  { href: '/download-statements', text: 'Download statements', homeAuth: [permissions.applicationAdmin] }
+  { href: '/download-statements', text: 'Download payment statements', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
+  { href: '/status-report', text: 'Download statement status report', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] }
 ]
 
 const HELP_LINKS = [

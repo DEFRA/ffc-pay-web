@@ -528,7 +528,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('Timestamp must be a 16 digit numeric')
+      expect(error.details[0].message).toContain('Timestamp must be in the format DD-MM-YYYY, DD-MM-YYYY HH:MM or a 16 digit timestamp (e.g., 2026122514300000)')
     })
 
     test('should reject timestamp with 17 digits', () => {
@@ -537,7 +537,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('Timestamp must be a 16 digit numeric')
+      expect(error.details[0].message).toContain('Timestamp must be in the format DD-MM-YYYY, DD-MM-YYYY HH:MM or a 16 digit timestamp (e.g., 2026122514300000)')
     })
 
     test('should reject timestamp with non-numeric characters', () => {
@@ -546,7 +546,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('Timestamp must be a 16 digit numeric')
+      expect(error.details[0].message).toContain('Timestamp must be in the format DD-MM-YYYY, DD-MM-YYYY HH:MM or a 16 digit timestamp (e.g., 2026122514300000)')
     })
 
     test('should reject timestamp with spaces', () => {
@@ -571,7 +571,7 @@ describe('download-statements schema', () => {
       const { error } = schema.validate(payload)
 
       expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('string')
+      expect(error.details[0].message).toContain('Timestamp must be in the format DD-MM-YYYY, DD-MM-YYYY HH:MM or a 16 digit timestamp (e.g., 2026122514300000)')
     })
   })
 

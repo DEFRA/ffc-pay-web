@@ -34,19 +34,21 @@ describe('generateReportHandler', () => {
     console.error = jest.fn()
   })
 
-  const expectCommonFlow = async (handler, expectedReportType, expectedTitle, expectedUrl) => {
+  const expectCommonFlow = async (handler, expectedReportType, expectedTitle, expectedUrl, expectedSchemeName) => {
     const result = await handler(request, h)
     expect(randomUUID).toHaveBeenCalled()
     expect(normaliseQuery).toHaveBeenCalledWith(request.query)
     expect(buildReportUrl).toHaveBeenCalledWith(expectedReportType, { normalized: true })
     expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', {
       status: 'pending',
-      reportType: expectedReportType
+      reportType: expectedReportType,
+      schemeName: expectedSchemeName
     })
     expect(h.view).toHaveBeenCalledWith('report-list/report-loading', {
       jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
       reportTitle: expectedTitle,
-      reportUrl: expectedUrl
+      reportUrl: expectedUrl,
+      schemeName: expectedSchemeName
     })
     expect(result).toBe('view-result')
     await Promise.resolve()
@@ -55,20 +57,27 @@ describe('generateReportHandler', () => {
       status: 'download',
       reportType: expectedReportType,
       returnedFilename: 'valid.json',
-      reportFilename: 'final.csv'
+      reportFilename: 'final.csv',
+      schemeName: expectedSchemeName
     })
   }
 
   test('uses options values when provided and reportType from parameter', async () => {
     options = { reportUrl: 'http://options.url', reportTitle: 'Option Title' }
     const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
-    await expectCommonFlow(handler, 'ParamReport', 'Option Title', 'http://options.url')
+    await expectCommonFlow(handler, 'ParamReport', 'Option Title', 'http://options.url', 'Option Title')
   })
 
   test('falls back on query values when options not provided and reportType from query', async () => {
     options = {}
     const handler = generateReportHandler(undefined, generateFinalFilenameFunc, options)
-    await expectCommonFlow(handler, 'QReport', 'Query Title', 'http://query.url')
+    await expectCommonFlow(handler, 'QReport', 'Query Title', 'http://query.url', 'Query Title')
+  })
+
+  test('uses explicit schemeName option when provided', async () => {
+    options = { reportUrl: 'http://options.url', reportTitle: 'Option Title', schemeName: 'Delinked' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    await expectCommonFlow(handler, 'ParamReport', 'Option Title', 'http://options.url', 'Delinked')
   })
 
   test('throws error if returned filename is invalid and sets status to failed', async () => {
@@ -102,6 +111,6 @@ describe('generateReportHandler', () => {
     request.query['select-type'] = 'QueryDerived'
     request.query['report-title'] = 'Query Derived Title'
     const handler = generateReportHandler(undefined, generateFinalFilenameFunc, options)
-    await expectCommonFlow(handler, 'QueryDerived', 'Query Derived Title', 'http://option-url.com')
+    await expectCommonFlow(handler, 'QueryDerived', 'Query Derived Title', 'http://option-url.com', 'Query Derived Title')
   })
 })

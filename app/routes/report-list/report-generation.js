@@ -19,9 +19,14 @@ const createDownloadRoute = () => ({
         return h.response('Report not ready').code(HTTP_STATUS.ACCEPTED)
       }
 
-      const { reportType, returnedFilename, reportFilename } = result
+      const { reportType, returnedFilename, reportFilename, schemeName } = result
 
-      const callback = setStatusCallback(request, jobId)
+      const callback = setStatusCallback(request, jobId, {
+        reportType,
+        reportFilename,
+        schemeName
+      })
+
       const responseStream = await generateReport(returnedFilename, reportType, callback)
 
       if (!responseStream) {

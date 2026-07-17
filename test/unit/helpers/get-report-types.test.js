@@ -22,8 +22,7 @@ describe('getReportTypes', () => {
       'Suppressed payment requests': 'suppressed-payments',
       'AP-AR listing report': 'ap-ar-report',
       Holds: 'holds',
-      'Request Editor report': 'request-editor-report',
-      'Payment statement status report': 'status-report'
+      'Request Editor report': 'request-editor-report'
     })
   })
 })
