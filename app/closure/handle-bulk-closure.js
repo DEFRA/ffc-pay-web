@@ -1,9 +1,8 @@
 const fs = require('node:fs')
-const { postProcessing, postRetention } = require('../api')
+const { postRetention } = require('../api')
 const { processClosureData } = require('../closure')
 const { handleBulkClosureError } = require('./handle-bulk-closure-error')
 const { BULK, MANAGE } = require('../constants/closures-routes')
-const { SFI } = require('../constants/source-systems')
 
 const readAndCheckFile = (path, request, h) => {
   let data
