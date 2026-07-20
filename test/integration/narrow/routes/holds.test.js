@@ -64,7 +64,7 @@ describe('Holds routes (integration narrow)', () => {
     expect(response.statusCode).toBe(200)
     expect(getHoldCategories).toHaveBeenCalled()
     expect(response.payload).toContain('Create a payment hold')
-    expect(response.payload).toContain('FRN (Firm reference number)')
+    expect(response.payload).toContain('FRN (Firm Reference Number)')
   })
 
   test('POST add-confirm handler returns the add-confirm view with selected values', async () => {

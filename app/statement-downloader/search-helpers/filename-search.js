@@ -1,6 +1,6 @@
 const { getStatementsContainer } = require('./get-statement-parts')
 const { createStatementResult, createStatementResultFromDBRow } = require('./create-statement')
-const db = require('../statement-db-search')
+const statementDBSearch = require('../statement-db-search')
 const { NOT_FOUND } = require('../../constants/http-status-codes')
 const { parseFilename } = require('./get-statement-parts')
 
@@ -29,8 +29,9 @@ const searchBlobByFilename = async (blobPath, filename) => {
 
 const searchDbByFilename = async (filename) => {
   try {
-    const row = await db.getByFilename(filename)
+    const row = await statementDBSearch.getByFilename(filename)
     const rowResult = createStatementResultFromDBRow(row)
+
     return rowResult ? { statements: [rowResult], continuationToken: null } : { statements: [], continuationToken: null }
   } catch (error) {
     console.warn('DB filename search failed:', error?.message || error)

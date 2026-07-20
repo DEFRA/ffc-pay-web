@@ -54,14 +54,18 @@ describe('Report Generation Routes', () => {
     expect(res.payload).toContain('some,data')
   })
 
-  test('calls setStatusCallback correctly', async () => {
+  test('calls setStatusCallback correctly with report context', async () => {
     const fakeStream = createFakeStream('some,data\n')
-    get.mockResolvedValue({ status: 'download', reportType: 'example', returnedFilename: 'returned.csv', reportFilename: 'final.csv' })
+    get.mockResolvedValue({ status: 'download', reportType: 'example', returnedFilename: 'returned.csv', reportFilename: 'final.csv', schemeName: 'SFI-23' })
     const mockCallback = jest.fn()
     setStatusCallback.mockReturnValue(mockCallback)
     generateReport.mockImplementation((filename, type, onComplete) => { onComplete(); return fakeStream })
     await server.inject({ method: 'GET', url: '/report-list/generation/download/job-callback' })
-    expect(setStatusCallback).toHaveBeenCalledWith(expect.any(Object), 'job-callback')
+    expect(setStatusCallback).toHaveBeenCalledWith(expect.any(Object), 'job-callback', {
+      reportType: 'example',
+      reportFilename: 'final.csv',
+      schemeName: 'SFI-23'
+    })
     expect(mockCallback).toHaveBeenCalled()
   })
 })

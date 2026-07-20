@@ -29,6 +29,9 @@ describe('setReportStatus', () => {
 
     await setReportStatus(request, jobId, { status: 'done', reportType: 'pdf' })
     expect(set).toHaveBeenCalledWith(request, jobId, { status: 'done', reportType: 'pdf' })
+
+    await setReportStatus(request, jobId, { status: 'done', schemeName: 'SFI-23' })
+    expect(set).toHaveBeenCalledWith(request, jobId, { status: 'done', schemeName: 'SFI-23' })
   })
 
   test('merges all optional values correctly when all are defined', async () => {
@@ -36,7 +39,8 @@ describe('setReportStatus', () => {
       status: 'completed',
       returnedFilename: 'returned.csv',
       reportFilename: 'report.csv',
-      reportType: 'pdf'
+      reportType: 'pdf',
+      schemeName: 'SFI-23'
     }
 
     await setReportStatus(request, jobId, args)
@@ -48,7 +52,8 @@ describe('setReportStatus', () => {
       status: 'completed',
       returnedFilename: 'returned.csv',
       reportFilename: undefined,
-      reportType: 'pdf'
+      reportType: 'pdf',
+      schemeName: undefined
     }
     const expectedData = {
       status: 'completed',

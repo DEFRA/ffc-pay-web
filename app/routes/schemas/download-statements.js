@@ -4,7 +4,7 @@ const maxFRN = 9999999999
 const minYear = 2020
 const maxYear = 2099
 const limitStart = 1
-const limitEnd = 200
+const limitEnd = 1000
 
 module.exports = Joi.object({
   filename: Joi.string()
@@ -33,13 +33,19 @@ module.exports = Joi.object({
     .max(maxFRN)
     .optional()
     .allow('', null),
-  timestamp: Joi.string()
-    .pattern(/^\d{16}$/)
+  timestamp: Joi.alternatives().try(
+    // Format 1: DD-MM-YYYY (e.g., 25-12-2026)
+    Joi.string().pattern(/^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}$/),
+    // Format 2: DD-MM-YYYY HH:MM (e.g., 25-12-2026 14:30)
+    Joi.string().pattern(/^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}\s([01]\d|2[0-3]):[0-5]\d$/),
+    // Format 3: 16 digit timestamp (e.g., 2026122514300000)
+    Joi.string().pattern(/^\d{16}$/)
+  )
     .optional()
     .allow('', null)
     .error(errors => {
       errors.forEach(err => {
-        err.message = 'Timestamp must be a 16 digit numeric string'
+        err.message = 'Timestamp must be in the format DD-MM-YYYY, DD-MM-YYYY HH:MM or a 16 digit timestamp (e.g., 2026122514300000)'
       })
       return errors
     }),

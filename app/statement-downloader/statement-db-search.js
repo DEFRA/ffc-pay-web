@@ -12,6 +12,7 @@ const breaker = new CircuitBreaker(TIMEOUT_MS, FAILURE_THRESHOLD, RESET_TIMEOUT_
 const getByFilename = async (filename) => {
   const path = buildFilenameQueryPath(filename)
   const payload = await executeApiCall(path, config.statementPublisherEndpoint, breaker, TIMEOUT_MS)
+  console.log('POST payload:', payload)
 
   if (!payload) {
     return null
@@ -28,7 +29,9 @@ const search = async (criteria = {}, limit = 100, offset = 0) => {
   const rows = payload?.statements ?? payload?.rows ?? (Array.isArray(payload) ? payload : [])
   const continuationToken = payload?.continuationToken ?? (rows.length < limit ? null : offset + rows.length)
 
-  return { statements: rows, continuationToken }
+  const totalCount = payload?.total ?? null
+
+  return { statements: rows, continuationToken, totalCount }
 }
 
 const getCircuitState = () => breaker.getState()

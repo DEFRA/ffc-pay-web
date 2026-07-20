@@ -60,24 +60,24 @@ const handleSchemesError = (h, errorMessage) => {
   return h.response({ error: errorMessage }).code(INTERNAL_SERVER_ERROR)
 }
 
-const prepareSearchParams = (request, fileLimit) => {
-  const mergedPayload = parseAndMergeFilename(request.payload)
+const prepareSearchParams = (data, fileLimit) => {
+  const mergedPayload = parseAndMergeFilename(data)
   const searchCriteria = buildSearchCriteria(mergedPayload)
-  const limit = request.payload.limit ? Math.floor(Number(request.payload.limit)) : fileLimit
-  const continuationToken = request.payload.continuationToken || null
+  const limit = data.limit ? Math.floor(Number(data.limit)) : fileLimit
+  const continuationToken = data.continuationToken || null
 
   let offsetOrToken = continuationToken
-  if (!continuationToken && Object.hasOwn(request.payload, 'pageNumber')) {
-    const pageIndex = Number(request.payload.pageNumber) || 0
+  if (!continuationToken && Object.hasOwn(data, 'pageNumber')) {
+    const pageIndex = Number(data.pageNumber) || 0
     offsetOrToken = pageIndex * limit
   }
 
   return { searchCriteria, limit, offsetOrToken, mergedPayload }
 }
 
-const performSearch = async (searchCriteria, limit, offsetOrToken) => {
+const performSearch = async (searchCriteria, limit, offsetOrToken, username) => {
   console.info('Download-statements search criteria: %o', searchCriteria)
-  return searchStatements(searchCriteria, limit, offsetOrToken)
+  return searchStatements(searchCriteria, limit, offsetOrToken, username)
 }
 
 module.exports = {

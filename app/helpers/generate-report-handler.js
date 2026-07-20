@@ -14,6 +14,7 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
 
     // All other reports will have their report type passed as a param, except AP and AR Reports.
     const reportType = reportTypeParam ?? query['select-type']
+    const schemeName = options.schemeName ?? query['scheme-name'] ?? query.schemeName ?? query.scheme ?? reportTitle
 
     const normalisedQuery = normaliseQuery(query)
 
@@ -21,7 +22,8 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
 
     setReportStatus(request, jobId, {
       status: 'pending',
-      reportType
+      reportType,
+      schemeName
     })
 
     queryTrackingApi(url)
@@ -31,7 +33,8 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
           status: 'download',
           reportType,
           returnedFilename,
-          reportFilename: generateFinalFilenameFunc(normalisedQuery)
+          reportFilename: generateFinalFilenameFunc(normalisedQuery),
+          schemeName
         })
       })
       .catch((err) => {
@@ -44,7 +47,8 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
     return h.view('report-list/report-loading', {
       jobId,
       reportTitle,
-      reportUrl
+      reportUrl,
+      schemeName
     })
   }
 }

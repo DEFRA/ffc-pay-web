@@ -51,8 +51,16 @@ const handleApiError = (err, fullUrl, breaker) => {
   throw wrapperErr
 }
 
-const executeApiCall = async (path, endpoint, breaker, timeoutMs) => {
+const executeApiCall = async (
+  path,
+  endpoint,
+  breaker,
+  timeoutMs,
+  payload = null,
+  method = 'GET'
+) => {
   const fullUrl = `${endpoint}${path}`
+
   try {
     breaker.shouldAttemptHalfOpen()
   } catch (e) {
@@ -61,9 +69,21 @@ const executeApiCall = async (path, endpoint, breaker, timeoutMs) => {
   }
 
   try {
-    console.info(`Calling statement-publisher: ${fullUrl}`)
-    const apiCall = api.getStatementPublisherData(path)
-    const result = await Promise.race([apiCall, createTimeoutPromise(timeoutMs)])
+    console.info(`Calling statement-publisher: ${method} ${fullUrl}`)
+
+    let apiCall
+
+    if (method.toUpperCase() === 'POST') {
+      apiCall = api.postStatementPublisher(path, payload)
+    } else {
+      apiCall = api.getStatementPublisherData(path)
+    }
+
+    const result = await Promise.race([
+      apiCall,
+      createTimeoutPromise(timeoutMs)
+    ])
+
     breaker.handleSuccess()
     return result
   } catch (err) {
