@@ -37,12 +37,12 @@ describe('Consolidated report-loading view', () => {
     })
   })
 
-  test('generate report handler uses /generate-report-list breadcrumb', async () => {
+  test('generate report handler uses /download-report-list breadcrumb', async () => {
     const handler = generateReportHandler(undefined, () => 'ap-report.csv', {
       reportTitle: 'AP/AR listing report',
       reportUrl: GENERATE_REPORT_LIST.AP_AR,
       loadingView: 'report-loading/report-loading',
-      reportsUrl: '/generate-report-list'
+      reportsUrl: '/download-report-list'
     })
 
     request.query['select-type'] = 'ap-listing-report'
@@ -52,11 +52,11 @@ describe('Consolidated report-loading view', () => {
       jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
       reportTitle: 'AP/AR listing report',
       reportUrl: GENERATE_REPORT_LIST.AP_AR,
-      reportsUrl: '/generate-report-list'
+      reportsUrl: '/download-report-list'
     })
   })
 
-  test('handler defaults reportsUrl to /generate-report-list', async () => {
+  test('handler defaults reportsUrl to /download-report-list', async () => {
     const handler = generateReportHandler('request-editor-report', () => 'request-editor.csv', {
       reportTitle: 'Request Editor report',
       reportUrl: DOWNLOAD_REPORT_LIST.REQUEST_EDITOR_REPORT,
@@ -66,7 +66,7 @@ describe('Consolidated report-loading view', () => {
     await handler(request, h)
 
     expect(h.view).toHaveBeenCalledWith('report-loading/report-loading', expect.objectContaining({
-      reportsUrl: '/generate-report-list'
+      reportsUrl: '/download-report-list'
     }))
   })
 })

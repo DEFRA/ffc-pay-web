@@ -320,4 +320,84 @@ describe('Status Report Routes', () => {
       expect(res.statusCode).toBe(403)
     })
   })
+
+  describe('formatFileSize - via report rows', () => {
+    const injectSearch = (contentLength) => {
+      getReportsByYearAndType.mockResolvedValue([{
+        name: 'report.csv',
+        date: new Date('2025-01-15'),
+        contentLength
+      }])
+      return server.inject({
+        method: 'GET',
+        url: `${REPORT_LIST.STATUS_SEARCH}?select-type=sustainable-farming-incentive`,
+        auth: getAuth([statusReportSfi23])
+      })
+    }
+
+    test('formats file size in bytes when less than 1 KB', async () => {
+      const res = await injectSearch(512)
+      const $ = loadPayload(res.payload)
+      expect($('.status-report-row').first().text()).toContain('512 B')
+    })
+
+    test('formats file size in KB when less than 1 MB', async () => {
+      const res = await injectSearch(10240)
+      const $ = loadPayload(res.payload)
+      expect($('.status-report-row').first().text()).toContain('10.0 KB')
+    })
+
+    test('formats file size in GB when 1 GB or larger', async () => {
+      const res = await injectSearch(2147483648)
+      const $ = loadPayload(res.payload)
+      expect($('.status-report-row').first().text()).toContain('2.0 GB')
+    })
+
+    test('returns 0 B for zero contentLength', async () => {
+      const res = await injectSearch(0)
+      const $ = loadPayload(res.payload)
+      expect($('.status-report-row').first().text()).toContain('0 B')
+    })
+
+    test('returns 0 B for negative contentLength', async () => {
+      const res = await injectSearch(-1024)
+      const $ = loadPayload(res.payload)
+      expect($('.status-report-row').first().text()).toContain('0 B')
+    })
+  })
+
+  describe('getFileType - via report rows', () => {
+    test('returns CSV for file with no extension', async () => {
+      getReportsByYearAndType.mockResolvedValue([{
+        name: 'report-no-extension',
+        date: new Date('2025-01-15'),
+        contentLength: 1024
+      }])
+
+      const res = await server.inject({
+        method: 'GET',
+        url: `${REPORT_LIST.STATUS_SEARCH}?select-type=sustainable-farming-incentive`,
+        auth: getAuth([statusReportSfi23])
+      })
+
+      const $ = loadPayload(res.payload)
+      expect($('.status-report-row').first().text()).toContain('CSV')
+    })
+  })
+
+  describe('getReportTitle - unknown scheme type', () => {
+    test('uses the raw type as the display name when type is not in reportTypes', async () => {
+      getReportsByYearAndType.mockResolvedValue([])
+
+      const res = await server.inject({
+        method: 'GET',
+        url: `${REPORT_LIST.STATUS_SEARCH}?select-type=unknown-custom-type`,
+        auth: getAuth([statusReportSfi23])
+      })
+
+      expect(res.statusCode).toBe(200)
+      const $ = loadPayload(res.payload)
+      expect($('h1').text()).toContain('unknown-custom-type statement status reports')
+    })
+  })
 })

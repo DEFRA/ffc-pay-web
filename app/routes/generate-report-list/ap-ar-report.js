@@ -37,7 +37,7 @@ module.exports = [
       reportTitle: 'AP/AR listing report',
       reportUrl: GENERATE_REPORT_LIST.AP_AR,
       loadingView: 'report-loading/report-loading',
-      reportsUrl: '/generate-report-list'
+      reportsUrl: '/download-report-list'
     })
   )
 ]

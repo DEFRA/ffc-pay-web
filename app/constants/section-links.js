@@ -14,8 +14,7 @@ const FINANCE_REPORTS_LINKS = [
   { href: '/download-report-list', text: 'Download reports', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
   { href: '/download-report-list/request-editor-report', text: 'Request editor report' },
   { href: '/generate-report-list/generate-payment-request-statuses', text: 'Generate payment request statuses report', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
-  { href: '/generate-report-list/generate-ap-ar-listing-report', text: 'AP/AR listing report', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
-  { href: '/generate-report-list/find-payment-statement-status-report', text: 'Payment statement status report' },
+  { href: '/generate-report-list/generate-ap-ar-listing-report', text: 'AP/AR listing report', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] }
 ]
 
 const GENERATE_REPORTS_LINKS = [

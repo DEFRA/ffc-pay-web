@@ -41,11 +41,4 @@ describe('GET /download-report-list', () => {
     expect(viewModel.fileInfo).toEqual(getReportFileInfo())
     expect(viewModel.totalReportTypes).toEqual(reportTypesKeys.length)
   })
-
-  test('hides holds link when no holds exist', async () => {
-    getHolds.mockResolvedValue([])
-    const response = await server.inject({ method: 'GET', url: '/download-report-list', auth })
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).not.toContain('/download-report-list/holds')
-  })
 })

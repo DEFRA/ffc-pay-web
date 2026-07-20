@@ -43,7 +43,7 @@ module.exports = [
         reportTitle: 'Generate payment request statuses report',
         reportUrl: GENERATE_REPORT_LIST.PAYMENT_REQUESTS_V2,
         loadingView: 'report-loading/report-loading',
-        reportsUrl: '/generate-report-list'
+        reportsUrl: '/download-report-list'
       }
     )
   )

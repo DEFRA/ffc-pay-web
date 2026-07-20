@@ -54,11 +54,9 @@
               <p>Download reports direct to your computer</p>
             </div>
           <ul class="govuk-list">
-            {% if totalHolds > 0 %}
               <li>
                 <a href="/download-report-list/holds" class="govuk-link">Holds</a> <span class="govuk-hint">{{ fileInfo['Payment Holds'].fileType }}</span>
               </li>
-            {% endif %}
             {% for reportType in reportTypes %}
               <li>
                 <a href="/download-report-list/{{ reportTypesRoutes[reportType] | lower }}" class="govuk-link">{{ reportType }}</a> <span class="govuk-hint">{{ fileInfo[reportType].fileType }}</span>

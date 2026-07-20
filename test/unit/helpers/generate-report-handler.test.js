@@ -48,7 +48,7 @@ describe('generateReportHandler', () => {
       jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
       reportTitle: expectedTitle,
       reportUrl: expectedUrl,
-      reportsUrl: '/generate-report-list'
+      reportsUrl: '/download-report-list'
     })
     expect(result).toBe('view-result')
     await Promise.resolve()
@@ -76,7 +76,7 @@ describe('generateReportHandler', () => {
       jobId: '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c',
       reportTitle: 'Option Title',
       reportUrl: 'http://options.url',
-      reportsUrl: '/generate-report-list'
+      reportsUrl: '/download-report-list'
     })
     expect(result).toBe('view-result')
   })
@@ -138,5 +138,62 @@ describe('generateReportHandler', () => {
       reportsUrl: '/download-report-list'
     })
     expect(result).toBe('view-result')
+  })
+
+  test('sets no-results status when queryTrackingApi returns null', async () => {
+    queryTrackingApi.mockResolvedValue(null)
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, {})
+    await handler(request, h)
+    await Promise.resolve()
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', { status: 'no-results' })
+  })
+
+  test('sets no-results status when queryTrackingApi returns empty string', async () => {
+    queryTrackingApi.mockResolvedValue('')
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, {})
+    await handler(request, h)
+    await Promise.resolve()
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', { status: 'no-results' })
+  })
+
+  test('sets no-results status when error has a 404 status code', async () => {
+    const notFoundError = new Error('not found')
+    notFoundError.output = { statusCode: 404 }
+    queryTrackingApi.mockRejectedValue(notFoundError)
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, {})
+    await handler(request, h)
+    await Promise.resolve()
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', { status: 'no-results' })
+    expect(console.error).not.toHaveBeenCalled()
+  })
+
+  test('uses query scheme-name as schemeName when options.schemeName not set', async () => {
+    request.query['scheme-name'] = 'SchemeName From Query'
+    options = { reportUrl: 'http://options.url', reportTitle: 'Option Title' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    await handler(request, h)
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', expect.objectContaining({
+      schemeName: 'SchemeName From Query'
+    }))
+  })
+
+  test('uses query.schemeName as schemeName fallback', async () => {
+    request.query.schemeName = 'SchemeName Property'
+    options = { reportUrl: 'http://options.url', reportTitle: 'Option Title' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    await handler(request, h)
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', expect.objectContaining({
+      schemeName: 'SchemeName Property'
+    }))
+  })
+
+  test('uses query.scheme as schemeName fallback', async () => {
+    request.query.scheme = 'Scheme Property'
+    options = { reportUrl: 'http://options.url', reportTitle: 'Option Title' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    await handler(request, h)
+    expect(setReportStatus).toHaveBeenCalledWith(request, '70cb0f07-e0cf-449c-86e8-0344f2c6cc6c', expect.objectContaining({
+      schemeName: 'Scheme Property'
+    }))
   })
 })

@@ -15,12 +15,12 @@
       }) }}
     {% endif %}
         {{ schemeSelect(schemes, selectedSchemeId, true, '', errorMessages.schemeId) }}
-        <div id="prn-container">
+        <div id="prn-container" class="govuk-inset-text">
             {{ prnInput(prn, errorMessages.prn) }}
-    </div>
-        <div id="revenue-or-capital-container">
+        </div>
+        <div id="revenue-or-capital-container" class="govuk-inset-text">
             {{ revenueOrCapitalRadios(revenueOrCapital, errorMessages.revenueOrCapital) }}
-    </div>
+        </div>
         {{ yearInput(year, errorMessages.year) }}
     {{ frnInput(frn) }}
     <div id="scheme-fields-status" class="govuk-visually-hidden" aria-live="polite"></div>
