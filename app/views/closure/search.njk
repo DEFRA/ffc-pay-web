@@ -35,7 +35,6 @@
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
       <p class="govuk-body">Any agreements listed here are considered closed. This allows the Payment Hub to manage data retention for the data it holds related to payment requests.</p>
-      <p class="govuk-body">For SFI22 only, any agreements listed will be used for suppressions against the given Firm Reference Number (FRN) and agremeent number. If a '0' value payment request is received after the provided closure date, any amount repayable will be suppressed, and Dynamics 365 will be notified that the outstanding value should be reduced to ‘0’.</p>
       <p class="govuk-body">Search for an agreement using the Firm Reference Number (FRN) or Agreement Number, and filter the results by scheme.</p>
 
       <form class="govuk-!-margin-bottom-6" action="/closure/search" method="GET" role="search">

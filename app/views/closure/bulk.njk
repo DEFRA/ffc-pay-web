@@ -16,12 +16,11 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      {% set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Agreement closures - service design.pdf' | urlencode %}
 
       <p class="govuk-body">Bulk adding new agreement closures allows the Payment Hub to manage data retention for the data it holds related to payment requests.</p>
-      <p class="govuk-body">For SFI22 only, any data supplied will be used for suppressions against the given Firm Reference Number (FRN) and agremeent number. If a '0' value payment request is received after the provided closure date, any amount repayable will be suppressed, and Dynamics 365 will be notified that the outstanding value should be reduced to ‘0’.</p>
-      <p class="govuk-body">For guidance including how to format the csv file download the agreement closure guide (PDF).</p>
-
-      <p class="govuk-body">Alternatively, you can <a href="/closure/bulk" class="govuk-link">create a singular agreement closure</a>.</p>
+      <p class="govuk-body">For guidance including how to format the csv file <a class="govuk-link" href="{{ pdfDownloadLink }}" target="_blank" rel="noopener noreferrer">download the agreement closure guide (PDF)</a>.</p>
+      <p class="govuk-body">Alternatively, you can <a href="/closure/add" class="govuk-link">create a singular agreement closure</a>.</p>
 
       {% if errors %}
         <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
