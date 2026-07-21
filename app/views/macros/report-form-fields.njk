@@ -3,14 +3,13 @@
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/error-message/macro.njk" import govukErrorMessage %}
 
-
 {% macro reportPageTitle(text) %}
   <h1 class="govuk-heading-l">{{ text }}</h1>
 {% endmacro %}
 
 {% macro schemeSelect(schemes, selectedSchemeId = '', includeEmptyOption = false, hint = '', errorText = '') %}
   <div class="govuk-form-group{% if errorText %} govuk-form-group--error{% endif %}">
-    <div class="govuk-body" for="schemeId">
+    <div class="govuk-body">
       For a report based on scheme, select the scheme and year. For an individual report use the Firm Reference Number (FRN).
     </div>
     <label class="govuk-label govuk-label--s govuk-!-font-weight-bold" for="schemeId">
@@ -78,7 +77,7 @@
 {% macro frnInput(frnValue = '', errorText = '') %}
   <div class="govuk-form-group{% if errorText %} govuk-form-group--error{% endif %}">
     <label class="govuk-label govuk-label--s govuk-!-font-weight-bold" for="frn">
-      FRN (Firm Reference Number) (optional)
+      Firm Reference Number (FRN) (optional)
     </label>
     {% if errorText %}
       {{ govukErrorMessage({ text: errorText }) }}
