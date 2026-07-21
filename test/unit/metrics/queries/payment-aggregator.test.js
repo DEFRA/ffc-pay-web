@@ -123,7 +123,7 @@ describe('payment-aggregator', () => {
 
         expect(result.data.paymentsByScheme).toHaveLength(2)
         expect(result.data.paymentsByScheme[0]).toEqual({
-          schemeName: 'SFI',
+          schemeName: 'SFI-22',
           schemeYear: 2024,
           totalPayments: 100,
           totalValue: 30000,
@@ -181,7 +181,7 @@ describe('payment-aggregator', () => {
         const payloadWithMinimalScheme = {
           paymentsByScheme: [
             {
-              schemeName: 'SFI'
+              schemeName: 'SFI-22'
             }
           ]
         }
@@ -190,7 +190,7 @@ describe('payment-aggregator', () => {
         const result = await getPaymentMetrics('ytd')
 
         expect(result.data.paymentsByScheme[0]).toEqual({
-          schemeName: 'SFI',
+          schemeName: 'SFI-22',
           schemeYear: undefined,
           totalPayments: 0,
           totalValue: 0,
