@@ -3,6 +3,25 @@ $govuk-assets-path: "~govuk-frontend/dist/govuk/assets/";
 $govuk-font-family: "Arial", sans-serif !important;
 @import "~govuk-frontend/dist/govuk/index";
 
+@include govuk-media-query($from: tablet) {
+  .app-back-to-top {
+    bottom: 0;
+    left: 0;
+    margin-top: auto;
+    margin-bottom: govuk-spacing(8);
+  }
+ 
+  .govuk-frontend-supported .app-back-to-top--fixed {
+    top: calc(100% - #{govuk-spacing(8)});
+    bottom: auto;
+    left: auto;
+  }
+ 
+  .govuk-frontend-supported .app-back-to-top--hidden .app-back-to-top__link {
+    @include govuk-visually-hidden-focusable;
+  }
+}
+
 .nojs-hidden {
   display: none;
 }
@@ -105,4 +124,18 @@ $govuk-font-family: "Arial", sans-serif !important;
   font-size: 48px;
   font-weight: bold;
   color: #0b0c0c;
+}
+
+.app-back-to-top {
+  margin-top: govuk-spacing(4);
+  margin-bottom: govuk-spacing(6);
+}
+ 
+.app-back-to-top__icon {
+  display: inline-block;
+  width: 0.8em;
+  height: 1em;
+  margin-top: -(govuk-spacing(1));
+  margin-right: govuk-spacing(2);
+  vertical-align: middle;
 }
