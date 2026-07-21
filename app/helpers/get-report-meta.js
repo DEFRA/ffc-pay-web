@@ -1,10 +1,12 @@
 const REPORT_TYPES = require('../constants/report-types')
 const REPORT_PATHS = require('../constants/report-list')
+const DOWNLOAD_REPORT_LIST = require('../constants/download-report-list')
+const GENERATE_REPORT_LIST = require('../constants/generate-report-list')
 
 const reportMeta = {
   [REPORT_TYPES.PAYMENT_REQUEST_STATUSES]: {
     title: 'Generate payment request statuses',
-    url: REPORT_PATHS.PAYMENT_REQUESTS
+    url: GENERATE_REPORT_LIST.PAYMENT_REQUESTS_V2
   },
   [REPORT_TYPES.COMBINED_TRANSACTION]: {
     title: 'Combined transaction report',
@@ -12,15 +14,15 @@ const reportMeta = {
   },
   [REPORT_TYPES.SUPPRESSED_PAYMENT_REQUESTS]: {
     title: 'Suppressed payment requests',
-    url: REPORT_PATHS.SUPPRESSED_PAYMENTS
+    url: DOWNLOAD_REPORT_LIST.SUPPRESSED_PAYMENTS
   },
   [REPORT_TYPES.HOLDS]: {
     title: 'Holds',
-    url: REPORT_PATHS.HOLDS
+    url: DOWNLOAD_REPORT_LIST.HOLDS
   },
   [REPORT_TYPES.REQUEST_EDITOR]: {
     title: 'Request Editor report',
-    url: REPORT_PATHS.REQUEST_EDITOR_REPORT
+    url: DOWNLOAD_REPORT_LIST.REQUEST_EDITOR_REPORT
   },
   [REPORT_TYPES.CLAIM_LEVEL]: {
     title: 'Claim level report',
@@ -28,11 +30,11 @@ const reportMeta = {
   },
   [REPORT_TYPES.AP]: {
     title: 'AP listing report',
-    url: REPORT_PATHS.AP_AR
+    url: GENERATE_REPORT_LIST.AP_AR
   },
   [REPORT_TYPES.AR]: {
     title: 'AR listing report',
-    url: REPORT_PATHS.AP_AR
+    url: GENERATE_REPORT_LIST.AP_AR
   }
 }
 

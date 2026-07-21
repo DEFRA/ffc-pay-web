@@ -44,14 +44,23 @@ describe('Generate AP/AR Report Routes', () => {
     await server.stop()
   })
 
-  test('GET form route returns view', async () => {
+  test('GET form route returns view with noResults false by default', async () => {
     getView.mockResolvedValue('<html>form</html>')
 
     const res = await server.inject({ method: 'GET', url: GENERATE_REPORT_LIST.AP_AR })
 
     expect(res.statusCode).toBe(200)
     expect(res.payload).toBe('<html>form</html>')
-    expect(getView).toHaveBeenCalledWith(GENERATE_REPORT_VIEWS.AP_AR, expect.any(Object))
+    expect(getView).toHaveBeenCalledWith(GENERATE_REPORT_VIEWS.AP_AR, expect.any(Object), { noResults: false })
+  })
+
+  test('GET form route passes noResults true when query param is set', async () => {
+    getView.mockResolvedValue('<html>form no results</html>')
+
+    const res = await server.inject({ method: 'GET', url: `${GENERATE_REPORT_LIST.AP_AR}?noResults=true` })
+
+    expect(res.statusCode).toBe(200)
+    expect(getView).toHaveBeenCalledWith(GENERATE_REPORT_VIEWS.AP_AR, expect.any(Object), { noResults: true })
   })
 
   test('GET download route with AP type returns CSV', async () => {

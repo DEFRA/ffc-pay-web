@@ -5,7 +5,7 @@ describe('generateReportTypes', () => {
     const reportTypes = generateReportTypes()
 
     expect(reportTypes).toEqual({
-      'Generate a payment request statuses': 'generate-payment-request-statuses',
+      'Generate a payment request statuses report': 'generate-payment-request-statuses',
       'Generate an AP-AR listing report': 'generate-ap-ar-listing-report'
     })
   })

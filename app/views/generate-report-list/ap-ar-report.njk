@@ -1,18 +1,22 @@
 {% extends 'generate-report-list/base-report.njk' %}
 
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from 'macros/report-form-fields.njk' import reportPageTitle, typeSelect, submitButton, dateInput %}
 
 {% set reportTitle = 'AP/AR listing report' %}
 {% set reportUrl = '/generate-report-list/generate-ap-ar-listing-report' %}
 {% set formAction = '/generate-report-list/generate-ap-ar-listing-report/download' %}
 {% set reportTypeItems = [
-  { value: "ap-listing-report", text: "AP Listing Report (account payable)" },
-  { value: "ar-listing-report", text: "AR Listing Report (account receivable)" }
+  { value: "ap-listing-report", text: "AP Listing Report (accounts payable)" },
+  { value: "ar-listing-report", text: "AR Listing Report (accounts receivable)" }
 ] %}
 
 {% block reportContent %}
     {{ reportPageTitle(reportTitle) }}
+    {% if noResults %}
+        {{ govukInsetText({"text": "No reports matching your search were found. Check your criteria and try again."}) }}
+    {% endif %}
     {{ typeSelect(reportType, reportTypeItems) }}
     {{ dateInput('start-date', 'Start Date (optional)', errors) }}
     {{ dateInput('end-date', 'End Date (optional)', errors) }}

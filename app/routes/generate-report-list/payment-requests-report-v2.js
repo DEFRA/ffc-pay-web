@@ -12,7 +12,7 @@ const {
 
 const standardReportSchema = require('../schemas/standard-report-schema')
 
-const storageConfig = require('../../config').storageConfig
+const { storageConfig } = require('../../config')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView] }
 

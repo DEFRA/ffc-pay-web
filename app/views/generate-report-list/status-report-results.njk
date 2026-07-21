@@ -1,29 +1,24 @@
 {% extends "_layout.njk" %}
-
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/task-list/macro.njk" import govukTaskList %}
-
 {% block pageTitle %}{{ reportTitle }} - {{ serviceName }}{% endblock %}
-
 {% block beforeContent %}
   {{ govukBreadcrumbs({
     items: [{
       text: "Home",
       href: "/"
     }, {
-      text: "Reports",
-      href: "/download-report-list"
-    }, {
-      text: reportTitle
-    }]
-  })}}
+    text: "Reports",
+    href: "/download-report-list"
+  }, {
+  text: reportTitle
+}]
+  }) }}
 {% endblock %}
-
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{ reportTitle }}</h1>
-
       {% if govukTaskListData.items | length %}
         {{ govukTaskList(govukTaskListData) }}
       {% else %}

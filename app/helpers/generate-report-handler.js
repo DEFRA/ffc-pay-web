@@ -7,11 +7,20 @@ const NOT_FOUND = 404
 
 const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, options = {}) => {
   return async (request, h) => {
-    const jobId = randomUUID()
     const { query } = request
 
     const reportUrl = options.reportUrl ?? query['report-url']
     const reportTitle = options.reportTitle ?? query['report-title']
+    const reportsUrl = options.reportsUrl ?? '/download-report-list'
+
+    if (query.noResults === 'true') {
+      return h.view(options.noResultsView ?? 'payment-report-unavailable', {
+        reportTitle,
+        reportsUrl
+      })
+    }
+
+    const jobId = randomUUID()
 
     // All other reports will have their report type passed as a param, except AP and AR Reports.
     const reportType = reportTypeParam ?? query['select-type']
@@ -50,8 +59,6 @@ const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, optio
           status: 'failed'
         })
       })
-
-    const reportsUrl = options.reportsUrl ?? '/download-report-list'
 
     return h.view(options.loadingView ?? 'report-loading/report-loading', {
       jobId,

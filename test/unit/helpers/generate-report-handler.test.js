@@ -196,4 +196,34 @@ describe('generateReportHandler', () => {
       schemeName: 'Scheme Property'
     }))
   })
+
+  test('returns payment-report-unavailable view when noResults query param is true', async () => {
+    request.query.noResults = 'true'
+    options = { reportUrl: '/download-report-list/request-editor-report', reportTitle: 'Request Editor report', reportsUrl: '/download-report-list' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    const result = await handler(request, h)
+    expect(h.view).toHaveBeenCalledWith('payment-report-unavailable', {
+      reportTitle: 'Request Editor report',
+      reportsUrl: '/download-report-list'
+    })
+    expect(randomUUID).not.toHaveBeenCalled()
+    expect(result).toBe('view-result')
+  })
+
+  test('uses custom noResultsView from options when noResults is true', async () => {
+    request.query.noResults = 'true'
+    options = { reportTitle: 'My Report', reportsUrl: '/download-report-list', noResultsView: 'custom/no-results' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    await handler(request, h)
+    expect(h.view).toHaveBeenCalledWith('custom/no-results', expect.any(Object))
+  })
+
+  test('does not short-circuit when noResults query param is false', async () => {
+    request.query.noResults = 'false'
+    options = { reportUrl: 'http://options.url', reportTitle: 'Option Title' }
+    const handler = generateReportHandler('ParamReport', generateFinalFilenameFunc, options)
+    await handler(request, h)
+    expect(randomUUID).toHaveBeenCalled()
+    expect(h.view).toHaveBeenCalledWith('report-loading/report-loading', expect.any(Object))
+  })
 })

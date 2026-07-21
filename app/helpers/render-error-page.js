@@ -1,14 +1,14 @@
 const { getSchemes } = require('./get-schemes')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
 
-function mapValidationErrors (details = []) {
+const mapValidationErrors = (details = []) => {
   return details.map(({ message, path = [] }) => ({
     text: message,
     href: `#${path[0]}`
   }))
 }
 
-function mapValidationErrorsByField (details = []) {
+const mapValidationErrorsByField = (details = []) => {
   return details.reduce((acc, { message, path = [] }) => {
     const key = path[0]
     if (key && !acc[key]) {
@@ -18,7 +18,7 @@ function mapValidationErrorsByField (details = []) {
   }, {})
 }
 
-async function renderErrorPage (viewName, request, h, error) {
+const renderErrorPage = async (viewName, request, h, error) => {
   request.log(['error', 'validation'], error)
   const details = error.details || []
   const errors = mapValidationErrors(details)

@@ -6,7 +6,7 @@ const {
   generateReportHandler
 } = require('../../helpers')
 
-const storageConfig = require('../../config').storageConfig
+const { storageConfig } = require('../../config')
 
 module.exports = [
   createDownloadRoute(
