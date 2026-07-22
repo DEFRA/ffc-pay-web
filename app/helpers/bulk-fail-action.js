@@ -24,6 +24,8 @@ const bulkFailAction = async (request, h, error) => {
     }
   }
 
+  const type = request.payload?.type
+
   if (error?.output?.statusCode === HTTP_STATUS.CONTENT_TOO_LARGE) {
     return h
       .view(BULK, {
@@ -31,7 +33,8 @@ const bulkFailAction = async (request, h, error) => {
         errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }] },
         selectScheme,
         selectHoldCategoryId,
-        crumb
+        crumb,
+        type
       })
       .code(HTTP_STATUS.BAD_REQUEST)
       .takeover()
@@ -43,7 +46,8 @@ const bulkFailAction = async (request, h, error) => {
       errors: error,
       selectScheme,
       selectHoldCategoryId,
-      crumb
+      crumb,
+      type
     })
     .code(HTTP_STATUS.BAD_REQUEST)
     .takeover()
