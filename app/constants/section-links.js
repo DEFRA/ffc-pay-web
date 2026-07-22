@@ -43,7 +43,7 @@ const RESET_PAYMENT_REQUEST_LINKS = [
 ]
 
 const METRICS_LINKS = [
-  { href: '/metrics', text: 'Management information', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin] }
+  { href: '/metrics', text: 'View metrics dashboard', homeAuth: [permissions.applicationAdmin, permissions.schemeAdmin] }
 ]
 
 const DOWNLOAD_STATEMENTS_LINKS = [
