@@ -45,6 +45,7 @@ container:
   payEventStoreAzureStorageConnectionString: dummy
   payInjectionAzureStorageConnectionString: dummy
   docAzureStorageConnectionString: dummy
+  pdsAzureStorageConnectionString: dummy
   azureStorageAccountName: ffcpay
   docAzureStorageAccountName: ffcdoc
   manualPaymentsActive: true

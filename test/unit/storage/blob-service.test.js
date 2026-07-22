@@ -30,7 +30,9 @@ jest.mock('@azure/identity', () => ({
 
 let config
 let getPayEventStoreContainerClient
+let getPayInjectionContainerClient
 let getDocContainerClient
+let getRetentionContainerClient
 
 describe('blob-service tests', () => {
   beforeEach(() => {
@@ -42,18 +44,20 @@ describe('blob-service tests', () => {
         useConnectionStr: true,
         createContainers: true,
         payEventStoreConnectionStr: 'fake-pay-connection',
+        payInjectionConnectionStr: 'fake-pay-injection-connection',
+        pdsConnectionStr: 'fake-pds-connection',
         payStorageAccount: 'pay-account',
-        payManagedIdentityClientId: 'pay-id',
-        docConnectionStr: 'fake-doc-connection',
         docStorageAccount: 'doc-account',
-        docManagedIdentityClientId: 'doc-id'
+        managedIdentityClientId: 'test-managed-identity'
       }
     }))
 
     config = require('../../../app/config').storageConfig
     const blobService = require('../../../app/storage/blob-service')
     getPayEventStoreContainerClient = blobService.getPayEventStoreContainerClient
+    getPayInjectionContainerClient = blobService.getPayInjectionContainerClient
     getDocContainerClient = blobService.getDocContainerClient
+    getRetentionContainerClient = blobService.getRetentionContainerClient
   })
 
   test('getPayEventStoreContainerClient creates container when createContainers is true', async () => {
@@ -116,6 +120,46 @@ describe('blob-service tests', () => {
 
     expect(BlobServiceClient.fromConnectionString).not.toHaveBeenCalled()
     expect(mockGetContainerClient).toHaveBeenCalledWith('pay-container')
+    expect(client).toBeDefined()
+  })
+
+  test('getPayInjectionContainerClient creates container when createContainers is true', async () => {
+    mockCreateIfNotExists.mockResolvedValue({ succeeded: true })
+
+    const client = await getPayInjectionContainerClient('injection-container')
+
+    expect(mockGetContainerClient).toHaveBeenCalledWith('injection-container')
+    expect(mockCreateIfNotExists).toHaveBeenCalled()
+    expect(client).toBeDefined()
+  })
+
+  test('getPayInjectionContainerClient skips createIfNotExists when createContainers is false', async () => {
+    config.createContainers = false
+
+    const client = await getPayInjectionContainerClient('injection-container')
+
+    expect(mockCreateIfNotExists).not.toHaveBeenCalled()
+    expect(mockGetContainerClient).toHaveBeenCalledWith('injection-container')
+    expect(client).toBeDefined()
+  })
+
+  test('getRetentionContainerClient creates container when createContainers is true', async () => {
+    mockCreateIfNotExists.mockResolvedValue({ succeeded: true })
+
+    const client = await getRetentionContainerClient('retention-container')
+
+    expect(mockGetContainerClient).toHaveBeenCalledWith('retention-container')
+    expect(mockCreateIfNotExists).toHaveBeenCalled()
+    expect(client).toBeDefined()
+  })
+
+  test('getRetentionContainerClient skips createIfNotExists when createContainers is false', async () => {
+    config.createContainers = false
+
+    const client = await getRetentionContainerClient('retention-container')
+
+    expect(mockCreateIfNotExists).not.toHaveBeenCalled()
+    expect(mockGetContainerClient).toHaveBeenCalledWith('retention-container')
     expect(client).toBeDefined()
   })
 })

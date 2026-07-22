@@ -1,17 +1,19 @@
 const config = require('../config').storageConfig
-const { getPayEventStoreContainerClient, getPayInjectionContainerClient, getDocContainerClient } = require('./blob-service')
+const { getPayEventStoreContainerClient, getPayInjectionContainerClient, getDocContainerClient, getRetentionContainerClient } = require('./blob-service')
 
 const clientGetters = {
   doc: getDocContainerClient,
   'pay-event-store': getPayEventStoreContainerClient,
-  'pay-injection': getPayInjectionContainerClient
+  'pay-injection': getPayInjectionContainerClient,
+  'pds-data-retention': getRetentionContainerClient
 }
 
 const containers = {
   [config.manualPaymentsContainer]: { name: config.manualPaymentsContainer, source: 'pay-injection', client: null, initialised: false },
   [config.reportContainer]: { name: config.reportContainer, source: 'pay-event-store', client: null, initialised: false },
   [config.dataRequestContainer]: { name: config.dataRequestContainer, source: 'pay-event-store', client: null, initialised: false },
-  [config.statementsContainer]: { name: config.statementsContainer, source: 'doc', client: null, initialised: false }
+  [config.statementsContainer]: { name: config.statementsContainer, source: 'doc', client: null, initialised: false },
+  [config.retentionContainer]: { name: config.retentionContainer, source: 'pds-data-retention', client: null, initialised: false }
 }
 
 const getClient = async (container) => {

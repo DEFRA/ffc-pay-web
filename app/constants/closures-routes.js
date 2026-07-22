@@ -6,4 +6,5 @@ module.exports = {
   BULK: '/closure/bulk',
   REMOVE: '/closure/remove',
   REMOVE_CONFIRM: '/closure/remove-confirm',
+  EXTRACT: '/closure/extract'
 }

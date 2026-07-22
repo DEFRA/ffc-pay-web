@@ -14,6 +14,11 @@ const CLOSURES_ROUTES = require('../../../../app/constants/closures-routes')
 const CLOSURES_VIEWS = require('../../../../app/constants/closures-views')
 const { AGREEMENT_CLOSURES_LINKS } = require('../../../../app/constants/section-links')
 
+jest.mock('../../../../app/storage', () => ({
+  getRetentionExtractDownloadStreamAndDeleteAfter: jest.fn()
+}))
+const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('../../../../app/storage')
+
 jest.mock('../../../../app/helpers', () => ({
   ...jest.requireActual('../../../../app/helpers'),
   getSchemes: jest.fn()
@@ -502,6 +507,35 @@ describe('Closures', () => {
       }))
 
       expect(result).toBe(h.view())
+    })
+  })
+
+  describe('GET /closure/extract', () => {
+    test('returns 403 when user lacks permission', async () => {
+      auth.credentials.scope = []
+
+      const res = await server.inject({
+        method: 'GET',
+        url: CLOSURES_ROUTES.EXTRACT,
+        auth
+      })
+
+      expect(res.statusCode).toBe(403)
+
+      expect(getRetentionData).not.toHaveBeenCalled()
+      expect(
+        getRetentionExtractDownloadStreamAndDeleteAfter
+      ).not.toHaveBeenCalled()
+    })
+
+    test('redirects to login when unauthenticated', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: CLOSURES_ROUTES.EXTRACT
+      })
+
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe('/login')
     })
   })
 })

@@ -11,6 +11,8 @@ const {
   getStatusReport
 } = require('./doc-reports')
 
+const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('./retention-extract')
+
 module.exports = {
   uploadManualPaymentFile,
   getMIReport,
@@ -18,5 +20,6 @@ module.exports = {
   getDataRequestFile,
   getValidReportYearsByType,
   getReportsByYearAndType,
-  getStatusReport
+  getStatusReport,
+  getRetentionExtractDownloadStreamAndDeleteAfter
 }

@@ -15,6 +15,7 @@ container:
   payEventStoreAzureStorageConnectionString: dummy
   payInjectionAzureStorageConnectionString: dummy
   docAzureStorageConnectionString: dummy
+  pdsAzureStorageConnectionString: dummy
   azureStorageAccountName: testffcpayst1001
   docAzureStorageAccountName: testffcdocst1001
   messageQueueHost: DEVFFCINFSB1001.servicebus.windows.net

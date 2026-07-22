@@ -2,7 +2,7 @@ const { applicationAdmin, closureAdmin } = require('../auth/permissions')
 const schema = require('./schemas/closure/closure')
 const bulkSchema = require('./schemas/closure/bulk-closure')
 const removeConfirmSchema = require('./schemas/closure/remove-confirm')
-const { postRetention } = require('../api')
+const { postRetention, getRetentionData } = require('../api')
 const { MAX_BYTES, MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
 const { handleBulkClosureError } = require('../closure/handle-bulk-closure-error')
@@ -12,6 +12,7 @@ const CLOSURES_ROUTES = require('../constants/closures-routes')
 const { AGREEMENT_CLOSURES_LINKS } = require('../constants/section-links')
 const { getClosures } = require('../closure')
 const { getSchemes } = require('../helpers')
+const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('../storage')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, closureAdmin] }
 const defaultPage = 1
@@ -220,7 +221,7 @@ module.exports = [
   },
   {
     method: 'GET',
-    path: '/closure/remove-confirm',
+    path: CLOSURES_ROUTES.REMOVE_CONFIRM,
     options: {
       auth: AUTH_SCOPE,
       validate: {
@@ -254,6 +255,23 @@ module.exports = [
       handler: async (request, h) => {
         await postRetention('/closure/remove', { retentionDataId: request.payload.retentionDataId })
         return h.redirect(`${CLOSURES_ROUTES.SEARCH}?closureRemoved=true`)
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: CLOSURES_ROUTES.EXTRACT,
+    options: {
+      auth: AUTH_SCOPE,
+      handler: async (request, h) => {
+        const response = await getRetentionData(CLOSURES_ROUTES.EXTRACT)
+        const { filename } = response.payload
+        const { stream } = await getRetentionExtractDownloadStreamAndDeleteAfter(filename)
+
+        return h.response(stream)
+          .type('text/csv')
+          .header('Content-Disposition', `attachment; filename="${filename}"`)
+          .header('Cache-Control', 'no-store')
       }
     }
   }

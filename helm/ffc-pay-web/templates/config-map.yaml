@@ -41,6 +41,7 @@ data:
   PAY_EVENT_STORE_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.payEventStoreAzureStorageConnectionString }}
   PAY_INJECTION_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.payInjectionAzureStorageConnectionString }}
   DOC_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.docAzureStorageConnectionString }}
+  PDS_AZURE_STORAGE_CONNECTION_STRING: {{ quote .Values.container.pdsAzureStorageConnectionString }}
   AZURE_STORAGE_USE_CONNECTION_STRING: {{ quote .Values.container.azureStorageUseConnectionString }}
   AZURE_STORAGE_CREATE_CONTAINERS: {{ quote .Values.container.azureStorageCreateContainers }}
   PAY_AZURE_STORAGE_ACCOUNT_NAME: {{ quote .Values.container.azureStorageAccountName }}
