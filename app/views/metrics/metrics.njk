@@ -4,7 +4,7 @@
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% set pageTitle = "Management information" %}
+{% set pageTitle = "Metrics dashboard" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
@@ -24,10 +24,15 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-xl">{{ pageTitle }}</h1>
+      <h1
+        id="top"
+        class="govuk-heading-xl">
+        {{ pageTitle }}
+      </h1>
 
       <p class="govuk-body-l">
-        View payment and document metrics filtered by time period.
+        This dashboard provides operational metrics for payments and documents.
+        You can view payment and document metrics filtered by time period.
       </p>
 
       {% if error %}
@@ -38,7 +43,7 @@
               class="govuk-warning-text__icon"
               aria-hidden="true">!</span>
             <strong class="govuk-warning-text__text">
-              <span class="govuk-warning-text__assistive">Warning</span>
+              <span class="govuk-visually-hidden">Warning</span>
               {{ error }}
             </strong>
           </div>
@@ -60,54 +65,6 @@
         {% endif %}
       {% endif %}
 
-      {# Compact Filter Form #}
-      <details
-        class="govuk-details"
-        data-module="govuk-details">
-        <summary class="govuk-details__summary">
-          <span class="govuk-details__summary-text">
-            Help with this page
-          </span>
-        </summary>
-        <div class="govuk-details__text">
-          <p class="govuk-body">
-            This dashboard provides operational metrics for payments and
-            documents.
-          </p>
-          <ul class="govuk-list govuk-list--bullet">
-            <li>
-              <strong>Show all</strong> - View complete dataset with no date
-              filtering (includes year breakdown)
-            </li>
-            <li>
-              <strong>Year to date</strong> - View data from 1 January of the
-              current year to today
-            </li>
-            <li>
-              <strong>By year</strong> - Select a specific year to view annual
-              data
-            </li>
-            <li>
-              <strong>By month</strong> - Select a specific year and month to
-              view monthly data
-            </li>
-            <li>
-              <strong>This month</strong> - View data for the current calendar
-              month
-            </li>
-            <li>
-              <strong>Last 7 days</strong> - View recent weekly activity
-            </li>
-            <li>
-              <strong>Last 24 hours</strong> - View real-time daily activity
-            </li>
-            <li>Payment values are displayed in pounds (£)</li>
-            <li>
-              Print & Post costs are calculated based on actual postage rates
-            </li>
-          </ul>
-        </div>
-      </details>
       <form
         method="GET"
         action="/metrics"
@@ -126,7 +83,7 @@
                 items: [
                   {
                     value: "all",
-                    text: "Show all",
+                    text: "All dates",
                     selected: selectedPeriod == "all" or not selectedPeriod
                   },
                   {
@@ -234,7 +191,7 @@
             }}
           </div>
 
-          <div class="govuk-grid-column-one-quarter">
+          <div class="govuk-button-group">
             {{
               govukButton({
                 text: "Apply filters",
@@ -246,9 +203,8 @@
             {% if selectedPeriod != 'all' or schemeYear or selectedMonth %}
               <a
                 href="/metrics"
-                class="govuk-link govuk-!-margin-left-3 govuk-!-display-inline-block"
-                style="vertical-align: middle; line-height: 40px;">Clear
-                filters</a>
+                class="govuk-link">Clear filters
+              </a>
             {% endif %}
           </div>
         </div>
@@ -488,6 +444,28 @@
           </tbody>
         </table>
       {% endif %}
+    </div>
+    <hr
+      class="govuk-section-break govuk-section-break--m govuk-section-break--visible"
+    />
+    <div class="app-back-to-top app-back-to-top--fixed">
+      <a
+        class="govuk-link govuk-link--no-visited-state app-back-to-top__link"
+        href="#top">
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          class="app-back-to-top__icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="17"
+          viewBox="0 0 13 17">
+          <path
+            fill="currentColor"
+            d="M6.5 0L0 6.5 1.4 8l4-4v12.7h2V4l4.3 4L13 6.4z">
+          </path>
+        </svg>Back to top
+      </a>
     </div>
   </div>
   <script>

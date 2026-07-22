@@ -9,7 +9,7 @@ module.exports = [
   { title: 'Agreement closures', description: 'Search and update closures, or add new closures individually or in bulk', links: AGREEMENT_CLOSURES_LINKS },
   { title: 'Email alerts', description: 'Manage where payment alerts are sent by the scheme or recipient', links: PAYMENT_ALERTS_LINKS },
   { title: 'Statements', description: 'Find and download payment statements and statement status reports', links: DOWNLOAD_STATEMENTS_LINKS },
-  { title: 'Metrics', description: 'View payment and document metrics by scheme', links: METRICS_LINKS },
+  { title: 'Metrics dashboard', description: 'View payment and document metrics filtered by time period', links: METRICS_LINKS },
   { title: 'Reset payment requests', description: 'Manually reset payment requests', links: RESET_PAYMENT_REQUEST_LINKS },
   { title: 'Help', links: HELP_LINKS }
 ]
