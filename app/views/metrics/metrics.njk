@@ -191,7 +191,7 @@
             }}
           </div>
 
-          <div class="govuk-grid-column-one-quarter">
+          <div class="govuk-button-group">
             {{
               govukButton({
                 text: "Apply filters",
@@ -203,9 +203,8 @@
             {% if selectedPeriod != 'all' or schemeYear or selectedMonth %}
               <a
                 href="/metrics"
-                class="govuk-link govuk-!-margin-left-3 govuk-!-display-inline-block"
-                style="vertical-align: middle; line-height: 40px;">Clear
-                filters</a>
+                class="govuk-link">Clear filters
+              </a>
             {% endif %}
           </div>
         </div>
