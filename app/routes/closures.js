@@ -263,7 +263,7 @@ module.exports = [
     path: CLOSURES_ROUTES.EXTRACT,
     options: {
       auth: AUTH_SCOPE,
-      handler: async (request, h) => {
+      handler: async (_request, h) => {
         const response = await getRetentionData(CLOSURES_ROUTES.EXTRACT)
         const { filename } = response.payload
         const { stream } = await getRetentionExtractDownloadStreamAndDeleteAfter(filename)
