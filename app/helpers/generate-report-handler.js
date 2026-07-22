@@ -5,67 +5,62 @@ const { queryTrackingApi } = require('./query-tracking-api')
 const { normaliseQuery } = require('./normalise-query')
 const NOT_FOUND = 404
 
+const resolveReportOptions = (query, options) => {
+  const reportTitle = options.reportTitle ?? query['report-title']
+  return {
+    reportUrl: options.reportUrl ?? query['report-url'],
+    reportTitle,
+    reportsUrl: options.reportsUrl ?? '/download-report-list',
+    noResultsView: options.noResultsView ?? 'payment-report-unavailable',
+    loadingView: options.loadingView ?? 'report-loading/report-loading',
+    schemeName: options.schemeName ?? query['scheme-name'] ?? query.schemeName ?? query.scheme ?? reportTitle
+  }
+}
+
+const handleQueryResult = (request, jobId, reportType, schemeName, generateFinalFilenameFunc, normalisedQuery) => (returnedFilename) => {
+  if (returnedFilename == null || returnedFilename === '') {
+    return setReportStatus(request, jobId, { status: 'no-results' })
+  }
+  if (!isValidJsonFilename(returnedFilename)) { throw new Error(`Filename: ${returnedFilename} is not a valid format.`) }
+  return setReportStatus(request, jobId, {
+    status: 'download',
+    reportType,
+    returnedFilename,
+    reportFilename: generateFinalFilenameFunc(normalisedQuery),
+    schemeName
+  })
+}
+
+const handleQueryError = (request, jobId) => (err) => {
+  if (err.output?.statusCode === NOT_FOUND) {
+    return setReportStatus(request, jobId, { status: 'no-results' })
+  }
+  console.error(`Error generating report ${jobId}:`, err)
+  return setReportStatus(request, jobId, { status: 'failed' })
+}
+
 const generateReportHandler = (reportTypeParam, generateFinalFilenameFunc, options = {}) => {
   return async (request, h) => {
     const { query } = request
-
-    const reportUrl = options.reportUrl ?? query['report-url']
-    const reportTitle = options.reportTitle ?? query['report-title']
-    const reportsUrl = options.reportsUrl ?? '/download-report-list'
+    const { reportUrl, reportTitle, reportsUrl, noResultsView, loadingView, schemeName } = resolveReportOptions(query, options)
 
     if (query.noResults === 'true') {
-      return h.view(options.noResultsView ?? 'payment-report-unavailable', {
-        reportTitle,
-        reportsUrl
-      })
+      return h.view(noResultsView, { reportTitle, reportsUrl })
     }
 
     const jobId = randomUUID()
-
     // All other reports will have their report type passed as a param, except AP and AR Reports.
     const reportType = reportTypeParam ?? query['select-type']
-    const schemeName = options.schemeName ?? query['scheme-name'] ?? query.schemeName ?? query.scheme ?? reportTitle
-
     const normalisedQuery = normaliseQuery(query)
-
     const url = buildReportUrl(reportType, normalisedQuery)
 
-    setReportStatus(request, jobId, {
-      status: 'pending',
-      reportType,
-      schemeName
-    })
+    setReportStatus(request, jobId, { status: 'pending', reportType, schemeName })
 
     queryTrackingApi(url)
-      .then((returnedFilename) => {
-        if (returnedFilename == null || returnedFilename === '') {
-          return setReportStatus(request, jobId, { status: 'no-results' })
-        }
-        if (!isValidJsonFilename(returnedFilename)) { throw new Error(`Filename: ${returnedFilename} is not a valid format.`) }
-        return setReportStatus(request, jobId, {
-          status: 'download',
-          reportType,
-          returnedFilename,
-          reportFilename: generateFinalFilenameFunc(normalisedQuery),
-          schemeName
-        })
-      })
-      .catch((err) => {
-        if (err.output?.statusCode === NOT_FOUND) {
-          return setReportStatus(request, jobId, { status: 'no-results' })
-        }
-        console.error(`Error generating report ${jobId}:`, err)
-        return setReportStatus(request, jobId, {
-          status: 'failed'
-        })
-      })
+      .then(handleQueryResult(request, jobId, reportType, schemeName, generateFinalFilenameFunc, normalisedQuery))
+      .catch(handleQueryError(request, jobId))
 
-    return h.view(options.loadingView ?? 'report-loading/report-loading', {
-      jobId,
-      reportTitle,
-      reportUrl,
-      reportsUrl
-    })
+    return h.view(loadingView, { jobId, reportTitle, reportUrl, reportsUrl })
   }
 }
 
