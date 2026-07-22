@@ -7,41 +7,43 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: pageTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
   <style>
+  .govuk-cards {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .govuk-cards--2__item {
+    flex: 1 1;
+  }
+
+  /* Mobile layout: stack cards vertically */
+  @media (max-width: 640px) {
     .govuk-cards {
-      display: flex;
-      flex-direction: row;
+      flex-direction: column;
       flex-wrap: nowrap;
-      gap: 10px;
-      margin-bottom: 20px;
     }
 
     .govuk-cards--2__item {
-      flex: 1 1;
+      flex: 1 1 100%;
     }
-
-    /* Mobile layout: stack cards vertically */
-    @media (max-width: 640px) {
-      .govuk-cards {
-        flex-direction: column;
-        flex-wrap: nowrap;
-      }
-
-      .govuk-cards--2__item {
-        flex: 1 1 100%;
-      }
-    }
+  }
   </style>
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
@@ -51,12 +53,16 @@
           <ul class="govuk-list govuk-list--bullet">
             {% for reportType in reportTypes %}
               <li>
-                <a href="/report-list/{{ reportTypesRoutes[reportType] | lower }}" class="govuk-link">{{ reportType }}</a>
+                <a
+                  href="/report-list/{{ reportTypesRoutes[reportType] | lower }}"
+                  class="govuk-link">{{ reportType }}</a>
               </li>
             {% endfor %}
             {% if totalHolds > 0 %}
               <li>
-                <a href="/report-list/holds" class="govuk-link">Holds</a>
+                <a
+                  href="/report-list/holds"
+                  class="govuk-link">Holds</a>
               </li>
             {% endif %}
           </ul>

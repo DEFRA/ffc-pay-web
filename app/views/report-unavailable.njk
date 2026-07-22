@@ -8,19 +8,23 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Reports",
-      href: "/report-list"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: "Reports",
+        href: "/report-list"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
-  {{ contentBlock(pageTitle, "This report is no longer available or does not contain any associated data.") }}
+  {{
+    contentBlock(pageTitle, "This report is no longer available or does not contain any associated data.")
+  }}
 {% endblock %}

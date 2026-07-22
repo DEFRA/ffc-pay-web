@@ -1,16 +1,20 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% macro logout(username, permissions) %}
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-three-quarters">
-    <p class="govuk-body govuk-!-margin-top-4 govuk-!-margin-bottom-0"><strong>{{ username }}</strong></p>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-three-quarters">
+      <p class="govuk-body govuk-!-margin-top-4 govuk-!-margin-bottom-0">
+        <strong>{{ username }}</strong>
+      </p>
+    </div>
+    <div class="govuk-grid-column-one-quarter">
+      {{
+        govukButton({
+          classes: "govuk-!-margin-top-2 govuk-!-margin-bottom-0",
+          href: "/logout",
+          text: "Logout"
+        })
+      }}
+    </div>
   </div>
-  <div class="govuk-grid-column-one-quarter">
-    {{ govukButton({
-      classes: "govuk-!-margin-top-2 govuk-!-margin-bottom-0",
-      href: "/logout",
-      text: "Logout"
-    }) }}
-  </div>
-</div>
 {% endmacro %}

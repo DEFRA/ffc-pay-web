@@ -1,15 +1,17 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% macro closureBreadcrumbs(pageTitle) %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    }, {
-      text: "Manage agreement closures",
-      href: "/closure/manage"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage agreement closures",
+        href: "/closure/manage"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endmacro %}

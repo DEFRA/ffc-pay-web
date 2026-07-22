@@ -16,20 +16,49 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-      {% set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Agreement closures - service design.pdf' | urlencode %}
+      {%
+        set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Agreement closures - service design.pdf' | urlencode
+      %}
 
-      <p class="govuk-body">Bulk adding new agreement closures allows the Payment Hub to manage data retention for the data it holds related to payment requests.</p>
-      <p class="govuk-body">For guidance including how to format the csv file <a class="govuk-link" href="{{ pdfDownloadLink }}" target="_blank" rel="noopener noreferrer">download the agreement closure guide (PDF)</a>.</p>
-      <p class="govuk-body">Alternatively, you can <a href="/closure/add" class="govuk-link">create a singular agreement closure</a>.</p>
+      <p class="govuk-body">
+        Bulk adding new agreement closures allows the Payment Hub to manage data
+        retention for the data it holds related to payment requests.
+      </p>
+      <p class="govuk-body">
+        For guidance including how to format the csv file <a
+          class="govuk-link"
+          href="{{ pdfDownloadLink }}"
+          target="_blank"
+          rel="noopener noreferrer">download the agreement closure guide
+          (PDF)</a>.
+      </p>
+      <p class="govuk-body">
+        Alternatively, you can <a
+          href="/closure/add"
+          class="govuk-link">create a singular agreement closure</a>.
+      </p>
 
       {% if errors %}
-        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+        <div
+          class="govuk-error-summary"
+          aria-labelledby="error-summary-title"
+          role="alert"
+          tabindex="-1"
+          data-module="govuk-error-summary">
           <div role="alert">
-            <h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
+            <h2
+              class="govuk-error-summary__title"
+              id="error-summary-title">
+              There is a problem
+            </h2>
             <div class="govuk-error-summary__body">
               <ul class="govuk-list govuk-error-summary__list">
                 {% for err in errors.details %}
-                  <li><a href="#{{ err.path[0] or err.context.key }}">{{ err.message }}</a></li>
+                  <li>
+                    <a href="#{{ err.path[0] or err.context.key }}">{{
+                      err.message
+                    }}</a>
+                  </li>
                 {% endfor %}
               </ul>
             </div>
@@ -39,31 +68,57 @@
         {# Build per-field error variables from errors.details #}
         {% set fileError = null %}
         {% for err in errors.details %}
-          {% set field = (err.path and err.path[0]) or (err.context and err.context.key) %}
+          {%
+            set field = (err.path and err.path[0]) or (err.context and err.context.key)
+          %}
           {% if field == 'file' %}{% set fileError = err.message %}{% endif %}
         {% endfor %}
-
       {% endif %}
 
-      <form method="POST" action="/closure/bulk" autocomplete="off" novalidate enctype="multipart/form-data">
-        <input type="hidden" name="crumb" value="{{crumb}}"/>
+      <form
+        method="POST"
+        action="/closure/bulk"
+        autocomplete="off"
+        novalidate
+        enctype="multipart/form-data">
+        <input
+          type="hidden"
+          name="crumb"
+          value="{{crumb}}"
+        />
 
-        <div class="govuk-form-group {% if fileError %}govuk-form-group--error{% endif %}">
-          <label class="govuk-label govuk-label-s" for="file">
+        <div
+          class="govuk-form-group {% if fileError %}govuk-form-group--error{% endif %}">
+          <label
+            class="govuk-label govuk-label-s"
+            for="file">
             Upload a file
           </label>
           {% if fileError %}
-            <p id="file-error" class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ fileError }}</p>
+            <p
+              id="file-error"
+              class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ fileError }}
+            </p>
           {% endif %}
-          <input class="govuk-file-upload {% if fileError %}govuk-file-upload--error{% endif %}" id="file" name="file" type="file" value="{{ file }}" {% if fileError %}aria-describedby="file-error"{% endif %}>
+          <input
+            class="govuk-file-upload {% if fileError %}govuk-file-upload--error{% endif %}"
+            id="file"
+            name="file"
+            type="file"
+            value="{{ file }}"
+            {% if fileError %}aria-describedby="file-error"{% endif %}
+          />
         </div>
-        
-        {{ govukButton({
-          text: "Add closures",
-          attributes: {
-            id: "submit"
-          }
-        }) }}
+
+        {{
+          govukButton({
+            text: "Add closures",
+            attributes: {
+              id: "submit"
+            }
+          })
+        }}
       </form>
     </div>
   </div>

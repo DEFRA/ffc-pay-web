@@ -19,9 +19,15 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       {% if closureRemoved %}
-        <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div
+          class="govuk-notification-banner govuk-notification-banner--success"
+          role="alert"
+          aria-labelledby="govuk-notification-banner-title"
+          data-module="govuk-notification-banner">
           <div class="govuk-notification-banner__header">
-            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title-hold-added">
+            <h2
+              class="govuk-notification-banner__title"
+              id="govuk-notification-banner-title-hold-added">
               Success
             </h2>
           </div>
@@ -34,35 +40,57 @@
       {% endif %}
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
-      <p class="govuk-body">Any agreements listed here are considered closed. This allows the Payment Hub to manage data retention for the data it holds related to payment requests.</p>
-      <p class="govuk-body">Search for an agreement using the Firm Reference Number (FRN) or Agreement Number, and filter the results by scheme.</p>
+      <p class="govuk-body">
+        Any agreements listed here are considered closed. This allows the
+        Payment Hub to manage data retention for the data it holds related to
+        payment requests.
+      </p>
+      <p class="govuk-body">
+        Search for an agreement using the Firm Reference Number (FRN) or
+        Agreement Number, and filter the results by scheme.
+      </p>
 
-      <form class="govuk-!-margin-bottom-6" action="/closure/search" method="GET" role="search">
+      <form
+        class="govuk-!-margin-bottom-6"
+        action="/closure/search"
+        method="GET"
+        role="search">
         <h2 class="govuk-heading-m">Search for an agreement closure</h2>
-        {{ govukInput({
-          label: {
-            text: "FRN (Firm Reference Number) or Agreement Number"
-          },
-          id: "closure-search",
-          name: "frnAgreement",
-          type: "search",
-          classes: "govuk-input--width-20",
-          value: frnAgreement
-        }) }}
+        {{
+          govukInput({
+            label: {
+              text: "FRN (Firm Reference Number) or Agreement Number"
+            },
+            id: "closure-search",
+            name: "frnAgreement",
+            type: "search",
+            classes: "govuk-input--width-20",
+            value: frnAgreement
+          })
+        }}
 
         <div class="govuk-form-group">
-          <label class="govuk-label govuk-label-s" for="schemeId">
+          <label
+            class="govuk-label govuk-label-s"
+            for="schemeId">
             Scheme
           </label>
 
-          <select class="govuk-select" id="schemeId" name="schemeId">
-            <option value="" {% if not schemeId %}selected{% endif %}>
+          <select
+            class="govuk-select"
+            id="schemeId"
+            name="schemeId">
+            <option
+              value=""
+              {% if not schemeId %}selected{% endif %}>
               Search all schemes
             </option>
 
             {% for scheme in schemes %}
               {% if scheme and scheme.name is defined %}
-                <option value="{{ scheme.schemeId }}" {% if scheme.schemeId == schemeId %}selected{% endif %}>
+                <option
+                  value="{{ scheme.schemeId }}"
+                  {% if scheme.schemeId == schemeId %}selected{% endif %}>
                   {{ scheme.name }}
                 </option>
               {% endif %}
@@ -70,25 +98,35 @@
           </select>
         </div>
 
-        {{ govukButton({
-          text: "Search",
-          type: "submit"
-        }) }}
+        {{
+          govukButton({
+            text: "Search",
+            type: "submit"
+          })
+        }}
       </form>
 
       {% if closures and closures.length %}
         <div class="govuk-grid-row">
           <div class="govuk-grid-column-one-half">
             <div style="display:flex;align-items:baseline;gap:1rem;">
-              <h2 class="govuk-heading-m govuk-!-margin-0">Agreement closures</h2>
-              <a href="/closure/extract" class="govuk-link">Download as CSV</a>
+              <h2 class="govuk-heading-m govuk-!-margin-0">
+                Agreement closures
+              </h2>
+              <a
+                href="/closure/extract"
+                class="govuk-link">Download as CSV</a>
             </div>
           </div>
 
           {% if not isSearch %}
             <div class="govuk-grid-column-one-half govuk-!-padding-top-1">
-              <div style="display:flex;align-items:baseline;justify-content:flex-end;">
-                <div class="govuk-body-s" aria-label="Records per page" style="white-space:nowrap;vertical-align:baseline;">
+              <div
+                style="display:flex;align-items:baseline;justify-content:flex-end;">
+                <div
+                  class="govuk-body-s"
+                  aria-label="Records per page"
+                  style="white-space:nowrap;vertical-align:baseline;">
                   <span>Records per page:</span>&nbsp;
 
                   {% set pageSizeOptions = [2500, 5000, 10000] %}
@@ -96,101 +134,138 @@
                   {% for opt in pageSizeOptions %}
                     {% if pageSize == opt %}
                       <strong>{{ opt }}</strong>
-                    
                     {% else %}
-                      <a href="/closure/search?page=1&pageSize={{ opt }}" class="govuk-link">
+                      <a
+                        href="/closure/search?page=1&pageSize={{ opt }}"
+                        class="govuk-link">
                         {{ opt }}
                       </a>
                     {% endif %}
 
-
                     {% if not loop.last %}&nbsp;|&nbsp;{% endif %}
                   {% endfor %}
-
                 </div>
               </div>
             </div>
           {% endif %}
-
         </div>
         {% set tableRows = [] %}
         {% for closure in closures %}
           {% set removeButtonHtml %}
-            <form method="GET" action="/closure/remove-confirm">
-              <input type="hidden" name="retentionDataId" value="{{ closure.retentionDataId }}">
-              <input type="hidden" name="frn" value="{{ closure.frn }}">
-              <input type="hidden" name="agreementNumber" value="{{ closure.agreementNumber }}">
-              <input type="hidden" name="schemeName" value="{{ closure.schemeName }}">
-              <button class="govuk-button-link" aria-label="Remove closure for agreement {{ closure.agreementNumber }}">Remove</button>
+            <form
+              method="GET"
+              action="/closure/remove-confirm">
+              <input
+                type="hidden"
+                name="retentionDataId"
+                value="{{ closure.retentionDataId }}"
+              />
+              <input
+                type="hidden"
+                name="frn"
+                value="{{ closure.frn }}"
+              />
+              <input
+                type="hidden"
+                name="agreementNumber"
+                value="{{ closure.agreementNumber }}"
+              />
+              <input
+                type="hidden"
+                name="schemeName"
+                value="{{ closure.schemeName }}"
+              />
+              <button
+                class="govuk-button-link"
+                aria-label="Remove closure for agreement {{ closure.agreementNumber }}">
+                Remove
+              </button>
             </form>
           {% endset %}
           {% set type = 'Manual' %}
           {% if closure.addedBy == 'DWH' %}
             {% set type = 'Auto' %}
           {% endif %}
-          {% set tableRows = (tableRows.push([
-            { text: closure.frn },
-            { text: closure.agreementNumber },
-            { text: closure.schemeName },
-            { text: type },
-            { text: closure.endDate },
-            { html: removeButtonHtml }
-          ]), tableRows) %}
+          {%
+            set tableRows = (tableRows.push([
+              { text: closure.frn },
+              { text: closure.agreementNumber },
+              { text: closure.schemeName },
+              { text: type },
+              { text: closure.endDate },
+              { html: removeButtonHtml }
+            ]), tableRows)
+          %}
         {% endfor %}
 
-        {{ govukTable({
-          caption: "Agreement closures",
-          captionClasses: "govuk-visually-hidden",
-          firstCellIsHeader: false,
-          head: [
-            { text: "FRN" },
-            { text: "Agreement" },
-            { text: "Scheme" },
-            { text: "Type" },
-            { text: "Closure Date" },
-            { text: "Actions" }
-          ],
-          rows: tableRows
-        }) }}
+        {{
+          govukTable({
+            caption: "Agreement closures",
+            captionClasses: "govuk-visually-hidden",
+            firstCellIsHeader: false,
+            head: [
+              { text: "FRN" },
+              { text: "Agreement" },
+              { text: "Scheme" },
+              { text: "Type" },
+              { text: "Closure Date" },
+              { text: "Actions" }
+            ],
+            rows: tableRows
+          })
+        }}
 
         {% if isSearch %}
-          {{ govukPagination({
-            items: [
-              {
-                number: "1",
-                current: true,
-                href: "#"
-              }
-            ]
-          }) }}
+          {{
+            govukPagination({
+              items: [
+                {
+                  number: "1",
+                  current: true,
+                  href: "#"
+                }
+              ]
+            })
+          }}
         {% else %}
-          {{ govukPagination({
-            previous: page > 1 and {
-              href: "/closure/search?page=" + (page - 1) + "&pageSize=" + pageSize
-            },
-            next: hasNextPage and {
-              href: "/closure/search?page=" + (page + 1) + "&pageSize=" + pageSize
-            },
-            items: [
-              {
-                number: page,
-                current: true,
-                href: "/closure/search?page=" + page + "&pageSize=" + pageSize
-              }
-            ]
-          }) }}
+          {{
+            govukPagination({
+              previous: page > 1 and {
+                href: "/closure/search?page=" + (page - 1) + "&pageSize=" + pageSize
+              },
+              next: hasNextPage and {
+                href: "/closure/search?page=" + (page + 1) + "&pageSize=" + pageSize
+              },
+              items: [
+                {
+                  number: page,
+                  current: true,
+                  href: "/closure/search?page=" + page + "&pageSize=" + pageSize
+                }
+              ]
+            })
+          }}
         {% endif %}
       {% else %}
         <div class="govuk-inset-text">
           {% if isSearch %}
-            <p class="govuk-body">         
-              No agreement closures were found for{% if frnAgreement %} FRN / Agreement Number {{ frnAgreement }}{% endif %}{% if frnAgreement and schemeId %},{% endif %}{% if schemeId %} scheme {% for scheme in schemes %}{% if scheme.schemeId == schemeId %}{{ scheme.name }}{% endif %}{% endfor %}{% endif %}.
+            <p class="govuk-body">
+              No agreement closures were found for{% if frnAgreement %}
+                FRN / Agreement Number {{ frnAgreement }}{% endif %}
+              {% if frnAgreement and schemeId %},{% endif %}
+              {% if schemeId %}
+                scheme {% for scheme in schemes %}{%
+                    if scheme.schemeId == schemeId
+                  %}{{ scheme.name }}{% endif %}{% endfor %}{% endif %}.
             </p>
 
             <p class="govuk-body">
-              <a href="/closure/search" class="govuk-link">Clear search and view all agreement closures</a>.
+              <a
+                href="/closure/search"
+                class="govuk-link">Clear search and view all agreement
+                closures</a>.
             </p>
-          </div>
+            </div>
           {% else %}
             <p class="govuk-body">There are no agreement closures.</p>
           {% endif %}

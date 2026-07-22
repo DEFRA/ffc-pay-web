@@ -1,6 +1,8 @@
 {% extends "_layout.njk" %}
 
-{% from 'macros/hold-breadcrumbs-with-search.njk' import holdBreadcrumbsWithSearch %}
+{%
+  from 'macros/hold-breadcrumbs-with-search.njk' import holdBreadcrumbsWithSearch
+%}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
@@ -26,15 +28,22 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       {% if holdRemoved %}
-        <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div
+          class="govuk-notification-banner govuk-notification-banner--success"
+          role="alert"
+          aria-labelledby="govuk-notification-banner-title"
+          data-module="govuk-notification-banner">
           <div class="govuk-notification-banner__header">
-            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title-hold-added">
+            <h2
+              class="govuk-notification-banner__title"
+              id="govuk-notification-banner-title-hold-added">
               Success
             </h2>
           </div>
           <div class="govuk-notification-banner__content">
             <h3 class="govuk-notification-banner__heading">
-              Payment hold for {{ frn }} | {{ holdCategoryName }} has been removed.
+              Payment hold for {{ frn }} | {{ holdCategoryName }} has been
+              removed.
             </h3>
           </div>
         </div>
@@ -51,7 +60,9 @@
 
         {% if frn and schemeName %}
           <p class="govuk-body">
-            We’ve found {{ numberOfHolds }} {{ holdLabel }} for {{ schemeName }} and {{ frn }}.
+            We’ve found {{ numberOfHolds }} {{ holdLabel }} for {{
+              schemeName
+            }} and {{ frn }}.
           </p>
         {% elseif frn %}
           <p class="govuk-body">
@@ -59,7 +70,9 @@
           </p>
         {% elseif schemeName %}
           <p class="govuk-body">
-            We’ve found {{ numberOfHolds }} {{ holdLabel }} for {{ schemeName }}.
+            We’ve found {{ numberOfHolds }} {{ holdLabel }} for {{
+              schemeName
+            }}.
           </p>
         {% else %}
           <p class="govuk-body">
@@ -74,17 +87,25 @@
           </div>
 
           <div class="govuk-grid-column-one-half govuk-!-padding-top-1">
-            <div style="display:flex;align-items:baseline;justify-content:flex-end;">
-              <div class="govuk-body-s" aria-label="Records per page" style="white-space:nowrap;vertical-align:baseline;">
+            <div
+              style="display:flex;align-items:baseline;justify-content:flex-end;">
+              <div
+                class="govuk-body-s"
+                aria-label="Records per page"
+                style="white-space:nowrap;vertical-align:baseline;">
                 <span>Number of records per page:</span>&nbsp;
                 {% set perPageOptions = [100, 500, 1000] %}
                 {% for opt in perPageOptions %}
                   {% if perPage == opt %}
                     <strong>{{ opt }}</strong>
                   {% else %}
-                    <a href="/payment-holds?perPage={{ opt }}&page=1" class="govuk-link">{{ opt }}</a>
+                    <a
+                      href="/payment-holds?perPage={{ opt }}&page=1"
+                      class="govuk-link">{{ opt }}</a>
                   {% endif %}
-                  {% if not loop.last %} &nbsp;|&nbsp; {% endif %}
+                  {% if not loop.last %}
+                    &nbsp;|&nbsp;
+                  {% endif %}
                 {% endfor %}
               </div>
             </div>
@@ -95,34 +116,100 @@
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              <th scope="col" class="govuk-table__header">FRN</th>
-              <th scope="col" class="govuk-table__header">Description</th>
-              <th scope="col" class="govuk-table__header">Scheme</th>
-              <th scope="col" class="govuk-table__header">Marketing Year</th>
-              <th scope="col" class="govuk-table__header">Contract Number</th>
-              <th scope="col" class="govuk-table__header">Agreement Number</th>
-              <th scope="col" class="govuk-table__header">Created</th>
-              <th scope="col" class="govuk-table__header">Actions</th>
+              <th
+                scope="col"
+                class="govuk-table__header">
+                FRN
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header">
+                Description
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header">
+                Scheme
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header">
+                Marketing Year
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header">
+                Contract Number
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header">
+                Agreement Number
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header">
+                Created
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody class="govuk-table__body">
             {% for paymentHold in paymentHolds %}
               <tr class="govuk-table__row">
                 <td class="govuk-table__cell">{{ paymentHold.frn }}</td>
-                <td class="govuk-table__cell">{{ paymentHold.holdCategoryName }}</td>
-                <td class="govuk-table__cell">{{ paymentHold.holdCategorySchemeName }}</td>
-                <td class="govuk-table__cell">{{ paymentHold.marketingYear }}</td>
-                <td class="govuk-table__cell">{{ paymentHold.contractNumber }}</td>
-                <td class="govuk-table__cell">{{ paymentHold.agreementNumber }}</td>
-                <td class="govuk-table__cell">{{ paymentHold.dateTimeAdded }}</td>
+                <td class="govuk-table__cell">
+                  {{ paymentHold.holdCategoryName }}
+                </td>
+                <td class="govuk-table__cell">
+                  {{ paymentHold.holdCategorySchemeName }}
+                </td>
+                <td class="govuk-table__cell">
+                  {{ paymentHold.marketingYear }}
+                </td>
+                <td class="govuk-table__cell">
+                  {{ paymentHold.contractNumber }}
+                </td>
+                <td class="govuk-table__cell">
+                  {{ paymentHold.agreementNumber }}
+                </td>
+                <td class="govuk-table__cell">
+                  {{ paymentHold.dateTimeAdded }}
+                </td>
                 <td class="govuk-table__cell">
                   {% if paymentHold.canBeRemoved %}
-                    <form method="post" action="/payment-holds/remove-confirm">
-                      <input type="hidden" name="crumb" value="{{ crumb }}"/>
-                      <input type="hidden" name="holdId" value="{{ paymentHold.holdId }}">
-                      <input type="hidden" name="frn" value="{{ paymentHold.frn }}">
-                      <input type="hidden" name="schemeName" value="{{ schemeName }}">
-                      <input type="hidden" name="holdCategoryName" value="{{ paymentHold.holdCategoryName }}">
+                    <form
+                      method="post"
+                      action="/payment-holds/remove-confirm">
+                      <input
+                        type="hidden"
+                        name="crumb"
+                        value="{{ crumb }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="holdId"
+                        value="{{ paymentHold.holdId }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="frn"
+                        value="{{ paymentHold.frn }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="schemeName"
+                        value="{{ schemeName }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="holdCategoryName"
+                        value="{{ paymentHold.holdCategoryName }}"
+                      />
                       <button class="govuk-button-link">Remove</button>
                     </form>
                   {% endif %}
@@ -132,12 +219,26 @@
           </tbody>
         </table>
 
-        <nav class="govuk-pagination" aria-label="Pagination">
+        <nav
+          class="govuk-pagination"
+          aria-label="Pagination">
           {% if (page | default(1)) > 1 %}
             <div class="govuk-pagination__prev">
-              <a class="govuk-link govuk-pagination__link" href="?page={{ page - 1 }}&perPage={{ perPage }}" rel="prev">
-                <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-                  <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+              <a
+                class="govuk-link govuk-pagination__link"
+                href="?page={{ page - 1 }}&perPage={{ perPage }}"
+                rel="prev">
+                <svg
+                  class="govuk-pagination__icon govuk-pagination__icon--prev"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="13"
+                  width="15"
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 15 13">
+                  <path
+                    d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z">
+                  </path>
                 </svg>
                 <span class="govuk-pagination__link-title">
                   Previous<span class="govuk-visually-hidden"> page</span>
@@ -157,12 +258,24 @@
 
           {% if paymentHolds.length >= perPage %}
             <div class="govuk-pagination__next">
-              <a class="govuk-link govuk-pagination__link" href="?page={{ (page | default(1)) + 1 }}&perPage={{ perPage }}" rel="next">
+              <a
+                class="govuk-link govuk-pagination__link"
+                href="?page={{ (page | default(1)) + 1 }}&perPage={{ perPage }}"
+                rel="next">
                 <span class="govuk-pagination__link-title">
                   Next<span class="govuk-visually-hidden"> page</span>
                 </span>
-                <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-                  <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                <svg
+                  class="govuk-pagination__icon govuk-pagination__icon--next"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="13"
+                  width="15"
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 15 13">
+                  <path
+                    d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z">
+                  </path>
                 </svg>
               </a>
             </div>
@@ -171,13 +284,21 @@
       {% else %}
         <p class="govuk-body">
           {% if frn and schemeName %}
-            No payment holds found for {{ schemeName }} and {{ frn }}. <a class="govuk-link" href="/payment-holds/search">Start a new search</a>.
+            No payment holds found for {{ schemeName }} and {{ frn }}. <a
+              class="govuk-link"
+              href="/payment-holds/search">Start a new search</a>.
           {% elseif frn %}
-            No payment holds found for FRN {{ frn }}. <a class="govuk-link" href="/payment-holds/search">Start a new search</a>.
+            No payment holds found for FRN {{ frn }}. <a
+              class="govuk-link"
+              href="/payment-holds/search">Start a new search</a>.
           {% elseif schemeName %}
-            No payment holds found for {{ schemeName }}. <a class="govuk-link" href="/payment-holds/search">Start a new search</a>.
+            No payment holds found for {{ schemeName }}. <a
+              class="govuk-link"
+              href="/payment-holds/search">Start a new search</a>.
           {% else %}
-            No payment holds found. <a class="govuk-link" href="/payment-holds/search">Start a new search</a>.
+            No payment holds found. <a
+              class="govuk-link"
+              href="/payment-holds/search">Start a new search</a>.
           {% endif %}
         </p>
       {% endif %}

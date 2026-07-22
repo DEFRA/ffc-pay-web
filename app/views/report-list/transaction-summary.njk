@@ -1,5 +1,7 @@
 {% extends 'report-list/base-report.njk' %}
-{% from 'macros/report-form-fields.njk' import reportPageTitle, schemeSelect, yearInput, prnInput, revenueOrCapitalSelect, frnInput, submitButton %}
+{%
+  from 'macros/report-form-fields.njk' import reportPageTitle, schemeSelect, yearInput, prnInput, revenueOrCapitalSelect, frnInput, submitButton
+%}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% set reportTitle = 'Combined transaction report' %}
@@ -7,10 +9,10 @@
 {% set formAction = '/report-list/transaction-summary/download' %}
 
 {% block reportContent %}
-    {{ reportPageTitle(reportTitle) }}
-    {{ schemeSelect(schemes, selectedSchemeId) }}
-    {{ yearInput(year) }}
-    {{ prnInput(prn) }}
-    {{ revenueOrCapitalSelect(revenueOrCapital) }}
-    {{ frnInput(frn) }}
+  {{ reportPageTitle(reportTitle) }}
+  {{ schemeSelect(schemes, selectedSchemeId) }}
+  {{ yearInput(year) }}
+  {{ prnInput(prn) }}
+  {{ revenueOrCapitalSelect(revenueOrCapital) }}
+  {{ frnInput(frn) }}
 {% endblock %}

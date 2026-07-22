@@ -2,25 +2,29 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set pageTitle = "Check the details are correct before creating a new closure agreement" %}
+{%
+  set pageTitle = "Check the details are correct before creating a new closure agreement"
+%}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    }, {
-      text: "Manage agreement closures",
-      href: "/closure/manage"
-    }, {
-      text: "Create a new agreement closure",
-      href: "/closure/add"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage agreement closures",
+        href: "/closure/manage"
+      }, {
+        text: "Create a new agreement closure",
+        href: "/closure/add"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
@@ -35,7 +39,11 @@
           </h2>
           <ul class="govuk-summary-card__actions">
             <li class="govuk-summary-card__action">
-              <a class="govuk-link" href="/closure/add?frn={{ frn }}&agreement={{ agreement }}&schemeId={{ schemeId }}&day={{ day }}&month={{ month }}&year={{ year }}">Change<span class="govuk-visually-hidden"> agreement closure</span></a>
+              <a
+                class="govuk-link"
+                href="/closure/add?frn={{ frn }}&agreement={{ agreement }}&schemeId={{ schemeId }}&day={{ day }}&month={{ month }}&year={{ year }}">Change<span
+                  class="govuk-visually-hidden">
+                  agreement closure</span></a>
             </li>
           </ul>
         </div>
@@ -77,15 +85,49 @@
         </div>
       </div>
 
-      <form method="POST" action="/closure/add" autocomplete="off" novalidate>
-        <input type="hidden" name="crumb" value="{{ crumb }}"/>
-        <input type="hidden" name="frn" value="{{ frn }}"/>
-        <input type="hidden" name="agreement" value="{{ agreement }}"/>
-        <input type="hidden" name="schemeId" value="{{ schemeId }}"/>
-        <input type="hidden" name="day" value="{{ day }}"/>
-        <input type="hidden" name="month" value="{{ month }}"/>
-        <input type="hidden" name="year" value="{{ year }}"/>
-        <button class="govuk-button" id="submit">
+      <form
+        method="POST"
+        action="/closure/add"
+        autocomplete="off"
+        novalidate>
+        <input
+          type="hidden"
+          name="crumb"
+          value="{{ crumb }}"
+        />
+        <input
+          type="hidden"
+          name="frn"
+          value="{{ frn }}"
+        />
+        <input
+          type="hidden"
+          name="agreement"
+          value="{{ agreement }}"
+        />
+        <input
+          type="hidden"
+          name="schemeId"
+          value="{{ schemeId }}"
+        />
+        <input
+          type="hidden"
+          name="day"
+          value="{{ day }}"
+        />
+        <input
+          type="hidden"
+          name="month"
+          value="{{ month }}"
+        />
+        <input
+          type="hidden"
+          name="year"
+          value="{{ year }}"
+        />
+        <button
+          class="govuk-button"
+          id="submit">
           Add closure
         </button>
       </form>

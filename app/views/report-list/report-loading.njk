@@ -8,32 +8,36 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Reports",
-      href: "/report-list"
-    }, {
-      text: reportTitle,
-      href: reportUrl
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: "Reports",
+        href: "/report-list"
+      }, {
+        text: reportTitle,
+        href: reportUrl
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
-  {{ renderLoadingPage(
-    jobId=jobId,
-    checkUrl="/loading/" + jobId,
-    downloadUrl="/report-list/generation/download/" + jobId,
-    title=pageTitle,
-    schemeName=schemeName,
-    statusMessage="The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.",
-    processingMessage="The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.",
-    completedMessage="Your report has been successfully downloaded. You may now close this window.",
-    errorMessage="We were unable to generate your report."
-  ) }}
+  {{
+    renderLoadingPage(
+      jobId=jobId,
+      checkUrl="/loading/" + jobId,
+      downloadUrl="/report-list/generation/download/" + jobId,
+      title=pageTitle,
+      schemeName=schemeName,
+      statusMessage="The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.",
+      processingMessage="The report is ready and will begin downloading to your device. Please note larger files may take longer to finish.",
+      completedMessage="Your report has been successfully downloaded. You may now close this window.",
+      errorMessage="We were unable to generate your report."
+    )
+  }}
 {% endblock %}

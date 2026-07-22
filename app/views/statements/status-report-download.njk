@@ -1,39 +1,50 @@
 {% extends "_layout.njk" %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
-{% from "macros/status-report-download.njk" import renderStatusReportDownloadSuccessBanner %}
+{%
+  from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner
+%}
+{%
+  from "macros/status-report-download.njk" import renderStatusReportDownloadSuccessBanner
+%}
 
 {% set pageTitle = 'Preparing your report' %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    }, {
-      text: "Payment statement status report",
-      href: "/status-report"
-    }, {
-      text: pageTitle
-    }]
-  }) }}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Payment statement status report",
+        href: "/status-report"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
   <h2 class="govuk-heading-m">Preparing your report</h2>
-  <p class="govuk-body" id="preparing-message">
-    The report is being prepared and will begin downloading to your device. Please note larger files may take longer to finish.
+  <p
+    class="govuk-body"
+    id="preparing-message">
+    The report is being prepared and will begin downloading to your device.
+    Please note larger files may take longer to finish.
   </p>
 
-  <div id="download-complete" hidden>
+  <div
+    id="download-complete"
+    hidden>
     {{ renderStatusReportDownloadSuccessBanner(filename, schemeName) }}
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', async function () {
+  document.addEventListener('DOMContentLoaded', async function () {
       const preparingMessage = document.getElementById('preparing-message')
       const completedBanner = document.getElementById('download-complete')
 

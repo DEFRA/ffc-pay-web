@@ -1,5 +1,7 @@
 {% extends 'report-list/base-report.njk' %}
-{% from 'macros/report-form-fields.njk' import reportPageTitle, schemeSelect, yearInput, revenueOrCapitalSelect, frnInput, submitButton %}
+{%
+  from 'macros/report-form-fields.njk' import reportPageTitle, schemeSelect, yearInput, revenueOrCapitalSelect, frnInput, submitButton
+%}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% set reportTitle = 'Claim level report' %}
@@ -7,9 +9,9 @@
 {% set formAction = '/report-list/claim-level-report/download' %}
 
 {% block reportContent %}
-    {{ reportPageTitle(reportTitle) }}
-    {{ schemeSelect(schemes, selectedSchemeId) }}
-    {{ yearInput(year) }}
-    {{ revenueOrCapitalSelect(revenueOrCapital) }}
-    {{ frnInput(frn) }}
+  {{ reportPageTitle(reportTitle) }}
+  {{ schemeSelect(schemes, selectedSchemeId) }}
+  {{ yearInput(year) }}
+  {{ revenueOrCapitalSelect(revenueOrCapital) }}
+  {{ frnInput(frn) }}
 {% endblock %}

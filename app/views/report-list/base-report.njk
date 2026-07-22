@@ -6,33 +6,48 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Reports",
-      href: "/report-list"
-    }, {
-      text: reportTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: "Reports",
+        href: "/report-list"
+      }, {
+        text: reportTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
   {% if errors %}
-    {{ govukErrorSummary({
-      titleText: "There is a problem",
-      errorList: errors
-    }) }}
+    {{
+      govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errors
+      })
+    }}
   {% endif %}
 
-  <form id="reportForm" method="get" action="{{ formAction }}">
-    <input type="hidden" name="report-url" value="{{ reportUrl }}">
-    <input type="hidden" name="report-title" value="{{ reportTitle }}">
-    
+  <form
+    id="reportForm"
+    method="get"
+    action="{{ formAction }}">
+    <input
+      type="hidden"
+      name="report-url"
+      value="{{ reportUrl }}"
+    />
+    <input
+      type="hidden"
+      name="report-title"
+      value="{{ reportTitle }}"
+    />
+
     {% block reportContent %}{% endblock %}
-    
+
     {{ submitButton(reportSubmitLabel or "Download report") }}
   </form>
 {% endblock %}

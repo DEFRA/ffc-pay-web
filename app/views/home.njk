@@ -6,8 +6,17 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full govuk-!-margin-bottom-4">
       <h1 class="govuk-heading-l">Payments and Documents Services</h1>
-      <p class="govuk-body">The Payments and Documents Services site hosts a collection of services for the Farming Delivery group and is maintained by the Payments and Documents Services team.</p>
-      <p class="govuk-body">You'll see different content on this page depending on your access levels. If you need access to something that isn't displayed, you can email the team at <a href="mailto:payment-document-services@defra.gov.uk">payment-document-services@defra.gov.uk</a></p>
+      <p class="govuk-body">
+        The Payments and Documents Services site hosts a collection of services
+        for the Farming Delivery group and is maintained by the Payments and
+        Documents Services team.
+      </p>
+      <p class="govuk-body">
+        You'll see different content on this page depending on your access
+        levels. If you need access to something that isn't displayed, you can
+        email the team at <a
+          href="mailto:payment-document-services@defra.gov.uk">payment-document-services@defra.gov.uk</a>
+      </p>
     </div>
     <div class="govuk-grid-column-full">
       {% set cardGroups = [] %}
@@ -18,7 +27,8 @@
       {% for group in cardGroups %}
         <div class="govuk-cards govuk-cards--2">
           {% for card in group %}
-            <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+            <div
+              class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
               <h2 class="govuk-heading-m card__heading">{{ card.title }}</h2>
               <div class="govuk-hint">
                 {{ card.description }}
@@ -26,7 +36,9 @@
               <ul class="govuk-list">
                 {% for link in card.links %}
                   <li>
-                    <a href="{{ link.href }}" class="govuk-link">{{ link.text }}</a>
+                    <a
+                      href="{{ link.href }}"
+                      class="govuk-link">{{ link.text }}</a>
                   </li>
                 {% endfor %}
               </ul>

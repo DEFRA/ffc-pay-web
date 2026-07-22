@@ -2,25 +2,29 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set pageTitle = "Remove agreement closure for " ~ frn ~ " | " ~ agreementNumber ~ " | " ~ schemeName %}
+{%
+  set pageTitle = "Remove agreement closure for " ~ frn ~ " | " ~ agreementNumber ~ " | " ~ schemeName
+%}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    }, {
-      text: "Manage agreement closures",
-      href: "/closure/manage"
-    }, {
-      text: "Search agreement closures",
-      href: "/closure/search"
-    }, {
-      text: pageTitle
-    }]
-  }) }}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage agreement closures",
+        href: "/closure/manage"
+      }, {
+        text: "Search agreement closures",
+        href: "/closure/search"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
@@ -34,27 +38,59 @@
 
           <div class="interruption-card__body">
             <p>
-              Removing this agreement closure for {{ frn }} | {{ agreementNumber }} | {{ schemeName }} means it will no longer be considered closed.
+              Removing this agreement closure for {{ frn }} | {{
+                agreementNumber
+              }} | {{ schemeName }} means it will no longer be considered
+              closed.
             </p>
             <p>
-              You will need to add it again if this agreement should be treated as closed in the future.
+              You will need to add it again if this agreement should be treated
+              as closed in the future.
             </p>
           </div>
 
           <div class="govuk-button-group interruption-card__actions">
-            <form method="POST" action="/closure/remove">
-              <input type="hidden" name="crumb" value="{{ crumb }}"/>
-              <input type="hidden" name="retentionDataId" value="{{ retentionDataId }}"/>
-              <input type="hidden" name="frn" value="{{ frn }}"/>
-              <input type="hidden" name="agreementNumber" value="{{ agreementNumber }}"/>
-              <input type="hidden" name="schemeName" value="{{ schemeName }}"/>
+            <form
+              method="POST"
+              action="/closure/remove">
+              <input
+                type="hidden"
+                name="crumb"
+                value="{{ crumb }}"
+              />
+              <input
+                type="hidden"
+                name="retentionDataId"
+                value="{{ retentionDataId }}"
+              />
+              <input
+                type="hidden"
+                name="frn"
+                value="{{ frn }}"
+              />
+              <input
+                type="hidden"
+                name="agreementNumber"
+                value="{{ agreementNumber }}"
+              />
+              <input
+                type="hidden"
+                name="schemeName"
+                value="{{ schemeName }}"
+              />
 
               <div class="govuk-button-group moj-interruption-card__actions">
-                <button id="submit" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">
+                <button
+                  id="submit"
+                  draggable="false"
+                  class="govuk-button govuk-button--inverse"
+                  data-module="govuk-button">
                   Yes, remove
                 </button>
 
-                <a class="govuk-link govuk-link--inverse" href="/closure/search">
+                <a
+                  class="govuk-link govuk-link--inverse"
+                  href="/closure/search">
                   Cancel
                 </a>
               </div>

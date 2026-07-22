@@ -8,17 +8,19 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Reset payment request",
-      href: "/payment-request/reset"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: "Reset payment request",
+        href: "/payment-request/reset"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
@@ -30,7 +32,7 @@
             {{ pageTitle }}
           </h1>
           <div class="govuk-panel__body">
-            Invoice number<br><strong>{{ invoiceNumber }}</strong>
+            Invoice number<br /><strong>{{ invoiceNumber }}</strong>
           </div>
         </div>
 
@@ -40,9 +42,10 @@
           The payment request will be reprocessed and resent to D365.
         </p>
         <p class="govuk-body">
-          <a class="govuk-link" href="/">Perform another action</a>
+          <a
+            class="govuk-link"
+            href="/">Perform another action</a>
         </p>
-
       </div>
     </div>
   </div>

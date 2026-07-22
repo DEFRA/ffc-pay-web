@@ -1,35 +1,75 @@
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 
-{% macro holdSelectionRadios(holdCategorys, selectScheme, selectedHoldCategoryId) %}
+{%
+  macro holdSelectionRadios(holdCategorys, selectScheme, selectedHoldCategoryId)
+%}
   {% if holdCategorys and holdCategorys.length > 0 %}
     <div class="govuk-form-group">
-      <label class="govuk-label" for="selectScheme">
+      <label
+        class="govuk-label"
+        for="selectScheme">
         Scheme
       </label>
-      <div id="scheme-hint" class="govuk-hint">
+      <div
+        id="scheme-hint"
+        class="govuk-hint">
         Select a scheme to view hold types
       </div>
-      <select class="govuk-select" id="selectScheme" name="selectScheme" aria-describedby="scheme-hint">
-        <option value="" {% if not selectScheme %}selected{% endif %}>Select a scheme</option>
+      <select
+        class="govuk-select"
+        id="selectScheme"
+        name="selectScheme"
+        aria-describedby="scheme-hint">
+        <option
+          value=""
+          {% if not selectScheme %}selected{% endif %}>
+          Select a scheme
+        </option>
         {% for category in holdCategorys %}
-          <option value="{{ category.scheme.name }}" {% if selectScheme == category.scheme.name %}selected{% endif %}>{{ category.scheme.name }}</option>
+          <option
+            value="{{ category.scheme.name }}"
+            {% if selectScheme == category.scheme.name %}selected{% endif %}>
+            {{ category.scheme.name }}
+          </option>
         {% endfor %}
       </select>
     </div>
 
-    <div class="govuk-inset-text" id="hold-types-container">
+    <div
+      class="govuk-inset-text"
+      id="hold-types-container">
       <div class="govuk-form-group">
-        <label class="govuk-label" for="selectHoldCategoryId">
+        <label
+          class="govuk-label"
+          for="selectHoldCategoryId">
           Hold type
         </label>
-        <div id="hold-hint" class="govuk-hint">
+        <div
+          id="hold-hint"
+          class="govuk-hint">
           Select the hold type
         </div>
-        <select class="govuk-select" id="selectHoldCategoryId" name="holdCategoryId" aria-describedby="hold-hint">
-          <option value="" data-scheme-name="blank" {% if not selectedHoldCategoryId %}selected{% endif %}>Select a hold type</option>
+        <select
+          class="govuk-select"
+          id="selectHoldCategoryId"
+          name="holdCategoryId"
+          aria-describedby="hold-hint">
+          <option
+            value=""
+            data-scheme-name="blank"
+            {% if not selectedHoldCategoryId %}selected{% endif %}>
+            Select a hold type
+          </option>
           {% for category in holdCategorys %}
             {% for item in category.radios %}
-              <option value="{{ item.value }}" data-scheme-name="{{ category.scheme.name }}" {% if selectedHoldCategoryId == item.value %}selected{% endif %}>{{ item.text or item.label or item.name or item.value }}</option>
+              <option
+                value="{{ item.value }}"
+                data-scheme-name="{{ category.scheme.name }}"
+                {% if selectedHoldCategoryId == item.value %}
+                  selected
+                {% endif %}>
+                {{ item.text or item.label or item.name or item.value }}
+              </option>
             {% endfor %}
           {% endfor %}
         </select>
@@ -37,7 +77,7 @@
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
         const selectScheme = document.getElementById('selectScheme')
         const selectHoldCategoryId = document.getElementById('selectHoldCategoryId')
         const holdTypesContainer = document.getElementById('hold-types-container')

@@ -1,19 +1,23 @@
 {% extends 'report-list/base-report.njk' %}
 
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
-{% from 'macros/report-form-fields.njk' import reportPageTitle, typeSelect, submitButton, dateInput %}
+{%
+  from 'macros/report-form-fields.njk' import reportPageTitle, typeSelect, submitButton, dateInput
+%}
 
 {% set reportTitle = 'AP/AR listing report' %}
 {% set reportUrl = '/report-list/ap-ar-report' %}
 {% set formAction = '/report-list/ap-ar-report/download' %}
-{% set reportTypeItems = [
-  { value: "ap-listing-report", text: "AP Listing Report" },
-  { value: "ar-listing-report", text: "AR Listing Report" }
-] %}
+{%
+  set reportTypeItems = [
+    { value: "ap-listing-report", text: "AP Listing Report" },
+    { value: "ar-listing-report", text: "AR Listing Report" }
+  ]
+%}
 
 {% block reportContent %}
-    {{ reportPageTitle(reportTitle) }}
-    {{ typeSelect(reportType, reportTypeItems) }}
-    {{ dateInput('start-date', 'Start Date (optional)', errors) }}
-    {{ dateInput('end-date', 'End Date (optional)', errors) }}
+  {{ reportPageTitle(reportTitle) }}
+  {{ typeSelect(reportType, reportTypeItems) }}
+  {{ dateInput('start-date', 'Start Date (optional)', errors) }}
+  {{ dateInput('end-date', 'End Date (optional)', errors) }}
 {% endblock %}
