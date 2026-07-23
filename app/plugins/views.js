@@ -43,17 +43,6 @@ module.exports = {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2
             })
-
-            const parts = formatted.split('.')
-
-            if (parts.length === 1) {
-              return `${formatted}.00`
-            }
-
-            if (parts[1].length === 1) {
-              return `${parts[0]}.${parts[1]}0`
-            }
-
             return formatted
           })
 
