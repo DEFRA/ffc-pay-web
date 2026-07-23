@@ -149,12 +149,33 @@ describe('app/plugins/views.js', () => {
       expect(err).toBeUndefined()
       const env = options.compileOptions.environment
       const localizeCurrency = env.getFilter ? env.getFilter('localizeCurrency') : null
+
       test('returns 0.00 for null', () => {
         expect(localizeCurrency(null)).toBe('0.00')
       })
 
-      test('formats a number', () => {
+      test('returns 0.00 for undefined', () => {
+        expect(localizeCurrency(undefined)).toBe('0.00')
+      })
+
+      test('returns 0.00 for empty string', () => {
+        expect(localizeCurrency('')).toBe('0.00')
+      })
+
+      test('formats whole numbers with 2 decimal places', () => {
+        expect(localizeCurrency(1234)).toBe('1,234.00')
+      })
+
+      test('formats values with 1 decimal place as 2 decimal places', () => {
+        expect(localizeCurrency(1234.5)).toBe('1,234.50')
+      })
+
+      test('formats values with 2 decimal places unchanged', () => {
         expect(localizeCurrency(1234.56)).toBe('1,234.56')
+      })
+
+      test('formats zero correctly', () => {
+        expect(localizeCurrency(0)).toBe('0.00')
       })
     })
   })
