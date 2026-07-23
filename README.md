@@ -27,7 +27,7 @@ Optional:
 
 This service has been integrated into Azure App Registration using the msal-node [npm package](https://www.npmjs.com/package/@azure/msal-node)
 
-By default, authentication is disabled.  It can be enabled by setting the `AUTHENTICATION_ENABLED` environment variable to `true`
+By default, authentication is disabled.  It can be enabled by setting the `AUTHENTICATION_ENABLED` environment variable to `true`.
 
 If authentication is enabled, this service needs to be registered with [Azure App Registration](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
 
