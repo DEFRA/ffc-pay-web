@@ -18,7 +18,7 @@ module.exports = [
       (_payload) => storageConfig.requestEditorReportName,
       {
         reportTitle: 'Request Editor report',
-        reportUrl: DOWNLOAD_REPORT_LIST.REQUEST_EDITOR_REPORT,
+        reportUrl: '/download-report-list',
         loadingView: 'report-loading/report-loading',
         reportsUrl: '/download-report-list'
       }
