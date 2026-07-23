@@ -232,7 +232,7 @@ describe('Status Report Routes', () => {
       })
 
       const $ = loadPayload(res.payload)
-      const successText = $('#download-complete .govuk-body').text()
+      const successText = $('#download-complete .govuk-body').text().replace(/\s+/g, ' ').trim()
       expect(successText).toContain('sfi-report-2025-01-15.csv')
       expect(successText).toContain('SFI-23')
       expect(successText).toContain('statement status report has been successfully downloaded')

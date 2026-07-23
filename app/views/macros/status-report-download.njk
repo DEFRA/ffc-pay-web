@@ -1,13 +1,20 @@
-{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{%
+  from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner
+%}
 
 {% macro renderStatusReportDownloadSuccessBanner(filename, schemeName) %}
   {% set html %}
     <h3 class="govuk-notification-banner__heading">Download complete</h3>
-    <p class="govuk-body">{{ filename }} {{ schemeName }} statement status report has been successfully downloaded.</p>
+    <p class="govuk-body">
+      {{ filename }} {{ schemeName }} statement status report has been
+      successfully downloaded.
+    </p>
   {% endset %}
 
-  {{ govukNotificationBanner({
-    html: html,
-    type: "success"
-  }) }}
+  {{
+    govukNotificationBanner({
+      html: html,
+      type: "success"
+    })
+  }}
 {% endmacro %}
