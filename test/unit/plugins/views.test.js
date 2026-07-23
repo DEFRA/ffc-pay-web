@@ -136,4 +136,26 @@ describe('app/plugins/views.js', () => {
       done()
     })
   })
+
+  describe('localizeCurrency filter', () => {
+    const options = {
+      path: ['../views'],
+      relativeTo: path.join(__dirname, '..'),
+      compileOptions: {},
+      context: {}
+    }
+
+    viewsPlugin.options.engines.njk.prepare(options, (err) => {
+      expect(err).toBeUndefined()
+      const env = options.compileOptions.environment
+      const localizeCurrency = env.getFilter ? env.getFilter('localizeCurrency') : null
+      test('returns 0.00 for null', () => {
+        expect(localizeCurrency(null)).toBe('0.00')
+      })
+
+      test('formats a number', () => {
+        expect(localizeCurrency(1234.56)).toBe('1,234.56')
+      })
+    })
+  })
 })
