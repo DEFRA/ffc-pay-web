@@ -236,7 +236,9 @@
               Total Value
             </h3>
             <div class="govuk-panel__body metrics-panel__body">
-              £{{ (paymentsMetrics.totalValue / 100) | default(0) | localize }}
+              £{{
+                (paymentsMetrics.totalValue / 100) | default(0) | localizeCurrency
+              }}
             </div>
           </div>
         </div>
@@ -309,7 +311,7 @@
                   {{ scheme.totalPayments | localize }}
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
-                  {{ (scheme.totalValue / 100) | localize }}
+                  {{ (scheme.totalValue / 100) | localizeCurrency }}
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
                   {{ scheme.paymentsByStatus.pending | localize }}
@@ -319,6 +321,29 @@
                 </td>
               </tr>
             {% endfor %}
+            <tr class="govuk-table__row">
+              <th
+                scope="row"
+                class="govuk-table__header">
+                Total
+              </th>
+              <td
+                class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">
+                {{ paymentsMetrics.totalPayments | localize }}
+              </td>
+              <td
+                class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">
+                {{ (paymentsMetrics.totalValue / 100) | localizeCurrency }}
+              </td>
+              <td
+                class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">
+                {{ paymentsMetrics.totalPendingPayments | localize }}
+              </td>
+              <td
+                class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">
+                {{ paymentsMetrics.totalProcessedPayments | localize }}
+              </td>
+            </tr>
           </tbody>
         </table>
       {% endif %}
@@ -408,7 +433,7 @@
                   {{ scheme.printPostCount | localize }}
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
-                  {{ (scheme.printPostCost / 100) | localize }}
+                  {{ (scheme.printPostCost / 100) | localizeCurrency }}
                 </td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
                   {{ scheme.emailCount | localize }}
@@ -434,7 +459,9 @@
               </td>
               <td
                 class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">
-                {{ (statementsMetrics.totalPrintPostCost / 100) | localize }}
+                {{
+                  (statementsMetrics.totalPrintPostCost / 100) | localizeCurrency
+                }}
               </td>
               <td
                 class="govuk-table__cell govuk-table__cell--numeric govuk-!-font-weight-bold">

@@ -32,6 +32,31 @@ module.exports = {
             return Number(num).toLocaleString('en-GB')
           })
 
+          env.addFilter('localizeCurrency', function (num) {
+            if (num === null || num === undefined || num === '') {
+              return '0.00'
+            }
+
+            const value = Number(num)
+
+            const formatted = value.toLocaleString('en-GB', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+
+            const parts = formatted.split('.')
+
+            if (parts.length === 1) {
+              return `${formatted}.00`
+            }
+
+            if (parts[1].length === 1) {
+              return `${parts[0]}.${parts[1]}0`
+            }
+
+            return formatted
+          })
+
           const sentenceSplitRegex = /[^.!?]+[.!?]*/g
           env.addFilter('sentences', function (text) {
             if (!text && text !== 0) {
