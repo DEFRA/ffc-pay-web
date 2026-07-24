@@ -1,29 +1,24 @@
 const Joi = require('joi')
+const fileSchema = require('../file-schema')
 
 module.exports = Joi.object({
-
-  file: Joi.object().keys({
-    filename: Joi.string().required(),
-    path: Joi.string().required(),
-    headers: Joi.object().keys({
-      'content-disposition': Joi.string().required(),
-      'content-type': Joi.string().valid('text/csv').required()
-    }).required(),
-    bytes: Joi.number().required()
-  }).error(errors => {
-    errors[0].message = 'Provide a CSV file'
-    return errors[0]
-  }),
+  file: fileSchema,
   type: Joi.string().required().valid('add', 'remove').error(errors => {
-    errors.forEach(err => { err.message = 'An error has occurred. Please return to the manage payment holds in bulk page.' })
+    errors.forEach(err => {
+      err.message = 'An error has occurred. Please return to the manage payment holds in bulk page.'
+    })
     return errors
   }),
   selectScheme: Joi.string().required().error(errors => {
-    errors.forEach(err => { err.message = 'Scheme is required' })
+    errors.forEach(err => {
+      err.message = 'Scheme is required'
+    })
     return errors
   }),
   holdCategoryId: Joi.number().integer().required().error(errors => {
-    errors.forEach(err => { err.message = 'Category is required' })
+    errors.forEach(err => {
+      err.message = 'Category is required'
+    })
     return errors
   })
 })
