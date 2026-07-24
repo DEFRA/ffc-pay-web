@@ -2,7 +2,7 @@ jest.mock('../../../../app/api')
 jest.mock('../../../../app/auth')
 
 const cheerio = require('cheerio')
-const { closureAdmin } = require('../../../../app/auth/permissions')
+const { applicationAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
 const { FRN } = require('../../../mocks/values/frn')
 const { AGREEMENT_NUMBER } = require('../../../mocks/values/agreement-number')
@@ -58,7 +58,7 @@ const loadPage = async (method, url, authOverride) => {
 
 describe('Closures', () => {
   beforeEach(async () => {
-    auth = { strategy: 'session-auth', credentials: { scope: [closureAdmin] } }
+    auth = { strategy: 'session-auth', credentials: { scope: [applicationAdmin] } }
     jest.clearAllMocks()
     server = await createServer()
   })
@@ -300,7 +300,7 @@ describe('Closures', () => {
         month: 8,
         year: 2023
       }
-      const authWithName = { strategy: 'session-auth', credentials: { scope: [closureAdmin], account: { name: 'Test User' } } }
+      const authWithName = { strategy: 'session-auth', credentials: { scope: [applicationAdmin], account: { name: 'Test User' } } }
       const res = await server.inject({
         method: 'POST',
         url: '/closure/add',
@@ -327,7 +327,7 @@ describe('Closures', () => {
         month: 8,
         year: 2023
       }
-      const authWithUsername = { strategy: 'session-auth', credentials: { scope: [closureAdmin], account: { username: 'user123' } } }
+      const authWithUsername = { strategy: 'session-auth', credentials: { scope: [applicationAdmin], account: { username: 'user123' } } }
       const res = await server.inject({
         method: 'POST',
         url: '/closure/add',
@@ -354,7 +354,7 @@ describe('Closures', () => {
         month: 8,
         year: 2023
       }
-      const authWithEmail = { strategy: 'session-auth', credentials: { scope: [closureAdmin], account: { email: 'email@example.com' } } }
+      const authWithEmail = { strategy: 'session-auth', credentials: { scope: [applicationAdmin], account: { email: 'email@example.com' } } }
       const res = await server.inject({
         method: 'POST',
         url: '/closure/add',
@@ -381,7 +381,7 @@ describe('Closures', () => {
         month: 8,
         year: 2023
       }
-      const authNoAccount = { strategy: 'session-auth', credentials: { scope: [closureAdmin], account: undefined } }
+      const authNoAccount = { strategy: 'session-auth', credentials: { scope: [applicationAdmin], account: undefined } }
       const res = await server.inject({
         method: 'POST',
         url: '/closure/add',
@@ -416,7 +416,7 @@ describe('Closures', () => {
         redirect: responseMock.redirect,
         response: responseMock.response
       }
-      auth = { strategy: 'session-auth', credentials: { scope: [closureAdmin] } }
+      auth = { strategy: 'session-auth', credentials: { scope: [applicationAdmin] } }
       request = { query: {}, payload: {}, auth, state: {} }
       jest.clearAllMocks()
     })

@@ -1,4 +1,4 @@
-const { applicationAdmin, closureAdmin } = require('../auth/permissions')
+const { applicationAdmin } = require('../auth/permissions')
 const schema = require('./schemas/closure/closure')
 const bulkSchema = require('./schemas/closure/bulk-closure')
 const removeConfirmSchema = require('./schemas/closure/remove-confirm')
@@ -14,7 +14,7 @@ const { getClosures } = require('../closure')
 const { getSchemes } = require('../helpers')
 const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('../storage')
 
-const AUTH_SCOPE = { scope: [applicationAdmin, closureAdmin] }
+const AUTH_SCOPE = { scope: [applicationAdmin] }
 const defaultPage = 1
 const defaultPageSize = 2500
 
