@@ -32,7 +32,7 @@ jest.mock('../../../../../app/config', () => ({
   }
 }))
 
-jest.mock('../../../../../app/routes/schemas/standard-report-schema', () => {
+jest.mock('../../../../../app/routes/schemas/reports/standard-report-schema', () => {
   const Joi = require('joi')
   return Joi.object({
     schemeId: Joi.string().required(),

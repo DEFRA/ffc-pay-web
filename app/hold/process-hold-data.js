@@ -1,4 +1,4 @@
-const parsedSchema = require('../routes/schemas/parsed-hold')
+const parsedSchema = require('../routes/schemas/holds/parsed-hold')
 
 const processHoldData = async (data) => {
   const uploadData = []

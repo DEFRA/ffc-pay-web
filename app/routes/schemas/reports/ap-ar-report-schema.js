@@ -5,7 +5,7 @@ const maxDateDay = 31
 const maxDateMonth = 12
 const minYear = 2015
 
-const { AP, AR } = require('../../constants/report-types')
+const { AP, AR } = require('../../../constants/report-types')
 
 const allowedReportTypes = [AP, AR]
 

@@ -1,4 +1,4 @@
-const schema = require('../../../../app/routes/schemas/bulk-hold')
+const schema = require('../../../../app/routes/schemas/holds/bulk-hold')
 
 test('valid payload passes validation', () => {
   const payload = {

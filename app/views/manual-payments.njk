@@ -60,6 +60,15 @@
             </ul>
           </div>
         </div>
+
+        {# Build per-field error variables from errors.details #}
+        {% set fileError = null %}
+        {% for err in errors.details %}
+          {%
+            set field = (err.path and err.path[0]) or (err.context and err.context.key)
+          %}
+          {% if field == 'file' %}{% set fileError = err.message %}{% endif %}
+        {% endfor %}
       {% endif %}
       <form
         method="POST"

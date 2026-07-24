@@ -1,69 +1,100 @@
-{% macro renderLoadingPage(
-  jobId,
-  checkUrl,
-  downloadUrl,
-  redirectUrl,
-  title="Loading",
-  statusMessage="Please wait.",
-  processingMessage="The task is being processed.",
-  completedMessage="The task has been completed successfully.",
-  errorMessage="We were unable to complete the task.",
-  autoRedirect=true,
-  schemeName="",
-  reportFilename=""
-) %}
-
+{%
+  macro renderLoadingPage(
+    jobId,
+    checkUrl,
+    downloadUrl,
+    redirectUrl,
+    title="Loading",
+    statusMessage="Please wait.",
+    processingMessage="The task is being processed.",
+    completedMessage="The task has been completed successfully.",
+    errorMessage="We were unable to complete the task.",
+    autoRedirect=true,
+    schemeName="",
+    reportFilename=""
+  )
+%}
   <h1 class="govuk-heading-l">{{ title }}</h1>
 
   <style>
-    #progress-container.loading-success-banner {
-      border-color: #00703c !important;
-      background-color: #ffffff !important;
-    }
+  #progress-container.loading-success-banner {
+    border-color: #00703c !important;
+    background-color: #ffffff !important;
+  }
 
-    #progress-container.loading-success-banner .govuk-notification-banner__header {
-      background-color: #00703c !important;
-    }
+  #progress-container.loading-success-banner .govuk-notification-banner__header {
+    background-color: #00703c !important;
+  }
 
-    #progress-container.loading-success-banner .govuk-notification-banner__content {
-      background-color: #ffffff !important;
-      color: #0b0c0c;
-    }
+  #progress-container.loading-success-banner .govuk-notification-banner__content {
+    background-color: #ffffff !important;
+    color: #0b0c0c;
+  }
   </style>
 
-  <section id="progress-container" class="govuk-notification-banner govuk-notification-banner--info" aria-labelledby="progress-status-heading">
+  <section
+    id="progress-container"
+    class="govuk-notification-banner govuk-notification-banner--info"
+    aria-labelledby="progress-status-heading">
     <div class="govuk-notification-banner__header">
-      <h2 class="govuk-notification-banner__title" id="progress-status-heading">
+      <h2
+        class="govuk-notification-banner__title"
+        id="progress-status-heading">
         Please wait
       </h2>
     </div>
     <div class="govuk-notification-banner__content">
-      <p class="govuk-body" id="progress-status-text">{{ statusMessage }}</p>
-      <div class="redirect-link govuk-body" hidden>
-        <a href="{{ redirectUrl }}" class="govuk-link">Return</a>
+      <p
+        class="govuk-body"
+        id="progress-status-text">
+        {{ statusMessage }}
+      </p>
+      <div
+        class="redirect-link govuk-body"
+        hidden>
+        <a
+          href="{{ redirectUrl }}"
+          class="govuk-link">Return</a>
       </div>
-      <output class="govuk-spinner" aria-live="polite">
+      <output
+        class="govuk-spinner"
+        aria-live="polite">
         <span class="govuk-visually-hidden">Loading</span>
       </output>
     </div>
   </section>
 
-  <div id="error-message" class="govuk-error-summary" hidden>
+  <div
+    id="error-message"
+    class="govuk-error-summary"
+    hidden>
     <h2 class="govuk-error-summary__title">
       There is a problem
     </h2>
     <div class="govuk-error-summary__body">
-      <p id="error-message-text" class="govuk-body">{{ errorMessage }} Please try again later or contact the Payments & Documents Services team.</p>
+      <p
+        id="error-message-text"
+        class="govuk-body">
+        {{ errorMessage }} Please try again later or contact the Payments &
+        Documents Services team.
+      </p>
     </div>
-    <br/>
-    <div class="redirect-link govuk-body" hidden>
-      <a href="{{ redirectUrl }}" class="govuk-link">Return</a>
+    <br />
+    <div
+      class="redirect-link govuk-body"
+      hidden>
+      <a
+        href="{{ redirectUrl }}"
+        class="govuk-link">Return</a>
     </div>
   </div>
 
-  <iframe id="download-frame" style="display: none;" title="Report download frame"></iframe>
+  <iframe
+    id="download-frame"
+    style="display: none;"
+    title="Report download frame"></iframe>
 
-<script>
+  <script>
   const state = {
     downloadStarted: false,
     config: {
@@ -208,5 +239,5 @@
   }
 
   document.addEventListener('DOMContentLoaded', checkStatus)
-</script>
+  </script>
 {% endmacro %}

@@ -9,7 +9,7 @@ const {
   generateReportHandler
 } = require('../../helpers')
 
-const claimLevelSchema = require('../schemas/claim-level-schema')
+const claimLevelSchema = require('../schemas/reports/claim-level-schema')
 
 const storageConfig = require('../../config').storageConfig
 

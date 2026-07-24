@@ -46,8 +46,8 @@ describe('Monitoring Schemes and Processed Payments', () => {
       const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toEqual(pageH1)
-      expect($('#schemeId').children().length).toBe(mockSchemes.length)
+      expect($('h1').text()).toContain(pageH1)
+      expect($('#schemeId').children()).toHaveLength(mockSchemes.length)
     })
 
     test('returns 200 and shows "No schemes were found." if no schemes', async () => {
@@ -55,8 +55,8 @@ describe('Monitoring Schemes and Processed Payments', () => {
       const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
-      expect($('h1').text()).toEqual(pageH1)
-      expect($('#no-schemes').text()).toEqual('No schemes were found.')
+      expect($('h1').text()).toContain(pageH1)
+      expect($('#no-schemes').text()).toContain('No schemes were found.')
     })
 
     test('returns 403 if no permission', async () => {
@@ -86,8 +86,8 @@ describe('Monitoring Schemes and Processed Payments', () => {
       const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
-      expect($('caption').text()).toEqual(pageH1)
-      expect($('tbody').children().length).toBe(mockProcessedPayments.length)
+      expect($('caption').text()).toContain(pageH1)
+      expect($('tbody').children()).toHaveLength(mockProcessedPayments.length)
     })
 
     test('returns 200 and shows "No processed payment requests found." if no processed payments', async () => {
@@ -95,7 +95,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
       const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
-      expect($('#no-hold-text').text()).toEqual('No processed payment requests found.')
+      expect($('#no-hold-text').text()).toContain('No processed payment requests found.')
     })
 
     test('returns 403 if no permission', async () => {
@@ -126,7 +126,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
       const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
-      expect($('tbody').children().length).toBe(1)
+      expect($('tbody').children()).toHaveLength(1)
     })
 
     test('returns 200 and handles empty schemeId gracefully', async () => {

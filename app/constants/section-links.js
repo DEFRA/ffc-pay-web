@@ -7,7 +7,7 @@ const PAYMENT_HOLDS_LINKS = [
   { href: '/payment-holds/add', text: 'Create a new payment hold', description: 'Create a new hold for a payment' },
   { href: '/payment-holds/search', text: 'Search for a payment hold', description: 'Search, view or remove an existing payment hold' },
   { href: '/payment-holds/bulk-manage', text: 'Manage payment holds in bulk', description: 'Manage multiple payment holds at the same time' },
-  { href: '/payment-holds/types', text: 'Manage payment hold types', description: 'Create, edit and remove payment hold types' },
+  { href: '/payment-holds/types', text: 'Manage payment hold types', description: 'Create, edit and remove payment hold types' }
 ]
 
 const FINANCE_REPORTS_LINKS = [
@@ -27,18 +27,19 @@ const GENERATE_REPORTS_LINKS = [
 const PAYMENT_ALERTS_LINKS = [
   { href: '/alerts', text: 'Alerts', homeAuth: [permissions.applicationAdmin, permissions.alertAdmin] },
   { href: '/alerts/information', text: 'Alerts information' },
-  { href: '/alerts/update', text: 'Add new alert recipient' },
+  { href: '/alerts/update', text: 'Add new alert recipient' }
 ]
 
 const AGREEMENT_CLOSURES_LINKS = [
-  { href: '/closure', text: 'Manage closures', homeAuth: [permissions.applicationAdmin, permissions.closureAdmin] },
-  { href: '/closure/add', text: 'Agreement closure', homeAuth: [permissions.applicationAdmin, permissions.closureAdmin] },
-  { href: '/closure/bulk', text: 'Bulk agreement closure', homeAuth: [permissions.applicationAdmin, permissions.closureAdmin] },
+  { href: '/closure/manage', text: 'Manage agreement closures', homeAuth: [permissions.applicationAdmin] },
+  { href: '/closure/search', text: 'Search agreement closures', description: 'Search and update an active agreement closure' },
+  { href: '/closure/add', text: 'Create a new agreement closure', description: 'Add a new agreement closure' },
+  { href: '/closure/bulk', text: 'Bulk add agreement closures', description: 'Add multiple new agreement closures' }
 ]
 
 const MONITORING_LINKS = [
   { href: '/monitoring', text: 'Monitoring', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
-  { href: '/monitoring/schemes', text: 'Schemes', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
+  { href: '/monitoring/schemes', text: 'Schemes', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] }
 ]
 
 const MANUAL_PAYMENTS_LINKS = [
@@ -61,7 +62,7 @@ const DOWNLOAD_STATEMENTS_LINKS = [
 const HELP_LINKS = [
   { href: '/accessibility', text: 'Accessibility statement' },
   { href: '/cookies', text: 'Cookies' },
-  { href: '/privacy', text: 'Privacy' },
+  { href: '/privacy', text: 'Privacy' }
 ]
 
 module.exports = {

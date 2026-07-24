@@ -20,7 +20,7 @@ jest.mock('../../../../../app/helpers', () => {
 jest.mock('../../../../../app/helpers/get-view', () => ({ getView: jest.fn() }))
 jest.mock('../../../../../app/helpers/render-error-page', () => ({ renderErrorPage: jest.fn() }))
 jest.mock('../../../../../app/config', () => ({ storageConfig: { paymentRequestsReportName: 'payment-requests.csv' } }))
-jest.mock('../../../../../app/routes/schemas/standard-report-schema', () => {
+jest.mock('../../../../../app/routes/schemas/reports/standard-report-schema', () => {
   const Joi = require('joi')
   return Joi.object({ schemeId: Joi.string().required(), year: Joi.string().required() })
 })

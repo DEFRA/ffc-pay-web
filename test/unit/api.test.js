@@ -1,4 +1,4 @@
-const { paymentsEndpoint, injectionEndpoint, trackingEndpoint, alertingEndpoint } = require('../../app/config')
+const { paymentsEndpoint, injectionEndpoint, trackingEndpoint, alertingEndpoint, retentionEndpoint } = require('../../app/config')
 const api = require('../../app/api')
 const wreck = require('@hapi/wreck')
 
@@ -30,6 +30,23 @@ describe('API', () => {
     { token: 'token', expectedAuthVal: 'token' },
     { token: null, expectedAuthVal: '' },
     { token: undefined, expectedAuthVal: '' }
+  ])('getRetentionData makes request with auth header and returns response', async ({ token, expectedAuthVal }) => {
+    const responseMock = { payload: 'something' }
+    wreck.get.mockResolvedValueOnce(responseMock)
+
+    const response = await api.getRetentionData('url', token)
+
+    expect(wreck.get).toHaveBeenCalledWith(`${retentionEndpoint}url`, {
+      headers: { Authorization: expectedAuthVal },
+      json: true
+    })
+    expect(response).toEqual(responseMock)
+  })
+
+  test.each([
+    { token: 'token', expectedAuthVal: 'token' },
+    { token: null, expectedAuthVal: '' },
+    { token: undefined, expectedAuthVal: '' }
   ])('postProcessing makes request with auth header and returns payload only', async ({ token, expectedAuthVal }) => {
     const wreckResponseMock = { res: { statusCode: 200 }, payload: { message: 'something' } }
     wreck.post.mockResolvedValueOnce(wreckResponseMock)
@@ -38,6 +55,25 @@ describe('API', () => {
     const response = await api.postProcessing('url', data, token)
 
     expect(wreck.post).toHaveBeenCalledWith(`${paymentsEndpoint}url`, {
+      payload: data,
+      headers: { Authorization: expectedAuthVal },
+      json: true
+    })
+    expect(response).toEqual(wreckResponseMock.payload)
+  })
+
+  test.each([
+    { token: 'token', expectedAuthVal: 'token' },
+    { token: null, expectedAuthVal: '' },
+    { token: undefined, expectedAuthVal: '' }
+  ])('postRetention makes request with auth header and returns payload only', async ({ token, expectedAuthVal }) => {
+    const wreckResponseMock = { res: { statusCode: 200 }, payload: { message: 'something' } }
+    wreck.post.mockResolvedValueOnce(wreckResponseMock)
+    const data = { hi: 'world' }
+
+    const response = await api.postRetention('url', data, token)
+
+    expect(wreck.post).toHaveBeenCalledWith(`${retentionEndpoint}url`, {
       payload: data,
       headers: { Authorization: expectedAuthVal },
       json: true

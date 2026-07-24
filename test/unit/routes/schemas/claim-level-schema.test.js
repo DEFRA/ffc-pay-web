@@ -1,5 +1,5 @@
 const { BPS, CS } = require('../../../../app/constants/schemes')
-const validationSchema = require('../../../../app/routes/schemas/claim-level-schema')
+const validationSchema = require('../../../../app/routes/schemas/reports/claim-level-schema')
 
 const withRequired = obj => ({
   'report-title': 'T',

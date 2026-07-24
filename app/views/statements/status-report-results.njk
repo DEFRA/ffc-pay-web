@@ -6,17 +6,19 @@
 {% block pageTitle %}{{ reportTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Payment statement status report",
-      href: "/status-report"
-    }, {
-      text: reportTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: "Payment statement status report",
+        href: "/status-report"
+      }, {
+        text: reportTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
@@ -24,7 +26,9 @@
 
   <p class="govuk-body">
     Download available reports as a CSV file to your device or
-    <a class="govuk-link" href="/status-report">start a new search</a>.
+    <a
+      class="govuk-link"
+      href="/status-report">start a new search</a>.
   </p>
 
   <h2 class="govuk-heading-m">Available reports</h2>
@@ -33,7 +37,11 @@
     <div class="govuk-summary-list">
       {% for report in reportRows %}
         <div class="govuk-summary-list__row status-report-row">
-            <a class="govuk-link" href="{{ report.prepareHref }}">{{ report.date }}  {{ report.fileType }}  {{ report.fileSize }}</a>
+          <a
+            class="govuk-link"
+            href="{{ report.prepareHref }}">{{ report.date }} {{
+              report.fileType
+            }} {{ report.fileSize }}</a>
         </div>
       {% endfor %}
     </div>

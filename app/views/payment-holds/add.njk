@@ -17,31 +17,46 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <form method="POST" action="/payment-holds/add-confirm" autocomplete="off" novalidate>
-        <input type="hidden" name="crumb" value="{{ crumb }}"/>
-        
+      <form
+        method="POST"
+        action="/payment-holds/add-confirm"
+        autocomplete="off"
+        novalidate>
+        <input
+          type="hidden"
+          name="crumb"
+          value="{{ crumb }}"
+        />
+
         <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
         <p class="govuk-body">
-          To create a new payment hold enter the 10 digit Firm Reference Number (FRN), select the scheme and the hold type. 
+          To create a new payment hold enter the 10 digit Firm Reference Number
+          (FRN), select the scheme and the hold type.
         </p>
 
         <p class="govuk-body">
-          If you want to add more than one hold, you can <a href="/payment-holds/bulk" class="govuk-link">bulk add holds</a>.
+          If you want to add more than one hold, you can <a
+            href="/payment-holds/bulk"
+            class="govuk-link">bulk add holds</a>.
         </p>
         {% if errors %}
           {% set errorList = [] %}
           {% for errorDetail in errors.details %}
-            {% set errorList = (errorList.push({
-              text: errorDetail.message,
-              href: "#" + (errorDetail.context.key if errorDetail.context.key else "frn")
-            }), errorList) %}
+            {%
+              set errorList = (errorList.push({
+                text: errorDetail.message,
+                href: "#" + (errorDetail.context.key if errorDetail.context.key else "frn")
+              }), errorList)
+            %}
           {% endfor %}
-          
-          {{ govukErrorSummary({
-            titleText: "There is a problem",
-            errorList: errorList
-          }) }}
+
+          {{
+            govukErrorSummary({
+              titleText: "There is a problem",
+              errorList: errorList
+            })
+          }}
         {% endif %}
 
         {% set frnError = null %}
@@ -53,30 +68,38 @@
           {% endfor %}
         {% endif %}
 
-        {{ govukInput({
-          label: {
-            text: "FRN (Firm Reference Number)",
-            classes: "govuk-label--s"
-          },
-          id: "frn",
-          name: "frn",
-          value: frn,
-          classes: "govuk-input--width-10",
-          errorMessage: frnError,
-          inputmode: "numeric",
-          spellcheck: false
-        }) }}
+        {{
+          govukInput({
+            label: {
+              text: "FRN (Firm Reference Number)",
+              classes: "govuk-label--s"
+            },
+            id: "frn",
+            name: "frn",
+            value: frn,
+            classes: "govuk-input--width-10",
+            errorMessage: frnError,
+            inputmode: "numeric",
+            spellcheck: false
+          })
+        }}
 
-        {{ holdSelectionRadios(holdCategoryRadios, selectScheme, selectHoldCategoryId) }}
+        {{
+          holdSelectionRadios(holdCategoryRadios, selectScheme, selectHoldCategoryId)
+        }}
 
         <div class="govuk-button-group">
-          {{ govukButton({
-            text: "Continue",
-            attributes: {
-              id: "submit"
-            }
-          }) }}
-          <a class="govuk-link" href="/payment-holds/manage">Cancel</a>
+          {{
+            govukButton({
+              text: "Continue",
+              attributes: {
+                id: "submit"
+              }
+            })
+          }}
+          <a
+            class="govuk-link"
+            href="/payment-holds/manage">Cancel</a>
         </div>
       </form>
     </div>

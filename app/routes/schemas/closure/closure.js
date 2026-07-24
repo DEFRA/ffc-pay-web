@@ -29,6 +29,15 @@ module.exports = Joi.object({
       })
       return errors
     }),
+  schemeId: Joi.number()
+    .integer()
+    .required()
+    .error(errors => {
+      errors.forEach(err => {
+        err.message = 'Select a scheme'
+      })
+      return errors
+    }),
   day: Joi.number()
     .integer()
     .min(minDayMonth)

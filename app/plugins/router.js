@@ -14,7 +14,6 @@ let routes = [].concat(
   require('../routes/dev-auth'),
   require('../routes/view-processed-payment-requests'),
   require('../routes/closures'),
-  require('../routes/view-closures'),
   require('../routes/loading'),
   require('../routes/download-report-list'),
   require('../routes/generate-report-list'),

@@ -7,20 +7,23 @@
 {% block pageTitle %}{{ model.title.text }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBackLink({
-    text: "Back",
-    href: "/"
-  }) }}
+  {{
+    govukBackLink({
+      text: "Back",
+      href: "/"
+    })
+  }}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-
       <h1 class="govuk-heading-l">{{ model.title.text }}</h1>
 
       <p class="govuk-body">
-        Access to individual pages is managed by Entra ID groups. While all pages are listed, you may be unable to access all of the pages depending on the Entra ID groups your account is assigned to.
+        Access to individual pages is managed by Entra ID groups. While all
+        pages are listed, you may be unable to access all of the pages depending
+        on the Entra ID groups your account is assigned to.
       </p>
 
       {% for section in model.sections %}

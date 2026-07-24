@@ -1,4 +1,4 @@
-const searchSchema = require('../../../../app/routes/schemas/hold-search')
+const searchSchema = require('../../../../app/routes/schemas/holds/hold-search')
 jest.mock('../../../../app/auth')
 
 test('should return error when FRN is not 10 digits', () => {

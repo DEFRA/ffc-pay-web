@@ -6,7 +6,7 @@ module.exports = [
   { title: 'Payment events', description: 'View payment and events and requests', links: MONITORING_LINKS },
   { title: 'Payment holds', description: 'View, add or remove payment holds', links: PAYMENT_HOLDS_LINKS },
   { title: 'Manual payments', description: 'Manually upload payment files', links: MANUAL_PAYMENTS_LINKS },
-  { title: 'Agreement closures', description: 'Update, add and remove payment suppressions', links: AGREEMENT_CLOSURES_LINKS },
+  { title: 'Agreement closures', description: 'Search and update closures, or add new closures individually or in bulk', links: AGREEMENT_CLOSURES_LINKS },
   { title: 'Email alerts', description: 'Manage where payment alerts are sent by the scheme or recipient', links: PAYMENT_ALERTS_LINKS },
   { title: 'Statements', description: 'Find and download payment statements and statement status reports', links: DOWNLOAD_STATEMENTS_LINKS },
   { title: 'Metrics dashboard', description: 'View payment and document metrics filtered by time period', links: METRICS_LINKS },

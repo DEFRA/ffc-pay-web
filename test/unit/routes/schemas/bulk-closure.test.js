@@ -1,4 +1,4 @@
-const bulkSchema = require('../../../../app/routes/schemas/bulk-closure')
+const bulkSchema = require('../../../../app/routes/schemas/closure/bulk-closure')
 
 describe('Bulk Closure Validator', () => {
   const validFile = {

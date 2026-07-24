@@ -11,9 +11,11 @@ container:
   injectionEndpoint: http://ffc-pay-injection.ffc-pay
   alertingEndpoint: http://ffc-pay-alerting.ffc-pay
   statementPublisherEndpoint: http://ffc-doc-statement-publisher.ffc-doc
+  retentionEndpoint: http://fcp-pds-data-retention.fcp-pds
   payEventStoreAzureStorageConnectionString: dummy
   payInjectionAzureStorageConnectionString: dummy
   docAzureStorageConnectionString: dummy
+  pdsAzureStorageConnectionString: dummy
   azureStorageAccountName: preffcpayst1001
   docAzureStorageAccountName: preffcdocst1001
   messageQueueHost: PREFFCINFSB1001.servicebus.windows.net

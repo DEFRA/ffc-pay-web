@@ -34,6 +34,14 @@ const postAlerting = async (url, data, token) => {
   return { statusCode: res.statusCode, payload }
 }
 
+const postRetention = async (url, data, token) => {
+  const { payload } = await wreck.post(`${config.retentionEndpoint}${url}`, {
+    payload: data,
+    ...getConfiguration(token)
+  })
+  return payload
+}
+
 const postStatementPublisher = async (url, data, token) => {
   const { res, payload } = await wreck.post(`${config.statementPublisherEndpoint}${url}`, {
     payload: data,
@@ -44,6 +52,10 @@ const postStatementPublisher = async (url, data, token) => {
 
 const getProcessingData = async (url, token) => {
   return wreck.get(`${config.paymentsEndpoint}${url}`, getConfiguration(token))
+}
+
+const getRetentionData = async (url, token) => {
+  return wreck.get(`${config.retentionEndpoint}${url}`, getConfiguration(token))
 }
 
 const getTrackingData = async (url, token) => {
@@ -80,8 +92,10 @@ module.exports = {
   postProcessing,
   postInjection,
   postAlerting,
+  postRetention,
   postStatementPublisher,
   getProcessingData,
+  getRetentionData,
   getTrackingData,
   getAlertingData,
   getInjectionData,

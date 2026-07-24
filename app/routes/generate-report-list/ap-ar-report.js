@@ -10,7 +10,7 @@ const {
 } = require('../../helpers')
 
 const storageConfig = require('../../config').storageConfig
-const apArListingSchema = require('../schemas/ap-ar-report-schema')
+const apArListingSchema = require('../schemas/reports/ap-ar-report-schema')
 
 const getReportFilenameBasedOnType = (payload) => {
   if (payload.reportType === REPORT_TYPES.AP) {

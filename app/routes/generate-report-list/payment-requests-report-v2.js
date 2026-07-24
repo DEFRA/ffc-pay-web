@@ -10,7 +10,7 @@ const {
   getView
 } = require('../../helpers')
 
-const standardReportSchema = require('../schemas/standard-report-schema')
+const standardReportSchema = require('../schemas/reports/standard-report-schema')
 
 const { storageConfig } = require('../../config')
 

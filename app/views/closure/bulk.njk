@@ -1,72 +1,124 @@
 {% extends '_layout.njk' %}
 
+{% from 'macros/closure-breadcrumbs.njk' import closureBreadcrumbs %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% set pageTitle = "Add agreement closures in bulk" %}
+{% set pageTitle = "Bulk add agreement closures" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Agreement closures",
-      href: "/closure"
-    },{
-      text: pageTitle
-    }]
-  })}}
+  {{ closureBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <form method="POST" action="/closure/bulk" autocomplete="off" novalidate enctype="multipart/form-data">
-        <input type="hidden" name="crumb" value="{{crumb}}"/>
-        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      {%
+        set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Agreement closures - service design.pdf' | urlencode
+      %}
 
-        <p class="govuk-body">Any details you provide here will result in a suppression being applied to payments against a given FRN and agreement number.</p>
-        <p class="govuk-body">If a 0 value request is provided to the Payment Hub, following the date supplied, any amount repayable will be suppressed and Dynamics 365 will be informed that the outstanding value should be reduced to 0.</p>
-        <p class="govuk-body">It is assumed that any details provided are applicable to SFI22.</p>
+      <p class="govuk-body">
+        Bulk adding new agreement closures allows the Payment Hub to manage data
+        retention for the data it holds related to payment requests.
+      </p>
+      <p class="govuk-body">
+        For guidance including how to format the csv file <a
+          class="govuk-link"
+          href="{{ pdfDownloadLink }}"
+          target="_blank"
+          rel="noopener noreferrer">download the agreement closure guide
+          (PDF)</a>.
+      </p>
+      <p class="govuk-body">
+        Alternatively, you can <a
+          href="/closure/add"
+          class="govuk-link">create a singular agreement closure</a>.
+      </p>
 
-        <p class="govuk-body">Want to upload a single closure? Click <a href="/closure/add" class="govuk-link">here</a>.</p>
-
-        {% if errors %}
-          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-            <h2 class="govuk-error-summary__title" id="error-summary-title">
-            There is a problem
-          </h2>
+      {% if errors %}
+        <div
+          class="govuk-error-summary"
+          aria-labelledby="error-summary-title"
+          role="alert"
+          tabindex="-1"
+          data-module="govuk-error-summary">
+          <div role="alert">
+            <h2
+              class="govuk-error-summary__title"
+              id="error-summary-title">
+              There is a problem
+            </h2>
             <div class="govuk-error-summary__body">
               <ul class="govuk-list govuk-error-summary__list">
-                {% for errorDetail in errors.details %}
+                {% for err in errors.details %}
                   <li>
-                    <span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> {{ errorDetail.message }}</span>
+                    <a href="#{{ err.path[0] or err.context.key }}">{{
+                      err.message
+                    }}</a>
                   </li>
                 {% endfor %}
               </ul>
             </div>
           </div>
-        {% endif %}
+        </div>
 
-        <div class="govuk-form-group">
-          <label class="govuk-label govuk-label-s" for="file">
+        {# Build per-field error variables from errors.details #}
+        {% set fileError = null %}
+        {% for err in errors.details %}
+          {%
+            set field = (err.path and err.path[0]) or (err.context and err.context.key)
+          %}
+          {% if field == 'file' %}{% set fileError = err.message %}{% endif %}
+        {% endfor %}
+      {% endif %}
+
+      <form
+        method="POST"
+        action="/closure/bulk"
+        autocomplete="off"
+        novalidate
+        enctype="multipart/form-data">
+        <input
+          type="hidden"
+          name="crumb"
+          value="{{crumb}}"
+        />
+
+        <div
+          class="govuk-form-group {% if fileError %}govuk-form-group--error{% endif %}">
+          <label
+            class="govuk-label govuk-label-s"
+            for="file">
             Upload a file
           </label>
-          <div class="govuk-hint">
-            In case of any questions on the required format, please contact the Payment Hub team.
-          </div>
-          <input class="govuk-file-upload" id="file" name="file" type="file" value="{{ file }}">
+          {% if fileError %}
+            <p
+              id="file-error"
+              class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ fileError }}
+            </p>
+          {% endif %}
+          <input
+            class="govuk-file-upload {% if fileError %}govuk-file-upload--error{% endif %}"
+            id="file"
+            name="file"
+            type="file"
+            value="{{ file }}"
+            {% if fileError %}aria-describedby="file-error"{% endif %}
+          />
         </div>
-        
-        {{ govukButton({
-          text: "Create",
-          attributes: {
-            id: "submit"
-          }
-        }) }}
+
+        {{
+          govukButton({
+            text: "Add closures",
+            attributes: {
+              id: "submit"
+            }
+          })
+        }}
       </form>
     </div>
   </div>

@@ -12,19 +12,15 @@
 {% block beforeContent %}
   {{
     govukBreadcrumbs({
-      items: [
-        {
-          text: "Home",
-          href: "/"
-        },
-        {
-          text: "Reset payment request",
-          href: "/payment-request/reset"
-        },
-        {
-          text: pageTitle
-        }
-      ]
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: "Reset payment request",
+        href: "/payment-request/reset"
+      }, {
+        text: pageTitle
+      }]
     })
   }}
 {% endblock %}
