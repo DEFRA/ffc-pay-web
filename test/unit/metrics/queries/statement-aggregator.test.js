@@ -2,6 +2,7 @@ jest.mock('../../../../app/api')
 
 const { getStatementMetrics } = require('../../../../app/metrics/queries/statement-aggregator')
 const { getStatementPublisherData } = require('../../../../app/api')
+const SCHEME_NAMES = require('../../../../app/constants/scheme-names')
 
 describe('statement-aggregator', () => {
   let consoleErrorSpy
@@ -49,6 +50,70 @@ describe('statement-aggregator', () => {
     describe('successful requests', () => {
       beforeEach(() => {
         getStatementPublisherData.mockResolvedValue(mockPayload)
+      })
+
+      test('should transform Delinked Payment Statement scheme name', async () => {
+        getStatementPublisherData.mockResolvedValue({
+          statementsByScheme: [{
+            schemeName: 'Delinked Payment Statement',
+            printPostCost: '100',
+            receivedYear: 2024,
+            receivedMonth: 6
+          }]
+        })
+
+        const result = await getStatementMetrics()
+
+        expect(result.data.statementsByScheme[0].schemeName)
+          .toBe(SCHEME_NAMES.DELINKED)
+      })
+
+      test('should transform Sustainable Farming Incentive scheme name', async () => {
+        getStatementPublisherData.mockResolvedValue({
+          statementsByScheme: [{
+            schemeName: 'Sustainable Farming Incentive',
+            printPostCost: '100',
+            receivedYear: 2024,
+            receivedMonth: 6
+          }]
+        })
+
+        const result = await getStatementMetrics()
+
+        expect(result.data.statementsByScheme[0].schemeName)
+          .toBe(SCHEME_NAMES.SFI)
+      })
+
+      test('should transform Sustainable Farming Incentive 2023 scheme name', async () => {
+        getStatementPublisherData.mockResolvedValue({
+          statementsByScheme: [{
+            schemeName: 'Sustainable Farming Incentive 2023',
+            printPostCost: '100',
+            receivedYear: 2024,
+            receivedMonth: 6
+          }]
+        })
+
+        const result = await getStatementMetrics()
+
+        expect(result.data.statementsByScheme[0].schemeName)
+          .toBe(SCHEME_NAMES.SFI23)
+      })
+
+      test('should leave unknown scheme names unchanged', async () => {
+        getStatementPublisherData.mockResolvedValue({
+          statementsByScheme: [{
+            schemeName: 'Unknown Scheme',
+            printPostCost: '100',
+            receivedYear: 2024,
+            receivedMonth: 6
+          }]
+        })
+
+        const result = await getStatementMetrics()
+
+        expect(result.data.statementsByScheme[0].schemeName)
+          .toBe('Unknown Scheme')
       })
 
       test('should fetch document metrics with default period ytd', async () => {
