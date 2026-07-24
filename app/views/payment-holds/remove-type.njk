@@ -15,20 +15,48 @@
     <div class="govuk-grid-column-full">
       <div class="interruption-card">
         <div class="interruption-card__content">
-          <h1 class="interruption-card__heading">Are you sure you want to remove {{ categoryName }} from {{ schemeName }}?</h1>
+          <h1 class="interruption-card__heading">
+            Are you sure you want to remove {{ categoryName }} from {{
+              schemeName
+            }}?
+          </h1>
           <div class="interruption-card__body">
-            <p>Removing this payment hold type means it will no longer be available for this scheme.</p>
-            <p>You will not be able to restore it and will need to create it as a new payment hold type.</p>
+            <p>
+              Removing this payment hold type means it will no longer be
+              available for this scheme.
+            </p>
+            <p>
+              You will not be able to restore it and will need to create it as a
+              new payment hold type.
+            </p>
           </div>
           <div class="govuk-button-group interruption-card__actions">
-            <form method="POST" action="/remove-hold-type" autocomplete="off" novalidate>
-              <input type="hidden" name="crumb" value="{{ crumb }}"/>
-              <input type="hidden" name="holdCategoryId" value="{{ holdCategoryId }}"/>
+            <form
+              method="POST"
+              action="/remove-hold-type"
+              autocomplete="off"
+              novalidate>
+              <input
+                type="hidden"
+                name="crumb"
+                value="{{ crumb }}"
+              />
+              <input
+                type="hidden"
+                name="holdCategoryId"
+                value="{{ holdCategoryId }}"
+              />
               <div class="govuk-button-group moj-interruption-card__actions">
-                <button id="submit" draggable="false" class="govuk-button govuk-button--inverse" data-module="govuk-button">
+                <button
+                  id="submit"
+                  draggable="false"
+                  class="govuk-button govuk-button--inverse"
+                  data-module="govuk-button">
                   Yes, remove
                 </button>
-                <a class="govuk-link govuk-link--inverse" href="/payment-holds/types">Cancel</a>
+                <a
+                  class="govuk-link govuk-link--inverse"
+                  href="/payment-holds/types">Cancel</a>
               </div>
             </form>
           </div>

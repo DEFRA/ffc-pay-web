@@ -12,34 +12,51 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Manage payment holds",
-      href: "/payment-holds/manage"
-    },{
-      text: "Manage payment holds in bulk",
-      href: "/payment-holds/bulk-manage"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: "Manage payment holds",
+        href: "/payment-holds/manage"
+      },{
+        text: "Manage payment holds in bulk",
+        href: "/payment-holds/bulk-manage"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <form method="POST" action="/payment-holds/bulk" autocomplete="off" novalidate enctype="multipart/form-data">
-        <input type="hidden" name="crumb" value="{{crumb}}"/>
-        <input type="hidden" name="type" value="{{type}}"/>
+      <form
+        method="POST"
+        action="/payment-holds/bulk"
+        autocomplete="off"
+        novalidate
+        enctype="multipart/form-data">
+        <input
+          type="hidden"
+          name="crumb"
+          value="{{crumb}}"
+        />
+        <input
+          type="hidden"
+          name="type"
+          value="{{type}}"
+        />
         <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
         <p class="govuk-body">
           {% if type == 'add' %}
-            Add multiple payment holds to a scheme and a hold type by uploading a CSV file.
+            Add multiple payment holds to a scheme and a hold type by uploading
+            a CSV file.
           {% else %}
-            Remove multiple payment holds from a scheme and a hold type by uploading a CSV file.
+            Remove multiple payment holds from a scheme and a hold type by
+            uploading a CSV file.
           {% endif %}
         </p>
         <details class="govuk-details">
@@ -49,40 +66,54 @@
             </span>
           </summary>
           <div class="govuk-details__text">
-            CSVs should only contain a list of ten-digit FRNs to be placed on hold, with each separated by a comma. Other formats may not be read correctly.
+            CSVs should only contain a list of ten-digit FRNs to be placed on
+            hold, with each separated by a comma. Other formats may not be read
+            correctly.
           </div>
         </details>
         {% if errors %}
           {% set errorList = [] %}
           {% for error in errors.details %}
-            {% set errorList = (errorList.push({
-              text: error.message
-            }), errorList) %}
+            {%
+              set errorList = (errorList.push({
+                text: error.message
+              }), errorList)
+            %}
           {% endfor %}
-          
-          {{ govukErrorSummary({
-            titleText: "There is a problem",
-            errorList: errorList
-          }) }}
+
+          {{
+            govukErrorSummary({
+              titleText: "There is a problem",
+              errorList: errorList
+            })
+          }}
         {% endif %}
 
-        {{ govukFileUpload({
-          id: "file",
-          name: "file",
-          label: {
-            text: "Upload a CSV file",
-            classes: "govuk-label--s"
-          },
-          value: file
-        }) }}
-        
-        {{ holdSelectionRadios(holdCategoryRadios, selectScheme, selectHoldCategoryId) }}
+        {{
+          govukFileUpload({
+            id: "file",
+            name: "file",
+            label: {
+              text: "Upload a CSV file",
+              classes: "govuk-label--s"
+            },
+            value: file
+          })
+        }}
+
+        {{
+          holdSelectionRadios(holdCategoryRadios, selectScheme, selectHoldCategoryId)
+        }}
 
         <div class="govuk-button-group">
-          {{ govukButton({
-            text: (type | capitalize) ~ " holds"
-          }) }}
-          <a class="govuk-link" href="/payment-holds/bulk-manage">Cancel</a>
+          {{
+            govukButton({
+              text: (type | capitalize) ~ " holds"
+            })
+          }}
+          <a
+            class="govuk-link"
+            href="/payment-holds/bulk-manage">Cancel</a>
         </div>
       </form>
     </div>

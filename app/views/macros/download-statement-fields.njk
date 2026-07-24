@@ -1,58 +1,100 @@
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 
 {% macro downloadPageTitle(text) %}
-    <h1 class="govuk-heading-l">{{ text }}</h1>
+  <h1 class="govuk-heading-l">{{ text }}</h1>
 {% endmacro %}
 
 {% macro schemeSelect(schemes, selectedSchemeId = '') %}
-    <div class="govuk-form-group">
-        <fieldset class="govuk-fieldset">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
-                Scheme
-            </legend>
-            <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
-                {% for scheme in schemes %}
-                    {% if scheme and scheme.schemeId is defined and scheme.name is defined %}
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input" id="schemeId-{{ loop.index }}" name="schemeId" type="radio" value="{{ scheme.schemeId }}" {% if scheme.schemeId == selectedSchemeId %}checked{% endif %}>
-                            <label class="govuk-label govuk-radios__label" for="schemeId-{{ loop.index }}">
-                                {{ scheme.name }}
-                            </label>
-                        </div>
-                    {% endif %}
-                {% endfor %}
+  <div class="govuk-form-group">
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+        Scheme
+      </legend>
+      <div
+        class="govuk-radios govuk-radios--small"
+        data-module="govuk-radios">
+        {% for scheme in schemes %}
+          {%
+            if scheme and scheme.schemeId is defined and scheme.name is defined
+          %}
+            <div class="govuk-radios__item">
+              <input
+                class="govuk-radios__input"
+                id="schemeId-{{ loop.index }}"
+                name="schemeId"
+                type="radio"
+                value="{{ scheme.schemeId }}"
+                {% if scheme.schemeId == selectedSchemeId %}checked{% endif %}
+              />
+              <label
+                class="govuk-label govuk-radios__label"
+                for="schemeId-{{ loop.index }}">
+                {{ scheme.name }}
+              </label>
             </div>
-        </fieldset>
-    </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </fieldset>
+  </div>
 {% endmacro %}
 
 {% macro yearInput(yearValue = '') %}
-    <div class="govuk-form-group">
-        <label class="govuk-label govuk-label--s" for="marketingYear">
-            Marketing year
-        </label>
-        <input class="govuk-input govuk-input--width-4" id="marketingYear" name="marketingYear" type="text" value="{{ yearValue }}" inputmode="numeric"/>
-    </div>
+  <div class="govuk-form-group">
+    <label
+      class="govuk-label govuk-label--s"
+      for="marketingYear">
+      Marketing year
+    </label>
+    <input
+      class="govuk-input govuk-input--width-4"
+      id="marketingYear"
+      name="marketingYear"
+      type="text"
+      value="{{ yearValue }}"
+      inputmode="numeric"
+    />
+  </div>
 {% endmacro %}
 
 {% macro frnInput(frnValue = '') %}
-    <div class="govuk-form-group">
-        <label class="govuk-label govuk-label--s" for="frn">
-            Firm reference number (FRN)
-        </label>
-        <input class="govuk-input govuk-input--width-10" id="frn" name="frn" type="text" value="{{ frnValue }}" inputmode="numeric"/>
-    </div>
+  <div class="govuk-form-group">
+    <label
+      class="govuk-label govuk-label--s"
+      for="frn">
+      Firm reference number (FRN)
+    </label>
+    <input
+      class="govuk-input govuk-input--width-10"
+      id="frn"
+      name="frn"
+      type="text"
+      value="{{ frnValue }}"
+      inputmode="numeric"
+    />
+  </div>
 {% endmacro %}
 
 {% macro submitButton(label = "Search statements") %}
-    <div class="govuk-button-group">
-        <button id="report-submit" class="govuk-button" data-module="govuk-button">{{ label }}</button>
-        <button type="button" class="govuk-button govuk-button--secondary" onclick="window.location.href='/download-statements'">Clear</button>
-    </div>
+  <div class="govuk-button-group">
+    <button
+      id="report-submit"
+      class="govuk-button"
+      data-module="govuk-button">
+      {{ label }}
+    </button>
+    <button
+      type="button"
+      class="govuk-button govuk-button--secondary"
+      onclick="window.location.href='/download-statements'">
+      Clear
+    </button>
+  </div>
 {% endmacro %}
 
 {% macro dateInput(id, text, errors = {}) %}
-    {{ govukDateInput({
+  {{
+    govukDateInput({
         id: id,
         namePrefix: id,
         fieldset: {
@@ -63,5 +105,6 @@
         hint: {
             text: "For example, 27-11-2025 18:00"
         }
-    }) }}
+    })
+  }}
 {% endmacro %}

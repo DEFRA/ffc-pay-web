@@ -18,9 +18,15 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       {% if createdCategory or editedCategory or removedCategory %}
-        <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div
+          class="govuk-notification-banner govuk-notification-banner--success"
+          role="alert"
+          aria-labelledby="govuk-notification-banner-title"
+          data-module="govuk-notification-banner">
           <div class="govuk-notification-banner__header">
-            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+            <h2
+              class="govuk-notification-banner__title"
+              id="govuk-notification-banner-title">
               Success
             </h2>
           </div>
@@ -37,19 +43,23 @@
           </div>
         </div>
       {% elif error %}
-        {{ govukErrorSummary({
-          titleText: "There is a problem",
-          errorList: [{
-            text: "An error occurred deleting the requested hold category. There may be active holds placed against this category. Please remove any existing holds, then try again.",
-            href: "#"
-          }]
-        }) }}
+        {{
+          govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: [{
+              text: "An error occurred deleting the requested hold category. There may be active holds placed against this category. Please remove any existing holds, then try again.",
+              href: "#"
+            }]
+          })
+        }}
       {% endif %}
 
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
       <p class="govuk-body">
-        Hold types allow schemes to hold payments and stop them being paid. You can view and edit existing non-mandatory payment hold types or create a new one.
+        Hold types allow schemes to hold payments and stop them being paid. You
+        can view and edit existing non-mandatory payment hold types or create a
+        new one.
       </p>
 
       <h2 class="govuk-heading-m">Create a new payment hold type</h2>
@@ -58,70 +68,93 @@
       </p>
 
       <div class="govuk-button-group">
-        {{ govukButton({
-          text: "Create a new payment hold type",
-          href: "/payment-holds/add-type"
-        }) }}
+        {{
+          govukButton({
+            text: "Create a new payment hold type",
+            href: "/payment-holds/add-type"
+          })
+        }}
       </div>
 
       <h2 class="govuk-heading-m">Current schemes and payment hold types</h2>
       <p class="govuk-body">
-        Existing payment hold types are listed under each scheme. You can edit non-mandatory payment hold types.
+        Existing payment hold types are listed under each scheme. You can edit
+        non-mandatory payment hold types.
       </p>
       {% if paymentHoldCategories.length %}
         {% set accordionItems = [] %}
         {% for scheme in paymentHoldCategories %}
-          {% set schemeForId = scheme.schemeName | lower | replace(' ', '-') | replace('(', '') | replace(')', '') %}
-          
+          {%
+            set schemeForId = scheme.schemeName | lower | replace(' ', '-') | replace('(', '') | replace(')', '')
+          %}
+
           {% set schemeContent %}
             {% set tableRows = [] %}
             {% for type in scheme.holdCategories %}
               {% set editLinkHtml %}
-                {% if type.holdCategoryName not in ['Bank account anomaly', 'DAX rejection'] %}
-                  <a href="/payment-holds/edit-type?holdCategoryId={{ type.holdCategoryId }}" class="govuk-link">
-                    Edit<span class="govuk-visually-hidden"> hold type {{ type.holdCategoryName }}</span>
+                {%
+                  if type.holdCategoryName not in ['Bank account anomaly', 'DAX rejection']
+                %}
+                  <a
+                    href="/payment-holds/edit-type?holdCategoryId={{ type.holdCategoryId }}"
+                    class="govuk-link">
+                    Edit<span class="govuk-visually-hidden">
+                      hold type {{ type.holdCategoryName }}</span>
                   </a>
                   |
-                  <a href="/payment-holds/remove-type?holdCategoryId={{ type.holdCategoryId }}" class="govuk-link">
-                    Remove<span class="govuk-visually-hidden"> hold type {{ type.holdCategoryName }}</span>
+                  <a
+                    href="/payment-holds/remove-type?holdCategoryId={{ type.holdCategoryId }}"
+                    class="govuk-link">
+                    Remove<span class="govuk-visually-hidden">
+                      hold type {{ type.holdCategoryName }}</span>
                   </a>
                 {% endif %}
               {% endset %}
               {% set displayName = type.holdCategoryName %}
-              {% if type.holdCategoryName in ['Bank account anomaly', 'DAX rejection'] %}
+              {%
+                if type.holdCategoryName in ['Bank account anomaly', 'DAX rejection']
+              %}
                 {% set displayName = displayName + ' (mandatory)' %}
               {% endif %}
-              {% set tableRows = (tableRows.push([
-                { text: displayName },
-                { html: editLinkHtml }
-              ]), tableRows) %}
+              {%
+                set tableRows = (tableRows.push([
+                  { text: displayName },
+                  { html: editLinkHtml }
+                ]), tableRows)
+              %}
             {% endfor %}
 
-            {{ govukTable({
-              caption: "Hold types for " + scheme.schemeName,
-              captionClasses: "govuk-visually-hidden",
-              head: [
-                { text: "Hold type" },
-                { text: "Action" }
-              ],
-              rows: tableRows
-            }) }}
+            {{
+              govukTable({
+                caption: "Hold types for " + scheme.schemeName,
+                captionClasses: "govuk-visually-hidden",
+                head: [
+                  { text: "Hold type" },
+                  { text: "Action" }
+                ],
+                rows: tableRows
+              })
+            }}
           {% endset %}
-          
-          {% set accordionItems = (accordionItems.push({
-            heading: {
-              text: scheme.schemeName
-            },
-            content: {
-              html: schemeContent
-            }
-          }), accordionItems) %}
-        {% endfor %}            
 
-        {{ govukAccordion({
-          id: "scheme-accordion",
-          items: accordionItems
-        }) }}
+          {%
+            set accordionItems = (accordionItems.push({
+              heading: {
+                text: scheme.schemeName
+              },
+              content: {
+                html: schemeContent
+              }
+            }), accordionItems)
+          %}
+        {% endfor %}
+
+        {{
+          govukAccordion({
+            id: "scheme-accordion",
+            items: accordionItems
+          })
+        }}
       {% else %}
         <p class="govuk-body">There are no schemes currently supported.</p>
       {% endif %}

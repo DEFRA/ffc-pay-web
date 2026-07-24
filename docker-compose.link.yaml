@@ -5,3 +5,6 @@ networks:
   docs:
     name: ffc-doc
     external: true
+  pds:
+    name: fcp-pds
+    external: true

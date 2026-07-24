@@ -40,5 +40,8 @@ resources:
         - name: statements
           roles:
             - name: blobContributor
+        - name: dwh
+          roles:
+            - name: blobContributor
       roles:
         - name: storageAccountContributor

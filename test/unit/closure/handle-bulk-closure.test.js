@@ -1,12 +1,12 @@
-const fs = require('fs')
+const fs = require('node:fs')
 const { handleBulkClosure } = require('../../../app/closure/handle-bulk-closure')
 const { handleBulkClosureError } = require('../../../app/closure/handle-bulk-closure-error')
-const { postProcessing } = require('../../../app/api')
+const { postRetention } = require('../../../app/api')
 const { processClosureData } = require('../../../app/closure')
 
-jest.mock('fs', () => ({ readFileSync: jest.fn() }))
+jest.mock('node:fs', () => ({ readFileSync: jest.fn() }))
 jest.mock('../../../app/closure/handle-bulk-closure-error', () => ({ handleBulkClosureError: jest.fn() }))
-jest.mock('../../../app/api', () => ({ postProcessing: jest.fn() }))
+jest.mock('../../../app/api', () => ({ postProcessing: jest.fn(), postRetention: jest.fn() }))
 jest.mock('../../../app/closure', () => ({ processClosureData: jest.fn() }))
 
 describe('handleBulkClosure', () => {
@@ -37,14 +37,13 @@ describe('handleBulkClosure', () => {
     expect(handleBulkClosureError).toHaveBeenCalledWith(h, expectedMessage, 'test-crumb')
   })
 
-  test('redirects to BASE when processing is successful', async () => {
-    const mockUploadData = { key: 'value' }
+  test('redirects to MANAGE when processing is successful', async () => {
+    const mockUploadData = [{ key: 'value' }]
     fs.readFileSync.mockReturnValue('file content')
     processClosureData.mockResolvedValue({ uploadData: mockUploadData, errors: null })
 
     await handleBulkClosure(request, h)
-
-    expect(postProcessing).toHaveBeenCalledWith('/closure/bulk', { data: mockUploadData }, null)
-    expect(h.redirect).toHaveBeenCalledWith('/closure')
+    expect(postRetention).toHaveBeenCalledWith('/closure/bulk', { data: mockUploadData }, null)
+    expect(h.redirect).toHaveBeenCalledWith('/closure/manage?closureAdded=bulk')
   })
 })

@@ -12,7 +12,7 @@ jest.mock('../../../../app/config', () => ({
   }
 }))
 
-jest.mock('../../../../app/routes/schemas/ap-ar-report-schema', () => ({}))
+jest.mock('../../../../app/routes/schemas/reports/ap-ar-report-schema', () => ({}))
 
 const { generateReportHandler, createFormRoute, createDownloadRoute } = require('../../../../app/helpers')
 const GENERATE_REPORT_LIST = require('../../../../app/constants/generate-report-list')

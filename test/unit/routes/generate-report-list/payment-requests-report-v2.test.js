@@ -11,7 +11,7 @@ jest.mock('../../../../app/config', () => ({
   }
 }))
 
-jest.mock('../../../../app/routes/schemas/standard-report-schema', () => ({}))
+jest.mock('../../../../app/routes/schemas/reports/standard-report-schema', () => ({}))
 
 const { getView, createDownloadRoute, generateReportHandler, addDetailsToFilename } = require('../../../../app/helpers')
 const GENERATE_REPORT_LIST = require('../../../../app/constants/generate-report-list')

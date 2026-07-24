@@ -27,6 +27,12 @@ const docBlobClient = createBlobServiceClient(
   config.managedIdentityClientId
 )
 
+const pdsBlobClient = createBlobServiceClient(
+  config.pdsConnectionStr,
+  config.docStorageAccount,
+  config.managedIdentityClientId
+)
+
 const getPayEventStoreContainerClient = async (containerName) => {
   const containerClient = payEventStoreConnectionStr.getContainerClient(containerName)
 
@@ -58,8 +64,20 @@ const getDocContainerClient = async (containerName) => {
   return containerClient
 }
 
+const getRetentionContainerClient = async (containerName) => {
+  console.log(`Getting retention container client for ${containerName}`)
+  const containerClient = pdsBlobClient.getContainerClient(containerName)
+
+  if (config.createContainers) {
+    await containerClient.createIfNotExists()
+  }
+
+  return containerClient
+}
+
 module.exports = {
   getPayInjectionContainerClient,
   getPayEventStoreContainerClient,
-  getDocContainerClient
+  getDocContainerClient,
+  getRetentionContainerClient
 }

@@ -235,7 +235,7 @@ describe('Status Report Routes', () => {
       const successText = $('#download-complete .govuk-body').text().replace(/\s+/g, ' ').trim()
       expect(successText).toContain('sfi-report-2025-01-15.csv')
       expect(successText).toContain('SFI-23')
-      expect(successText).toContain('statement status report has been successfully downloaded')
+      expect(successText).toContain('successfully downloaded')
     })
 
     test('does not include start new search link on prepare page', async () => {

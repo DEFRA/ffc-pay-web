@@ -1,6 +1,11 @@
-const parsedSchema = require('../routes/schemas/parsed-closure')
+const parsedSchema = require('../routes/schemas/closure/parsed-closure')
 
-const maxClosureDataLength = 3
+const sourceSystemIndex = 0
+const frnIndex = 1
+const agreementNumberIndex = 2
+const closureDateIndex = 3
+const maxClosureDataLength = 4
+
 const processClosureData = async (data) => {
   const uploadData = []
   const splitData = data.split(/\r?\n|\r|\n/g)
@@ -13,9 +18,10 @@ const processClosureData = async (data) => {
       }
     } else {
       const parsedData = {
-        frn: clData[0],
-        agreementNumber: clData[1],
-        closureDate: clData[2]
+        sourceSystem: clData[sourceSystemIndex],
+        frn: clData[frnIndex],
+        agreementNumber: clData[agreementNumberIndex],
+        closureDate: clData[closureDateIndex]
       }
       const result = parsedSchema.validate(parsedData, {
         abortEarly: false

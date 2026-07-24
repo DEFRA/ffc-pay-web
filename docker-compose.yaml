@@ -15,6 +15,7 @@ services:
       INJECTION_SERVICE_ENDPOINT: http://ffc-pay-injection:3014
       ALERTING_SERVICE_ENDPOINT: http://ffc-pay-alerting:3025
       STATEMENT_PUBLISHER_ENDPOINT: http://ffc-doc-statement-publisher:3010
+      RETENTION_ENDPOINT: http://fcp-pds-data-retention:3076
       AZUREID_CLIENT_SECRET: ${AZUREID_CLIENT_SECRET}
       AZUREID_CLIENT_ID: ${AZUREID_CLIENT_ID}
       AZUREID_TENANT_ID: ${AZUREID_TENANT_ID}
@@ -24,6 +25,7 @@ services:
       AZURE_STORAGE_CREATE_CONTAINERS: "true"
       PAY_AZURE_STORAGE_ACCOUNT_NAME: ${PAY_AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
       DOC_AZURE_STORAGE_ACCOUNT_NAME: ${DOC_AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
+      PDS_AZURE_STORAGE_ACCOUNT_NAME: ${PDS_AZURE_STORAGE_ACCOUNT_NAME:-devstoreaccount1}
       MESSAGE_QUEUE_HOST: ${MESSAGE_QUEUE_HOST}
       MESSAGE_QUEUE_PASSWORD: ${MESSAGE_QUEUE_PASSWORD}
       MESSAGE_QUEUE_USER: ${MESSAGE_QUEUE_USER}
@@ -43,6 +45,7 @@ services:
     networks:
       - default
       - docs
+      - pds
 
   ffc-pay-event-store-azurite:
     image: mcr.microsoft.com/azure-storage/azurite:3.35.0
@@ -55,4 +58,7 @@ services:
 networks:
   docs:
     name: docs
+    external: true
+  pds:
+    name: pds
     external: true

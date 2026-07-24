@@ -1,18 +1,20 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% macro holdTypeBreadcrumbs(pageTitle) %}
-  {{ govukBreadcrumbs({
-    items: [{
-      text: "Home",
-      href: "/"
-    },{
-      text: "Manage payment holds",
-      href: "/payment-holds/manage"
-    },{
-      text: "Manage payment hold types",
-      href: "/payment-holds/types"
-    }, {
-      text: pageTitle
-    }]
-  })}}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: "Manage payment holds",
+        href: "/payment-holds/manage"
+      },{
+        text: "Manage payment hold types",
+        href: "/payment-holds/types"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endmacro %}
