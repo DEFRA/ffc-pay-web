@@ -167,11 +167,20 @@
     }
   }
 
+  const handleNoResults = async () => {
+    await cleanupCache(state.config.jobId)
+    const noResultsUrl = state.config.redirectUrl
+      ? state.config.redirectUrl + '?noResults=true'
+      : window.location.href
+    window.location.href = noResultsUrl
+  }
+
   const handleStatus = async (data) => {
     const statusHandlers = {
       'download': handleDownload,
       'completed': () => handleCompletion(data),
       'failed': () => showError(data?.message),
+      'no-results': handleNoResults,
       'default': () => setTimeout(checkStatus, 2500)
     }
 

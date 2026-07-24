@@ -91,4 +91,18 @@ describe('generateReport', () => {
 
     consoleErrorSpy.mockRestore()
   })
+
+  test('calls onComplete with no-results override when getDataRequestFile throws NO_RESULTS error', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const noResultsError = new Error('No data was found')
+    noResultsError.code = 'NO_RESULTS'
+    getDataRequestFile.mockRejectedValue(noResultsError)
+
+    const result = await generateReport('file.csv', 'AP', onComplete)
+
+    expect(onComplete).toHaveBeenCalledWith(null, 'no-results')
+    expect(result).toBeNull()
+
+    consoleErrorSpy.mockRestore()
+  })
 })

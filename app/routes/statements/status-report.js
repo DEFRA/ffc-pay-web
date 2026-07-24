@@ -1,10 +1,15 @@
 const Boom = require('@hapi/boom')
 const Path = require('node:path')
 const REPORT_LIST = require('../../constants/payment-status-report-list')
-const REPORT_VIEWS = require('../../constants/report-views')
 const { getStatusReport, getReportsByYearAndType } = require('../../storage/doc-reports')
 const { applicationAdmin, statusReportSfi23, statusReportsDelinked } = require('../../auth/permissions')
 const { handleStreamResponse } = require('../../helpers')
+
+const STATEMENT_VIEWS = {
+  STATUS: 'statements/status-report',
+  STATUS_RESULTS: 'statements/status-report-results',
+  STATUS_DOWNLOAD_PREPARE: 'statements/status-report-download'
+}
 
 const AUTH_SCOPE = { scope: [applicationAdmin, statusReportSfi23, statusReportsDelinked] }
 
@@ -93,7 +98,7 @@ module.exports = [
               text: display
             }))
 
-          return h.view(REPORT_VIEWS.STATUS, {
+          return h.view(STATEMENT_VIEWS.STATUS, {
             reportTypeItems
           })
         } catch (error) {
@@ -120,7 +125,7 @@ module.exports = [
         const reportTitle = getReportTitle(type)
         const reportRows = buildReportRows(reports, schemeName)
 
-        return h.view(REPORT_VIEWS.STATUS_RESULTS, {
+        return h.view(STATEMENT_VIEWS.STATUS_RESULTS, {
           reportTitle,
           schemeName,
           reportRows
@@ -143,7 +148,7 @@ module.exports = [
         const filename = Path.basename(fullPath)
         const schemeName = request.query.scheme || 'Selected scheme'
 
-        return h.view(REPORT_VIEWS.STATUS_DOWNLOAD_PREPARE, {
+        return h.view(STATEMENT_VIEWS.STATUS_DOWNLOAD_PREPARE, {
           filename,
           schemeName,
           downloadUrl: `${REPORT_LIST.STATUS_DOWNLOAD}?file-name=${encodeURIComponent(fullPath)}`,

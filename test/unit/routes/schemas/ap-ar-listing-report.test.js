@@ -17,7 +17,7 @@ describe('AP‑AR Listing Schema', () => {
   test.each([
     [{ ...baseValid, 'report-title': undefined }, /"report-title" is required/],
     [{ ...baseValid, 'report-url': undefined }, /"report-url" is required/],
-    [{ ...baseValid, 'select-type': 'INVALID' }, /"select-type" must be one of/],
+    [{ ...baseValid, 'select-type': 'INVALID' }, /"Report Type" must be one of/],
     [{ ...baseValid, 'start-date-day': 1, 'start-date-month': '', 'start-date-year': 2022 }, /Start date must include day, month, and year/],
     [{ ...baseValid, 'end-date-day': 5, 'end-date-month': 6, 'end-date-year': '' }, /End date must include day, month, and year/],
     [{ ...baseValid, 'start-date-day': 10, 'start-date-month': 3, 'start-date-year': 2022, 'end-date-day': 9, 'end-date-month': 3, 'end-date-year': 2022 }, /End date cannot be less than start date/]

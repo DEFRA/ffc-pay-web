@@ -32,6 +32,20 @@ module.exports = {
             return Number(num).toLocaleString('en-GB')
           })
 
+          env.addFilter('localizeCurrency', function (num) {
+            if (num === null || num === undefined || num === '') {
+              return '0.00'
+            }
+
+            const value = Number(num)
+
+            const formatted = value.toLocaleString('en-GB', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            return formatted
+          })
+
           const sentenceSplitRegex = /[^.!?]+[.!?]*/g
           env.addFilter('sentences', function (text) {
             if (!text && text !== 0) {

@@ -1,0 +1,68 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% set pageTitle = "Reports" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      },{
+        text: pageTitle
+      }]
+    })
+  }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      <div class="govuk-body">
+        <p>
+          Download reports direct to your device or generate and download
+          reports using criteria.
+        </p>
+      </div>
+      <h2 class="govuk-heading-m">Download reports</h2>
+      <div class="govuk-body">
+        <p>Download reports direct to your computer</p>
+      </div>
+      <ul class="govuk-list">
+        <li>
+          <a
+            href="/download-report-list/holds"
+            class="govuk-link">Holds</a> <span class="govuk-hint">{{
+            fileInfo['Payment Holds'].fileType
+          }}</span>
+        </li>
+        {% for reportType in reportTypes %}
+          <li>
+            <a
+              href="/download-report-list/{{ reportTypesRoutes[reportType] | lower }}"
+              class="govuk-link">{{ reportType }}</a> <span
+              class="govuk-hint">{{ fileInfo[reportType].fileType }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+      <h2 class="govuk-heading-m">Generate / find and download reports</h2>
+      <div class="govuk-body">
+        <p>Set the report criteria to download a report</p>
+      </div>
+      <ul class="govuk-list">
+        {% for reportType in generateReportTypes %}
+          <li>
+            <a
+              href="/generate-report-list/{{ generateReportTypesRoutes[reportType] | lower }}"
+              class="govuk-link">{{ reportType }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}

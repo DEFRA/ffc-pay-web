@@ -1,5 +1,5 @@
-jest.mock('../../../app/constants/report-list', () => ({
-  STATUS_DOWNLOAD: '/status-report/download'
+jest.mock('../../../app/constants/generate-report-list', () => ({
+  STATUS_DOWNLOAD: '/generate-report-list/find-payment-statement-status-report/download'
 }))
 
 const { mapStatusReportsToTaskList } = require('../../../app/helpers/map-status-report-to-task-list')
@@ -20,11 +20,11 @@ describe('mapStatusReportsToTaskList', () => {
     expect(result).toEqual([
       {
         title: { text: '01 July 2024' },
-        href: '/status-report/download?file-name=report-1.csv'
+        href: '/generate-report-list/find-payment-statement-status-report/download?file-name=report-1.csv'
       },
       {
         title: { text: '15 January 2025' },
-        href: '/status-report/download?file-name=report-2.csv'
+        href: '/generate-report-list/find-payment-statement-status-report/download?file-name=report-2.csv'
       }
     ])
   })
@@ -36,7 +36,7 @@ describe('mapStatusReportsToTaskList', () => {
 
     const result = mapStatusReportsToTaskList(inputReports)
 
-    expect(result[0].href).toBe('/status-report/download?file-name=file%20with%20spaces.csv')
+    expect(result[0].href).toBe('/generate-report-list/find-payment-statement-status-report/download?file-name=file%20with%20spaces.csv')
   })
 
   test('returns empty array when input is empty', () => {

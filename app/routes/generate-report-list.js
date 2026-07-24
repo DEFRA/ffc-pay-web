@@ -1,24 +1,20 @@
 const { applicationAdmin, holdAdmin, schemeAdmin, dataView, statusReportSfi23, statusReportsDelinked } = require('../auth/permissions')
-const { getReportTypes } = require('../helpers/get-report-types')
-const { getHolds } = require('../holds')
-
+const { generateReportTypes } = require('../helpers/generate-report-types')
 const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin, schemeAdmin, dataView, statusReportSfi23, statusReportsDelinked] }
 
 module.exports = {
   method: 'GET',
-  path: '/report-list',
+  path: '/generate-report-list',
   options: {
     auth: AUTH_SCOPE,
     handler: async (_request, h) => {
-      const reportTypes = getReportTypes()
+      const reportTypes = generateReportTypes()
       const reportTypesKeys = Object.keys(reportTypes)
-      const totalHolds = await getHolds()
 
-      return h.view('report-list', {
+      return h.view('generate-report-list', {
         reportTypes: reportTypesKeys,
         reportTypesRoutes: reportTypes,
-        totalReportTypes: reportTypesKeys.length,
-        totalHolds
+        totalReportTypes: reportTypesKeys.length
       })
     }
   }

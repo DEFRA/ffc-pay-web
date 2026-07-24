@@ -12,7 +12,7 @@
       href: "/"
     },{
       text: "Reports",
-      href: "/report-list"
+      href: "/download-report-list"
     }, {
       text: reportTitle
     }]
@@ -33,6 +33,6 @@
     
     {% block reportContent %}{% endblock %}
     
-    {{ submitButton(reportSubmitLabel or "Download report") }}
+    {{ submitButton(reportSubmitLabel or "Generate and download report") }}
   </form>
 {% endblock %}
