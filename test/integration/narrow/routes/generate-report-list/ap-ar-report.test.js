@@ -22,16 +22,16 @@ jest.mock('../../../../../app/config', () => ({
 }))
 jest.mock('../../../../../app/routes/schemas/ap-ar-report-schema', () => {
   const Joi = require('joi')
-  return Joi.object({ reportType: Joi.string().valid('AP', 'AR').required() })
+  return Joi.object({ reportType: Joi.string().valid('ap-listing-report', 'ar-listing-report').required() })
 })
 
 const { getView } = require('../../../../../app/helpers/get-view')
 const { renderErrorPage } = require('../../../../../app/helpers/render-error-page')
-const REPORT_LIST = require('../../../../../app/constants/report-list')
-const REPORT_VIEWS = require('../../../../../app/constants/report-views')
-const routes = require('../../../../../app/routes/report-list/ap-ar-report')
+const GENERATE_REPORT_LIST = require('../../../../../app/constants/generate-report-list')
+const GENERATE_REPORT_VIEWS = require('../../../../../app/constants/generate-report-views')
+const routes = require('../../../../../app/routes/generate-report-list/ap-ar-report')
 
-describe('AP/AR Report Routes', () => {
+describe('Generate AP/AR Report Routes', () => {
   let server
 
   beforeAll(async () => {
@@ -44,32 +44,53 @@ describe('AP/AR Report Routes', () => {
     await server.stop()
   })
 
-  test('GET form route returns view', async () => {
+  test('GET form route returns view with noResults false by default', async () => {
     getView.mockResolvedValue('<html>form</html>')
 
-    const res = await server.inject({ method: 'GET', url: REPORT_LIST.AP_AR })
+    const res = await server.inject({ method: 'GET', url: GENERATE_REPORT_LIST.AP_AR })
 
     expect(res.statusCode).toBe(200)
     expect(res.payload).toBe('<html>form</html>')
-    expect(getView).toHaveBeenCalledWith(REPORT_VIEWS.AP_AR, expect.any(Object))
+    expect(getView).toHaveBeenCalledWith(GENERATE_REPORT_VIEWS.AP_AR, expect.any(Object), { noResults: false })
   })
 
-  test('GET download route with valid params returns CSV', async () => {
+  test('GET form route passes noResults true when query param is set', async () => {
+    getView.mockResolvedValue('<html>form no results</html>')
+
+    const res = await server.inject({ method: 'GET', url: `${GENERATE_REPORT_LIST.AP_AR}?noResults=true` })
+
+    expect(res.statusCode).toBe(200)
+    expect(getView).toHaveBeenCalledWith(GENERATE_REPORT_VIEWS.AP_AR, expect.any(Object), { noResults: true })
+  })
+
+  test('GET download route with AP type returns CSV', async () => {
     const res = await server.inject({
       method: 'GET',
-      url: `${REPORT_LIST.AP_AR_DOWNLOAD}?reportType=AP`
+      url: `${GENERATE_REPORT_LIST.AP_AR_DOWNLOAD}?reportType=ap-listing-report`
     })
 
     expect(res.statusCode).toBe(200)
     expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
-    expect(res.headers['content-disposition']).toContain('attachment; filename="default-report.csv-AP"')
+    expect(res.headers['content-disposition']).toContain('attachment; filename="ap-report.csv-ap-listing-report"')
+    expect(res.payload).toBe('csv-content')
+  })
+
+  test('GET download route with AR type returns CSV', async () => {
+    const res = await server.inject({
+      method: 'GET',
+      url: `${GENERATE_REPORT_LIST.AP_AR_DOWNLOAD}?reportType=ar-listing-report`
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
+    expect(res.headers['content-disposition']).toContain('attachment; filename="ar-report.csv-ar-listing-report"')
     expect(res.payload).toBe('csv-content')
   })
 
   test('GET download route with missing param returns error view', async () => {
     renderErrorPage.mockImplementation((view, req, h) => h.response().code(400))
 
-    const res = await server.inject({ method: 'GET', url: REPORT_LIST.AP_AR_DOWNLOAD })
+    const res = await server.inject({ method: 'GET', url: GENERATE_REPORT_LIST.AP_AR_DOWNLOAD })
 
     expect(res.statusCode).toBe(500)
     expect(res.payload).toContain('Internal Server Error')

@@ -45,20 +45,12 @@ describe('setStatusCallback', () => {
     })
   })
 
-  test('passes report context through on completion', async () => {
-    const callback = setStatusCallback(request, jobId, {
-      reportType: 'sustainable-farming-incentive',
-      reportFilename: 'sfi-report.csv',
-      schemeName: 'SFI-23'
-    })
-
-    await callback()
+  test('calls setReportStatus with no-results status when statusOverride is no-results', async () => {
+    const callback = setStatusCallback(request, jobId)
+    await callback(null, 'no-results')
 
     expect(setReportStatus).toHaveBeenCalledWith(request, jobId, {
-      status: 'completed',
-      reportType: 'sustainable-farming-incentive',
-      reportFilename: 'sfi-report.csv',
-      schemeName: 'SFI-23'
+      status: 'no-results'
     })
   })
 })

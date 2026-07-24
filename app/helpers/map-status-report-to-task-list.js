@@ -1,4 +1,4 @@
-const REPORT_LIST = require('../constants/report-list')
+const GENERATE_REPORT_LIST = require('../constants/generate-report-list')
 
 const mapStatusReportsToTaskList = (reports) => {
   return reports.map(({ name, date }) => {
@@ -10,7 +10,7 @@ const mapStatusReportsToTaskList = (reports) => {
 
     return {
       title: { text: formattedDate },
-      href: `${REPORT_LIST.STATUS_DOWNLOAD}?file-name=${encodeURIComponent(name)}`
+      href: `${GENERATE_REPORT_LIST.STATUS_DOWNLOAD}?file-name=${encodeURIComponent(name)}`
     }
   })
 }

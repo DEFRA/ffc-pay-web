@@ -61,13 +61,13 @@ describe('Validation Schema - Comprehensive Tests', () => {
     test('Year less than valid range returns error', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ ...baseRequiredFields, year: 1993, schemeId: SFI })
-      expect(error.details[0].message).toBe('A valid year must be provided')
+      expect(error.details[0].message).toBe('Enter a year')
     })
 
     test('Year greater than valid range returns error', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ ...baseRequiredFields, year: 2100, schemeId: SFI })
-      expect(error.details[0].message).toBe('A valid year must be provided')
+      expect(error.details[0].message).toBe('Enter a year')
     })
 
     test('Empty year is allowed for CS scheme', () => {
@@ -109,13 +109,13 @@ describe('Validation Schema - Comprehensive Tests', () => {
     test('Rejects Revenue/Capital for non-CS scheme', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ ...baseRequiredFields, year: 2025, schemeId: BPS, revenueOrCapital: 'Revenue' })
-      expect(error.details[0].message).toBe('Revenue/Capital should not be selected for this scheme')
+      expect(error.details[0].message).toBe("Choose 'revenue' or 'capital'")
     })
 
     test('Invalid type for revenueOrCapital returns error', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ ...baseRequiredFields, schemeId: CS, revenueOrCapital: 123 })
-      expect(error.details[0].message).toBe('Select Revenue or Capital')
+      expect(error.details[0].message).toBe("Choose 'revenue' or 'capital'")
     })
 
     test('Allows empty revenueOrCapital when not required', () => {
@@ -136,6 +136,78 @@ describe('Validation Schema - Comprehensive Tests', () => {
       const schema = createValidationSchema()
       const { error } = schema.validate({ 'report-title': 'My report' })
       expect(error.details[0].message).toBe('"report-url" is required')
+    })
+  })
+
+  describe('includePrn = false', () => {
+    test('PRN field is not required when includePrn is false', () => {
+      const schema = createValidationSchema(false, false)
+      const { error } = schema.validate({ ...baseRequiredFields, year: 2025, schemeId: BPS })
+      expect(error).toBeUndefined()
+    })
+  })
+
+  describe('PRN validation - dependsOnFrn = false', () => {
+    test('PRN is required for BPS scheme when dependsOnFrn is false', () => {
+      const schema = createValidationSchema(false)
+      const { error } = schema.validate({ ...baseRequiredFields, year: 2025, schemeId: BPS })
+      expect(error.details[0].message).toBe('Enter a payment request number')
+    })
+
+    test('PRN is optional for non-BPS scheme when dependsOnFrn is false', () => {
+      const schema = createValidationSchema(false)
+      const { error } = schema.validate({ ...baseRequiredFields, year: 2025, schemeId: SFI })
+      expect(error).toBeUndefined()
+    })
+  })
+
+  describe('PRN validation - dependsOnFrn = true', () => {
+    test('PRN is required for BPS scheme when FRN is absent', () => {
+      const schema = createValidationSchema(true)
+      const { error } = schema.validate({ ...baseRequiredFields, year: 2025, schemeId: BPS })
+      expect(error.details[0].message).toBe('Enter a payment request number')
+    })
+  })
+
+  describe('Year validation - dependsOnFrn = true', () => {
+    test('Year is optional when FRN is present', () => {
+      const schema = createValidationSchema(true)
+      const { error } = schema.validate({ ...baseRequiredFields, frn: 1234567890, schemeId: SFI })
+      expect(error).toBeUndefined()
+    })
+
+    test('Year is optional for CS scheme when FRN is absent', () => {
+      const schema = createValidationSchema(true)
+      const { error } = schema.validate({ ...baseRequiredFields, schemeId: CS, revenueOrCapital: 'Revenue' })
+      expect(error).toBeUndefined()
+    })
+
+    test('Year is required for non-CS scheme when FRN is absent', () => {
+      const schema = createValidationSchema(true)
+      const { error } = schema.validate({ ...baseRequiredFields, schemeId: SFI, prn: 1 })
+      expect(error.details[0].message).toBe('Enter a year')
+    })
+  })
+
+  describe('SchemeId validation - dependsOnFrn = true', () => {
+    test('SchemeId is required when FRN is absent', () => {
+      const schema = createValidationSchema(true)
+      const { error } = schema.validate({ ...baseRequiredFields, year: 2025 })
+      expect(error.details[0].message).toBe('A scheme must be selected')
+    })
+  })
+
+  describe('Revenue/Capital - additional branches', () => {
+    test('Capital is valid for CS scheme', () => {
+      const schema = createValidationSchema()
+      const { error } = schema.validate({ ...baseRequiredFields, schemeId: CS, revenueOrCapital: 'Capital' })
+      expect(error).toBeUndefined()
+    })
+
+    test('Empty revenueOrCapital is allowed for CS scheme due to base allow', () => {
+      const schema = createValidationSchema()
+      const { error } = schema.validate({ ...baseRequiredFields, schemeId: CS, revenueOrCapital: '' })
+      expect(error).toBeUndefined()
     })
   })
 })

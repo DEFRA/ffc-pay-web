@@ -9,8 +9,9 @@ const createFormRoute = (path, returnViewRoute) => ({
   path,
   options: {
     auth: AUTH_SCOPE,
-    handler: async (_request, h) => {
-      return getView(returnViewRoute, h)
+    handler: async (request, h) => {
+      const noResults = request.query.noResults === 'true'
+      return getView(returnViewRoute, h, { noResults })
     }
   }
 })

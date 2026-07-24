@@ -1,6 +1,6 @@
-const { schemeAdmin, holdAdmin, dataView } = require('../../../../../app/auth/permissions')
+const { applicationAdmin, schemeAdmin, holdAdmin, dataView } = require('../../../../../app/auth/permissions')
 const { getHolds } = require('../../../../../app/holds')
-const { getMIReport, getSuppressedReport } = require('../../../../../app/storage')
+const { getSuppressedReport } = require('../../../../../app/storage/pay-reports')
 const createServer = require('../../../../../app/server')
 
 let mockDownload
@@ -9,22 +9,17 @@ jest.mock('@azure/storage-blob', () => ({
   BlobServiceClient: { fromConnectionString: jest.fn(() => ({ getContainerClient: jest.fn(() => ({ createIfNotExists: jest.fn(), getBlockBlobClient: jest.fn(() => ({ download: mockDownload })) })) })) }
 }))
 jest.mock('../../../../../app/holds')
-jest.mock('../../../../../app/api')
 jest.mock('../../../../../app/storage/pay-reports')
+jest.mock('../../../../../app/storage/doc-reports')
+jest.mock('../../../../../app/api')
 jest.mock('../../../../../app/helpers/get-schemes')
-jest.mock('../../../../../app/config', () => {
-  const actual = jest.requireActual('../../../../../app/config')
-  return {
-    ...actual,
-    legacyReportsEnabled: true
-  }
-})
+
 let server
-const auth = { strategy: 'session-auth', credentials: { scope: [schemeAdmin, holdAdmin, dataView] } }
+const auth = { strategy: 'session-auth', credentials: { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] } }
 
 const injectRoute = (url, credentials = auth) => server.inject({ method: 'GET', url, auth: credentials })
 
-describe('Report Routes', () => {
+describe('Download Report List Routes', () => {
   beforeEach(async () => {
     mockDownload = jest.fn().mockReturnValue({ readableStreamBody: 'Hello' })
     server = await createServer()
@@ -33,77 +28,48 @@ describe('Report Routes', () => {
 
   afterEach(async () => { await server.stop(); jest.clearAllMocks() })
 
-  test.each([
-    ['/report-list/payment-requests', getMIReport],
-    ['/report-list/suppressed-payments', getSuppressedReport]
-  ])('GET %s returns stream', async (url, mockFn) => {
-    mockFn.mockResolvedValue({ readableStreamBody: 'Hello' })
-    const res = await injectRoute(url)
+  test('GET /download-report-list/suppressed-payments returns stream', async () => {
+    getSuppressedReport.mockResolvedValue({ readableStreamBody: 'Hello' })
+    const res = await injectRoute('/download-report-list/suppressed-payments')
     expect(res.statusCode).toBe(200)
     expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
     expect(res.payload).toBe('Hello')
   })
 
-  test('GET /report-list/holds returns CSV view', async () => {
+  test('GET /download-report-list/holds returns CSV view', async () => {
     getHolds.mockResolvedValue([{ frn: '123', holdCategorySchemeName: 'Scheme 1', marketingYear: 2023, agreementNumber: 'AG123', contractNumber: 'CON123', holdCategoryName: 'Category 1', dateTimeAdded: new Date() }])
-    const res = await injectRoute('/report-list/holds')
+    const res = await injectRoute('/download-report-list/holds')
     expect(res.statusCode).toBe(200)
     expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
     expect(res.payload).toContain('123')
   })
 
-  test('GET /report-unavailable renders unavailable page', async () => {
-    const res = await injectRoute('/report-unavailable')
-    expect(res.statusCode).toBe(200)
-    expect(res.payload).toContain('<h1 class="govuk-heading-l">Report unavailable</h1>')
-  })
-
-  test('GET /report-list/transaction-summary/download returns 400 for invalid params', async () => {
-    const res = await injectRoute('/report-list/transaction-summary/download?schemeId=invalid&year=2023')
-    expect(res.statusCode).toBe(400)
-    expect(res.payload).toContain('There is a problem')
-  })
-
-  test('GET /report-list/payment-requests returns 403 for unauthorized', async () => {
-    const res = await injectRoute('/report-list/payment-requests', { strategy: 'session-auth', credentials: { scope: [] } })
-    expect(res.statusCode).toBe(403)
-    expect(res.payload).toContain('Sorry, you are not authorised to perform this action')
-  })
-
-  test('GET /report-list/holds handles default values', async () => {
+  test('GET /download-report-list/holds handles default values', async () => {
     getHolds.mockResolvedValue([{ frn: '456', holdCategorySchemeName: 'Scheme 2', marketingYear: undefined, agreementNumber: undefined, contractNumber: undefined, holdCategoryName: 'Category 2', dateTimeAdded: new Date() }])
-    const res = await injectRoute('/report-list/holds')
+    const res = await injectRoute('/download-report-list/holds')
     expect(res.statusCode).toBe(200)
     expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
     expect(res.payload).toContain('All')
   })
-})
 
-describe('Report Routes - legacyReportsEnabled = false', () => {
-  jest.doMock('../../../../../app/config', () => {
-    const actual = jest.requireActual('../../../../../app/config')
-    return {
-      ...actual,
-      legacyReportsEnabled: false
-    }
+  test('GET /download-report-list/suppressed-payments returns 403 for unauthorized', async () => {
+    getSuppressedReport.mockResolvedValue({ readableStreamBody: 'Hello' })
+    const res = await injectRoute('/download-report-list/suppressed-payments', { strategy: 'session-auth', credentials: { scope: [] } })
+    expect(res.statusCode).toBe(403)
+    expect(res.payload).toContain('Sorry, you are not authorised to perform this action')
   })
 
-  beforeEach(async () => {
-    jest.resetModules()
+  test('GET /download-report-list/holds returns unavailable view when getHolds returns null', async () => {
+    getHolds.mockResolvedValue(null)
+    const res = await injectRoute('/download-report-list/holds')
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).toContain('Hold report unavailable')
   })
 
-  beforeEach(async () => {
-    mockDownload = jest.fn().mockReturnValue({ readableStreamBody: 'Hello' })
-    server = await createServer()
-    await server.initialize()
-  })
-
-  afterEach(async () => { await server.stop(); jest.clearAllMocks() })
-
-  test('GET /report-list/payment-requests returns unavailable page', async () => {
-    const res = await injectRoute('/report-list/payment-requests')
-
-    expect(res.statusCode).toBe(404)
-    expect(res.payload).toContain('<h1 class="govuk-heading-l">Page not found</h1>')
+  test('GET /download-report-list/holds returns unavailable view when getHolds throws', async () => {
+    getHolds.mockRejectedValue(new Error('DB error'))
+    const res = await injectRoute('/download-report-list/holds')
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).toContain('Hold report unavailable')
   })
 })
