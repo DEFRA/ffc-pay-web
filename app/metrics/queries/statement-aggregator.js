@@ -1,4 +1,21 @@
 const { getStatementPublisherData } = require('../../api')
+const SCHEME_NAMES = require('../../constants/scheme-names')
+
+const transformStatementSchemeName = schemeName => {
+  switch (schemeName) {
+    case 'Delinked Payment Statement':
+      return SCHEME_NAMES.DELINKED
+
+    case 'Sustainable Farming Incentive':
+      return SCHEME_NAMES.SFI
+
+    case 'Sustainable Farming Incentive 2023':
+      return SCHEME_NAMES.SFI23
+
+    default:
+      return schemeName
+  }
+}
 
 /**
  * Get statement metrics for a period
@@ -22,6 +39,7 @@ const getStatementMetrics = async (period = 'ytd', schemeYear = null, month = nu
         totalPrintPostCost: Number.parseInt(payload.totalPrintPostCost) || 0,
         statementsByScheme: payload.statementsByScheme.map(s => ({
           ...s,
+          schemeName: transformStatementSchemeName(s.schemeName),
           receivedYear: s.receivedYear,
           receivedMonth: s.receivedMonth,
           printPostCost: Number.parseInt(s.printPostCost) || 0
