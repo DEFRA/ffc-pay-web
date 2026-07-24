@@ -8,7 +8,16 @@ describe('renderErrorPage', () => {
   let mockRequest, mockHapi, mockResponse, mockView, mockError
 
   beforeEach(() => {
-    mockRequest = { log: jest.fn() }
+    mockRequest = {
+      log: jest.fn(),
+      query: {
+        schemeId: '6',
+        year: '2025',
+        prn: '123',
+        frn: '1234567890',
+        revenueOrCapital: 'Revenue'
+      }
+    }
     mockResponse = {
       code: jest.fn().mockReturnThis(),
       takeover: jest.fn().mockReturnThis()
@@ -40,7 +49,16 @@ describe('renderErrorPage', () => {
       errors: [
         { text: 'Error message 1', href: '#field1' },
         { text: 'Error message 2', href: '#field2' }
-      ]
+      ],
+      errorMessages: {
+        field1: 'Error message 1',
+        field2: 'Error message 2'
+      },
+      selectedSchemeId: '6',
+      year: '2025',
+      prn: '123',
+      frn: '1234567890',
+      revenueOrCapital: 'Revenue'
     })
   })
 
@@ -54,7 +72,13 @@ describe('renderErrorPage', () => {
     const response = await renderErrorPage(mockView, mockRequest, mockHapi, {})
     expect(mockHapi.view).toHaveBeenCalledWith(mockView, {
       schemes: [{ name: 'Scheme 1' }, { name: 'Scheme 2' }],
-      errors: []
+      errors: [],
+      errorMessages: {},
+      selectedSchemeId: '6',
+      year: '2025',
+      prn: '123',
+      frn: '1234567890',
+      revenueOrCapital: 'Revenue'
     })
     expect(response.code).toHaveBeenCalledWith(400)
     expect(response.takeover).toHaveBeenCalled()

@@ -20,10 +20,10 @@ jest.mock('../../../../../app/config', () => ({
 }))
 
 const { renderErrorPage } = require('../../../../../app/helpers/render-error-page')
-const REPORT_LIST = require('../../../../../app/constants/report-list')
-const routes = require('../../../../../app/routes/report-list/request-editor-report')
+const DOWNLOAD_REPORT_LIST = require('../../../../../app/constants/download-report-list')
+const routes = require('../../../../../app/routes/download-report-list/request-editor-report')
 
-describe('Request Editor Report Route', () => {
+describe('Download Request Editor Report Route', () => {
   let server
 
   beforeAll(async () => {
@@ -35,7 +35,7 @@ describe('Request Editor Report Route', () => {
   afterAll(async () => { await server.stop() })
 
   test('GET download returns CSV with correct filename', async () => {
-    const res = await server.inject({ method: 'GET', url: REPORT_LIST.REQUEST_EDITOR_REPORT })
+    const res = await server.inject({ method: 'GET', url: DOWNLOAD_REPORT_LIST.REQUEST_EDITOR_REPORT })
     expect(res.statusCode).toBe(200)
     expect(res.headers['content-type']).toBe('text/csv; charset=utf-8')
     expect(res.headers['content-disposition']).toContain('attachment; filename="request-editor.csv"')

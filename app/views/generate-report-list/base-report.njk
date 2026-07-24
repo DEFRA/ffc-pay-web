@@ -6,19 +6,17 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{
-    govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      },{
-        text: "Reports",
-        href: "/report-list"
-      }, {
-        text: reportTitle
-      }]
-    })
-  }}
+  {{ govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    },{
+      text: "Reports",
+      href: "/download-report-list"
+    }, {
+      text: reportTitle
+    }]
+  })}}
 {% endblock %}
 
 {% block content %}
@@ -47,7 +45,7 @@
     />
 
     {% block reportContent %}{% endblock %}
-
-    {{ submitButton(reportSubmitLabel or "Download report") }}
+    
+    {{ submitButton(reportSubmitLabel or "Generate and download report") }}
   </form>
 {% endblock %}

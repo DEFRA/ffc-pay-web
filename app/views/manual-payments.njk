@@ -1,12 +1,8 @@
 {% extends '_layout.njk' %}
-
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
-
 {% set pageTitle = "Manual payment upload" %}
-
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
-
 {% block beforeContent %}
   {{
     govukBreadcrumbs({
@@ -14,12 +10,11 @@
         text: "Home",
         href: "/"
       }, {
-        text: pageTitle
+      text: pageTitle
       }]
     })
   }}
 {% endblock %}
-
 {% block content %}
   {%
     set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Manual payment upload - service design.pdf' | urlencode
@@ -38,11 +33,8 @@
           class="govuk-link"
           href="{{ pdfDownloadLink }}"
           target="_blank"
-          rel="noopener noreferrer">
-          Manual Payments Guidance (PDF)
-        </a>.
+          rel="noopener noreferrer">Manual Payments Guidance (PDF)</a>.
       </p>
-
       {% if errors %}
         <div
           class="govuk-error-summary"
@@ -50,25 +42,22 @@
           role="alert"
           tabindex="-1"
           data-module="govuk-error-summary">
-          <div role="alert">
-            <h2
-              class="govuk-error-summary__title"
-              id="error-summary-title">
-              There is a problem
-            </h2>
-            <div class="govuk-error-summary__body">
-              <ul class="govuk-list govuk-error-summary__list">
-                {% for err in errors.details %}
-                  <li>
-                    <li>
-                      <a href="#{{ err.path[0] or err.context.key }}">{{
-                        err.message
-                      }}</a>
-                    </li>
-                  </li>
-                {% endfor %}
-              </ul>
-            </div>
+          <h2
+            class="govuk-error-summary__title"
+            id="error-summary-title">
+            There is a problem
+          </h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              {% for errorDetail in errors.details %}
+                <li>
+                  <span class="govuk-error-message"><span
+                      class="govuk-visually-hidden">Error:</span> {{
+                      errorDetail.message
+                    }}</span>
+                </li>
+              {% endfor %}
+            </ul>
           </div>
         </div>
 
@@ -81,7 +70,6 @@
           {% if field == 'file' %}{% set fileError = err.message %}{% endif %}
         {% endfor %}
       {% endif %}
-
       <form
         method="POST"
         action="/manual-payments/upload"
@@ -93,31 +81,20 @@
           name="crumb"
           value="{{ crumb }}"
         />
-        <div
-          class="govuk-form-group {% if fileError %}govuk-form-group--error{% endif %}">
+        <div class="govuk-form-group">
           <label
             class="govuk-label govuk-label-s"
-            for="file">
-            Upload a file
-          </label>
+            for="file">Upload a file</label>
           <div class="govuk-hint">
             The file must be in CSV format and include valid manual payment
             data.
           </div>
-          {% if fileError %}
-            <p
-              id="file-error"
-              class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> {{ fileError }}
-            </p>
-          {% endif %}
           <input
-            class="govuk-file-upload {% if fileError %}govuk-file-upload--error{% endif %}"
+            class="govuk-file-upload"
             id="file"
             name="file"
             type="file"
             value="{{ file }}"
-            {% if fileError %}aria-describedby="file-error"{% endif %}
           />
         </div>
         {{
@@ -129,7 +106,6 @@
           })
         }}
       </form>
-
       <div class="govuk-grid-row govuk-!-margin-top-6">
         <div class="govuk-grid-column-full">
           <h2 class="govuk-heading-m">Upload history</h2>

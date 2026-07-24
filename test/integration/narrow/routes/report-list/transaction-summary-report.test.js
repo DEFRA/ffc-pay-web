@@ -75,7 +75,7 @@ describe('Transaction Summary Report Routes', () => {
 
     expect(res.statusCode).toBe(200)
     expect(res.payload).toBe('<html>transaction-summary form</html>')
-    expect(getView).toHaveBeenCalledWith(REPORT_VIEWS.TRANSACTION_SUMMARY, expect.any(Object))
+    expect(getView).toHaveBeenCalledWith(REPORT_VIEWS.TRANSACTION_SUMMARY, expect.any(Object), { noResults: false })
   })
 
   test('GET download route with valid params returns CSV', async () => {

@@ -11,10 +11,17 @@ const PAYMENT_HOLDS_LINKS = [
 ]
 
 const FINANCE_REPORTS_LINKS = [
-  { href: '/report-list', text: 'Reports', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
-  { href: '/report-list/payment-requests-v2', text: 'Payment request statuses report' },
-  { href: '/report-list/ap-ar-report', text: 'AP/AR listing report' },
-  { href: '/report-list/request-editor-report', text: 'Request editor report' }
+  { href: '/download-report-list', text: 'Download reports', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
+  { href: '/download-report-list/request-editor-report', text: 'Request editor report' },
+  { href: '/generate-report-list/generate-payment-request-statuses', text: 'Generate payment request statuses report', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
+  { href: '/generate-report-list/generate-ap-ar-listing-report', text: 'AP/AR listing report', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] }
+]
+
+const GENERATE_REPORTS_LINKS = [
+  { href: '/generate-report-list', text: 'Generate / find and download reports', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView, permissions.statusReportsDelinked, permissions.statusReportSfi23] },
+  { href: '/generate-report-list/find-payment-statement-status-report', text: 'Payment statement status report' },
+  { href: '/generate-report-list/generate-ap-ar-listing-report', text: 'AP/AR listing report' },
+  { href: '/generate-report-list/generate-payment-request-statuses', text: 'Generate payment request statuses report' }
 ]
 
 const PAYMENT_ALERTS_LINKS = [
@@ -62,6 +69,7 @@ module.exports = {
   HOME,
   PAYMENT_HOLDS_LINKS,
   FINANCE_REPORTS_LINKS,
+  GENERATE_REPORTS_LINKS,
   PAYMENT_ALERTS_LINKS,
   AGREEMENT_CLOSURES_LINKS,
   MONITORING_LINKS,

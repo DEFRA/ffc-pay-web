@@ -67,6 +67,10 @@
 
         preparingMessage.hidden = true
         completedBanner.hidden = false
+
+        setTimeout(function () {
+          window.location.href = '{{ startNewSearchUrl }}'
+        }, 3000)
       } catch (error) {
         console.error('Unable to download report', error)
       }

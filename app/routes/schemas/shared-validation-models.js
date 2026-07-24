@@ -21,7 +21,7 @@ const frnValidation = Joi.number()
 
 const prnError = errors => {
   errors.forEach(err => {
-    err.message = 'Provide a payment request number'
+    err.message = 'Enter a payment request number'
   })
   return errors
 }
@@ -35,24 +35,20 @@ const schemeError = errors => {
 
 const yearError = errors => {
   errors.forEach(err => {
-    err.message = 'A valid year must be provided'
+    err.message = 'Enter a year'
   })
   return errors
 }
 
-const revCapErrorRequired = errors => {
+const setRevCapError = errors => {
   errors.forEach(err => {
-    err.message = 'Select Revenue or Capital'
+    err.message = "Choose 'revenue' or 'capital'"
   })
   return errors
 }
 
-const revCapErrorInvalid = errors => {
-  errors.forEach(err => {
-    err.message = 'Revenue/Capital should not be selected for this scheme'
-  })
-  return errors
-}
+const revCapErrorRequired = setRevCapError
+const revCapErrorInvalid = setRevCapError
 
 const createPRNValidation = (dependsOnFrn = false) => {
   const prnValidation = Joi.number().integer()
@@ -99,17 +95,17 @@ const createYearValidation = (dependsOnFrn = false) => {
 }
 
 const createSchemeIdValidation = (dependsOnFrn = false) => {
-  const schemeIdValidation = Joi.number().integer()
+  const schemeIdValidation = Joi.number().integer().error(schemeError)
 
   if (dependsOnFrn) {
     return schemeIdValidation.when('frn', {
       is: Joi.exist(),
       then: Joi.optional(),
-      otherwise: schemeIdValidation.required().error(schemeError)
+      otherwise: schemeIdValidation.required()
     })
   }
 
-  return schemeIdValidation.required().error(schemeError)
+  return schemeIdValidation.required()
 }
 
 const createRevenueOrCapitalValidation = () => {

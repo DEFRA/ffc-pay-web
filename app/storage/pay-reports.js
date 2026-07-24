@@ -30,7 +30,9 @@ const getDataRequestFile = async (filename) => {
     const properties = await blob.getProperties()
     if (properties.contentLength <= EMPTY_CONTENT_LENGTH) {
       console.warn(`File ${filename} is empty.`)
-      throw new Error('No data was found for the selected report criteria. Please review your filters, such as date range or report type, and try again.')
+      const error = new Error('No data was found for the selected report criteria. Please review your filters, such as date range or report type, and try again.')
+      error.code = 'NO_RESULTS'
+      throw error
     }
     return await blob.download()
   } finally {
