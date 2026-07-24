@@ -95,17 +95,17 @@ const createYearValidation = (dependsOnFrn = false) => {
 }
 
 const createSchemeIdValidation = (dependsOnFrn = false) => {
-  const schemeIdValidation = Joi.number().integer()
+  const schemeIdValidation = Joi.number().integer().error(schemeError)
 
   if (dependsOnFrn) {
     return schemeIdValidation.when('frn', {
       is: Joi.exist(),
       then: Joi.optional(),
-      otherwise: schemeIdValidation.required().error(schemeError)
+      otherwise: schemeIdValidation.required()
     })
   }
 
-  return schemeIdValidation.required().error(schemeError)
+  return schemeIdValidation.required()
 }
 
 const createRevenueOrCapitalValidation = () => {
