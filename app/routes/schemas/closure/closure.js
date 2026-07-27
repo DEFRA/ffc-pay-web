@@ -5,7 +5,7 @@ const maxAgreement = 50
 const minDayMonth = 1
 const maxDay = 31
 const maxMonth = 12
-const minYear = 2023
+const minYear = 2000
 const maxYear = 2099
 
 module.exports = Joi.object({

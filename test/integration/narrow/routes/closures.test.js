@@ -17,6 +17,7 @@ const { AGREEMENT_CLOSURES_LINKS } = require('../../../../app/constants/section-
 jest.mock('../../../../app/storage', () => ({
   getRetentionExtractDownloadStreamAndDeleteAfter: jest.fn()
 }))
+
 const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('../../../../app/storage')
 
 jest.mock('../../../../app/helpers', () => ({
@@ -35,6 +36,7 @@ beforeEach(() => {
     { schemeId: 'OTHER', name: 'Other Scheme' }
   ])
 })
+
 let server
 let auth
 
@@ -75,25 +77,31 @@ describe('Closures', () => {
   describe('GET pages', () => {
     test.each(getRoutes)('%s loads page successfully', async ({ url, h1 }) => {
       const { res, $ } = await loadPage('GET', url, auth)
+
       expect(res.statusCode).toBe(200)
       expect($('h1').text()).toBe(h1)
     })
 
     test.each(getRoutes)('%s returns 403 with no permission', async ({ url }) => {
       auth.credentials.scope = []
+
       const { res } = await loadPage('GET', url, auth)
+
       expect(res.statusCode).toBe(403)
     })
 
     test.each(getRoutes)('%s redirects without auth', async ({ url }) => {
       const { res } = await loadPage('GET', url)
+
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/login')
     })
 
     test('GET /closure/manage returns view with cards minus first and closureAdded query', async () => {
       const url = `${CLOSURES_ROUTES.MANAGE}?closureAdded=addedValue`
+
       const { res, $ } = await loadPage('GET', url, auth)
+
       expect(res.statusCode).toBe(200)
       expect($('h1').text()).toBe('Manage agreement closures')
     })
@@ -107,6 +115,7 @@ describe('Closures', () => {
       getSchemes.mockResolvedValue(mockSchemes)
 
       const url = `${CLOSURES_ROUTES.SEARCH}?page=1&pageSize=5&frnAgreement=someFrn&schemeId=someScheme&closureRemoved=true`
+
       const { res, $ } = await loadPage('GET', url, auth)
 
       expect(res.statusCode).toBe(200)
@@ -122,6 +131,7 @@ describe('Closures', () => {
       getSchemes.mockResolvedValue(mockSchemes)
 
       const url = `${CLOSURES_ROUTES.SEARCH}?page=3&pageSize=10`
+
       const { res, $ } = await loadPage('GET', url, auth)
 
       expect(res.statusCode).toBe(200)
@@ -159,7 +169,13 @@ describe('Closures', () => {
 
       expect(postRetention).toHaveBeenCalledWith(
         '/closure/add',
-        { schemeId: 1, frn: FRN, agreementNumber: AGREEMENT_NUMBER, endDate: '2023-08-12T00:00:00', addedBy: undefined },
+        {
+          schemeId: 1,
+          frn: FRN,
+          agreementNumber: AGREEMENT_NUMBER,
+          endDate: '2023-08-12T00:00:00',
+          addedBy: undefined
+        },
         null
       )
 
@@ -184,7 +200,13 @@ describe('Closures', () => {
 
       expect(postRetention).toHaveBeenCalledWith(
         '/closure/add',
-        { schemeId: 2, frn: FRN, agreementNumber: AGREEMENT_NUMBER, endDate: '2023-08-12T00:00:00', addedBy: undefined },
+        {
+          schemeId: 2,
+          frn: FRN,
+          agreementNumber: AGREEMENT_NUMBER,
+          endDate: '2023-08-12T00:00:00',
+          addedBy: undefined
+        },
         null
       )
 
@@ -220,7 +242,13 @@ describe('Closures', () => {
       { year: undefined, msg: 'Enter a valid year' }
     ]
 
-    const base = { frn: 1000000000, agreement: AGREEMENT_NUMBER, day: 12, month: 8, year: 2023 }
+    const base = {
+      frn: 1000000000,
+      agreement: AGREEMENT_NUMBER,
+      day: 12,
+      month: 8,
+      year: 2023
+    }
 
     test.each(errorCases)(
       'returns 400 and error for invalid payload: %p',
@@ -242,6 +270,7 @@ describe('Closures', () => {
       { crumb: undefined }
     ])('403 when crumb invalid: %p', async ({ crumb }) => {
       const { cookieCrumb } = await getCrumbs(mockGetClosures, server, url, auth)
+
       const res = await postReq({
         crumb,
         frn: FRN,
@@ -258,13 +287,16 @@ describe('Closures', () => {
   describe('Additional coverage tests', () => {
     test('GET /closure/add passes through query params correctly', async () => {
       const url = '/closure/add?frn=123&agreement=abc&schemeId=1&day=2&month=3&year=2024'
+
       const { res, $ } = await loadPage('GET', url, auth)
+
       expect(res.statusCode).toBe(200)
       expect($('h1').text()).toBe('Create a new agreement closure')
     })
 
     test('POST /closure/add with padded day and month', async () => {
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+
       const payload = {
         crumb: viewCrumb,
         schemeId: 1,
@@ -274,6 +306,7 @@ describe('Closures', () => {
         month: 7,
         year: 2023
       }
+
       const res = await server.inject({
         method: 'POST',
         url: '/closure/add',
@@ -281,16 +314,19 @@ describe('Closures', () => {
         payload,
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
+
       expect(postRetention).toHaveBeenCalledWith(
         '/closure/add',
         expect.objectContaining({ endDate: '2023-07-03T00:00:00' }),
         null
       )
+
       expect(res.statusCode).toBe(302)
     })
 
     test('POST /closure/add with addedBy from user name', async () => {
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+
       const payload = {
         crumb: viewCrumb,
         schemeId: 1,
@@ -300,7 +336,17 @@ describe('Closures', () => {
         month: 8,
         year: 2023
       }
-      const authWithName = { strategy: 'session-auth', credentials: { scope: [applicationAdmin], account: { name: 'Test User' } } }
+
+      const authWithName = {
+        strategy: 'session-auth',
+        credentials: {
+          scope: [applicationAdmin],
+          account: {
+            name: 'Test User'
+          }
+        }
+      }
+
       const res = await server.inject({
         method: 'POST',
         url: '/closure/add',
@@ -308,16 +354,19 @@ describe('Closures', () => {
         payload,
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
+
       expect(postRetention).toHaveBeenCalledWith(
         '/closure/add',
         expect.objectContaining({ addedBy: 'Test User' }),
         null
       )
+
       expect(res.statusCode).toBe(302)
     })
 
     test('POST /closure/add with addedBy from username fallback', async () => {
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+
       const payload = {
         crumb: viewCrumb,
         schemeId: 1,
@@ -327,7 +376,17 @@ describe('Closures', () => {
         month: 8,
         year: 2023
       }
-      const authWithUsername = { strategy: 'session-auth', credentials: { scope: [applicationAdmin], account: { username: 'user123' } } }
+
+      const authWithUsername = {
+        strategy: 'session-auth',
+        credentials: {
+          scope: [applicationAdmin],
+          account: {
+            username: 'user123'
+          }
+        }
+      }
+
       const res = await server.inject({
         method: 'POST',
         url: '/closure/add',
@@ -335,16 +394,19 @@ describe('Closures', () => {
         payload,
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
+
       expect(postRetention).toHaveBeenCalledWith(
         '/closure/add',
         expect.objectContaining({ addedBy: 'user123' }),
         null
       )
+
       expect(res.statusCode).toBe(302)
     })
 
     test('POST /closure/add with addedBy from email fallback', async () => {
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+
       const payload = {
         crumb: viewCrumb,
         schemeId: 1,
@@ -354,7 +416,17 @@ describe('Closures', () => {
         month: 8,
         year: 2023
       }
-      const authWithEmail = { strategy: 'session-auth', credentials: { scope: [applicationAdmin], account: { email: 'email@example.com' } } }
+
+      const authWithEmail = {
+        strategy: 'session-auth',
+        credentials: {
+          scope: [applicationAdmin],
+          account: {
+            email: 'email@example.com'
+          }
+        }
+      }
+
       const res = await server.inject({
         method: 'POST',
         url: '/closure/add',
@@ -362,16 +434,19 @@ describe('Closures', () => {
         payload,
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
+
       expect(postRetention).toHaveBeenCalledWith(
         '/closure/add',
         expect.objectContaining({ addedBy: 'email@example.com' }),
         null
       )
+
       expect(res.statusCode).toBe(302)
     })
 
     test('POST /closure/add with addedBy undefined if no account info', async () => {
       const { cookieCrumb, viewCrumb } = await getCrumbs(mockGetClosures, server, '/closure/add', auth)
+
       const payload = {
         crumb: viewCrumb,
         schemeId: 1,
@@ -381,7 +456,15 @@ describe('Closures', () => {
         month: 8,
         year: 2023
       }
-      const authNoAccount = { strategy: 'session-auth', credentials: { scope: [applicationAdmin], account: undefined } }
+
+      const authNoAccount = {
+        strategy: 'session-auth',
+        credentials: {
+          scope: [applicationAdmin],
+          account: undefined
+        }
+      }
+
       const res = await server.inject({
         method: 'POST',
         url: '/closure/add',
@@ -389,17 +472,21 @@ describe('Closures', () => {
         payload,
         headers: { cookie: `crumb=${cookieCrumb}` }
       })
+
       expect(postRetention).toHaveBeenCalledWith(
         '/closure/add',
         expect.objectContaining({ addedBy: undefined }),
         null
       )
+
       expect(res.statusCode).toBe(302)
     })
   })
 
   describe('Direct handler tests for /closure/manage and /closure/search', () => {
-    let h, request, responseMock
+    let h
+    let request
+    let responseMock
 
     beforeEach(() => {
       responseMock = {
@@ -409,6 +496,7 @@ describe('Closures', () => {
         redirect: jest.fn().mockReturnThis(),
         response: jest.fn(() => responseMock)
       }
+
       h = {
         view: responseMock.view,
         code: responseMock.code,
@@ -416,27 +504,47 @@ describe('Closures', () => {
         redirect: responseMock.redirect,
         response: responseMock.response
       }
-      auth = { strategy: 'session-auth', credentials: { scope: [applicationAdmin] } }
-      request = { query: {}, payload: {}, auth, state: {} }
+
+      auth = {
+        strategy: 'session-auth',
+        credentials: {
+          scope: [applicationAdmin]
+        }
+      }
+
+      request = {
+        query: {},
+        payload: {},
+        auth,
+        state: {}
+      }
+
       jest.clearAllMocks()
     })
 
     test('GET /closure/manage handler returns cards minus first and closureAdded', async () => {
       const routes = require('../../../../app/routes/closures')
-      const manageRoute = routes.find(r => r.path === CLOSURES_ROUTES.MANAGE && r.method === 'GET')
+      const manageRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.MANAGE && route.method === 'GET'
+      )
+
       request.query.closureAdded = 'addedValue'
+
       const result = await manageRoute.options.handler(request, h)
 
       expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.MANAGE, {
         cards: AGREEMENT_CLOSURES_LINKS.slice(1),
         closureAdded: 'addedValue'
       })
+
       expect(result).toBe(h.view())
     })
 
     test('GET /closure/search handler returns correct view with search params', async () => {
-      const routes = require('../../../../app/routes/closures') // Adjust path if needed
-      const searchRoute = routes.find(r => r.path === CLOSURES_ROUTES.SEARCH && r.method === 'GET')
+      const routes = require('../../../../app/routes/closures')
+      const searchRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.SEARCH && route.method === 'GET'
+      )
 
       const mockClosures = [{ id: 1 }]
       const mockCount = 10
@@ -471,9 +579,9 @@ describe('Closures', () => {
         pageSize: 5,
         frnAgreement: 'someFrn',
         schemeId: 'someScheme',
-        isSearch: true,
+        count: mockCount,
         hasPreviousPage: false,
-        hasNextPage: false,
+        hasNextPage: true,
         closureRemoved: 'true'
       })
 
@@ -481,8 +589,10 @@ describe('Closures', () => {
     })
 
     test('GET /closure/search handler returns pagination flags correctly when no search params', async () => {
-      const routes = require('../../../../app/routes/closures') // Adjust path if needed
-      const searchRoute = routes.find(r => r.path === CLOSURES_ROUTES.SEARCH && r.method === 'GET')
+      const routes = require('../../../../app/routes/closures')
+      const searchRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.SEARCH && route.method === 'GET'
+      )
 
       const mockClosures = [{ id: 1 }]
       const mockCount = 45
@@ -498,13 +608,30 @@ describe('Closures', () => {
 
       const result = await searchRoute.options.handler(request, h)
 
-      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.SEARCH, expect.objectContaining({
+      expect(getClosures).toHaveBeenCalledWith({
         page: 3,
         pageSize: 10,
-        isSearch: false,
-        hasPreviousPage: true,
-        hasNextPage: true
-      }))
+        frnAgreement: null,
+        schemeId: null
+      })
+
+      expect(getSchemes).toHaveBeenCalled()
+
+      expect(h.view).toHaveBeenCalledWith(
+        CLOSURES_VIEWS.SEARCH,
+        expect.objectContaining({
+          closures: mockClosures,
+          schemes: mockSchemes,
+          page: 3,
+          pageSize: 10,
+          frnAgreement: null,
+          schemeId: null,
+          count: mockCount,
+          hasPreviousPage: true,
+          hasNextPage: true,
+          closureRemoved: undefined
+        })
+      )
 
       expect(result).toBe(h.view())
     })
@@ -523,9 +650,7 @@ describe('Closures', () => {
       expect(res.statusCode).toBe(403)
 
       expect(getRetentionData).not.toHaveBeenCalled()
-      expect(
-        getRetentionExtractDownloadStreamAndDeleteAfter
-      ).not.toHaveBeenCalled()
+      expect(getRetentionExtractDownloadStreamAndDeleteAfter).not.toHaveBeenCalled()
     })
 
     test('redirects to login when unauthenticated', async () => {
