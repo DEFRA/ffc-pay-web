@@ -62,6 +62,7 @@ module.exports = [
           pageSize,
           frnAgreement,
           schemeId,
+          count,
           hasPreviousPage: page > 1,
           hasNextPage: page < totalPages,
           closureRemoved: request.query?.closureRemoved
