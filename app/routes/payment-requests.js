@@ -49,10 +49,16 @@ module.exports = [
             `/payment-request/reset-success?invoiceNumber=${invoiceNumber}`
           )
         } catch (err) {
+          const isNotFound =
+            err.output?.statusCode === 404 ||
+            err.message?.includes('not found')
+
           return h
             .view(VIEWS.RESET, {
               error: {
-                message: 'Invoice number not found'
+                message: isNotFound
+                  ? 'Invoice number not found'
+                  : (err.data?.payload?.message ?? err.message)
               },
               invoiceNumber
             })
