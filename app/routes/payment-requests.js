@@ -51,7 +51,9 @@ module.exports = [
         } catch (err) {
           return h
             .view(VIEWS.RESET, {
-              error: err.data?.payload?.message ?? err.message,
+              error: {
+                message: 'Invoice number not found'
+              },
               invoiceNumber
             })
             .code(PRECONDITION_FAILED)
