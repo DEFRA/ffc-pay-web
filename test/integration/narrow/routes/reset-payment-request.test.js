@@ -8,7 +8,7 @@ const { schemeAdmin } = require('../../../../app/auth/permissions')
 const Boom = require('@hapi/boom')
 
 const url = '/payment-request/reset'
-const validInvoiceNumber = 'S1234567S123456V001'
+const validInvoiceNumber = 'S1234456V001'
 
 let server
 let auth
