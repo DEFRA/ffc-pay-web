@@ -60,6 +60,6 @@ describe('Reset payment request', () => {
     postProcessing.mockImplementation(() => { throw Boom.preconditionFailed('Rejected') })
     const res = await server.inject({ method: 'POST', url, auth, payload: { invoiceNumber: validInvoiceNumber } })
     expect(res.statusCode).toBe(412)
-    expect(res.request.response.source.context.error).toBe('Rejected')
+    expect(res.request.response.source.context.error.message).toBe('Rejected')
   })
 })
