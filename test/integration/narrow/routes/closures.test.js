@@ -8,7 +8,7 @@ const { FRN } = require('../../../mocks/values/frn')
 const { AGREEMENT_NUMBER } = require('../../../mocks/values/agreement-number')
 const { getRetentionData, postRetention } = require('../../../../app/api')
 const getCrumbs = require('../../../helpers/get-crumbs')
-const { getSchemes } = require('../../../../app/helpers')
+const { getSchemesForClosures } = require('../../../../app/helpers')
 const { getClosures } = require('../../../../app/closure')
 const CLOSURES_ROUTES = require('../../../../app/constants/closures-routes')
 const CLOSURES_VIEWS = require('../../../../app/constants/closures-views')
@@ -22,7 +22,7 @@ const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('../../../..
 
 jest.mock('../../../../app/helpers', () => ({
   ...jest.requireActual('../../../../app/helpers'),
-  getSchemes: jest.fn()
+  getSchemesForClosures: jest.fn()
 }))
 
 jest.mock('../../../../app/closure', () => ({
@@ -31,7 +31,7 @@ jest.mock('../../../../app/closure', () => ({
 }))
 
 beforeEach(() => {
-  getSchemes.mockResolvedValue([
+  getSchemesForClosures.mockResolvedValue([
     { schemeId: 'SFI', name: 'SFI Scheme' },
     { schemeId: 'OTHER', name: 'Other Scheme' }
   ])
@@ -112,7 +112,7 @@ describe('Closures', () => {
       const mockSchemes = [{ schemeId: 'test', name: 'Test Scheme' }]
 
       getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
-      getSchemes.mockResolvedValue(mockSchemes)
+      getSchemesForClosures.mockResolvedValue(mockSchemes)
 
       const url = `${CLOSURES_ROUTES.SEARCH}?page=1&pageSize=5&frnAgreement=someFrn&schemeId=someScheme&closureRemoved=true`
 
@@ -128,7 +128,7 @@ describe('Closures', () => {
       const mockSchemes = []
 
       getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
-      getSchemes.mockResolvedValue(mockSchemes)
+      getSchemesForClosures.mockResolvedValue(mockSchemes)
 
       const url = `${CLOSURES_ROUTES.SEARCH}?page=3&pageSize=10`
 
@@ -551,7 +551,7 @@ describe('Closures', () => {
       const mockSchemes = [{ schemeId: 'test', name: 'Test Scheme' }]
 
       getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
-      getSchemes.mockResolvedValue(mockSchemes)
+      getSchemesForClosures.mockResolvedValue(mockSchemes)
 
       request.query = {
         page: '1',
@@ -570,7 +570,7 @@ describe('Closures', () => {
         schemeId: 'someScheme'
       })
 
-      expect(getSchemes).toHaveBeenCalled()
+      expect(getSchemesForClosures).toHaveBeenCalled()
 
       expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.SEARCH, {
         closures: mockClosures,
@@ -599,7 +599,7 @@ describe('Closures', () => {
       const mockSchemes = []
 
       getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
-      getSchemes.mockResolvedValue(mockSchemes)
+      getSchemesForClosures.mockResolvedValue(mockSchemes)
 
       request.query = {
         page: '3',
@@ -615,7 +615,7 @@ describe('Closures', () => {
         schemeId: null
       })
 
-      expect(getSchemes).toHaveBeenCalled()
+      expect(getSchemesForClosures).toHaveBeenCalled()
 
       expect(h.view).toHaveBeenCalledWith(
         CLOSURES_VIEWS.SEARCH,

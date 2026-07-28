@@ -97,13 +97,17 @@
             {% endfor %}
           </select>
         </div>
-
-        {{
-          govukButton({
-            text: "Filter",
-            type: "submit"
-          })
-        }}
+        <div class="govuk-button-group">
+          {{
+            govukButton({
+              text: "Filter",
+              type: "submit"
+            })
+          }}
+          <a
+            class="govuk-link"
+            href="/closure/search">Reset filter</a>
+        </div>
       </form>
 
       {% if closures and closures.length %}
