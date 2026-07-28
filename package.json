@@ -1,6 +1,6 @@
 {
   "name": "ffc-pay-web",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "FFC payment management service",
   "homepage": "https://github.com/DEFRA/ffc-pay-web",
   "main": "app/index.js",
@@ -71,7 +71,7 @@
     "jest-junit": "17.0.0",
     "mini-css-extract-plugin": "1.6.0",
     "neostandard": "0.12.2",
-    "nodemon": "3.0.1",
+    "nodemon": "3.1.14",
     "npm-run-all": "4.1.5",
     "resolve-url-loader": "5.0.0",
     "sass": "1.79.0",
