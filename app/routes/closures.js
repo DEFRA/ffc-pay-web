@@ -43,8 +43,6 @@ module.exports = [
         const frnAgreement = request.query.frnAgreement || null
         const schemeId = request.query.schemeId || null
 
-        const isSearch = Boolean(frnAgreement || schemeId)
-
         const [{ closures, count }, schemes] = await Promise.all([
           getClosures({
             page,
@@ -55,9 +53,7 @@ module.exports = [
           getSchemes()
         ])
 
-        const totalPages = isSearch
-          ? 1
-          : Math.ceil(count / pageSize)
+        const totalPages = Math.ceil(count / pageSize)
 
         return h.view(CLOSURES_VIEWS.SEARCH, {
           closures,
@@ -66,9 +62,9 @@ module.exports = [
           pageSize,
           frnAgreement,
           schemeId,
-          isSearch,
-          hasPreviousPage: !isSearch && page > 1,
-          hasNextPage: !isSearch && page < totalPages,
+          count,
+          hasPreviousPage: page > 1,
+          hasNextPage: page < totalPages,
           closureRemoved: request.query?.closureRemoved
         })
       }
