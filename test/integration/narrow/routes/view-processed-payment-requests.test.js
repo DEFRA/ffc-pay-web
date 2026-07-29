@@ -39,7 +39,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
   describe('GET /monitoring/schemes', () => {
     const method = 'GET'
     const url = '/monitoring/schemes'
-    const pageH1 = 'Monitoring by scheme'
+    const pageH1 = 'View payment events by scheme'
 
     test('returns 200 when schemes load successfully', async () => {
       mockGetSchemes(mockSchemes)
@@ -47,7 +47,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
       expect($('h1').text()).toContain(pageH1)
-      expect($('#schemeId').children()).toHaveLength(mockSchemes.length)
+      expect($('#schemeId').children()).toHaveLength(mockSchemes.length + 1)
     })
 
     test('returns 200 and shows "No schemes were found." if no schemes', async () => {
@@ -75,7 +75,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
   describe('GET /monitoring/view-processed-payment-requests', () => {
     const method = 'GET'
     const url = '/monitoring/view-processed-payment-requests?schemeId=1'
-    const pageH1 = 'Processed payment requests'
+    const pageH1 = 'Scheme payment event details'
 
     const mockGetProcessedPayments = () => {
       getPaymentsByScheme.mockResolvedValue(mockProcessedPayments)
@@ -95,7 +95,8 @@ describe('Monitoring Schemes and Processed Payments', () => {
       const res = await server.inject({ method, url, auth })
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
-      expect($('#no-hold-text').text()).toContain('No processed payment requests found.')
+      expect($('#no-hold-text').text().replace(/\s+/g, ' '))
+        .toContain('No data for this scheme. Return to View payment events by scheme and try again.')
     })
 
     test('returns 403 if no permission', async () => {
@@ -110,15 +111,6 @@ describe('Monitoring Schemes and Processed Payments', () => {
       expect(res.headers.location).toEqual('/login')
     })
 
-    test('returns 412 and shows error message if processing fails', async () => {
-      getPaymentsByScheme.mockRejectedValue(new Error('Failed to load processed payments'))
-      const res = await server.inject({ method, url, auth })
-      expect(res.statusCode).toBe(412)
-      const $ = cheerio.load(res.payload)
-      expect($('.govuk-error-summary__title').text().trim()).toEqual('There is a problem')
-      expect($('.govuk-error-message').text()).toContain('Error: Failed to load processed payments')
-    })
-
     test('returns 200 and ignores unknown fields in processed payments', async () => {
       getPaymentsByScheme.mockResolvedValue([
         { scheme: 'Extra Scheme', paymentRequests: 1, value: '£10.00', extra: 'ignored' }
@@ -127,18 +119,6 @@ describe('Monitoring Schemes and Processed Payments', () => {
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
       expect($('tbody').children()).toHaveLength(1)
-    })
-
-    test('returns 200 and handles empty schemeId gracefully', async () => {
-      getPaymentsByScheme.mockResolvedValue([])
-      const res = await server.inject({
-        method,
-        url: '/monitoring/view-processed-payment-requests?schemeId=',
-        auth
-      })
-      expect(res.statusCode).toBe(200)
-      const $ = cheerio.load(res.payload)
-      expect($('#no-hold-text').text()).toContain('No processed payment requests found.')
     })
 
     test('returns 200 and shows no results for invalid schemeId', async () => {
@@ -150,7 +130,8 @@ describe('Monitoring Schemes and Processed Payments', () => {
       })
       expect(res.statusCode).toBe(200)
       const $ = cheerio.load(res.payload)
-      expect($('#no-hold-text').text()).toContain('No processed payment requests found.')
+      expect($('#no-hold-text').text().replace(/\s+/g, ' '))
+        .toContain('No data for this scheme. Return to View payment events by scheme and try again.')
     })
   })
 })

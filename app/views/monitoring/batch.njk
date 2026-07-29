@@ -2,7 +2,7 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set pageTitle = "Monitoring by batch name" %}
+{% set pageTitle = "View batch file payments and their status" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
@@ -13,7 +13,7 @@
         text: "Home",
         href: "/"
       },{
-        text: "Monitoring",
+        text: "View payment events",
         href: "/monitoring"
       },{
         text: pageTitle
@@ -25,10 +25,17 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <span class="govuk-caption-l">{{ batch }}</span>
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
       {% if payments.length %}
+        <p class="govuk-body-m">
+          View the batch payment file and access the payment history for an
+          associated FRN or
+          <a href="/monitoring">start a new search</a>.
+        </p>
+
+        <h1 class="govuk-heading-m">{{ batch }}</h1>
+
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
@@ -70,7 +77,7 @@
               <th
                 scope="col"
                 class="govuk-table__header govuk-body-s">
-                Actions
+                Activity
               </th>
             </tr>
           </thead>
@@ -116,7 +123,13 @@
         <p
           id="no-hold-text"
           class="govuk-body">
-          No payments found for batch {{ batch }}.
+          No payment events were found for the entered batch file name.
+        </p>
+
+        <p class="govuk-body">
+          <a
+            class="govuk-link"
+            href="/monitoring">Start a new search to try again.</a>
         </p>
       {% endif %}
     </div>

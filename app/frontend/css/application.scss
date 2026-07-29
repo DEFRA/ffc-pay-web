@@ -10,13 +10,13 @@ $govuk-font-family: "Arial", sans-serif !important;
     margin-top: auto;
     margin-bottom: govuk-spacing(8);
   }
- 
+
   .govuk-frontend-supported .app-back-to-top--fixed {
     top: calc(100% - #{govuk-spacing(8)});
     bottom: auto;
     left: auto;
   }
- 
+
   .govuk-frontend-supported .app-back-to-top--hidden .app-back-to-top__link {
     @include govuk-visually-hidden-focusable;
   }
@@ -130,7 +130,7 @@ $govuk-font-family: "Arial", sans-serif !important;
   margin-top: govuk-spacing(4);
   margin-bottom: govuk-spacing(6);
 }
- 
+
 .app-back-to-top__icon {
   display: inline-block;
   width: 0.8em;
@@ -138,4 +138,20 @@ $govuk-font-family: "Arial", sans-serif !important;
   margin-top: -(govuk-spacing(1));
   margin-right: govuk-spacing(2);
   vertical-align: middle;
+}
+
+.app-search-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.app-search-form .govuk-form-group {
+  flex: 0 0 420px;
+  margin-bottom: 0;
+}
+
+.app-search-form .govuk-button {
+  flex-shrink: 0;
+  margin-bottom: 0;
 }

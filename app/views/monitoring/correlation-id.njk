@@ -2,7 +2,7 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set pageTitle = "Monitoring by correlation ID" %}
+{% set pageTitle = "FRN agreement details" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
@@ -13,7 +13,7 @@
         text: "Home",
         href: "/"
       },{
-        text: "Monitoring",
+        text: "View payment events",
         href: "/monitoring"
       },{
         text: pageTitle
@@ -25,10 +25,15 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <span class="govuk-caption-l">{{ events.frn }} - {{
-          events.agreementNumber
-        }} - PR{{ events.paymentRequestNumber }}</span>
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body-m">
+        View the details for the chosen FRN agreement.
+      </p>
+
+      <h1 class="govuk-heading-m">
+        {{ events.frn }} - {{ events.agreementNumber }}
+      </h1>
 
       {% if events %}
         <table class="govuk-table">

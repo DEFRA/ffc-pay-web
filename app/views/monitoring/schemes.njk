@@ -3,7 +3,7 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% set pageTitle = "Monitoring by scheme" %}
+{% set pageTitle = "View payment events by scheme" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
@@ -29,6 +29,10 @@
         autocomplete="off"
         novalidate>
         <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+        <p class="govuk-body-m">
+          Select a scheme to view how many payments have been made and the
+          combined value.
+        </p>
         {% if error %}
           <div
             class="govuk-error-summary"
@@ -44,10 +48,7 @@
             <div class="govuk-error-summary__body">
               <ul class="govuk-list govuk-error-summary__list">
                 <li>
-                  <span class="govuk-error-message"><span
-                      class="govuk-visually-hidden">Error:</span> {{
-                      error
-                    }}</span>
+                  <a href="#schemeId">{{ error }}</a>
                 </li>
               </ul>
             </div>
@@ -55,16 +56,26 @@
         {% endif %}
 
         {% if data.length %}
-          <div class="govuk-form-group">
+          <div
+            class="govuk-form-group{% if error %} govuk-form-group--error{% endif %}">
             <label
               class="govuk-label"
               for="schemeId">
-              Select the scheme to view data for
+              Scheme
             </label>
+            {% if error %}
+              <p
+                id="schemeId-error"
+                class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{ error }}
+              </p>
+            {% endif %}
             <select
-              class="govuk-select"
+              class="govuk-select{% if error %} govuk-select--error{% endif %}"
               id="schemeId"
-              name="schemeId">
+              name="schemeId"
+              {% if error %}aria-describedby="schemeId-error"{% endif %}>
+              <option value="">Select a scheme</option>
               {% for scheme in data %}
                 <option value="{{scheme.schemeId}}">{{ scheme.name }}</option>
               {% endfor %}

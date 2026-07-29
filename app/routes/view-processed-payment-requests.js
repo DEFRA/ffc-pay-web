@@ -27,16 +27,29 @@ module.exports = [
     },
     handler: async (request, h) => {
       const { schemeId } = request.query
+
+      if (!schemeId) {
+        const schemes = await getProcessingData('/payment-schemes')
+        return h
+          .view('monitoring/schemes', {
+            error: 'Select a scheme',
+            data: schemes?.payload?.paymentSchemes
+          })
+          .code(HTTP_STATUS.PRECONDITION_FAILED)
+      }
+
       try {
         const processedPaymentRequests = await getPaymentsByScheme(schemeId)
         return h.view('monitoring/view-processed-payment-requests', {
           data: processedPaymentRequests
         })
       } catch (err) {
+        const schemes = await getProcessingData('/payment-schemes')
         return h
           .view('monitoring/schemes', {
             error: err.data?.payload?.message ?? err.message,
-            schemeId
+            schemeId,
+            data: schemes?.payload?.paymentSchemes
           })
           .code(HTTP_STATUS.PRECONDITION_FAILED)
       }

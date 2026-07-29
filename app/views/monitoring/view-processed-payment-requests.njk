@@ -13,7 +13,7 @@
         text: "Home",
         href: "/"
       },{
-        text: "Monitoring by scheme",
+        text: "View payment events by scheme",
         href: "/monitoring/schemes"
       }, {
         text: pageTitle
@@ -27,9 +27,14 @@
     <div class="govuk-grid-column-full">
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
       {% if data.length %}
+        <p class="govuk-body-m">
+          View the latest processed payment requests, access the event status
+          history for individual payments or
+          <a href="/monitoring/schemes">start a new search</a>.
+        </p>
         <table class="govuk-table">
-          <caption class="govuk-table__caption govuk-table__caption--l">
-            Processed payment requests
+          <caption class="govuk-table__caption govuk-table__caption--m">
+            Scheme payment event details
           </caption>
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
@@ -72,7 +77,8 @@
         <p
           id="no-hold-text"
           class="govuk-body">
-          No processed payment requests found.
+          No data for this scheme. Return to <a href="/monitoring/schemes">View
+            payment events by scheme</a> and try again.
         </p>
       {% endif %}
     </div>
