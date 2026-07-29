@@ -133,5 +133,93 @@ describe('Monitoring Schemes and Processed Payments', () => {
       expect($('#no-hold-text').text().replace(/\s+/g, ' '))
         .toContain('No data for this scheme. Return to View payment events by scheme and try again.')
     })
+
+    test('returns 412 and re-renders the schemes view with "Select a scheme" when schemeId is missing', async () => {
+      mockGetSchemes(mockSchemes)
+      const res = await server.inject({
+        method,
+        url: '/monitoring/view-processed-payment-requests',
+        auth
+      })
+      expect(res.statusCode).toBe(412)
+      expect(getProcessingData).toHaveBeenCalledWith('/payment-schemes')
+      expect(getPaymentsByScheme).not.toHaveBeenCalled()
+      const $ = cheerio.load(res.payload)
+      expect($('#schemeId-error').text()).toContain('Select a scheme')
+      expect($('#schemeId').children()).toHaveLength(mockSchemes.length + 1)
+    })
+
+    test('returns 412 and re-renders the schemes view with "Select a scheme" when schemeId is an empty string', async () => {
+      mockGetSchemes(mockSchemes)
+      const res = await server.inject({
+        method,
+        url: '/monitoring/view-processed-payment-requests?schemeId=',
+        auth
+      })
+      expect(res.statusCode).toBe(412)
+      const $ = cheerio.load(res.payload)
+      expect($('#schemeId-error').text()).toContain('Select a scheme')
+    })
+
+    describe('when getPaymentsByScheme throws', () => {
+      test('returns 412 and shows the error message from a failed lookup with a payload message', async () => {
+        mockGetSchemes(mockSchemes)
+        getPaymentsByScheme.mockRejectedValue({ data: { payload: { message: 'Scheme not found' } } })
+        const res = await server.inject({ method, url, auth })
+        expect(res.statusCode).toBe(412)
+        const $ = cheerio.load(res.payload)
+        expect($('#schemeId-error').text()).toContain('Scheme not found')
+      })
+
+      test('returns 412 and falls back to err.message when no payload message is present', async () => {
+        mockGetSchemes(mockSchemes)
+        getPaymentsByScheme.mockRejectedValue(new Error('Network failure'))
+        const res = await server.inject({ method, url, auth })
+        expect(res.statusCode).toBe(412)
+        const $ = cheerio.load(res.payload)
+        expect($('#schemeId-error').text()).toContain('Network failure')
+      })
+
+      test('returns 412 and falls back to err.message when err.data exists but has no payload', async () => {
+        mockGetSchemes(mockSchemes)
+        getPaymentsByScheme.mockRejectedValue({ data: {}, message: 'Some other failure' })
+        const res = await server.inject({ method, url, auth })
+        expect(res.statusCode).toBe(412)
+        const $ = cheerio.load(res.payload)
+        expect($('#schemeId-error').text()).toContain('Some other failure')
+      })
+
+      test('re-fetches the scheme list from getProcessingData after the failure, to repopulate the dropdown', async () => {
+        mockGetSchemes(mockSchemes)
+        getPaymentsByScheme.mockRejectedValue(new Error('boom'))
+        const res = await server.inject({ method, url, auth })
+        expect(res.statusCode).toBe(412)
+        expect(getProcessingData).toHaveBeenCalledWith('/payment-schemes')
+        expect(getProcessingData).toHaveBeenCalledTimes(1)
+        const $ = cheerio.load(res.payload)
+        expect($('#schemeId').children()).toHaveLength(mockSchemes.length + 1)
+      })
+
+      test('calls getPaymentsByScheme with the submitted schemeId before failing', async () => {
+        mockGetSchemes(mockSchemes)
+        getPaymentsByScheme.mockRejectedValue(new Error('boom'))
+        const res = await server.inject({
+          method,
+          url: '/monitoring/view-processed-payment-requests?schemeId=2',
+          auth
+        })
+        expect(res.statusCode).toBe(412)
+        expect(getPaymentsByScheme).toHaveBeenCalledWith('2')
+      })
+
+      test('shows "No schemes were found." on the error path if the scheme re-fetch returns none', async () => {
+        mockGetSchemes([])
+        getPaymentsByScheme.mockRejectedValue(new Error('boom'))
+        const res = await server.inject({ method, url, auth })
+        expect(res.statusCode).toBe(412)
+        const $ = cheerio.load(res.payload)
+        expect($('#no-schemes').text()).toContain('No schemes were found.')
+      })
+    })
   })
 })
