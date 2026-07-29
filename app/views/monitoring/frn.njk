@@ -4,22 +4,22 @@
 
 {% set pageTitle = "FRN payment history" %}
 
+{%
+  set breadcrumbs = [{
+    text: "Home",
+    href: "/"
+  },{
+    text: "View payment events",
+    href: "/monitoring"
+  },{
+    text: pageTitle
+  }]
+%}
+
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{
-    govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      },{
-        text: "View payment events",
-        href: "/monitoring"
-      },{
-        text: pageTitle
-      }]
-    })
-  }}
+  {{ govukBreadcrumbs({ items: breadcrumbs }) }}
 {% endblock %}
 
 {% block content %}

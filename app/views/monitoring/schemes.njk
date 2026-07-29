@@ -5,19 +5,19 @@
 
 {% set pageTitle = "View payment events by scheme" %}
 
-{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
-
-{% block beforeContent %}
-  {{
-    govukBreadcrumbs({
-      items: [{
-        text: "Home",
+{%
+  set breadcrumbs = [{
+    text: "Home",
         href: "/"
       },{
         text: pageTitle
-      }]
-    })
-  }}
+  }]
+%}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBreadcrumbs({ items: breadcrumbs }) }}
 {% endblock %}
 
 {% block content %}
