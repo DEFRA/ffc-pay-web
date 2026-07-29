@@ -1,6 +1,7 @@
 jest.mock('../../../../app/api')
 jest.mock('../../../../app/auth')
 
+const { Readable } = require('stream')
 const cheerio = require('cheerio')
 const { applicationAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
@@ -282,9 +283,7 @@ describe('Closures', () => {
 
       expect(res.statusCode).toBe(403)
     })
-  })
 
-  describe('Additional coverage tests', () => {
     test('GET /closure/add passes through query params correctly', async () => {
       const url = '/closure/add?frn=123&agreement=abc&schemeId=1&day=2&month=3&year=2024'
 
@@ -483,26 +482,213 @@ describe('Closures', () => {
     })
   })
 
-  describe('Direct handler tests for /closure/manage and /closure/search', () => {
+  describe('POST /closure/add/confirm', () => {
+    let routes
+    let addConfirmRoute
     let h
     let request
-    let responseMock
 
     beforeEach(() => {
-      responseMock = {
-        view: jest.fn().mockReturnThis(),
-        code: jest.fn().mockReturnThis(),
-        takeover: jest.fn().mockReturnThis(),
-        redirect: jest.fn().mockReturnThis(),
-        response: jest.fn(() => responseMock)
-      }
+      routes = require('../../../../app/routes/closures')
+      addConfirmRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.ADD_CONFIRM && route.method === 'POST'
+      )
 
       h = {
-        view: responseMock.view,
-        code: responseMock.code,
-        takeover: responseMock.takeover,
-        redirect: responseMock.redirect,
-        response: responseMock.response
+        view: jest.fn(() => h),
+        code: jest.fn(() => h),
+        takeover: jest.fn(() => h)
+      }
+
+      request = {
+        payload: {
+          schemeId: 'SFI',
+          frn: FRN,
+          agreement: AGREEMENT_NUMBER,
+          day: 12,
+          month: 8,
+          year: 2023
+        },
+        auth,
+        state: {}
+      }
+    })
+
+    test('handler returns confirmation view with selected scheme name', async () => {
+      const schemes = [
+        { schemeId: 'SFI', name: 'SFI Scheme' },
+        { schemeId: 'OTHER', name: 'Other Scheme' }
+      ]
+
+      getSchemesForClosures.mockResolvedValue(schemes)
+
+      const result = await addConfirmRoute.options.handler(request, h)
+
+      expect(getSchemesForClosures).toHaveBeenCalled()
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.ADD_CONFIRM, {
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        schemeId: 'SFI',
+        schemeName: 'SFI Scheme',
+        day: 12,
+        month: 8,
+        year: 2023
+      })
+
+      expect(result).toBe(h)
+    })
+
+    test('handler returns confirmation view without scheme name when selected scheme is not found', async () => {
+      getSchemesForClosures.mockResolvedValue([
+        { schemeId: 'OTHER', name: 'Other Scheme' }
+      ])
+
+      const result = await addConfirmRoute.options.handler(request, h)
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.ADD_CONFIRM, {
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        schemeId: 'SFI',
+        schemeName: undefined,
+        day: 12,
+        month: 8,
+        year: 2023
+      })
+
+      expect(result).toBe(h)
+    })
+
+    test('failAction returns add view with errors, schemes and submitted values', async () => {
+      const error = new Error('Validation failed')
+      const schemes = [
+        { schemeId: 'SFI', name: 'SFI Scheme' }
+      ]
+
+      getSchemesForClosures.mockResolvedValue(schemes)
+
+      const result = await addConfirmRoute.options.validate.failAction(request, h, error)
+
+      expect(getSchemesForClosures).toHaveBeenCalled()
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.ADD, {
+        errors: error,
+        schemes,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        schemeId: 'SFI',
+        day: 12,
+        month: 8,
+        year: 2023
+      })
+
+      expect(h.code).toHaveBeenCalledWith(400)
+      expect(h.takeover).toHaveBeenCalled()
+      expect(result).toBe(h)
+    })
+  })
+
+  describe('GET /closure/add handler details', () => {
+    test('passes schemes and query values to the add view', async () => {
+      const routes = require('../../../../app/routes/closures')
+      const addRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.ADD && route.method === 'GET'
+      )
+
+      const schemes = [
+        { schemeId: 'SFI', name: 'SFI Scheme' }
+      ]
+
+      getSchemesForClosures.mockResolvedValue(schemes)
+
+      const h = {
+        view: jest.fn(() => h)
+      }
+
+      const request = {
+        query: {
+          frn: FRN,
+          agreement: AGREEMENT_NUMBER,
+          schemeId: 'SFI',
+          day: '12',
+          month: '8',
+          year: '2023'
+        }
+      }
+
+      const result = await addRoute.options.handler(request, h)
+
+      expect(getSchemesForClosures).toHaveBeenCalled()
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.ADD, {
+        schemes,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        schemeId: 'SFI',
+        day: '12',
+        month: '8',
+        year: '2023'
+      })
+
+      expect(result).toBe(h)
+    })
+  })
+
+  describe('POST /closure/add validation handling', () => {
+    test('failAction returns add view with submitted values and bad request status', async () => {
+      const routes = require('../../../../app/routes/closures')
+      const addRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.ADD && route.method === 'POST'
+      )
+
+      const error = new Error('Validation failed')
+
+      const h = {
+        view: jest.fn(() => h),
+        code: jest.fn(() => h),
+        takeover: jest.fn(() => h)
+      }
+
+      const request = {
+        payload: {
+          frn: FRN,
+          agreement: AGREEMENT_NUMBER,
+          schemeId: 'SFI',
+          day: 12,
+          month: 8,
+          year: 2023
+        }
+      }
+
+      const result = await addRoute.options.validate.failAction(request, h, error)
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.ADD, {
+        errors: error,
+        frn: FRN,
+        agreement: AGREEMENT_NUMBER,
+        schemeId: 'SFI',
+        day: 12,
+        month: 8,
+        year: 2023
+      })
+
+      expect(h.code).toHaveBeenCalledWith(400)
+      expect(h.takeover).toHaveBeenCalled()
+      expect(result).toBe(h)
+    })
+  })
+
+  describe('GET /closure/manage and /closure/search handlers', () => {
+    let h
+    let request
+
+    beforeEach(() => {
+      h = {
+        view: jest.fn(() => h),
+        code: jest.fn(() => h),
+        takeover: jest.fn(() => h),
+        redirect: jest.fn(() => h),
+        response: jest.fn(() => h)
       }
 
       auth = {
@@ -537,7 +723,7 @@ describe('Closures', () => {
         closureAdded: 'addedValue'
       })
 
-      expect(result).toBe(h.view())
+      expect(result).toBe(h)
     })
 
     test('GET /closure/search handler returns correct view with search params', async () => {
@@ -585,7 +771,7 @@ describe('Closures', () => {
         closureRemoved: 'true'
       })
 
-      expect(result).toBe(h.view())
+      expect(result).toBe(h)
     })
 
     test('GET /closure/search handler returns pagination flags correctly when no search params', async () => {
@@ -633,7 +819,182 @@ describe('Closures', () => {
         })
       )
 
-      expect(result).toBe(h.view())
+      expect(result).toBe(h)
+    })
+
+    test('GET /closure/search handler uses default page and page size when query values are not supplied', async () => {
+      const routes = require('../../../../app/routes/closures')
+      const searchRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.SEARCH && route.method === 'GET'
+      )
+
+      const mockClosures = []
+      const mockCount = 0
+      const mockSchemes = [
+        { schemeId: 'SFI', name: 'SFI Scheme' }
+      ]
+
+      getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
+      getSchemesForClosures.mockResolvedValue(mockSchemes)
+
+      request.query = {}
+
+      const result = await searchRoute.options.handler(request, h)
+
+      expect(getClosures).toHaveBeenCalledWith({
+        page: 1,
+        pageSize: 2500,
+        frnAgreement: null,
+        schemeId: null
+      })
+
+      expect(getSchemesForClosures).toHaveBeenCalled()
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.SEARCH, {
+        closures: mockClosures,
+        schemes: mockSchemes,
+        page: 1,
+        pageSize: 2500,
+        frnAgreement: null,
+        schemeId: null,
+        count: mockCount,
+        hasPreviousPage: false,
+        hasNextPage: false,
+        closureRemoved: undefined
+      })
+
+      expect(result).toBe(h)
+    })
+  })
+
+  describe('GET /closure/remove/confirm', () => {
+    test('loads remove confirmation page with query values', async () => {
+      const url = `${CLOSURES_ROUTES.REMOVE_CONFIRM}?retentionDataId=123&frn=${FRN}&agreementNumber=${AGREEMENT_NUMBER}&schemeName=SFI22`
+
+      const { res, $ } = await loadPage('GET', url, auth)
+
+      expect(res.statusCode).toBe(200)
+      expect($('h1').text().trim()).toBe('Are you sure you want to remove this agreement closure?')
+    })
+
+    test('handler returns remove confirmation view with query values', async () => {
+      const routes = require('../../../../app/routes/closures')
+      const removeConfirmRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.REMOVE_CONFIRM && route.method === 'GET'
+      )
+
+      const h = {
+        view: jest.fn(() => h)
+      }
+
+      const request = {
+        query: {
+          retentionDataId: '123',
+          frn: FRN,
+          agreementNumber: AGREEMENT_NUMBER,
+          schemeName: 'SFI22'
+        }
+      }
+
+      const result = await removeConfirmRoute.options.handler(request, h)
+
+      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.REMOVE_CONFIRM, {
+        retentionDataId: '123',
+        frn: FRN,
+        agreementNumber: AGREEMENT_NUMBER,
+        schemeName: 'SFI22'
+      })
+
+      expect(result).toBe(h)
+    })
+
+    test('validation failAction throws the validation error', () => {
+      const routes = require('../../../../app/routes/closures')
+      const removeConfirmRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.REMOVE_CONFIRM && route.method === 'GET'
+      )
+
+      const error = new Error('Invalid query')
+
+      expect(() => removeConfirmRoute.options.validate.failAction({}, {}, error))
+        .toThrow(error)
+    })
+
+    test('returns 403 when user lacks permission', async () => {
+      auth.credentials.scope = []
+
+      const url = `${CLOSURES_ROUTES.REMOVE_CONFIRM}?retentionDataId=123&frn=${FRN}&agreementNumber=${AGREEMENT_NUMBER}&schemeName=SFI22`
+
+      const { res } = await loadPage('GET', url, auth)
+
+      expect(res.statusCode).toBe(403)
+    })
+
+    test('redirects to login when unauthenticated', async () => {
+      const url = `${CLOSURES_ROUTES.REMOVE_CONFIRM}?retentionDataId=123&frn=${FRN}&agreementNumber=${AGREEMENT_NUMBER}&schemeName=SFI22`
+
+      const { res } = await loadPage('GET', url)
+
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe('/login')
+    })
+  })
+
+  describe('POST /closure/remove', () => {
+    test('handler posts retention data and redirects back to search with removed flag', async () => {
+      const routes = require('../../../../app/routes/closures')
+      const removeRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.REMOVE && route.method === 'POST'
+      )
+
+      const h = {
+        redirect: jest.fn(() => h)
+      }
+
+      const request = {
+        payload: {
+          retentionDataId: '123'
+        }
+      }
+
+      const result = await removeRoute.options.handler(request, h)
+
+      expect(postRetention).toHaveBeenCalledWith('/closure/remove', {
+        retentionDataId: '123'
+      })
+
+      expect(h.redirect).toHaveBeenCalledWith(`${CLOSURES_ROUTES.SEARCH}?closureRemoved=true`)
+      expect(result).toBe(h)
+    })
+
+    test('returns 403 when user lacks permission', async () => {
+      auth.credentials.scope = []
+
+      const res = await server.inject({
+        method: 'POST',
+        url: CLOSURES_ROUTES.REMOVE,
+        auth,
+        payload: {
+          retentionDataId: '123'
+        }
+      })
+
+      expect(res.statusCode).toBe(403)
+      expect(postRetention).not.toHaveBeenCalled()
+    })
+
+    test('redirects to login when unauthenticated', async () => {
+      const res = await server.inject({
+        method: 'POST',
+        url: CLOSURES_ROUTES.REMOVE,
+        payload: {
+          retentionDataId: '123'
+        }
+      })
+
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe('/login')
+      expect(postRetention).not.toHaveBeenCalled()
     })
   })
 
@@ -661,6 +1022,45 @@ describe('Closures', () => {
 
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/login')
+    })
+
+    test('handler returns csv download response with filename and no-store cache header', async () => {
+      const routes = require('../../../../app/routes/closures')
+      const extractRoute = routes.find(route =>
+        route.path === CLOSURES_ROUTES.EXTRACT && route.method === 'GET'
+      )
+
+      const stream = Readable.from(['frn,agreementNumber\n1234567890,SFI123\n'])
+
+      getRetentionData.mockResolvedValue({
+        payload: {
+          filename: 'closures.csv'
+        }
+      })
+
+      getRetentionExtractDownloadStreamAndDeleteAfter.mockResolvedValue({
+        stream
+      })
+
+      const response = {
+        type: jest.fn(() => response),
+        header: jest.fn(() => response)
+      }
+
+      const h = {
+        response: jest.fn(() => response)
+      }
+
+      const result = await extractRoute.options.handler({}, h)
+
+      expect(getRetentionData).toHaveBeenCalledWith(CLOSURES_ROUTES.EXTRACT)
+      expect(getRetentionExtractDownloadStreamAndDeleteAfter).toHaveBeenCalledWith('closures.csv')
+
+      expect(h.response).toHaveBeenCalledWith(stream)
+      expect(response.type).toHaveBeenCalledWith('text/csv')
+      expect(response.header).toHaveBeenCalledWith('Content-Disposition', 'attachment; filename="closures.csv"')
+      expect(response.header).toHaveBeenCalledWith('Cache-Control', 'no-store')
+      expect(result).toBe(response)
     })
   })
 })
