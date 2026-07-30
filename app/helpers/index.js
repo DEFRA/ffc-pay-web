@@ -14,6 +14,7 @@ const { createFormRoute, createDownloadRoute } = require('./report-route-generat
 const { generateReportHandler } = require('./generate-report-handler')
 const { sanitizeSchemes } = require('./sanitize-schemes')
 const { groupHoldCategoriesByScheme } = require('./group-hold-categories-by-scheme')
+const { getSchemesForClosures } = require('./get-schemes-for-closures')
 
 module.exports = {
   addDetailsToFilename,
@@ -24,6 +25,7 @@ module.exports = {
   formatDateFromParts,
   getPoundValue,
   getSchemes,
+  getSchemesForClosures,
   getView,
   groupHoldCategoriesByScheme,
   handleCSVResponse,

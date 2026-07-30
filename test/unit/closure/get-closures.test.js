@@ -57,6 +57,13 @@ describe('Get closures', () => {
     expect(result.closures[0].schemeName).toBe('SFI22')
   })
 
+  test('Scheme name Vet Visits should be reformatted to correct Annual Health Welfare Review', async () => {
+    mockClosures[0].schemeName = 'Vet Visits'
+    mockGetClosures(mockClosures)
+    const result = await getClosures()
+    expect(result.closures[0].schemeName).toBe('Annual Health and Welfare Review')
+  })
+
   test('URL params include frnAgreement only if provided', async () => {
     mockGetClosures(mockClosures)
     await getClosures({ frnAgreement: 'FRN_VAL' })
