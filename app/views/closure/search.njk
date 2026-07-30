@@ -55,7 +55,7 @@
         action="/closure/search"
         method="GET"
         role="search">
-        <h2 class="govuk-heading-m">Search for an agreement closure</h2>
+        <h2 class="govuk-heading-m">Filter agreement closure results</h2>
         {{
           govukInput({
             label: {
@@ -97,57 +97,61 @@
             {% endfor %}
           </select>
         </div>
-
-        {{
-          govukButton({
-            text: "Search",
-            type: "submit"
-          })
-        }}
+        <div class="govuk-button-group">
+          {{
+            govukButton({
+              text: "Filter",
+              type: "submit"
+            })
+          }}
+          <a
+            class="govuk-link"
+            href="/closure/search">Reset filter</a>
+        </div>
       </form>
 
       {% if closures and closures.length %}
+        <p class="govuk-body">
+          <a
+            href="/closure/extract"
+            class="govuk-link">Download all agreement closure data as CSV</a>
+        </p>
         <div class="govuk-grid-row">
           <div class="govuk-grid-column-one-half">
             <div style="display:flex;align-items:baseline;gap:1rem;">
               <h2 class="govuk-heading-m govuk-!-margin-0">
-                Agreement closures
+                {{ count }} agreement closures
               </h2>
-              <a
-                href="/closure/extract"
-                class="govuk-link">Download as CSV</a>
             </div>
           </div>
 
-          {% if not isSearch %}
-            <div class="govuk-grid-column-one-half govuk-!-padding-top-1">
+          <div class="govuk-grid-column-one-half govuk-!-padding-top-1">
+            <div
+              style="display:flex;align-items:baseline;justify-content:flex-end;">
               <div
-                style="display:flex;align-items:baseline;justify-content:flex-end;">
-                <div
-                  class="govuk-body-s"
-                  aria-label="Records per page"
-                  style="white-space:nowrap;vertical-align:baseline;">
-                  <span>Records per page:</span>&nbsp;
+                class="govuk-body-s"
+                aria-label="Records per page"
+                style="white-space:nowrap;vertical-align:baseline;">
+                <span>Records per page:</span>&nbsp;
 
-                  {% set pageSizeOptions = [2500, 5000, 10000] %}
+                {% set pageSizeOptions = [2500, 5000, 10000] %}
 
-                  {% for opt in pageSizeOptions %}
-                    {% if pageSize == opt %}
-                      <strong>{{ opt }}</strong>
-                    {% else %}
-                      <a
-                        href="/closure/search?page=1&pageSize={{ opt }}"
-                        class="govuk-link">
-                        {{ opt }}
-                      </a>
-                    {% endif %}
+                {% for opt in pageSizeOptions %}
+                  {% if pageSize == opt %}
+                    <strong>{{ opt }}</strong>
+                  {% else %}
+                    <a
+                      href="/closure/search?page=1&pageSize={{ opt }}"
+                      class="govuk-link">
+                      {{ opt }}
+                    </a>
+                  {% endif %}
 
-                    {% if not loop.last %}&nbsp;|&nbsp;{% endif %}
-                  {% endfor %}
-                </div>
+                  {% if not loop.last %}&nbsp;|&nbsp;{% endif %}
+                {% endfor %}
               </div>
             </div>
-          {% endif %}
+          </div>
         </div>
         {% set tableRows = [] %}
         {% for closure in closures %}
@@ -215,37 +219,23 @@
           })
         }}
 
-        {% if isSearch %}
-          {{
-            govukPagination({
-              items: [
-                {
-                  number: "1",
-                  current: true,
-                  href: "#"
-                }
-              ]
-            })
-          }}
-        {% else %}
-          {{
-            govukPagination({
-              previous: page > 1 and {
-                href: "/closure/search?page=" + (page - 1) + "&pageSize=" + pageSize
-              },
-              next: hasNextPage and {
-                href: "/closure/search?page=" + (page + 1) + "&pageSize=" + pageSize
-              },
-              items: [
-                {
-                  number: page,
-                  current: true,
-                  href: "/closure/search?page=" + page + "&pageSize=" + pageSize
-                }
-              ]
-            })
-          }}
-        {% endif %}
+        {{
+          govukPagination({
+            previous: page > 1 and {
+              href: "/closure/search?page=" + (page - 1) + "&pageSize=" + pageSize
+            },
+            next: hasNextPage and {
+              href: "/closure/search?page=" + (page + 1) + "&pageSize=" + pageSize
+            },
+            items: [
+              {
+                number: page,
+                current: true,
+                href: "/closure/search?page=" + page + "&pageSize=" + pageSize
+              }
+            ]
+          })
+        }}
       {% else %}
         <div class="govuk-inset-text">
           {% if isSearch %}

@@ -11,8 +11,8 @@ const CLOSURES_VIEWS = require('../constants/closures-views')
 const CLOSURES_ROUTES = require('../constants/closures-routes')
 const { AGREEMENT_CLOSURES_LINKS } = require('../constants/section-links')
 const { getClosures } = require('../closure')
-const { getSchemes } = require('../helpers')
 const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('../storage')
+const { getSchemesForClosures } = require('../helpers')
 
 const AUTH_SCOPE = { scope: [applicationAdmin] }
 const defaultPage = 1
@@ -43,8 +43,6 @@ module.exports = [
         const frnAgreement = request.query.frnAgreement || null
         const schemeId = request.query.schemeId || null
 
-        const isSearch = Boolean(frnAgreement || schemeId)
-
         const [{ closures, count }, schemes] = await Promise.all([
           getClosures({
             page,
@@ -52,12 +50,10 @@ module.exports = [
             frnAgreement,
             schemeId
           }),
-          getSchemes()
+          getSchemesForClosures()
         ])
 
-        const totalPages = isSearch
-          ? 1
-          : Math.ceil(count / pageSize)
+        const totalPages = Math.ceil(count / pageSize)
 
         return h.view(CLOSURES_VIEWS.SEARCH, {
           closures,
@@ -66,9 +62,9 @@ module.exports = [
           pageSize,
           frnAgreement,
           schemeId,
-          isSearch,
-          hasPreviousPage: !isSearch && page > 1,
-          hasNextPage: !isSearch && page < totalPages,
+          count,
+          hasPreviousPage: page > 1,
+          hasNextPage: page < totalPages,
           closureRemoved: request.query?.closureRemoved
         })
       }
@@ -80,7 +76,7 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
-        const schemes = await getSchemes()
+        const schemes = await getSchemesForClosures()
         return h.view(CLOSURES_VIEWS.ADD, {
           schemes,
           frn: request.query?.frn,
@@ -101,7 +97,7 @@ module.exports = [
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
-          const schemes = await getSchemes()
+          const schemes = await getSchemesForClosures()
           return h
             .view(CLOSURES_VIEWS.ADD, {
               errors: error,
@@ -118,7 +114,7 @@ module.exports = [
         }
       },
       handler: async (request, h) => {
-        const schemes = await getSchemes()
+        const schemes = await getSchemesForClosures()
         const selectedScheme = schemes.find(scheme => String(scheme.schemeId) === String(request.payload.schemeId))
         return h.view(CLOSURES_VIEWS.ADD_CONFIRM, {
           frn: request.payload?.frn,

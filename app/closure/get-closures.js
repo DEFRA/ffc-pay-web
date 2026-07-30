@@ -27,22 +27,33 @@ const getClosures = async ({
 
   const queryString = params.toString()
   const queryUrl = '/closure' + (queryString ? '?' + queryString : '')
+  try {
+    const { payload } = await getRetentionData(queryUrl)
 
-  const { payload } = await getRetentionData(queryUrl)
+    const closures = payload.closures?.map(closure => {
+      closure.endDate = moment(closure.endDate).format('DD/MM/YYYY')
 
-  const closures = payload.closures?.map(closure => {
-    closure.endDate = moment(closure.endDate).format('DD/MM/YYYY')
+      if (closure.schemeName === 'SFI') {
+        closure.schemeName = 'SFI22'
+      }
 
-    if (closure.schemeName === 'SFI') {
-      closure.schemeName = 'SFI22'
+      if (closure.schemeName === 'Vet Visits') {
+        closure.schemeName = 'Annual Health and Welfare Review'
+      }
+
+      return closure
+    }) ?? []
+
+    return {
+      closures,
+      count: payload.count ?? 0
     }
-
-    return closure
-  }) ?? []
-
-  return {
-    closures,
-    count: payload.count ?? 0
+  } catch (err) {
+    console.error('An error occurred getting retention data', err.message)
+    return {
+      closures: [],
+      count: 0
+    }
   }
 }
 
