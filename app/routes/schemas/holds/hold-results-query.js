@@ -2,8 +2,8 @@ const Joi = require('joi')
 const minFRN = 1000000000
 const maxFRN = 9999999999
 const option1 = 100
-const option2 = 100
-const option3 = 100
+const option2 = 500
+const option3 = 1000
 
 const perPageOptions = [option1, option2, option3]
 
