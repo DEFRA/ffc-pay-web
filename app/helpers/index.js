@@ -4,6 +4,7 @@ const { convertDateToDDMMYYYY } = require('./convert-date-to-ddmmyyyy')
 const convertToCSV = require('./convert-to-csv')
 const { formatDateFromString, formatDateFromParts } = require('./date-time-formatter')
 const { getPoundValue } = require('./get-pound-value')
+const { filterAndPaginateHolds } = require('./filter-and-paginate-holds')
 const { getSchemes } = require('./get-schemes')
 const { getView } = require('./get-view')
 const { handleCSVResponse } = require('./handle-csv-response')
@@ -23,6 +24,7 @@ module.exports = {
   convertToCSV,
   formatDateFromString,
   formatDateFromParts,
+  filterAndPaginateHolds,
   getPoundValue,
   getSchemes,
   getSchemesForClosures,
