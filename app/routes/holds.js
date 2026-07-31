@@ -184,7 +184,7 @@ module.exports = [
       auth: AUTH_SCOPE,
       validate: {
         query: resultsQuerySchema,
-        failAction: async (request, h, errors) => {
+        failAction: async (_request, h, errors) => {
           const schemes = await getSchemes()
           return h
             .view(HOLDS_VIEWS.SEARCH, { schemes, errors })
