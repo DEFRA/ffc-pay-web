@@ -67,6 +67,7 @@
           {% set dayError = null %}
           {% set monthError = null %}
           {% set yearError = null %}
+          {% set dateError = null %}
           {% for err in errors.details %}
             {%
               set field = (err.path and err.path[0]) or (err.context and err.context.key)
@@ -83,6 +84,9 @@
               endif
             %}
             {% if field == 'year' %}{% set yearError = err.message %}{% endif %}
+            {% if err.type == 'date.invalid' %}
+              {% set dateError = err.message %}
+            {% endif %}
           {% endfor %}
         {% endif %}
 
@@ -174,11 +178,11 @@
         </div>
 
         <div
-          class="govuk-form-group {% if dayError or monthError or yearError %}govuk-form-group--error{% endif %}">
+          class="govuk-form-group {% if dayError or monthError or yearError or dateError %}govuk-form-group--error{% endif %}">
           <fieldset
             class="govuk-fieldset"
             role="group"
-            aria-describedby="closure-date-hint {% if dayError %}day-error{% endif %} {% if monthError %}month-error{% endif %} {% if yearError %}year-error{% endif %}">
+            aria-describedby="closure-date-hint {% if dayError %}day-error{% endif %} {% if monthError %}month-error{% endif %} {% if yearError %}year-error{% endif %} {% if dateError %}date-error{% endif %}">
             <legend class="govuk-fieldset__legend govuk-label-s">
               Closure activation date
             </legend>
@@ -212,6 +216,15 @@
                 }}
               </p>
             {% endif %}
+            {% if dateError %}
+              <p
+                id="date-error"
+                class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span>
+                {{ dateError }}
+              </p>
+            {% endif %}
+
             <div
               class="govuk-date-input"
               id="closure-date">
@@ -223,7 +236,7 @@
                     Day
                   </label>
                   <input
-                    class="govuk-input {% if dayError %}govuk-input--error{% endif %} govuk-date-input__input govuk-input--width-2"
+                    class="govuk-input {% if dayError or dateError %}govuk-input--error{% endif %} govuk-date-input__input govuk-input--width-2"
                     id="day"
                     name="day"
                     type="text"
@@ -240,7 +253,7 @@
                     Month
                   </label>
                   <input
-                    class="govuk-input {% if monthError %}govuk-input--error{% endif %} govuk-date-input__input govuk-input--width-2"
+                    class="govuk-input {% if monthError or dateError %}govuk-input--error{% endif %} govuk-date-input__input govuk-input--width-2"
                     id="month"
                     name="month"
                     type="text"
@@ -257,7 +270,7 @@
                     Year
                   </label>
                   <input
-                    class="govuk-input {% if yearError %}govuk-input--error{% endif %} govuk-date-input__input govuk-input--width-4"
+                    class="govuk-input {% if yearError or dateError %}govuk-input--error{% endif %} govuk-date-input__input govuk-input--width-4"
                     id="year"
                     name="year"
                     type="text"
