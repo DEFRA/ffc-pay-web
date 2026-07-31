@@ -1,5 +1,7 @@
 const fs = require('node:fs')
-const { handleBulkClosure } = require('../../../app/closure/handle-bulk-closure')
+const {
+  handleBulkClosure
+} = require('../../../app/closure/handle-bulk-closure')
 const { handleBulkClosureError } = require('../../../app/closure/handle-bulk-closure-error')
 const { postRetention } = require('../../../app/api')
 const { processClosureData } = require('../../../app/closure')
@@ -308,5 +310,97 @@ describe('handleBulkClosure', () => {
       'Invalid file structure or missing file path.',
       'state-crumb'
     )
+  })
+
+  test('passes undefined addedBy when auth account is unavailable', async () => {
+    const mockUploadData = [
+      {
+        key: 'value'
+      }
+    ]
+
+    request.auth = undefined
+
+    fs.readFileSync.mockReturnValue('file content')
+    processClosureData.mockResolvedValue({
+      uploadData: mockUploadData,
+      errors: null
+    })
+    postRetention.mockResolvedValue()
+
+    await handleBulkClosure(request, h)
+
+    expect(postRetention).toHaveBeenCalledWith(
+      '/closure/bulk',
+      {
+        data: mockUploadData,
+        addedBy: undefined
+      },
+      null
+    )
+
+    expect(h.redirect).toHaveBeenCalledWith('/closure/manage?closureAdded=bulk')
+  })
+
+  test('uses output payload message when postRetention error has output payload message', async () => {
+    const mockUploadData = [
+      {
+        key: 'value'
+      }
+    ]
+
+    const error = new Error('Response Error: 400 Bad Request')
+    error.output = {
+      payload: {
+        message: 'Output payload failure message.'
+      }
+    }
+
+    fs.readFileSync.mockReturnValue('file content')
+    processClosureData.mockResolvedValue({
+      uploadData: mockUploadData,
+      errors: null
+    })
+    postRetention.mockRejectedValue(error)
+
+    await handleBulkClosure(request, h)
+
+    expect(handleBulkClosureError).toHaveBeenCalledWith(
+      h,
+      'Output payload failure message.',
+      'test-crumb'
+    )
+
+    expect(h.redirect).not.toHaveBeenCalled()
+  })
+
+  test('uses data message when postRetention error has data message and no payload', async () => {
+    const mockUploadData = [
+      {
+        key: 'value'
+      }
+    ]
+
+    const error = new Error('Response Error: 400 Bad Request')
+    error.data = {
+      message: 'Data message failure.'
+    }
+
+    fs.readFileSync.mockReturnValue('file content')
+    processClosureData.mockResolvedValue({
+      uploadData: mockUploadData,
+      errors: null
+    })
+    postRetention.mockRejectedValue(error)
+
+    await handleBulkClosure(request, h)
+
+    expect(handleBulkClosureError).toHaveBeenCalledWith(
+      h,
+      'Data message failure.',
+      'test-crumb'
+    )
+
+    expect(h.redirect).not.toHaveBeenCalled()
   })
 })
