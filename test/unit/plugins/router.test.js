@@ -5,7 +5,8 @@ describe('Router plugin feature flag', () => {
   beforeEach(() => {
     jest.resetModules()
     server = {
-      route: jest.fn()
+      route: jest.fn(),
+      state: jest.fn()
     }
   })
 

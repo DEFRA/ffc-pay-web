@@ -1,6 +1,6 @@
 const { handleManualPaymentUploadPost } = require('../../../app/manual-payments/handle-manual-payment-post')
 const { SUCCESS, CONFLICT, INTERNAL_SERVER_ERROR, UNPROCESSABLE_CONTENT } = require('../../../app/constants/http-status-codes')
-const MANUAL_PAYMENT_VIEWS = require('../../../app/constants/manual-payment-views')
+const MANUAL_PAYMENT_ROUTES = require('../../../app/constants/manual-payment-routes')
 const MANUAL_UPLOAD_RESPONSE_MESSAGES = require('../../../app/constants/manual-payment-response-messages')
 
 jest.mock('../../../app/helpers/read-file-content')
@@ -18,7 +18,7 @@ const { manualPaymentUploadFailAction } = require('../../../app/manual-payments/
 const { isTextWhitespace } = require('../../../app/helpers/is-text-whitespace')
 
 describe('handleManualPaymentUploadPost', () => {
-  let request, h
+  let request, h, redirectResponse
 
   const setupSuccessfulUpload = () => {
     readFileContent.mockReturnValue('data')
@@ -34,13 +34,31 @@ describe('handleManualPaymentUploadPost', () => {
   }
 
   beforeEach(() => {
-    request = {
-      payload: { file: { path: '/fake/path', filename: 'file.txt' } },
-      auth: { credentials: { account: { name: 'Test User', email: 'test@example.com' } } }
-    }
-    h = { view: jest.fn() }
-
     jest.resetAllMocks()
+    request = {
+      payload: {
+        file: {
+          path: '/fake/path',
+          filename: 'file.txt'
+        }
+      },
+      auth: {
+        credentials: {
+          account: {
+            name: 'Test User',
+            email: 'test@example.com'
+          }
+        }
+      }
+    }
+
+    redirectResponse = {
+      state: jest.fn().mockReturnThis()
+    }
+
+    h = {
+      redirect: jest.fn().mockReturnValue(redirectResponse)
+    }
   })
 
   test('fails if file content is empty or whitespace', async () => {
@@ -77,15 +95,24 @@ describe('handleManualPaymentUploadPost', () => {
       expect.any(String),
       { status: 'processing' }
     )
+
     expect(setLoadingStatus).toHaveBeenNthCalledWith(
       2,
       expect.anything(),
       expect.any(String),
-      { status: 'completed', message: MANUAL_UPLOAD_RESPONSE_MESSAGES[SUCCESS] }
+      {
+        status: 'completed',
+        message: MANUAL_UPLOAD_RESPONSE_MESSAGES[SUCCESS]
+      }
     )
-    expect(h.view).toHaveBeenCalledWith(
-      MANUAL_PAYMENT_VIEWS.LOADING,
-      expect.objectContaining({ jobId: expect.any(String) })
+
+    expect(h.redirect).toHaveBeenCalledWith(
+      MANUAL_PAYMENT_ROUTES.MANUAL_PAYMENTS
+    )
+
+    expect(redirectResponse.state).toHaveBeenCalledWith(
+      'manualPaymentUpload',
+      { success: true }
     )
   })
 
@@ -135,7 +162,7 @@ describe('handleManualPaymentUploadPost', () => {
   test('logs success message on completed upload', async () => {
     setupSuccessfulUpload()
     postInjection.mockResolvedValue({ statusCode: SUCCESS, payload: {} })
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => { })
 
     await handleManualPaymentUploadPost(request, h)
 
@@ -149,7 +176,7 @@ describe('handleManualPaymentUploadPost', () => {
 
   test('logs failure message on failed upload', async () => {
     setupFailedUpload(INTERNAL_SERVER_ERROR)
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => { })
 
     await handleManualPaymentUploadPost(request, h)
 

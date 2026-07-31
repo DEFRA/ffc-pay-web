@@ -44,7 +44,7 @@ describe('manualPaymentUploadFailAction', () => {
       details: [
         {
           path: 'payload',
-          message: `File too large - The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`
+          message: `The selected file must be smaller than ${MAX_MEGA_BYTES} MB.`
         }
       ]
     }

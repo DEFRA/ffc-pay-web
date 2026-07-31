@@ -38,7 +38,7 @@ afterEach(async () => {
 describe('Manual Payments Routes', () => {
   describe('GET /manual-payments', () => {
     const url = '/manual-payments'
-    const pageH1 = 'Manual payment upload'
+    const pageH1 = 'Upload manual payments'
 
     test('returns 200 and page loads correctly', async () => {
       getHistoricalInjectionData.mockResolvedValue({ payload: [] })
@@ -91,7 +91,7 @@ describe('Manual Payments Routes', () => {
         auth
       })
       expect(res.statusCode).toBe(400)
-      expect(res.payload).toContain('File too large')
+      expect(res.payload).toContain('The selected file must be smaller than 1 MB.')
     })
   })
 })
