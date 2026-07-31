@@ -1,4 +1,5 @@
 const Joi = require('joi')
+
 const minFRN = 1000000000
 const maxFRN = 9999999999
 const maxAgreement = 50
@@ -7,6 +8,14 @@ const maxDay = 31
 const maxMonth = 12
 const minYear = 2000
 const maxYear = 2099
+
+const isValidDate = (day, month, year) => {
+  const date = new Date(year, month - 1, day)
+
+  return date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+}
 
 module.exports = Joi.object({
   frn: Joi.number()
@@ -71,4 +80,14 @@ module.exports = Joi.object({
       })
       return errors
     })
+}).custom((value, helpers) => {
+  const { day, month, year } = value
+
+  if (!isValidDate(day, month, year)) {
+    return helpers.error('any.invalid')
+  }
+
+  return value
+}).messages({
+  'any.invalid': 'Enter a valid date'
 })
