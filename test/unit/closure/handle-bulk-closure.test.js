@@ -1,6 +1,7 @@
 const fs = require('node:fs')
 const {
-  handleBulkClosure
+  handleBulkClosure,
+  getRetentionErrorMessage
 } = require('../../../app/closure/handle-bulk-closure')
 const { handleBulkClosureError } = require('../../../app/closure/handle-bulk-closure-error')
 const { postRetention } = require('../../../app/api')
@@ -402,5 +403,59 @@ describe('handleBulkClosure', () => {
     )
 
     expect(h.redirect).not.toHaveBeenCalled()
+  })
+
+  describe('getRetentionErrorMessage', () => {
+    test('returns parsed payload error when message is not present', () => {
+      const err = {
+        data: {
+          payload: JSON.stringify({
+            statusCode: 400,
+            error: 'Bad Request'
+          })
+        }
+      }
+
+      expect(getRetentionErrorMessage(err)).toBe('Bad Request')
+    })
+
+    test('returns message when payload is already an object', () => {
+      const err = {
+        data: {
+          payload: {
+            statusCode: 400,
+            error: 'Bad Request',
+            message: 'Object payload message'
+          }
+        }
+      }
+
+      expect(getRetentionErrorMessage(err)).toBe('Object payload message')
+    })
+
+    test('returns error when payload is already an object and message is not present', () => {
+      const err = {
+        data: {
+          payload: {
+            statusCode: 400,
+            error: 'Object payload error'
+          }
+        }
+      }
+
+      expect(getRetentionErrorMessage(err)).toBe('Object payload error')
+    })
+
+    test('returns default message when payload is an unsupported type', () => {
+      const err = {
+        data: {
+          payload: 12345
+        }
+      }
+
+      expect(getRetentionErrorMessage(err)).toBe(
+        'An error occurred whilst processing the bulk upload.'
+      )
+    })
   })
 })
