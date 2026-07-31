@@ -13,6 +13,7 @@ const { AGREEMENT_CLOSURES_LINKS } = require('../constants/section-links')
 const { getClosures } = require('../closure')
 const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('../storage')
 const { getSchemesForClosures } = require('../helpers')
+const { addDateErrorIfRequired } = require('../helpers/date-error-helpers')
 
 const AUTH_SCOPE = { scope: [applicationAdmin] }
 const defaultPage = 1
@@ -97,10 +98,11 @@ module.exports = [
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
+          const errors = addDateErrorIfRequired(error, request.payload)
           const schemes = await getSchemesForClosures()
           return h
             .view(CLOSURES_VIEWS.ADD, {
-              errors: error,
+              errors,
               schemes,
               frn: request.payload.frn,
               agreement: request.payload.agreement,
@@ -175,9 +177,10 @@ module.exports = [
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
+          const errors = addDateErrorIfRequired(error, request.payload)
           return h
             .view(CLOSURES_VIEWS.ADD, {
-              errors: error,
+              errors,
               frn: request.payload.frn,
               agreement: request.payload.agreement,
               schemeId: request.payload.schemeId,

@@ -1,21 +1,9 @@
 const Joi = require('joi')
+const { isValidDatePart, isValidDate, minDayMonth, maxDay, maxMonth, minYear, maxYear } = require('../../../helpers/date-error-helpers')
 
 const minFRN = 1000000000
 const maxFRN = 9999999999
 const maxAgreement = 50
-const minDayMonth = 1
-const maxDay = 31
-const maxMonth = 12
-const minYear = 2000
-const maxYear = 2099
-
-const isValidDate = (day, month, year) => {
-  const date = new Date(year, month - 1, day)
-
-  return date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
-}
 
 module.exports = Joi.object({
   frn: Joi.number()
@@ -83,11 +71,19 @@ module.exports = Joi.object({
 }).custom((value, helpers) => {
   const { day, month, year } = value
 
+  const dayIsValid = isValidDatePart(day, minDayMonth, maxDay)
+  const monthIsValid = isValidDatePart(month, minDayMonth, maxMonth)
+  const yearIsValid = isValidDatePart(year, minYear, maxYear)
+
+  if (!dayIsValid || !monthIsValid || !yearIsValid) {
+    return value
+  }
+
   if (!isValidDate(day, month, year)) {
-    return helpers.error('any.invalid')
+    return helpers.error('date.invalid')
   }
 
   return value
 }).messages({
-  'any.invalid': 'Enter a valid date'
+  'date.invalid': 'Enter a valid date'
 })
