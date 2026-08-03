@@ -1,23 +1,14 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/breadcrumbs.njk' import breadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% set pageTitle = "View payment events by scheme" %}
 
-{%
-  set breadcrumbs = [{
-    text: "Home",
-        href: "/"
-      },{
-        text: pageTitle
-  }]
-%}
-
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({ items: breadcrumbs }) }}
+  {{ breadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}

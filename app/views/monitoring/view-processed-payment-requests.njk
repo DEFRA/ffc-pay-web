@@ -1,25 +1,15 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{%
+  from 'macros/events-schemes-breadcrumbs.njk' import eventsSchemesBreadcrumbs
+%}
 
 {% set pageTitle = "View processed payment requests" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{
-    govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      },{
-        text: "View payment events by scheme",
-        href: "/monitoring/schemes"
-      }, {
-        text: pageTitle
-      }]
-    })
-  }}
+  {{ eventsSchemesBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}

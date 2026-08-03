@@ -1,0 +1,14 @@
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% macro breadcrumbs(pageTitle) %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endmacro %}

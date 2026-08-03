@@ -1,25 +1,13 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/events-breadcrumbs.njk' import eventsBreadcrumbs %}
 
 {% set pageTitle = "FRN payment history" %}
-
-{%
-  set breadcrumbs = [{
-    text: "Home",
-    href: "/"
-  },{
-    text: "View payment events",
-    href: "/monitoring"
-  },{
-    text: pageTitle
-  }]
-%}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ govukBreadcrumbs({ items: breadcrumbs }) }}
+  {{ eventsBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}
