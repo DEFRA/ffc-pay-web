@@ -1,6 +1,7 @@
 const Joi = require('joi')
 const schema = require('./schemas/holds/hold')
 const searchSchema = require('./schemas/holds/hold-search')
+const resultsQuerySchema = require('./schemas/holds/hold-results-query')
 const bulkSchema = require('./schemas/holds/bulk-hold')
 const HTTP_STATUS = require('../constants/http-status-codes')
 const HOLDS_VIEWS = require('../constants/holds-views')
@@ -12,7 +13,7 @@ const { applicationAdmin, holdAdmin } = require('../auth/permissions')
 const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost, mapHoldCategoriesToRadios } = require('../hold')
 const { PAYMENT_HOLDS_LINKS } = require('../constants/section-links')
-const { getSchemes, groupHoldCategoriesByScheme } = require('../helpers')
+const { getSchemes, groupHoldCategoriesByScheme, filterAndPaginateHolds } = require('../helpers')
 const mandatoryHoldTypes = require('../constants/mandatory-hold-types')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin] }
@@ -166,16 +167,39 @@ module.exports = [
       handler: async (request, h) => {
         const frn = request.payload?.frn
         const schemeName = request.payload?.name
-        let paymentHolds = await getHolds(undefined, undefined, false)
-        if (frn) {
-          paymentHolds = paymentHolds.filter(x => x.frn === String(frn))
-        }
-        if (schemeName) {
-          paymentHolds = paymentHolds.filter(x => x.holdCategorySchemeName === schemeName)
-        }
+        const allHolds = await getHolds(undefined, undefined, false)
+        const results = filterAndPaginateHolds(allHolds, { frn, schemeName })
         return h.view(HOLDS_VIEWS.HOLDS, {
-          paymentHolds,
-          numberOfHolds: paymentHolds.length,
+          ...results,
+          frn,
+          schemeName
+        })
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: HOLDS_ROUTES.HOLDS,
+    options: {
+      auth: AUTH_SCOPE,
+      validate: {
+        query: resultsQuerySchema,
+        failAction: async (_request, h, errors) => {
+          const schemes = await getSchemes()
+          return h
+            .view(HOLDS_VIEWS.SEARCH, { schemes, errors })
+            .code(HTTP_STATUS.BAD_REQUEST)
+            .takeover()
+        }
+      },
+      handler: async (request, h) => {
+        const frn = request.query?.frn
+        const schemeName = request.query?.name
+        const { page, perPage } = request.query
+        const allHolds = await getHolds(undefined, undefined, false)
+        const results = filterAndPaginateHolds(allHolds, { frn, schemeName, page, perPage })
+        return h.view(HOLDS_VIEWS.HOLDS, {
+          ...results,
           frn,
           schemeName
         })
@@ -203,17 +227,10 @@ module.exports = [
         const frn = request.payload?.frn
         const schemeName = request.payload?.name
         const holdCategoryName = request.payload?.holdCategoryName
-        const paymentHolds = await getHolds(undefined, undefined, false)
-        let filteredPaymentHolds = []
-        if (frn) {
-          filteredPaymentHolds = paymentHolds.filter(x => x.frn === String(frn))
-        }
-        if (schemeName) {
-          filteredPaymentHolds = paymentHolds.filter(x => x.holdCategorySchemeName === schemeName)
-        }
+        const allHolds = await getHolds(undefined, undefined, false)
+        const results = filterAndPaginateHolds(allHolds, { frn, schemeName })
         return h.view(HOLDS_VIEWS.HOLDS, {
-          paymentHolds: filteredPaymentHolds,
-          numberOfHolds: filteredPaymentHolds.length,
+          ...results,
           frn,
           schemeName,
           holdRemoved: true,

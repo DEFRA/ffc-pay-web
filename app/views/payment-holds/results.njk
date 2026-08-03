@@ -100,7 +100,7 @@
                     <strong>{{ opt }}</strong>
                   {% else %}
                     <a
-                      href="/payment-holds?perPage={{ opt }}&page=1"
+                      href="/payment-holds/results?perPage={{ opt }}&page=1{% if frn %}&frn={{ frn }}{% endif %}{% if schemeName %}&name={{ schemeName | urlencode }}{% endif %}"
                       class="govuk-link">{{ opt }}</a>
                   {% endif %}
                   {% if not loop.last %}
@@ -226,7 +226,7 @@
             <div class="govuk-pagination__prev">
               <a
                 class="govuk-link govuk-pagination__link"
-                href="?page={{ page - 1 }}&perPage={{ perPage }}"
+                href="/payment-holds/results?page={{ page - 1 }}&perPage={{ perPage }}{% if frn %}&frn={{ frn }}{% endif %}{% if schemeName %}&name={{ schemeName | urlencode }}{% endif %}"
                 rel="prev">
                 <svg
                   class="govuk-pagination__icon govuk-pagination__icon--prev"
@@ -260,7 +260,7 @@
             <div class="govuk-pagination__next">
               <a
                 class="govuk-link govuk-pagination__link"
-                href="?page={{ (page | default(1)) + 1 }}&perPage={{ perPage }}"
+                href="/payment-holds/results?page={{ (page | default(1)) + 1 }}&perPage={{ perPage }}{% if frn %}&frn={{ frn }}{% endif %}{% if schemeName %}&name={{ schemeName | urlencode }}{% endif %}"
                 rel="next">
                 <span class="govuk-pagination__link-title">
                   Next<span class="govuk-visually-hidden"> page</span>
