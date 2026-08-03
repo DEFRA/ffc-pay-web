@@ -1,6 +1,6 @@
 const { postProcessing } = require('../api')
 const schema = require('./schemas/invoice-number')
-const { BAD_REQUEST, PRECONDITION_FAILED } = require('../constants/http-status-codes')
+const { BAD_REQUEST, PRECONDITION_FAILED, NOT_FOUND } = require('../constants/http-status-codes')
 const { applicationAdmin, schemeAdmin } = require('../auth/permissions')
 const ROUTES = {
   RESET: '/payment-request/reset',
@@ -49,9 +49,17 @@ module.exports = [
             `/payment-request/reset-success?invoiceNumber=${invoiceNumber}`
           )
         } catch (err) {
+          const isNotFound =
+            err.output?.statusCode === NOT_FOUND ||
+            err.message?.includes('not found')
+
           return h
             .view(VIEWS.RESET, {
-              error: err.data?.payload?.message ?? err.message,
+              error: {
+                message: isNotFound
+                  ? 'Invoice number not found'
+                  : (err.data?.payload?.message ?? err.message)
+              },
               invoiceNumber
             })
             .code(PRECONDITION_FAILED)

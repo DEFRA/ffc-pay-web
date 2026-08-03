@@ -50,10 +50,10 @@
             <div class="govuk-error-summary__body">
               <ul class="govuk-list govuk-error-summary__list">
                 <li>
-                  <span class="govuk-error-message"><span
-                      class="govuk-visually-hidden">Error:</span> {{
-                      error
-                    }}</span>
+                  <span class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span>
+                    {{ error.message }}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -61,15 +61,20 @@
         {% endif %}
 
         <div class="govuk-form-group">
+          <p class="govuk-body govuk-!-margin-bottom-6">
+            Reset the payment request for an individual invoice.
+          </p>
+
           <label
             class="govuk-label govuk-label-s"
             for="invoiceNumber">
-            Invoice number
+            Invoice number (D365 formatted)
           </label>
+
           <div class="govuk-hint">
-            Enter the DAX formatted invoice number, for example
-            S1234567S1234567V001
+            For example S123456789012345V001
           </div>
+
           <input
             class="govuk-input govuk-input--width-20"
             id="invoiceNumber"

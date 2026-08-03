@@ -37,6 +37,10 @@ const getClosures = async ({
         closure.schemeName = 'SFI22'
       }
 
+      if (closure.schemeName === 'Vet Visits') {
+        closure.schemeName = 'Annual Health and Welfare Review'
+      }
+
       return closure
     }) ?? []
 

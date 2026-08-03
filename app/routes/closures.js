@@ -11,8 +11,9 @@ const CLOSURES_VIEWS = require('../constants/closures-views')
 const CLOSURES_ROUTES = require('../constants/closures-routes')
 const { AGREEMENT_CLOSURES_LINKS } = require('../constants/section-links')
 const { getClosures } = require('../closure')
-const { getSchemes } = require('../helpers')
 const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('../storage')
+const { getSchemesForClosures } = require('../helpers')
+const { addDateErrorIfRequired } = require('../helpers/date-error-helpers')
 
 const AUTH_SCOPE = { scope: [applicationAdmin] }
 const defaultPage = 1
@@ -50,7 +51,7 @@ module.exports = [
             frnAgreement,
             schemeId
           }),
-          getSchemes()
+          getSchemesForClosures()
         ])
 
         const totalPages = Math.ceil(count / pageSize)
@@ -76,7 +77,7 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
-        const schemes = await getSchemes()
+        const schemes = await getSchemesForClosures()
         return h.view(CLOSURES_VIEWS.ADD, {
           schemes,
           frn: request.query?.frn,
@@ -97,10 +98,11 @@ module.exports = [
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
-          const schemes = await getSchemes()
+          const errors = addDateErrorIfRequired(error, request.payload)
+          const schemes = await getSchemesForClosures()
           return h
             .view(CLOSURES_VIEWS.ADD, {
-              errors: error,
+              errors,
               schemes,
               frn: request.payload.frn,
               agreement: request.payload.agreement,
@@ -114,16 +116,55 @@ module.exports = [
         }
       },
       handler: async (request, h) => {
-        const schemes = await getSchemes()
-        const selectedScheme = schemes.find(scheme => String(scheme.schemeId) === String(request.payload.schemeId))
+        const {
+          frn,
+          agreement,
+          schemeId,
+          day,
+          month,
+          year
+        } = request.payload
+
+        const schemes = await getSchemesForClosures()
+
+        const query = new URLSearchParams({
+          frn,
+          agreementNumber: agreement,
+          schemeId
+        })
+
+        const response = await getRetentionData(`${CLOSURES_ROUTES.EXISTS}?${query}`)
+        const closureExists = response.payload.exists
+
+        if (closureExists) {
+          return h
+            .view(CLOSURES_VIEWS.ADD, {
+              errors: {
+                details: [{
+                  message: 'A closure already exists for the selected FRN, agreement number and scheme. In order to update this, please remove the existing record.'
+                }]
+              },
+              schemes,
+              frn,
+              agreement,
+              schemeId,
+              day,
+              month,
+              year
+            })
+            .code(BAD_REQUEST)
+            .takeover()
+        }
+
+        const selectedScheme = schemes.find(scheme => String(scheme.schemeId) === String(schemeId))
         return h.view(CLOSURES_VIEWS.ADD_CONFIRM, {
-          frn: request.payload?.frn,
-          agreement: request.payload.agreement,
-          schemeId: request.payload.schemeId,
+          frn,
+          agreement,
+          schemeId,
           schemeName: selectedScheme?.name,
-          day: request.payload.day,
-          month: request.payload.month,
-          year: request.payload.year
+          day,
+          month,
+          year
         })
       }
     }
@@ -136,9 +177,10 @@ module.exports = [
       validate: {
         payload: schema,
         failAction: async (request, h, error) => {
+          const errors = addDateErrorIfRequired(error, request.payload)
           return h
             .view(CLOSURES_VIEWS.ADD, {
-              errors: error,
+              errors,
               frn: request.payload.frn,
               agreement: request.payload.agreement,
               schemeId: request.payload.schemeId,
