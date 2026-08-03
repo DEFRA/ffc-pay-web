@@ -1,6 +1,7 @@
 jest.mock('../../../app/helpers', () => ({
   getSchemes: jest.fn(),
-  groupHoldCategoriesByScheme: jest.fn()
+  groupHoldCategoriesByScheme: jest.fn(),
+  filterAndPaginateHolds: jest.requireActual('../../../app/helpers/filter-and-paginate-holds').filterAndPaginateHolds
 }))
 
 jest.mock('../../../app/holds', () => ({
@@ -238,6 +239,48 @@ describe('holds route methods', () => {
     const h = makeH()
     const fakeError = new Error('v')
     const req = { payload: { frn: '1', schemeId: '2' } }
+    const out = await route.options.validate.failAction(req, h, fakeError)
+    expect(getSchemes).toHaveBeenCalled()
+    expect(h.view).toHaveBeenCalled()
+    expect(out).toHaveProperty('takeover')
+  })
+
+  test('GET holds results handler paginates using page and perPage query params', async () => {
+    const holds = Array.from({ length: 150 }, (_, i) => ({ frn: String(i), holdCategorySchemeName: 'A' }))
+    getHolds.mockResolvedValue(holds)
+    const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'GET')
+    const h = makeH()
+    const req = { query: { page: 2, perPage: 100 } }
+    const res = await route.options.handler(req, h)
+    expect(res.view).toEqual(HOLDS_VIEWS.HOLDS)
+    expect(res.ctx.numberOfHolds).toBe(150)
+    expect(res.ctx.paymentHolds.length).toBe(50)
+    expect(res.ctx.page).toBe(2)
+    expect(res.ctx.perPage).toBe(100)
+  })
+
+  test('GET holds results handler filters by frn and schemeName from query', async () => {
+    const holds = [
+      { frn: '10', holdCategorySchemeName: 'A' },
+      { frn: '20', holdCategorySchemeName: 'B' },
+      { frn: '10', holdCategorySchemeName: 'B' }
+    ]
+    getHolds.mockResolvedValue(holds)
+    const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'GET')
+    const h = makeH()
+    const req = { query: { frn: '10', name: 'B', page: 1, perPage: 100 } }
+    const res = await route.options.handler(req, h)
+    expect(res.ctx.paymentHolds).toEqual([{ frn: '10', holdCategorySchemeName: 'B' }])
+    expect(res.ctx.frn).toEqual('10')
+    expect(res.ctx.schemeName).toEqual('B')
+  })
+
+  test('GET holds results validation failAction returns search view with errors and takes over', async () => {
+    getSchemes.mockResolvedValue([{ schemeId: 1, name: 'S' }])
+    const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'GET')
+    const h = makeH()
+    const fakeError = new Error('v')
+    const req = { query: { perPage: '999' } }
     const out = await route.options.validate.failAction(req, h, fakeError)
     expect(getSchemes).toHaveBeenCalled()
     expect(h.view).toHaveBeenCalled()
