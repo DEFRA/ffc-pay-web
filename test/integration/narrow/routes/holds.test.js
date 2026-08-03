@@ -128,6 +128,22 @@ describe('Holds routes (integration narrow)', () => {
     }))
   })
 
+  test('GET results page paginates via query params instead of returning 404', async () => {
+    const paymentHolds = Array.from({ length: 150 }, (_, i) => ({ frn: '1234567890', holdCategorySchemeName: 'Annual Health and Welfare Review' }))
+    getHolds.mockResolvedValue(paymentHolds)
+
+    const options = { method: 'GET', url: `${HOLDS_ROUTES.HOLDS}?perPage=100&page=2&frn=1234567890&name=${encodeURIComponent('Annual Health and Welfare Review')}`, auth }
+    const response = await server.inject(options)
+
+    expect(response.statusCode).toBe(200)
+    expect(getHolds).toHaveBeenCalled()
+    // page 2 of 150 filtered results at 100 per page leaves 50 rows and no next link
+    expect(response.payload).toContain('<strong>100</strong>')
+    expect(response.payload).toContain('rel="prev"')
+    expect(response.payload).not.toContain('rel="next"')
+    expect(response.payload).toContain('frn=1234567890&name=Annual%20Health%20and%20Welfare%20Review')
+  })
+
   test('GET bulk without valid type redirects to bulk landing', async () => {
     const options = { method: 'GET', url: `${HOLDS_ROUTES.BULK}?type=invalid`, auth }
     const response = await server.inject(options)
