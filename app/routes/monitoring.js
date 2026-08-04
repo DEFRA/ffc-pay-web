@@ -16,8 +16,12 @@ module.exports = [
     },
     handler: async (request, h) => {
       const error = request.query.error
+      const errorField = request.query.errorField
       if (error) {
-        return h.view('monitoring/monitoring', { error: 'Exactly one of FRN and batch name should be provided' })
+        return h.view('monitoring/monitoring', {
+          error: 'Enter a FRN or batch name',
+          errorField
+        })
       }
       return h.view('monitoring/monitoring')
     }
@@ -31,7 +35,7 @@ module.exports = [
     handler: async (request, h) => {
       const frn = request.query.frn
       if (!frn) {
-        return h.redirect('/monitoring?error=true')
+        return h.redirect('/monitoring?error=true&errorField=frn')
       }
       const payments = await getPaymentsByFrn(frn)
       return h.view('monitoring/frn', { frn, payments })
@@ -58,7 +62,7 @@ module.exports = [
     handler: async (request, h) => {
       const batch = request.query.batch
       if (!batch) {
-        return h.redirect('/monitoring?error=true')
+        return h.redirect('/monitoring?error=true&errorField=batch')
       }
       const payments = await getPaymentsByBatch(batch)
       return h.view('monitoring/batch', { batch, payments })

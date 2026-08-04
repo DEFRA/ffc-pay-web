@@ -38,8 +38,8 @@ const AGREEMENT_CLOSURES_LINKS = [
 ]
 
 const MONITORING_LINKS = [
-  { href: '/monitoring', text: 'Monitoring', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
-  { href: '/monitoring/schemes', text: 'Schemes', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] }
+  { href: '/monitoring', text: 'View payment events', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] },
+  { href: '/monitoring/schemes', text: 'View payment events by scheme', homeAuth: [permissions.applicationAdmin, permissions.holdAdmin, permissions.schemeAdmin, permissions.dataView] }
 ]
 
 const MANUAL_PAYMENTS_LINKS = [

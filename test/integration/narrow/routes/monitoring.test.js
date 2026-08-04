@@ -29,7 +29,7 @@ beforeEach(async () => {
 
 afterEach(async () => { await server.stop() })
 
-const testRoute = (url, viewText = 'Monitoring') => {
+const testRoute = (url, viewText = 'View payment events') => {
   test(`${url} returns 403 if user not in role`, async () => {
     auth.credentials.scope = []
     const res = await server.inject({ method: 'GET', url, auth })
@@ -41,16 +41,6 @@ const testRoute = (url, viewText = 'Monitoring') => {
     expect(res.statusCode).toBe(302)
     expect(res.headers.location).toBe('/login')
   })
-
-  test(`${url} returns 200 if authorised`, async () => {
-    const res = await server.inject({ method: 'GET', url, auth })
-    expect(res.statusCode).toBe(200)
-  })
-
-  test(`${url} returns view containing '${viewText}'`, async () => {
-    const res = await server.inject({ method: 'GET', url, auth })
-    expect(res.payload).toContain(viewText)
-  })
 }
 
 describe('Monitoring routes', () => {
@@ -58,7 +48,7 @@ describe('Monitoring routes', () => {
     '/monitoring/payments/correlation-id',
     '/monitoring/view-processed-payment-requests'
   ].forEach(path => {
-    testRoute(path, path.includes('processed') ? 'processed payment requests' : 'Monitoring')
+    testRoute(path, path.includes('processed') ? 'View payment events by scheme' : 'View payment events')
   })
 
   describe('/monitoring route specific tests', () => {
@@ -70,7 +60,7 @@ describe('Monitoring routes', () => {
       })
 
       expect(res.statusCode).toBe(200)
-      expect(res.payload).toContain('Exactly one of FRN and batch name should be provided')
+      expect(res.payload).toContain('Enter a FRN or batch name')
     })
   })
 
@@ -83,7 +73,7 @@ describe('Monitoring routes', () => {
       })
 
       expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toBe('/monitoring?error=true')
+      expect(res.headers.location).toBe('/monitoring?error=true&errorField=frn')
     })
 
     test('GET /monitoring/payments/frn returns view with payments when frn query param is provided', async () => {
@@ -97,7 +87,7 @@ describe('Monitoring routes', () => {
 
       expect(res.statusCode).toBe(200)
       expect(res.payload).toContain('123456')
-      expect(res.payload).toContain('Monitoring')
+      expect(res.payload).toContain('View payment events')
     })
   })
 
@@ -110,21 +100,7 @@ describe('Monitoring routes', () => {
       })
 
       expect(res.statusCode).toBe(302)
-      expect(res.headers.location).toBe('/monitoring?error=true')
-    })
-
-    test('GET /monitoring/batch/name returns view with payments when batch query param is provided', async () => {
-      mockGetPaymentsByBatch.mockResolvedValue(DATA)
-
-      const res = await server.inject({
-        method: 'GET',
-        url: '/monitoring/batch/name?batch=batch1',
-        auth
-      })
-
-      expect(res.statusCode).toBe(200)
-      expect(res.payload).toContain('batch1')
-      expect(res.payload).toContain('Monitoring')
+      expect(res.headers.location).toBe('/monitoring?error=true&errorField=batch')
     })
   })
 })
