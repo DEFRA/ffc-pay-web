@@ -4,6 +4,8 @@ const { getProcessingData } = require('../api')
 
 const HTTP_STATUS = require('../constants/http-status-codes')
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
+const schemesPath = '/payment-schemes'
+const monitorSchemesPath = 'monitoring/schemes'
 
 module.exports = [
   {
@@ -13,8 +15,8 @@ module.exports = [
       auth: AUTH_SCOPE
     },
     handler: async (_request, h) => {
-      const schemes = await getProcessingData('/payment-schemes')
-      return h.view('monitoring/schemes', {
+      const schemes = await getProcessingData(schemesPath)
+      return h.view(monitorSchemesPath, {
         data: schemes?.payload?.paymentSchemes
       })
     }
@@ -27,16 +29,29 @@ module.exports = [
     },
     handler: async (request, h) => {
       const { schemeId } = request.query
+
+      if (!schemeId) {
+        const schemes = await getProcessingData(schemesPath)
+        return h
+          .view(monitorSchemesPath, {
+            error: 'Select a scheme',
+            data: schemes?.payload?.paymentSchemes
+          })
+          .code(HTTP_STATUS.PRECONDITION_FAILED)
+      }
+
       try {
         const processedPaymentRequests = await getPaymentsByScheme(schemeId)
         return h.view('monitoring/view-processed-payment-requests', {
           data: processedPaymentRequests
         })
       } catch (err) {
+        const schemes = await getProcessingData(schemesPath)
         return h
-          .view('monitoring/schemes', {
+          .view(monitorSchemesPath, {
             error: err.data?.payload?.message ?? err.message,
-            schemeId
+            schemeId,
+            data: schemes?.payload?.paymentSchemes
           })
           .code(HTTP_STATUS.PRECONDITION_FAILED)
       }

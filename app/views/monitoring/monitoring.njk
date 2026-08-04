@@ -1,43 +1,42 @@
 {% extends "_layout.njk" %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/breadcrumbs.njk' import breadcrumbs %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
-{% set pageTitle = "Monitoring" %}
+{% set pageTitle = "View payment events" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{
-    govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      },{
-        text: pageTitle
-      }]
-    })
-  }}
+  {{ breadcrumbs( pageTitle ) }}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-
       {% if error %}
         {{
           govukErrorSummary({
             titleText: "There is a problem",
-            errorList: [{ text: error, href: "#search-frn" }]
+            errorList: [{
+              text: error,
+              href: "#search-" + (errorField or "frn")
+            }]
           })
         }}
       {% endif %}
 
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body-m">
+        Search and view payment events and activity by Firm Reference Number
+        (FRN) or batch payment file name.
+      </p>
+
       <form
-        class="govuk-!-margin-bottom-6"
+        class="govuk-!-margin-bottom-6 app-search-form"
         aria-label="Payment FRN search form."
         action="/monitoring/payments/frn"
         method="get"
@@ -45,15 +44,13 @@
         {{
           govukInput({
             label: {
-              text: "Search for payments by Firm Reference Number (FRN)"
-            },
-            hint: {
-              text: "For example, 1234567890"
+              text: "Firm Reference Number (FRN)"
             },
             id: "search-frn",
             name: "frn",
             type: "search",
-            classes: "govuk-input--width-20"
+            classes: "govuk-input--width-20",
+            errorMessage: { text: error } if errorField == "frn" else undefined
           })
         }}
 
@@ -66,6 +63,7 @@
       </form>
 
       <form
+        class="govuk-!-margin-bottom-6 app-search-form"
         action="/monitoring/batch/name"
         aria-label="Payment batch search form."
         method="get"
@@ -73,15 +71,13 @@
         {{
           govukInput({
             label: {
-              text: "Search for payments by payment batch name"
-            },
-            hint: {
-              text: "For example, SITISFI0001_AP_20230525095030.dat"
+              text: "Batch payment file name"
             },
             id: "search-batch",
             name: "batch",
             type: "search",
-            classes: "govuk-input--width-20"
+            classes: "govuk-input--width-20",
+            errorMessage: { text: error } if errorField == "batch" else undefined
           })
         }}
 

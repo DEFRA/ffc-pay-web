@@ -1,0 +1,17 @@
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% macro eventsBreadcrumbs(pageTitle) %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "View payment events",
+        href: "/monitoring"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endmacro %}

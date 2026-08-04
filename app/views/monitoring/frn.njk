@@ -1,34 +1,28 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/events-breadcrumbs.njk' import eventsBreadcrumbs %}
 
-{% set pageTitle = "Monitoring by FRN" %}
+{% set pageTitle = "FRN payment history" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{
-    govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      },{
-        text: "Monitoring",
-        href: "/monitoring"
-      },{
-        text: pageTitle
-      }]
-    })
-  }}
+  {{ eventsBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <span class="govuk-caption-l">{{ frn }}</span>
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
       {% if payments.length %}
+        <p class="govuk-body-m">
+          View the payment history for the entered FRN or
+          <a href="/monitoring">start a new search</a>.
+        </p>
+
+        <h1 class="govuk-heading-m">{{ frn }} event history</h1>
+
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
@@ -65,7 +59,7 @@
               <th
                 scope="col"
                 class="govuk-table__header govuk-body-s">
-                Actions
+                Activity
               </th>
             </tr>
           </thead>
@@ -108,7 +102,13 @@
         <p
           id="no-hold-text"
           class="govuk-body">
-          No payments found for FRN {{ frn }}.
+          No payment events were found for FRN {{ frn }}.
+        </p>
+
+        <p class="govuk-body">
+          <a
+            class="govuk-link"
+            href="/monitoring">Try searching for a payment event again.</a>
         </p>
       {% endif %}
     </div>

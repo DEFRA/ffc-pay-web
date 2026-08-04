@@ -3,7 +3,7 @@ const { HOME, FINANCE_REPORTS_LINKS, MONITORING_LINKS, PAYMENT_HOLDS_LINKS, MANU
 module.exports = [
   { title: '', links: [HOME] },
   { title: 'Reports', description: 'Generate and download reports', links: FINANCE_REPORTS_LINKS },
-  { title: 'Payment events', description: 'View payment and events and requests', links: MONITORING_LINKS },
+  { title: 'Payment events', description: 'Search and view payment events', links: MONITORING_LINKS },
   { title: 'Payment holds', description: 'View, add or remove payment holds', links: PAYMENT_HOLDS_LINKS },
   { title: 'Manual payments', description: 'Manually upload payment files', links: MANUAL_PAYMENTS_LINKS },
   { title: 'Agreement closures', description: 'Search and update closures, or add new closures individually or in bulk', links: AGREEMENT_CLOSURES_LINKS },
