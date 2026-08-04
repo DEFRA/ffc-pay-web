@@ -1,6 +1,6 @@
 {
   "name": "ffc-pay-web",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "FFC payment management service",
   "homepage": "https://github.com/DEFRA/ffc-pay-web",
   "main": "app/index.js",
@@ -82,7 +82,8 @@
   },
   "overrides": {
     "@opentelemetry/propagator-jaeger": "2.9.0",
-    "brace-expansion": "5.0.8"
+    "brace-expansion": "5.0.9",
+    "fast-uri": "3.1.5"
   },
   "nodemonConfig": {
     "ignore": [
