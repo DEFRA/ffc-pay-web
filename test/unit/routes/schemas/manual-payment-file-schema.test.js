@@ -27,7 +27,7 @@ describe('Manual File Upload Schema', () => {
   })
 
   const invalidFilenameMsg =
-    'Invalid filename - We were unable to upload your manual payment file. Filenames must start with "FFC_Manual_Batch_". Optionally include a scheme (e.g. "SFI_" or "SFI23_"), then a timestamp in one of these formats: YYYYMMDDHHmm or YYYYMMDDHHmmss. The filename must end with ".csv". Examples: FFC_Manual_Batch_SFI23_202510231609.csv, FFC_Manual_Batch_202510231609.csv.'
+    'Filename must be in valid format'
 
   test.each([
     'wrong_filename.csv',
@@ -46,7 +46,7 @@ describe('Manual File Upload Schema', () => {
     )
     expect(error).toBeDefined()
     expect(error.details[0].message).toBe(
-      'Invalid file type - We were unable to upload your manual payment file as the uploaded file is not a .CSV file. Only .CSV files are permitted.'
+      'The selected file must be a CSV'
     )
   })
 

@@ -43,7 +43,7 @@ const MONITORING_LINKS = [
 ]
 
 const MANUAL_PAYMENTS_LINKS = [
-  { href: '/manual-payments', text: 'Manual payment upload', homeAuth: [permissions.applicationAdmin, permissions.manualPaymentsAdmin] }
+  { href: '/manual-payments', text: 'Upload manual payments', homeAuth: [permissions.applicationAdmin, permissions.manualPaymentsAdmin] }
 ]
 
 const RESET_PAYMENT_REQUEST_LINKS = [
