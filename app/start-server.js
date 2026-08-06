@@ -1,9 +1,9 @@
 const createServer = require('./server')
 
 const startServer = async () => {
-    const server = createServer().then(srv => srv.start())
+  const server = createServer().then(srv => srv.start())
 
-    return server
+  return server
 }
 
 module.exports = startServer
