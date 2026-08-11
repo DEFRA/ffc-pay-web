@@ -1,12 +1,9 @@
 {% extends "_layout.njk" %}
 
 {%
-  from 'macros/hold-breadcrumbs-with-search.njk' import holdBreadcrumbsWithSearch
+  from "macros/hold-breadcrumbs-with-search.njk" import holdBreadcrumbsWithSearch
 %}
-{% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
-{% from "govuk/components/select/macro.njk" import govukSelect %}
-{% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% if frn and schemeName %}
   {% set pageTitle = "Payment holds for " ~ schemeName ~ " and " ~ frn %}
@@ -18,7 +15,15 @@
   {% set pageTitle = "Payment holds" %}
 {% endif %}
 
-{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+{% set hasMultiplePages = totalPages and totalPages > 1 %}
+
+{% block pageTitle %}
+  {% if hasMultiplePages %}
+    Page {{ page }} - {{ pageTitle }} - {{ serviceName }}
+  {% else %}
+    {{ pageTitle }} - {{ serviceName }}
+  {% endif %}
+{% endblock %}
 
 {% block beforeContent %}
   {{ holdBreadcrumbsWithSearch(pageTitle) }}
@@ -36,7 +41,7 @@
           <div class="govuk-notification-banner__header">
             <h2
               class="govuk-notification-banner__title"
-              id="govuk-notification-banner-title-hold-added">
+              id="govuk-notification-banner-title">
               Success
             </h2>
           </div>
@@ -53,16 +58,17 @@
 
       {% if paymentHolds.length %}
         {% if numberOfHolds == 1 %}
-          {% set holdLabel = 'payment hold' %}
+          {% set holdLabel = "payment hold" %}
         {% else %}
-          {% set holdLabel = 'payment holds' %}
+          {% set holdLabel = "payment holds" %}
         {% endif %}
 
         {% if frn and schemeName %}
           <p class="govuk-body">
             We’ve found {{ numberOfHolds }} {{ holdLabel }} for {{
               schemeName
-            }} and {{ frn }}.
+            }}
+            and {{ frn }}.
           </p>
         {% elseif frn %}
           <p class="govuk-body">
@@ -79,39 +85,47 @@
             We’ve found {{ numberOfHolds }} {{ holdLabel }}.
           </p>
         {% endif %}
+
         <div class="govuk-grid-row">
           <div class="govuk-grid-column-one-half">
-            <div style="display:flex;align-items:baseline;gap:1rem;">
-              <h2 class="govuk-heading-m govuk-!-margin-0">Payment holds</h2>
-            </div>
+            <h2 class="govuk-heading-m govuk-!-margin-0">Payment holds</h2>
           </div>
 
-          <div class="govuk-grid-column-one-half govuk-!-padding-top-1">
-            <div
-              style="display:flex;align-items:baseline;justify-content:flex-end;">
+          {% if hasMultiplePages %}
+            <div class="govuk-grid-column-one-half govuk-!-padding-top-1">
               <div
-                class="govuk-body-s"
-                aria-label="Records per page"
-                style="white-space:nowrap;vertical-align:baseline;">
-                <span>Number of records per page:</span>&nbsp;
-                {% set perPageOptions = [100, 500, 1000] %}
-                {% for opt in perPageOptions %}
-                  {% if perPage == opt %}
-                    <strong>{{ opt }}</strong>
-                  {% else %}
-                    <a
-                      href="/payment-holds/results?perPage={{ opt }}&page=1{% if frn %}&frn={{ frn }}{% endif %}{% if schemeName %}&name={{ schemeName | urlencode }}{% endif %}"
-                      class="govuk-link">{{ opt }}</a>
-                  {% endif %}
-                  {% if not loop.last %}
-                    &nbsp;|&nbsp;
-                  {% endif %}
-                {% endfor %}
+                style="display:flex;align-items:baseline;justify-content:flex-end;">
+                <div
+                  class="govuk-body-s"
+                  aria-label="Records per page"
+                  style="white-space:nowrap;vertical-align:baseline;">
+                  <span>Number of records per page:</span>&nbsp;
+                  {% set perPageOptions = [100, 500, 1000] %}
+                  {% for opt in perPageOptions %}
+                    {% if perPage == opt %}
+                      <strong>{{ opt }}</strong>
+                    {% else %}
+                      <a
+                        href="?perPage={{ opt }}&page=1{{ extraQuery }}"
+                        class="govuk-link">{{ opt }}</a>
+                    {% endif %}
+                    {% if not loop.last %}
+                      &nbsp;|&nbsp;
+                    {% endif %}
+                  {% endfor %}
+                </div>
               </div>
             </div>
-          </div>
+          {% endif %}
         </div>
-        <div style="clear: both;"></div>
+
+        <p
+          class="govuk-body-m"
+          id="payment-hold-count">
+          Showing {{ paymentHolds.length }} payment hold{{
+            's' if paymentHolds.length != 1
+          }}
+        </p>
 
         <table class="govuk-table">
           <thead class="govuk-table__head">
@@ -210,6 +224,16 @@
                         name="holdCategoryName"
                         value="{{ paymentHold.holdCategoryName }}"
                       />
+                      <input
+                        type="hidden"
+                        name="page"
+                        value="{{ page }}"
+                      />
+                      <input
+                        type="hidden"
+                        name="perPage"
+                        value="{{ perPage }}"
+                      />
                       <button class="govuk-button-link">Remove</button>
                     </form>
                   {% endif %}
@@ -219,87 +243,50 @@
           </tbody>
         </table>
 
-        <nav
-          class="govuk-pagination"
-          aria-label="Pagination">
-          {% if (page | default(1)) > 1 %}
-            <div class="govuk-pagination__prev">
-              <a
-                class="govuk-link govuk-pagination__link"
-                href="/payment-holds/results?page={{ page - 1 }}&perPage={{ perPage }}{% if frn %}&frn={{ frn }}{% endif %}{% if schemeName %}&name={{ schemeName | urlencode }}{% endif %}"
-                rel="prev">
-                <svg
-                  class="govuk-pagination__icon govuk-pagination__icon--prev"
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="13"
-                  width="15"
-                  aria-hidden="true"
-                  focusable="false"
-                  viewBox="0 0 15 13">
-                  <path
-                    d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z">
-                  </path>
-                </svg>
-                <span class="govuk-pagination__link-title">
-                  Previous<span class="govuk-visually-hidden"> page</span>
-                </span>
-              </a>
-            </div>
+        {% if hasMultiplePages %}
+          {% set paginationPrevious = undefined %}
+          {% set paginationNext = undefined %}
+
+          {% if page > 1 %}
+            {%
+              set paginationPrevious = {
+                href: "?page=" + (page - 1) + "&perPage=" + perPage + extraQuery,
+                labelText: "Previous page"
+              }
+            %}
           {% endif %}
 
-          <ul class="govuk-pagination__list">
-            <li class="govuk-pagination__item govuk-pagination__item--current">
-              <span class="govuk-pagination__link-title">
-                {{ page | default(1) }}
-                <span class="govuk-visually-hidden"> page</span>
-              </span>
-            </li>
-          </ul>
-
-          {% if paymentHolds.length >= perPage %}
-            <div class="govuk-pagination__next">
-              <a
-                class="govuk-link govuk-pagination__link"
-                href="/payment-holds/results?page={{ (page | default(1)) + 1 }}&perPage={{ perPage }}{% if frn %}&frn={{ frn }}{% endif %}{% if schemeName %}&name={{ schemeName | urlencode }}{% endif %}"
-                rel="next">
-                <span class="govuk-pagination__link-title">
-                  Next<span class="govuk-visually-hidden"> page</span>
-                </span>
-                <svg
-                  class="govuk-pagination__icon govuk-pagination__icon--next"
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="13"
-                  width="15"
-                  aria-hidden="true"
-                  focusable="false"
-                  viewBox="0 0 15 13">
-                  <path
-                    d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z">
-                  </path>
-                </svg>
-              </a>
-            </div>
+          {% if page < totalPages %}
+            {%
+              set paginationNext = {
+                href: "?page=" + (page + 1) + "&perPage=" + perPage + extraQuery,
+                labelText: "Next page"
+              }
+            %}
           {% endif %}
-        </nav>
+
+          {{
+            govukPagination({
+              previous: paginationPrevious,
+              next: paginationNext,
+              items: paginationItems
+            })
+          }}
+        {% endif %}
       {% else %}
         <p class="govuk-body">
           {% if frn and schemeName %}
-            No payment holds found for {{ schemeName }} and {{ frn }}. <a
-              class="govuk-link"
-              href="/payment-holds/search">Start a new search</a>.
+            No payment holds found for {{ schemeName }} and {{ frn }}.
           {% elseif frn %}
-            No payment holds found for FRN {{ frn }}. <a
-              class="govuk-link"
-              href="/payment-holds/search">Start a new search</a>.
+            No payment holds found for FRN {{ frn }}.
           {% elseif schemeName %}
-            No payment holds found for {{ schemeName }}. <a
-              class="govuk-link"
-              href="/payment-holds/search">Start a new search</a>.
+            No payment holds found for {{ schemeName }}.
           {% else %}
-            No payment holds found. <a
-              class="govuk-link"
-              href="/payment-holds/search">Start a new search</a>.
+            No payment holds found.
           {% endif %}
+          <a
+            class="govuk-link"
+            href="/payment-holds/search">Start a new search</a>.
         </p>
       {% endif %}
     </div>

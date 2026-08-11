@@ -14,9 +14,36 @@ const { getHolds, getHoldCategories } = require('../holds')
 const { handleBulkPost, mapHoldCategoriesToRadios } = require('../hold')
 const { PAYMENT_HOLDS_LINKS } = require('../constants/section-links')
 const { getSchemes, groupHoldCategoriesByScheme, filterAndPaginateHolds } = require('../helpers')
+const buildPaginationItems = require('../helpers/build-pagination-items')
+const { parsePaginationParams, redirectWithFilters } = require('../helpers/list-view')
 const mandatoryHoldTypes = require('../constants/mandatory-hold-types')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin] }
+const DEFAULT_PER_PAGE = 100
+const buildHoldsViewModel = ({ results, page, perPage, frn, schemeName }) => {
+  const { numberOfHolds } = results
+  const totalPages = Math.ceil(numberOfHolds / perPage)
+  const paginationItems = buildPaginationItems(page, totalPages, perPage, {
+    frn,
+    name: schemeName
+  })
+  const extraQuery = [
+    frn ? `&frn=${encodeURIComponent(frn)}` : '',
+    schemeName ? `&name=${encodeURIComponent(schemeName)}` : ''
+  ].join('')
+
+  return {
+    ...results,
+    frn,
+    schemeName,
+    page,
+    perPage,
+    numberOfHolds,
+    totalPages,
+    paginationItems,
+    extraQuery
+  }
+}
 
 module.exports = [
   {
@@ -133,7 +160,8 @@ module.exports = [
         return h.redirect(`${HOLDS_ROUTES.MANAGE}?holdAdded=true`)
       }
     }
-  }, {
+  },
+  {
     method: 'GET',
     path: HOLDS_ROUTES.SEARCH,
     options: {
@@ -167,12 +195,10 @@ module.exports = [
       handler: async (request, h) => {
         const frn = request.payload?.frn
         const schemeName = request.payload?.name
-        const allHolds = await getHolds(undefined, undefined, false)
-        const results = filterAndPaginateHolds(allHolds, { frn, schemeName })
-        return h.view(HOLDS_VIEWS.HOLDS, {
-          ...results,
+
+        return redirectWithFilters(h, HOLDS_ROUTES.HOLDS, DEFAULT_PER_PAGE, {
           frn,
-          schemeName
+          name: schemeName
         })
       }
     }
@@ -195,14 +221,17 @@ module.exports = [
       handler: async (request, h) => {
         const frn = request.query?.frn
         const schemeName = request.query?.name
-        const { page, perPage } = request.query
+        const { page, perPage } = parsePaginationParams(request.query, DEFAULT_PER_PAGE)
         const allHolds = await getHolds(undefined, undefined, false)
         const results = filterAndPaginateHolds(allHolds, { frn, schemeName, page, perPage })
-        return h.view(HOLDS_VIEWS.HOLDS, {
-          ...results,
+
+        return h.view(HOLDS_VIEWS.HOLDS, buildHoldsViewModel({
+          results,
+          page,
+          perPage,
           frn,
           schemeName
-        })
+        }))
       }
     }
   },
@@ -212,8 +241,8 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
-        const { holdId, frn, holdCategoryName, schemeName } = request.payload
-        return h.view(HOLDS_VIEWS.REMOVE_CONFIRM, { holdId, frn, schemeName, holdCategoryName })
+        const { holdId, frn, holdCategoryName, schemeName, page, perPage } = request.payload
+        return h.view(HOLDS_VIEWS.REMOVE_CONFIRM, { holdId, frn, schemeName, holdCategoryName, page, perPage })
       }
     }
   },
@@ -225,14 +254,24 @@ module.exports = [
       handler: async (request, h) => {
         await postProcessing(HOLDS_ROUTES.REMOVE, { holdId: request.payload.holdId })
         const frn = request.payload?.frn
-        const schemeName = request.payload?.name
+        const schemeName = request.payload?.schemeName
         const holdCategoryName = request.payload?.holdCategoryName
+        const { page, perPage } = parsePaginationParams(request.payload, DEFAULT_PER_PAGE)
         const allHolds = await getHolds(undefined, undefined, false)
-        const results = filterAndPaginateHolds(allHolds, { frn, schemeName })
+        let results = filterAndPaginateHolds(allHolds, { frn, schemeName, page, perPage })
+        const { numberOfHolds } = results
+
+        const totalPages = Math.ceil(
+          numberOfHolds / perPage
+        )
+        const selectedPage = totalPages > 0 && page > totalPages ? totalPages : page
+
+        if (selectedPage !== page) {
+          results = filterAndPaginateHolds(allHolds, { frn, schemeName, page: selectedPage, perPage })
+        }
+
         return h.view(HOLDS_VIEWS.HOLDS, {
-          ...results,
-          frn,
-          schemeName,
+          ...buildHoldsViewModel({ results, page: selectedPage, perPage, frn, schemeName }),
           holdRemoved: true,
           holdCategoryName
         })
@@ -300,7 +339,8 @@ module.exports = [
         }
       }
     }
-  }, {
+  },
+  {
     method: 'GET',
     path: HOLDS_ROUTES.TYPES,
     options: {
@@ -318,7 +358,8 @@ module.exports = [
         })
       }
     }
-  }, {
+  },
+  {
     method: 'GET',
     path: HOLDS_ROUTES.ADD_TYPE,
     options: {
@@ -382,7 +423,8 @@ module.exports = [
         return h.redirect(`${HOLDS_ROUTES.TYPES}?createdCategory=${encodeURIComponent(categoryName)}`)
       }
     }
-  }, {
+  },
+  {
     method: 'GET',
     path: HOLDS_ROUTES.EDIT_TYPE,
     options: {
@@ -456,7 +498,8 @@ module.exports = [
         return h.redirect(`${HOLDS_ROUTES.TYPES}?editedCategory=${encodeURIComponent(categoryName)}`)
       }
     }
-  }, {
+  },
+  {
     method: 'GET',
     path: HOLDS_ROUTES.REMOVE_TYPE,
     options: {

@@ -115,17 +115,19 @@ describe('Holds routes (integration narrow)', () => {
     const routes = require('../../../../app/routes/holds')
     const route = routes.find(r => r.method === 'POST' && r.path === HOLDS_ROUTES.HOLDS)
     const handler = route.handler || route.options?.handler
-    const h = { view: jest.fn() }
+    const h = {
+      view: jest.fn(),
+      redirect: jest.fn(url => ({
+        redirect: url
+      }))
+    }
     const request = { payload: { frn: '111', name: undefined } }
 
     await handler(request, h)
 
-    expect(getHolds).toHaveBeenCalled()
-    expect(h.view).toHaveBeenCalledWith(HOLDS_VIEWS.HOLDS, expect.objectContaining({
-      paymentHolds: expect.arrayContaining([expect.objectContaining({ frn: '111' })]),
-      numberOfHolds: 1,
-      frn: '111'
-    }))
+    expect(h.redirect).toHaveBeenCalledWith(
+      `${HOLDS_ROUTES.HOLDS}?page=1&perPage=100&frn=111`
+    )
   })
 
   test('GET results page paginates via query params instead of returning 404', async () => {
@@ -141,7 +143,7 @@ describe('Holds routes (integration narrow)', () => {
     expect(response.payload).toContain('<strong>100</strong>')
     expect(response.payload).toContain('rel="prev"')
     expect(response.payload).not.toContain('rel="next"')
-    expect(response.payload).toContain('frn=1234567890&name=Annual%20Health%20and%20Welfare%20Review')
+    expect(response.payload).toContain('frn=1234567890&amp;name=Annual%20Health%20and%20Welfare%20Review')
   })
 
   test('GET bulk without valid type redirects to bulk landing', async () => {
