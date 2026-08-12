@@ -4,7 +4,7 @@ const maxFRN = 9999999999
 const minYear = 2020
 const maxYear = 2099
 const limitStart = 1
-const limitEnd = 1000
+const limitEnd = 10000
 
 module.exports = Joi.object({
   filename: Joi.string()
