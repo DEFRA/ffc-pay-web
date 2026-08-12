@@ -161,7 +161,7 @@ const createConfirmationView = (
   }
 })
 
-const createSaveRoute = (path, view, action, redirectPath) => ({
+const createSaveRoute = (path, action, redirectPath) => ({
   method: 'POST',
   path,
   options: {

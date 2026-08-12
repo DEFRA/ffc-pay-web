@@ -6,14 +6,13 @@ const {
   getAlertRecipientViewData,
   getAlertRemoveViewData
 } = require('../alerts')
-const { BAD_REQUEST } = require('../constants/http-status-codes')
+const { BAD_REQUEST, NOT_AUTHORIZED, PRECONDITION_FAILED } = require('../constants/http-status-codes')
 const { getAlertingData, getProcessingData } = require('../api')
 const {
   PAYMENT_ALERTS_LINKS,
   PAYMENT_ALERTS_BY_RECIPIENT_LINKS
 } = require('../constants/section-links')
 const { SCHEMES_PATH } = require('../constants/common-api-urls')
-const HTTP_STATUS = require('../constants/http-status-codes')
 const { getSchemes } = require('../helpers')
 const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, getAccountName, createConfirmationView, createSaveRoute, getSchemeName } = require('../alerts/alert-route-helpers')
 
@@ -80,7 +79,7 @@ module.exports = [
             error: 'Select a scheme',
             data: schemes?.payload?.paymentSchemes
           })
-          .code(HTTP_STATUS.PRECONDITION_FAILED)
+          .code(PRECONDITION_FAILED)
       }
 
       try {
@@ -99,7 +98,7 @@ module.exports = [
             schemeId,
             data: schemes?.payload?.paymentSchemes
           })
-          .code(HTTP_STATUS.PRECONDITION_FAILED)
+          .code(PRECONDITION_FAILED)
       }
     }
   },
@@ -288,7 +287,6 @@ module.exports = [
   ),
   createSaveRoute(
     paths.addRecipientByScheme,
-    views.addRecipientByScheme,
     'create',
     async (request) => {
       const schemes = await getSchemes()
@@ -315,7 +313,7 @@ module.exports = [
             .trim()
             .required()
         }),
-        failAction: async (request, h, error) => {
+        failAction: async (request, h, _error) => {
           return h
             .redirect(
               `${paths.removeByRecipient}?emailAddress=${encodeURIComponent(
@@ -334,7 +332,7 @@ module.exports = [
       } catch (error) {
         if (
           error?.isBoom &&
-          [400, 404].includes(error.output?.statusCode)
+          [BAD_REQUEST, NOT_AUTHORIZED].includes(error.output?.statusCode)
         ) {
           return h.redirect(
             `${paths.removeByRecipient}?emailAddress=${encodeURIComponent(

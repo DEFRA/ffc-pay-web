@@ -223,7 +223,6 @@ describe('alert-route-helpers', () => {
     test('handler passes account name, payload and redirect path to updateAlertUser', async () => {
       const route = createSaveRoute(
         '/save',
-        'alerts/save',
         'update',
         '/redirect'
       )
@@ -249,7 +248,6 @@ describe('alert-route-helpers', () => {
       const redirectPath = jest.fn().mockResolvedValue('/computed-redirect')
       const route = createSaveRoute(
         '/save',
-        'alerts/save',
         'update',
         redirectPath
       )
@@ -274,7 +272,6 @@ describe('alert-route-helpers', () => {
     test('handler passes a validation callback that uses getValidationRedirect', async () => {
       const route = createSaveRoute(
         '/save',
-        'alerts/save',
         'update',
         '/redirect'
       )
