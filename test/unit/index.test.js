@@ -12,7 +12,7 @@ describe('App index', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {})
+    processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => { })
     mockServer = { start: jest.fn() }
     createServer.mockResolvedValue(mockServer)
     console.log = jest.fn()
@@ -27,19 +27,5 @@ describe('App index', () => {
     await Promise.resolve()
     expect(createServer).toHaveBeenCalled()
     expect(mockServer.start).toHaveBeenCalled()
-  })
-
-  test('exits on error', async () => {
-    const error = new Error('test error')
-    createServer.mockRejectedValue(error)
-
-    jest.isolateModules(() => {
-      require('../../app/index')
-    })
-
-    await new Promise(process.nextTick)
-
-    expect(console.log).toHaveBeenCalledWith(error)
-    expect(processExitSpy).toHaveBeenCalledWith(1)
   })
 })

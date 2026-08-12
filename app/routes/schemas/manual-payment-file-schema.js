@@ -3,10 +3,9 @@ const Joi = require('joi')
 /*
   Filename rules:
   - Must start: FFC_Manual_Batch_
-  - Optional scheme: one or more letters/digits followed by underscore (e.g. SFI_ or SFI23_)
-  - Timestamp: either YYYYMMDDHHmm (12 digits) or YYYYMMDDHHmmss (14 digits)
-    - Year limited to 2000-2099 and month/day/hour/minute/second validated to reasonable ranges
-  - Must end with .csv (case-insensitive)
+  - Optional scheme: one or more letters/digits followed by underscore, for example SFI_ or SFI23_
+  - Timestamp: either YYYYMMDDHHmm, 12 digits, or YYYYMMDDHHmmss, 14 digits
+  - Must end with .csv, case-insensitive
 */
 const prefix = 'FFC_Manual_Batch_'
 const schemePart = '(?:[A-Z0-9]+_)?'
@@ -23,37 +22,46 @@ const timestamp = String.raw`(?:${timestamp14}|${timestamp12})`
 
 const filenameRegex = new RegExp(String.raw`^${prefix}${schemePart}${timestamp}\.csv$`, 'i')
 
+const csvContentTypes = [
+  'text/csv',
+  'application/csv',
+  'text/plain',
+  'application/vnd.ms-excel',
+  'application/octet-stream'
+]
+
 const manualPaymentFileSchema = Joi.object({
   file: Joi.object({
     filename: Joi.string().pattern(filenameRegex).required(),
     path: Joi.string().required(),
     headers: Joi.object({
       'content-disposition': Joi.string().required(),
-      'content-type': Joi.string().valid('text/csv').required()
-    }).required(),
+      'content-type': Joi.string().valid(...csvContentTypes).required()
+    }).unknown(true).required(),
     bytes: Joi.number().required()
-  }).required()
-}).error(errors => {
+  }).unknown(true).required(),
+  crumb: Joi.string().optional()
+}).unknown(true).error(errors => {
   let csvError = null
   let filenameError = null
 
   errors.forEach(err => {
-    const key = err.path?.[1] || err.path?.[0]
+    const path = err.path || []
+    const key = path[path.length - 1]
 
-    if (key === 'headers') {
+    if (key === 'content-type') {
       csvError = err
-      err.message = 'Invalid file type - We were unable to upload your manual payment file as the uploaded file is not a .CSV file. Only .CSV files are permitted.'
+      err.message = 'The selected file must be a CSV'
     } else if (key === 'filename') {
       filenameError = err
-      err.message =
-        'Invalid filename - We were unable to upload your manual payment file. Filenames must start with "FFC_Manual_Batch_". Optionally include a scheme (e.g. "SFI_" or "SFI23_"), then a timestamp in one of these formats: YYYYMMDDHHmm or YYYYMMDDHHmmss. The filename must end with ".csv". Examples: FFC_Manual_Batch_SFI23_202510231609.csv, FFC_Manual_Batch_202510231609.csv.'
+      err.message = 'Filename must be in valid format'
     } else {
       err.message = 'Unknown error - We were unable to upload your manual payment file. This could be a temporary issue. Please try again later and if the problem persists, contact the Payment & Document Services Team.'
     }
   })
 
   if (csvError) {
-    return [csvError] // Prioritise CSV error over filename error
+    return [csvError]
   }
 
   return filenameError ? [filenameError] : errors

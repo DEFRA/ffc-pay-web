@@ -38,7 +38,7 @@ afterEach(async () => {
 describe('Manual Payments Routes', () => {
   describe('GET /manual-payments', () => {
     const url = '/manual-payments'
-    const pageH1 = 'Manual payment upload'
+    const pageH1 = 'Upload manual payments'
 
     test('returns 200 and page loads correctly', async () => {
       getHistoricalInjectionData.mockResolvedValue({ payload: [] })
@@ -71,6 +71,32 @@ describe('Manual Payments Routes', () => {
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/login')
     })
+
+    test('clears flash message cookie when present', async () => {
+      getHistoricalInjectionData.mockResolvedValue({ payload: [] })
+
+      const flashCookie = Buffer
+        .from(JSON.stringify({ success: true }))
+        .toString('base64')
+
+      const res = await server.inject({
+        method: 'GET',
+        url,
+        auth,
+        headers: {
+          cookie: `manualPaymentUpload=${flashCookie}`
+        }
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.payload).toContain(pageH1)
+
+      expect(res.headers['set-cookie']).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('manualPaymentUpload=')
+        ])
+      )
+    })
   })
 
   describe('POST /manual-payments/upload', () => {
@@ -91,7 +117,49 @@ describe('Manual Payments Routes', () => {
         auth
       })
       expect(res.statusCode).toBe(400)
-      expect(res.payload).toContain('File too large')
+      expect(res.payload).toContain('The selected file must be smaller than 1 MB.')
+    })
+
+    test('returns validation error for invalid filename', async () => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(
+        () => { },
+        server,
+        '/manual-payments',
+        auth
+      )
+
+      const payload = Buffer.concat([
+        Buffer.from(
+          `--boundary\r
+Content-Disposition: form-data; name="crumb"\r
+\r
+${viewCrumb}\r
+`
+        ),
+        Buffer.from(
+          `--boundary\r
+Content-Disposition: form-data; name="file"; filename="invalid.csv"\r
+Content-Type: text/csv\r
+\r
+test,data\r
+`
+        ),
+        Buffer.from('--boundary--')
+      ])
+
+      const res = await server.inject({
+        method: 'POST',
+        url,
+        payload,
+        headers: {
+          cookie: `crumb=${cookieCrumb}`,
+          'content-type': 'multipart/form-data; boundary=boundary'
+        },
+        auth
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(res.payload).toContain('Filename must be in valid format')
     })
   })
 })

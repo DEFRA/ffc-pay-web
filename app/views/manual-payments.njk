@@ -1,7 +1,12 @@
 {% extends '_layout.njk' %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% set pageTitle = "Manual payment upload" %}
+{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
+{%
+  from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner
+%}
+
+{% set pageTitle = "Upload manual payments" %}
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 {% block beforeContent %}
   {{
@@ -19,22 +24,49 @@
   {%
     set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Manual payment upload - service design.pdf' | urlencode
   %}
+  {# The upload route sends errors in three different shapes depending on
+     what went wrong:
+       - too-large file:  { path: 'payload', message: '...' }
+       - empty file:      { path: 'file-empty', message: '...' }
+       - other Joi errors: raw Joi ValidationError, where each detail's
+         path is an ARRAY, e.g. path: ['file']
+     fileFieldValues covers every identifier that means "this error
+     belongs to the file input" so both the summary link and the
+     field-level message match correctly regardless of which shape
+     produced the error. #}
+  {% set fileFieldValues = ['file', 'payload', 'file-empty'] %}
+  {% set fileError = null %}
+  {% if errors %}
+    {% for err in errors.details %}
+      {% set candidateField = null %}
+      {% if err.path is string %}
+        {% set candidateField = err.path %}
+      {% elif err.path %}
+        {% set candidateField = err.path[0] %}
+      {% endif %}
+      {% if not candidateField and err.context and err.context.key %}
+        {% set candidateField = err.context.key %}
+      {% endif %}
+      {% if candidateField in fileFieldValues %}
+        {% set fileError = err.message %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  {% set fileErrorMessage = null %}
+  {% if fileError %}
+    {% set fileErrorMessage = { text: fileError } %}
+  {% endif %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-      <p class="govuk-body">
-        This section allows teams to upload manual payment files into Payment
-        Hub. Once uploaded, these files will automatically feed into the
-        standard payment process. Access to this section is controlled by
-        role-based access groups and should only be used by the relevant pay
-        teams. You can find full details of the service design for manual
-        payments in the
-        <a
-          class="govuk-link"
-          href="{{ pdfDownloadLink }}"
-          target="_blank"
-          rel="noopener noreferrer">Manual Payments Guidance (PDF)</a>.
-      </p>
+      {% if success %}
+        {{
+          govukNotificationBanner({
+            type: "success",
+            titleText: "Success",
+            text: "Payment file has been successfully uploaded."
+          })
+        }}
+      {% endif %}
       {% if errors %}
         <div
           class="govuk-error-summary"
@@ -50,26 +82,44 @@
           <div class="govuk-error-summary__body">
             <ul class="govuk-list govuk-error-summary__list">
               {% for errorDetail in errors.details %}
+                {% set errCandidateField = null %}
+                {% if errorDetail.path is string %}
+                  {% set errCandidateField = errorDetail.path %}
+                {% elif errorDetail.path %}
+                  {% set errCandidateField = errorDetail.path[0] %}
+                {% endif %}
+                {%
+                  if not errCandidateField and errorDetail.context and errorDetail.context.key
+                %}
+                  {% set errCandidateField = errorDetail.context.key %}
+                {% endif %}
                 <li>
-                  <span class="govuk-error-message"><span
-                      class="govuk-visually-hidden">Error:</span> {{
-                      errorDetail.message
-                    }}</span>
+                  {% if errCandidateField in fileFieldValues %}
+                    <a
+                      href="#file"
+                      class="govuk-error-message">{{ errorDetail.message }}</a>
+                  {% else %}
+                    <span class="govuk-error-message"><span
+                        class="govuk-visually-hidden">Error:</span> {{
+                        errorDetail.message
+                      }}</span>
+                  {% endif %}
                 </li>
               {% endfor %}
             </ul>
           </div>
         </div>
-
-        {# Build per-field error variables from errors.details #}
-        {% set fileError = null %}
-        {% for err in errors.details %}
-          {%
-            set field = (err.path and err.path[0]) or (err.context and err.context.key)
-          %}
-          {% if field == 'file' %}{% set fileError = err.message %}{% endif %}
-        {% endfor %}
       {% endif %}
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      <p class="govuk-body">
+        Upload payment files to be manually processed. For more information on
+        uploading manual payments, including the file format you can download
+        <a
+          class="govuk-link"
+          href="{{ pdfDownloadLink }}"
+          target="_blank"
+          rel="noopener noreferrer">manual payments guidance (PDF, 2MB)</a>.
+      </p>
       <form
         method="POST"
         action="/manual-payments/upload"
@@ -81,22 +131,17 @@
           name="crumb"
           value="{{ crumb }}"
         />
-        <div class="govuk-form-group">
-          <label
-            class="govuk-label govuk-label-s"
-            for="file">Upload a file</label>
-          <div class="govuk-hint">
-            The file must be in CSV format and include valid manual payment
-            data.
-          </div>
-          <input
-            class="govuk-file-upload"
-            id="file"
-            name="file"
-            type="file"
-            value="{{ file }}"
-          />
-        </div>
+        {{
+          govukFileUpload({
+            id: "file",
+            name: "file",
+            label: {
+              html: '<span class="govuk-!-font-weight-bold">Upload a CSV file</span>'
+            },
+            javascript: true,
+            errorMessage: fileErrorMessage
+          })
+        }}
         {{
           govukButton({
             text: "Upload",

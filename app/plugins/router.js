@@ -43,6 +43,16 @@ module.exports = {
   plugin: {
     name: 'router',
     register: (server, _options) => {
+      server.state('manualPaymentUpload', {
+        ttl: 60 * 1000,
+        isSecure: config.env === 'production',
+        isHttpOnly: true,
+        encoding: 'base64json',
+        clearInvalid: true,
+        strictHeader: true,
+        path: '/'
+      })
+
       server.route(routes)
     }
   }

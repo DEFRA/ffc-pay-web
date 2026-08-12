@@ -17,11 +17,24 @@ module.exports = [
       handler: async (request, h) => {
         const user = request.auth?.credentials.account
         const uploaderNameOrEmail = user?.name || user?.username || user?.email
+
         console.log(`User ${uploaderNameOrEmail} accessed the upload page.`)
 
         const uploadHistory = await getManualPaymentUploadHistory()
+        const flash = request.state.manualPaymentUpload
 
-        return h.view(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, { uploadHistory })
+        const response = h.view(MANUAL_PAYMENT_VIEWS.MANUAL_PAYMENTS, {
+          uploadHistory,
+          success: flash?.success,
+          errors: flash?.errors,
+          crumb: request.plugins?.crumb
+        })
+
+        if (flash) {
+          response.unstate('manualPaymentUpload')
+        }
+
+        return response
       }
     }
   },
@@ -38,12 +51,14 @@ module.exports = [
         maxBytes: MAX_BYTES,
         multipart: true,
         failAction: async (request, h, error) => {
+          console.error('Manual payment upload payload validation failed:', error?.message)
           return manualPaymentUploadFailAction(request, h, error)
         }
       },
       validate: {
         payload: fileSchema,
         failAction: async (request, h, error) => {
+          console.error('Manual payment upload Joi validation failed:', error?.details || error)
           return manualPaymentUploadFailAction(request, h, error)
         }
       }
