@@ -25,7 +25,7 @@ jest.mock('../../../app/alerts/update-alert-user', () => ({
   updateAlertUser: jest.fn()
 }))
 
-const { normaliseValues, getAlertRecipientViewData } = require('../../../app/alerts/get-alert-recipient-view-data')
+const { normaliseValues } = require('../../../app/alerts/get-alert-recipient-view-data')
 const userSchema = require('../../../app/routes/schemas/user-schema')
 const removeUserSchema = require('../../../app/routes/schemas/remove-user-schema')
 const { updateAlertUser } = require('../../../app/alerts/update-alert-user')

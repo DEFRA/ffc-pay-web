@@ -89,7 +89,7 @@ describe('get-alert-recipient-view-data', () => {
       schemesPayload: [{ schemeId: 1, name: 'Scheme One' }],
       alertTypesPayload: ['EMAIL', 'SMS'],
       selectedAlerts: {
-        EMAIL: { '1': true },
+        EMAIL: { 1: true },
         SMS: {}
       },
       contactId: 'contact-1',
@@ -167,7 +167,7 @@ describe('get-alert-recipient-view-data', () => {
     const result = await getAlertRecipientViewData(request, { loadContact: true })
 
     expect(result.selectedAlerts).toEqual({
-      EMAIL: { '1': true, 2: true }
+      EMAIL: { 1: true, 2: true }
     })
   })
 
