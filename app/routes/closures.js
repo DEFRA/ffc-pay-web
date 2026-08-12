@@ -14,10 +14,47 @@ const { getClosures } = require('../closure')
 const { getRetentionExtractDownloadStreamAndDeleteAfter } = require('../storage')
 const { getSchemesForClosures } = require('../helpers')
 const { addDateErrorIfRequired } = require('../helpers/date-error-helpers')
+const buildPaginationItems = require('../helpers/build-pagination-items')
+const { parsePaginationParams } = require('../helpers/list-view')
 
 const AUTH_SCOPE = { scope: [applicationAdmin] }
-const defaultPage = 1
-const defaultPageSize = 2500
+const DEFAULT_PER_PAGE = 2500
+
+const buildClosuresViewModel = ({
+  closures,
+  count,
+  schemes,
+  page,
+  perPage,
+  frnAgreement,
+  schemeId,
+  closureRemoved
+}) => {
+  const totalPages = Math.ceil(count / perPage)
+  const paginationItems = buildPaginationItems(page, totalPages, perPage, {
+    frnAgreement,
+    schemeId
+  })
+  const extraQuery = [
+    frnAgreement ? `&frnAgreement=${encodeURIComponent(frnAgreement)}` : '',
+    schemeId ? `&schemeId=${encodeURIComponent(schemeId)}` : ''
+  ].join('')
+
+  return {
+    closures,
+    schemes,
+    page,
+    perPage,
+    frnAgreement,
+    schemeId,
+    count,
+    totalPages,
+    paginationItems,
+    extraQuery,
+    closureRemoved,
+    isSearch: Boolean(frnAgreement || schemeId)
+  }
+}
 
 module.exports = [
   {
@@ -39,35 +76,29 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
-        const page = Number(request.query.page || defaultPage)
-        const pageSize = Number(request.query.pageSize || defaultPageSize)
+        const { page, perPage } = parsePaginationParams(request.query, DEFAULT_PER_PAGE)
         const frnAgreement = request.query.frnAgreement || null
         const schemeId = request.query.schemeId || null
-
         const [{ closures, count }, schemes] = await Promise.all([
           getClosures({
             page,
-            pageSize,
+            pageSize: perPage,
             frnAgreement,
             schemeId
           }),
           getSchemesForClosures()
         ])
 
-        const totalPages = Math.ceil(count / pageSize)
-
-        return h.view(CLOSURES_VIEWS.SEARCH, {
+        return h.view(CLOSURES_VIEWS.SEARCH, buildClosuresViewModel({
           closures,
+          count,
           schemes,
           page,
-          pageSize,
+          perPage,
           frnAgreement,
           schemeId,
-          count,
-          hasPreviousPage: page > 1,
-          hasNextPage: page < totalPages,
           closureRemoved: request.query?.closureRemoved
-        })
+        }))
       }
     }
   },
@@ -124,18 +155,14 @@ module.exports = [
           month,
           year
         } = request.payload
-
         const schemes = await getSchemesForClosures()
-
         const query = new URLSearchParams({
           frn,
           agreementNumber: agreement,
           schemeId
         })
-
         const response = await getRetentionData(`${CLOSURES_ROUTES.EXISTS}?${query}`)
         const closureExists = response.payload.exists
-
         if (closureExists) {
           return h
             .view(CLOSURES_VIEWS.ADD, {
@@ -155,7 +182,6 @@ module.exports = [
             .code(BAD_REQUEST)
             .takeover()
         }
-
         const selectedScheme = schemes.find(scheme => String(scheme.schemeId) === String(schemeId))
         return h.view(CLOSURES_VIEWS.ADD_CONFIRM, {
           frn,
@@ -202,10 +228,8 @@ module.exports = [
           month = `0${request.payload.month}`
         }
         const date = `${request.payload.year}-${month}-${day}T00:00:00`
-
         const user = request.auth?.credentials.account
         const addedBy = user?.name || user?.username || user?.email
-
         await postRetention(
           CLOSURES_ROUTES.ADD,
           {
@@ -273,14 +297,21 @@ module.exports = [
           retentionDataId,
           frn,
           agreementNumber,
-          schemeName
+          schemeName,
+          page,
+          perPage,
+          frnAgreement,
+          schemeId
         } = request.query
-
         return h.view(CLOSURES_VIEWS.REMOVE_CONFIRM, {
           retentionDataId,
           frn,
           agreementNumber,
-          schemeName
+          schemeName,
+          page,
+          perPage,
+          frnAgreement,
+          schemeId
         })
       }
     }
@@ -292,7 +323,45 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
         await postRetention('/closure/remove', { retentionDataId: request.payload.retentionDataId })
-        return h.redirect(`${CLOSURES_ROUTES.SEARCH}?closureRemoved=true`)
+
+        const { page, perPage } = parsePaginationParams(request.payload, DEFAULT_PER_PAGE)
+        const frnAgreement = request.payload?.frnAgreement || null
+        const schemeId = request.payload?.schemeId || null
+
+        let [{ closures, count }, schemes] = await Promise.all([
+          getClosures({
+            page,
+            pageSize: perPage,
+            frnAgreement,
+            schemeId
+          }),
+          getSchemesForClosures()
+        ])
+
+        const totalPages = Math.ceil(count / perPage)
+        const selectedPage = totalPages > 0 && page > totalPages ? totalPages : page
+
+        if (selectedPage !== page) {
+          const results = await getClosures({
+            page: selectedPage,
+            pageSize: perPage,
+            frnAgreement,
+            schemeId
+          })
+          closures = results.closures
+          count = results.count
+        }
+
+        return h.view(CLOSURES_VIEWS.SEARCH, buildClosuresViewModel({
+          closures,
+          count,
+          schemes,
+          page: selectedPage,
+          perPage,
+          frnAgreement,
+          schemeId,
+          closureRemoved: true
+        }))
       }
     }
   },
@@ -305,7 +374,6 @@ module.exports = [
         const response = await getRetentionData(CLOSURES_ROUTES.EXTRACT)
         const { filename } = response.payload
         const { stream } = await getRetentionExtractDownloadStreamAndDeleteAfter(filename)
-
         return h.response(stream)
           .type('text/csv')
           .header('Content-Disposition', `attachment; filename="${filename}"`)
