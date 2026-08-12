@@ -1,10 +1,18 @@
 {% extends '_layout.njk' %}
 
 {% from 'macros/events-breadcrumbs.njk' import eventsBreadcrumbs %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% set pageTitle = "View batch file payments and their status" %}
+{% set hasMultiplePages = totalPages and totalPages > 1 %}
 
-{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+{% block pageTitle %}
+  {% if hasMultiplePages %}
+    Page {{ page }} - {{ pageTitle }} - {{ serviceName }}
+  {% else %}
+    {{ pageTitle }} - {{ serviceName }}
+  {% endif %}
+{% endblock %}
 
 {% block beforeContent %}
   {{ eventsBreadcrumbs(pageTitle) }}
@@ -19,10 +27,62 @@
         <p class="govuk-body-m">
           View the batch payment file and access the payment history for an
           associated FRN or
-          <a href="/monitoring">start a new search</a>.
+          <a
+            class="govuk-link"
+            href="/monitoring">start a new search</a>.
         </p>
 
-        <h1 class="govuk-heading-m">{{ batch }}</h1>
+        <p class="govuk-body">
+          We've found {{ numberOfPayments }} payment event{{
+            's' if numberOfPayments != 1
+          }}.
+        </p>
+
+        <h2 class="govuk-heading-m">{{ batch }}</h2>
+
+        <div class="govuk-grid-row govuk-!-margin-bottom-3">
+          <div class="govuk-grid-column-one-half">
+            <p
+              class="govuk-body-m govuk-!-margin-0"
+              id="payment-event-count">
+              Showing {{ payments.length }} payment event{{
+                's' if payments.length != 1
+              }}
+            </p>
+          </div>
+
+          {% if hasMultiplePages %}
+            <div class="govuk-grid-column-one-half">
+              <div
+                style="display:flex;align-items:baseline;justify-content:flex-end;">
+                <div
+                  class="govuk-body-s govuk-!-margin-0"
+                  aria-label="Records per page"
+                  style="white-space:nowrap;vertical-align:baseline;">
+                  <span>Number of records per page:</span>&nbsp;
+
+                  {% set perPageOptions = [100, 500, 1000] %}
+
+                  {% for opt in perPageOptions %}
+                    {% if perPage == opt %}
+                      <strong>{{ opt }}</strong>
+                    {% else %}
+                      <a
+                        class="govuk-link"
+                        href="?page=1&perPage={{ opt }}&batch={{ batch }}">{{
+                        opt
+                      }}</a>
+                    {% endif %}
+
+                    {% if not loop.last %}
+                      &nbsp;|&nbsp;
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
 
         <table class="govuk-table">
           <thead class="govuk-table__head">
@@ -95,18 +155,50 @@
                 </td>
                 <td class="govuk-table__cell govuk-body-s">
                   <strong
-                    class="govuk-tag {% if payment.status.state == 'Completed' %}govuk-tag--green{% elif payment.status.state == 'Waiting' %}govuk-tag--yellow{% endif %}">{{
-                    payment.status.detail
-                  }}</strong>
+                    class="govuk-tag {% if payment.status.state == 'Completed' %}govuk-tag--green{% elif payment.status.state == 'Waiting' %}govuk-tag--yellow{% endif %}">
+                    {{ payment.status.detail }}
+                  </strong>
                 </td>
                 <td class="govuk-table__cell govuk-body-s">
                   <a
+                    class="govuk-link"
                     href="/monitoring/payments/frn?frn={{ payment.frn }}">View</a>
                 </td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
+
+        {% if hasMultiplePages %}
+          {% set paginationPrevious = undefined %}
+          {% set paginationNext = undefined %}
+
+          {% if page > 1 %}
+            {%
+              set paginationPrevious = {
+                href: '?page=' + (page - 1) + '&perPage=' + perPage + '&batch=' + batch,
+                labelText: 'Previous page'
+              }
+            %}
+          {% endif %}
+
+          {% if page < totalPages %}
+            {%
+              set paginationNext = {
+                href: '?page=' + (page + 1) + '&perPage=' + perPage + '&batch=' + batch,
+                labelText: 'Next page'
+              }
+            %}
+          {% endif %}
+
+          {{
+            govukPagination({
+              previous: paginationPrevious,
+              next: paginationNext,
+              items: paginationItems
+            })
+          }}
+        {% endif %}
       {% else %}
         <p
           id="no-hold-text"
