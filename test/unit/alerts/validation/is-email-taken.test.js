@@ -3,7 +3,7 @@ jest.mock('../../../../app/api', () => ({
 }))
 
 const { getAlertingData } = require('../../../../app/api')
-const { isEmailTaken } = require('../../../../app/alerts/validation')
+const { isEmailTaken } = require('../../../../app/alerts/validation/is-email-taken')
 
 describe('isEmailTaken', () => {
   beforeEach(() => {
@@ -35,6 +35,9 @@ describe('isEmailTaken', () => {
     await expect(isEmailTaken('test@example.com', 1)).resolves.toBeUndefined()
 
     getAlertingData.mockResolvedValue({ payload: {} })
+    await expect(isEmailTaken('test@example.com', 1)).resolves.toBeUndefined()
+
+    getAlertingData.mockResolvedValue({ payload: { contact: undefined } })
     await expect(isEmailTaken('test@example.com', 1)).resolves.toBeUndefined()
   })
 

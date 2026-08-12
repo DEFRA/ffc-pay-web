@@ -25,8 +25,28 @@ const schema = Joi.object({
       'any.required': 'Action is required',
       'string.base': 'Action must be a string',
       'string.empty': 'Action is required',
-      'string.valid': 'Action must be edit or create'
+      'string.valid': 'Action must be edit or create',
+      'any.only': 'Action must be edit or create'
     })
-}).unknown(true)
+})
+  .unknown(true)
+  .custom((value, helpers) => {
+    const fixedFields = new Set(['emailAddress', 'contactId', 'action', 'crumb', 'schemeId'])
+
+    const selectedAlertTypes = Object.entries(value)
+      .filter(([key]) => !fixedFields.has(key))
+      .flatMap(([, alertTypes]) =>
+        Array.isArray(alertTypes) ? alertTypes : [alertTypes]
+      )
+      .filter(Boolean)
+
+    if (selectedAlertTypes.length === 0) {
+      return helpers.message({
+        custom: 'Select at least one alert type'
+      })
+    }
+
+    return value
+  })
 
 module.exports = schema

@@ -1,0 +1,119 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{%
+  from "macros/alert-helpers.njk" import hiddenRecipientFields, alertCheckboxes, alertToggleScript
+%}
+
+{% if not pageTitle %}
+  {% if schemeName %}
+    {% set pageTitle = "Add new alert recipient for " ~ schemeName %}
+  {% else %}
+    {% set pageTitle = "Add new alert recipient" %}
+  {% endif %}
+{% endif %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: "Manage email alerts by scheme",
+        href: "/alerts/manage-by-scheme"
+      }, {
+        text: schemeName ~ " email alerts",
+        href: "/alerts/by-scheme?schemeId=" ~ (schemeId | urlencode)
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body">
+        Add a new recipient to all alerts or by alert type for this scheme.
+        Alternatively,
+        <a
+          href="/alerts/update"
+          class="govuk-link">
+          add a new recipient for multiple schemes.
+        </a>
+      </p>
+
+      <p class="govuk-body">
+        Find out more about alert types on the
+        <a
+          href="/alerts/information"
+          class="govuk-link"
+          target="_blank"
+          rel="noopener noreferrer">
+          alerts information page
+        </a>
+        (opens in a new tab).
+      </p>
+
+      {% if error %}
+        <div
+          class="govuk-error-summary"
+          role="alert">
+          <h2 class="govuk-error-summary__title">There is a problem</h2>
+          <p class="govuk-error-message">{{ error }}</p>
+        </div>
+      {% endif %}
+
+      <form
+        method="POST"
+        action="{{ formAction or '/alerts/update-confirm' }}">
+        {{
+          hiddenRecipientFields({
+            crumb: crumb,
+            contactId: contactId,
+            action: 'create',
+            schemeId: schemeId,
+            includeEmailAddress: false
+          })
+        }}
+
+        <div class="govuk-form-group">
+          <label
+            class="govuk-label govuk-label--s"
+            for="emailAddress">
+            Email address
+          </label>
+
+          <input
+            class="govuk-input"
+            id="emailAddress"
+            name="emailAddress"
+            type="email"
+            value="{{ emailAddress or '' }}"
+          />
+        </div>
+
+        {{
+          alertCheckboxes({
+            schemesPayload: schemesPayload,
+            alertTypesPayload: alertTypesPayload,
+            selectedAlerts: selectedAlerts
+          })
+        }}
+
+        {{ govukButton({ text: "Continue" }) }}
+      </form>
+    </div>
+  </div>
+  {{ alertToggleScript() }}
+{% endblock %}

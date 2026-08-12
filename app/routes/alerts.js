@@ -1,180 +1,408 @@
 const Joi = require('joi')
-const Boom = require('@hapi/boom')
 const {
   updateAlertUser,
   removeAlertUser,
-  getContactsByScheme,
-  getAlertUpdateViewData
+  getAlertsByScheme,
+  getAlertRecipientViewData,
+  getAlertRemoveViewData
 } = require('../alerts')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
-const userSchema = require('./schemas/user-schema')
-const removeUserSchema = require('./schemas/remove-user-schema')
-const { getAlertingData } = require('../api')
-const { applicationAdmin, alertAdmin } = require('../auth/permissions')
-
-const AUTH_SCOPE = { scope: [applicationAdmin, alertAdmin] }
-
-const paths = {
-  alerts: '/alerts',
-  information: '/alerts/information',
-  update: '/alerts/update',
-  confirm: '/alerts/confirm-delete'
-}
-
-const views = {
-  alerts: 'alerts',
-  information: 'alerts/information',
-  update: 'alerts/update',
-  confirm: 'alerts/confirm-delete'
-}
-
-const handleAlertingError = (error) => {
-  console.error('Alerting Service error:', error)
-  return Boom.badGateway(`Alerting Service is unavailable: ${error.message}`)
-}
+const { getAlertingData, getProcessingData } = require('../api')
+const {
+  PAYMENT_ALERTS_LINKS,
+  PAYMENT_ALERTS_BY_RECIPIENT_LINKS
+} = require('../constants/section-links')
+const { SCHEMES_PATH } = require('../constants/common-api-urls')
+const HTTP_STATUS = require('../constants/http-status-codes')
+const { getSchemes } = require('../helpers')
+const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, getAccountName, createConfirmationView, createSaveRoute, getSchemeName } = require('../alerts/alert-route-helpers')
 
 module.exports = [
   {
     method: 'GET',
-    path: paths.alerts,
-    options: {
-      auth: AUTH_SCOPE,
-      handler: async (_request, h) => {
-        try {
-          const schemes = await getContactsByScheme()
-          return h.view(views.alerts, { schemes })
-        } catch (error) {
-          return handleAlertingError(error)
+    path: paths.manage,
+    options: { auth: AUTH_SCOPE },
+    handler: async (request, h) => {
+      try {
+        const cards = [...PAYMENT_ALERTS_LINKS]
+        cards.shift()
+
+        const updated = request.query?.updated
+        let emailAddress
+
+        if (updated) {
+          const contact = await getAlertingData(
+            `/contact/${encodeURIComponent(updated)}`
+          )
+          emailAddress = contact?.payload?.contact?.emailAddress
         }
+
+        return h.view(views.manage, {
+          cards,
+          updated,
+          emailAddress
+        })
+      } catch (error) {
+        return handleAlertingError(error)
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: paths.manageByScheme,
+    options: { auth: AUTH_SCOPE },
+    handler: async (request, h) => {
+      try {
+        const schemes = await getSchemes()
+
+        return h.view(views.manageByScheme, {
+          data: schemes,
+          schemeName: request.query?.schemeName,
+          emailAddress: request.query?.emailAddress
+        })
+      } catch (error) {
+        return handleAlertingError(error)
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: paths.alertsByScheme,
+    options: { auth: AUTH_SCOPE },
+    handler: async (request, h) => {
+      const { schemeId } = request.query
+
+      if (!schemeId) {
+        const schemes = await getProcessingData(SCHEMES_PATH)
+
+        return h
+          .view(views.alertsByScheme, {
+            error: 'Select a scheme',
+            data: schemes?.payload?.paymentSchemes
+          })
+          .code(HTTP_STATUS.PRECONDITION_FAILED)
+      }
+
+      try {
+        const alertsForScheme = await getAlertsByScheme(schemeId)
+        return h.view(views.alertsByScheme, {
+          types: alertsForScheme.formattedTypes,
+          schemeName: alertsForScheme.schemeName,
+          schemeId
+        })
+      } catch (error) {
+        const schemes = await getProcessingData(SCHEMES_PATH)
+
+        return h
+          .view(views.alertsByScheme, {
+            error: error.data?.payload?.message ?? error.message,
+            schemeId,
+            data: schemes?.payload?.paymentSchemes
+          })
+          .code(HTTP_STATUS.PRECONDITION_FAILED)
       }
     }
   },
   {
     method: 'GET',
     path: paths.information,
-    options: {
-      auth: AUTH_SCOPE,
-      handler: async (_request, h) => {
-        try {
-          const alertDescriptionsResponse = await getAlertingData('/alert-descriptions')
-          const alertDescriptions = alertDescriptionsResponse?.payload?.alertDescriptions ?? []
-          return h.view(views.information, { alertDescriptions })
-        } catch (error) {
-          return handleAlertingError(error)
-        }
+    options: { auth: AUTH_SCOPE },
+    handler: async (_request, h) => {
+      try {
+        const response = await getAlertingData('/alert-descriptions')
+
+        return h.view(views.information, {
+          alertDescriptions: response?.payload?.alertDescriptions ?? []
+        })
+      } catch (error) {
+        return handleAlertingError(error)
       }
     }
   },
   {
     method: 'GET',
     path: paths.update,
-    options: {
-      auth: AUTH_SCOPE,
-      handler: async (request, h) => {
-        try {
-          const viewData = await getAlertUpdateViewData(request)
-          return h.view(views.update, viewData)
-        } catch (error) {
-          return handleAlertingError(error)
-        }
+    options: { auth: AUTH_SCOPE },
+    handler: async (request, h) => {
+      try {
+        const data = await getAlertRecipientViewData(request, {
+          loadContact:
+            request.query?.action !== 'create' &&
+            Boolean(
+              request.query?.contactId || request.query?.emailAddress
+            )
+        })
+
+        return h.view(views.update, {
+          ...data,
+          action: 'edit',
+          error: request.query?.validationError
+        })
+      } catch (error) {
+        return handleAlertingError(error)
       }
     }
   },
   {
-    method: 'GET',
-    path: paths.confirm,
+    method: 'POST',
+    path: paths.updateConfirm,
     options: {
       auth: AUTH_SCOPE,
-      handler: async (request, h) => {
-        try {
-          const { contactId } = request.query
-          const contact = await getAlertingData(`/contact/contactId/${encodeURIComponent(contactId)}`)
-          const contactPayload = contact?.payload?.contact ?? {}
-          const { emailAddress } = contactPayload
-          if (!emailAddress) {
-            const schemes = await getContactsByScheme()
-            return h.view(views.alerts, { schemes })
-          }
-          return h.view(views.confirm, { contactId: request.query.contactId, emailAddress })
-        } catch (error) {
-          return handleAlertingError(error)
-        }
-      },
       validate: {
-        query: Joi.object({
-          contactId: Joi.number().integer().required().messages({
-            'number.base': 'A user must be specified to remove',
-            'any.required': 'A user must be specified to remove'
-          })
-        }),
-        failAction: async (_request, h) => {
-          try {
-            const schemes = await getContactsByScheme()
-            return h.view(views.alerts, { schemes }).takeover()
-          } catch (error) {
-            return handleAlertingError(error)
-          }
-        }
+        payload: validateUserPayload,
+        failAction: async (request, h, error) =>
+          h
+            .redirect(getValidationRedirect(paths.update, request, error))
+            .takeover()
+      }
+    },
+    handler: async (request, h) => {
+      try {
+        const data = await getAlertRecipientViewData(request)
+
+        return h.view(views.updateConfirm, {
+          ...data,
+          contactId: request.payload.contactId,
+          emailAddress: request.payload.emailAddress,
+          action: request.payload.action,
+          formPath: paths.update,
+          formAction: paths.update,
+          schemes: getSchemeSummaries(
+            data.schemesPayload,
+            request.payload
+          ),
+          formatAlertType
+        })
+      } catch (error) {
+        return handleAlertingError(error)
       }
     }
   },
   {
     method: 'POST',
     path: paths.update,
-    handler: async (request, h) => {
-      try {
-        const user = request.auth?.credentials.account
-        const userNameOrEmail = user?.name || user?.username || user?.email
-        const action = request.payload.action
-        try {
-          if (action === 'remove') {
-            return await removeAlertUser(userNameOrEmail, request.payload.contactId, h)
-          } else {
-            return await updateAlertUser(userNameOrEmail, request.payload, h)
-          }
-        } catch (error) {
-          try {
-            const viewData = await getAlertUpdateViewData(request)
-            return h
-              .view(views.update, { ...viewData, error })
-              .code(BAD_REQUEST)
-          } catch (err) {
-            return handleAlertingError(err)
-          }
-        }
-      } catch (error) {
-        return handleAlertingError(error)
-      }
-    },
     options: {
       auth: AUTH_SCOPE,
       validate: {
-        payload: async (value, _options) => {
-          if (value.action === 'remove') {
-            const { error } = removeUserSchema.validate(value)
-            if (error) {
-              throw error
-            }
-          } else {
-            const { error } = userSchema.validate(value)
-            if (error) {
-              throw error
-            }
-          }
-          return value
-        },
+        payload: async (value) =>
+          value.action === 'remove'
+            ? validateRemovePayload(value)
+            : validateUserPayload(value),
         failAction: async (request, h, error) => {
-          try {
-            const viewData = await getAlertUpdateViewData(request)
+          if (request.payload.action !== 'remove') {
             return h
-              .view(views.update, { ...viewData, error })
+              .redirect(getValidationRedirect(paths.update, request, error))
+              .takeover()
+          }
+
+          try {
+            const data = await getAlertRecipientViewData(request)
+
+            return h
+              .view(views.update, {
+                ...data,
+                action: request.payload.action,
+                error: getValidationError(error)
+              })
               .code(BAD_REQUEST)
               .takeover()
-          } catch (err) {
-            return handleAlertingError(err)
+          } catch (viewError) {
+            return handleAlertingError(viewError)
           }
         }
       }
+    },
+    handler: async (request, h) => {
+      try {
+        if (request.payload.action === 'remove') {
+          return await removeAlertUser(
+            getAccountName(request),
+            request.payload.contactId,
+            request.payload.emailAddress,
+            h
+          )
+        }
+        return await updateAlertUser(
+          getAccountName(request),
+          request.payload,
+          h,
+          request.payload.schemeId
+            ? `${paths.alertsByScheme}?schemeId=${encodeURIComponent(
+              request.payload.schemeId
+            )}&emailAddress=${encodeURIComponent(
+              request.payload.emailAddress
+            )}`
+            : `${paths.manage}?updated=${encodeURIComponent(
+              request.payload.contactId || request.payload.emailAddress
+            )}`
+        )
+      } catch (error) {
+        try {
+          const data = await getAlertRecipientViewData(request)
+
+          return h
+            .view(views.update, {
+              ...data,
+              action: request.payload.action,
+              error
+            })
+            .code(BAD_REQUEST)
+        } catch (viewError) {
+          return handleAlertingError(viewError)
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: paths.addRecipientByScheme,
+    options: { auth: AUTH_SCOPE },
+    handler: async (request, h) => {
+      try {
+        const data = await getAlertRecipientViewData(request)
+        const schemeName = getSchemeName(
+          data.schemesPayload,
+          data.schemeId
+        )
+
+        return h.view(views.addRecipientByScheme, {
+          ...data,
+          action: 'create',
+          error: request.query?.validationError,
+          schemeName,
+          pageTitle: `Add new alert recipient for ${schemeName}`,
+          formAction: paths.addRecipientBySchemeConfirm
+        })
+      } catch (error) {
+        return handleAlertingError(error)
+      }
+    }
+  },
+  createConfirmationView(
+    paths.addRecipientBySchemeConfirm,
+    views.addRecipientBySchemeConfirm,
+    paths.addRecipientByScheme,
+    paths.addRecipientByScheme,
+    'create',
+    'Check recipient email and alert details before saving'
+  ),
+  createSaveRoute(
+    paths.addRecipientByScheme,
+    views.addRecipientByScheme,
+    'create',
+    async (request) => {
+      const schemes = await getSchemes()
+      const schemeName = getSchemeName(
+        schemes,
+        request.payload.schemeId
+      )
+
+      return `${paths.manageByScheme}?schemeName=${encodeURIComponent(
+        schemeName || ''
+      )}&emailAddress=${encodeURIComponent(
+        request.payload.emailAddress || ''
+      )}`
+    }
+  ),
+  {
+    method: 'GET',
+    path: paths.removeConfirm,
+    options: {
+      auth: AUTH_SCOPE,
+      validate: {
+        query: Joi.object({
+          emailAddress: Joi.string()
+            .trim()
+            .required()
+        }),
+        failAction: async (request, h, error) => {
+          return h
+            .redirect(
+              `${paths.removeByRecipient}?emailAddress=${encodeURIComponent(
+                request.query?.emailAddress || ''
+              )}&validationError=true`
+            )
+            .takeover()
+        }
+      }
+    },
+    handler: async (request, h) => {
+      try {
+        const data = await getAlertRemoveViewData(request)
+
+        return h.view(views.removeConfirm, data)
+      } catch (error) {
+        if (
+          error?.isBoom &&
+          [400, 404].includes(error.output?.statusCode)
+        ) {
+          return h.redirect(
+            `${paths.removeByRecipient}?emailAddress=${encodeURIComponent(
+              request.query?.emailAddress || ''
+            )}`
+          )
+        }
+
+        return handleAlertingError(error)
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: paths.manageByRecipient,
+    options: { auth: AUTH_SCOPE },
+    handler: async (request, h) => {
+      try {
+        const cards = [...PAYMENT_ALERTS_BY_RECIPIENT_LINKS]
+        const updated = request.query?.updated
+        let emailAddress
+
+        if (updated) {
+          const contact = await getAlertingData(
+            `/contact/${encodeURIComponent(updated)}`
+          )
+          emailAddress = contact?.payload?.contact?.emailAddress
+        }
+
+        return h.view(views.manageByRecipient, {
+          cards,
+          updated,
+          removed: request.query?.removed,
+          emailAddress
+        })
+      } catch (error) {
+        return handleAlertingError(error)
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: paths.updateByRecipient,
+    options: { auth: AUTH_SCOPE },
+    handler: async (request, h) => {
+      const emailAddress = request.query?.emailAddress
+
+      return h.view(views.updateByRecipient, {
+        emailAddress,
+        error: emailAddress
+          ? 'The email address provided is either invalid or not configured to receive alerts'
+          : null
+      })
+    }
+  },
+  {
+    method: 'GET',
+    path: paths.removeByRecipient,
+    options: { auth: AUTH_SCOPE },
+    handler: async (request, h) => {
+      const emailAddress = request.query?.emailAddress
+
+      return h.view(views.removeByRecipient, {
+        emailAddress,
+        error: emailAddress || request.query?.validationError
+          ? 'The email address provided is either invalid or not configured to receive alerts'
+          : null
+      })
     }
   }
 ]

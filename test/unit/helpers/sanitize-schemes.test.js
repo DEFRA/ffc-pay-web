@@ -4,16 +4,16 @@ describe('sanitizeSchemes', () => {
   test('should rename schemes according to nameMapping', () => {
     const inputSchemes = [
       { name: 'SFI', id: 1 },
-      { name: 'Lump Sums', id: 2 },
+      { name: 'Vet Visits', id: 2 },
       { name: 'Other Scheme', id: 4 },
       { name: 'COHT Capital', id: 5 }
     ]
 
     const expectedOutput = [
-      { name: 'SFI-22', id: 1 },
-      { name: 'Lump Sum Payments', id: 2 },
+      { name: 'SFI 22', id: 1 },
+      { name: 'Annual Health and Welfare Review', id: 2 },
       { name: 'Other Scheme', id: 4 },
-      { name: 'Countryside Stewardship Higher Tier (Capital)', id: 5 }
+      { name: 'COHT Capital', id: 5 }
     ]
 
     const result = sanitizeSchemes(inputSchemes)

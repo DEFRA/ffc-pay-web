@@ -1,0 +1,133 @@
+{% macro hiddenRecipientFields(data, includeSchemeId = true) %}
+  <input
+    type="hidden"
+    name="crumb"
+    value="{{ data.crumb }}"
+  />
+
+  <input
+    type="hidden"
+    name="contactId"
+    value="{{ data.contactId }}"
+  />
+
+  {% if data.includeEmailAddress %}
+    <input
+      type="hidden"
+      name="emailAddress"
+      value="{{ data.emailAddress }}"
+    />
+  {% endif %}
+
+  <input
+    type="hidden"
+    name="action"
+    value="{{ data.action }}"
+  />
+
+  {% if includeSchemeId and data.schemeId %}
+    <input
+      type="hidden"
+      name="schemeId"
+      value="{{ data.schemeId }}"
+    />
+  {% endif %}
+{% endmacro %}
+
+{% macro alertCheckboxes(data) %}
+  {% for scheme in data.schemesPayload %}
+    {% set schemeForId = scheme.name | lower | replace(' ', '-') %}
+
+    <div
+      class="govuk-form-group scheme-group"
+      data-scheme-id="{{ scheme.schemeId }}">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">Alerts</h2>
+        </legend>
+
+        <div class="govuk-hint">
+          Select all that apply, or
+          <a
+            href="#"
+            class="govuk-link govuk-link--no-visited-state"
+            data-all-toggle
+            data-select-all-text="select all alerts for {{ scheme.name }}"
+            data-clear-all-text="clear all alerts for {{ scheme.name }}">
+            select all alerts for {{ scheme.name }}
+          </a>
+        </div>
+
+        <div
+          class="govuk-checkboxes"
+          data-module="govuk-checkboxes">
+          {% for alertType in data.alertTypesPayload %}
+            {% set alertForId = alertType | lower | replace(' ', '-') %}
+            <div class="govuk-checkboxes__item">
+              <input
+                class="govuk-checkboxes__input"
+                id="{{ schemeForId }}-{{ alertForId }}"
+                name="{{ scheme.schemeId }}"
+                type="checkbox"
+                value="{{ alertType }}"
+                {%
+                  if data.selectedAlerts[alertType] and data.selectedAlerts[alertType][scheme.schemeId]
+                %}
+                  checked
+                {% endif %}
+              />
+              <label
+                class="govuk-label govuk-checkboxes__label"
+                for="{{ schemeForId }}-{{ alertForId }}">
+                {{ alertType | replace('_', ' ') | capitalize }}
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+  {% endfor %}
+{% endmacro %}
+
+{%
+  macro confirmationChangeLink(path, data, schemes, spanText, currentScheme = null)
+%}
+  <a
+    class="govuk-link"
+    href="{{ path }}?emailAddress={{ data.emailAddress | urlencode }}&action={{ data.action | urlencode }}{% if data.schemeId %}&schemeId={{ data.schemeId | urlencode }}{% endif %}{% for scheme in schemes %}{% if not currentScheme or scheme.schemeId == currentScheme.schemeId %}{% for alertType in scheme.alertTypes %}&{{ scheme.schemeId }}={{ alertType | urlencode }}{% endfor %}{% endif %}{% endfor %}">
+    Change
+    <span class="govuk-visually-hidden">{{ spanText }}</span>
+  </a>
+{% endmacro %}
+
+{% macro confirmationQueryParams(data, schemes, currentScheme = null) %}
+emailAddress={{ data.emailAddress | urlencode }}&action={{ data.action | urlencode }}{% if data.schemeId %}&schemeId={{ data.schemeId | urlencode }}{% endif %}{% for scheme in schemes %}{% if not currentScheme or scheme.schemeId == currentScheme.schemeId %}{% for alertType in scheme.alertTypes %}&{{ scheme.schemeId }}={{ alertType | urlencode }}{% endfor %}{% endif %}{% endfor %}
+{% endmacro %}
+
+{% macro alertToggleScript() %}
+  <script>
+  document.addEventListener('click', (event) => {
+      const toggle = event.target.closest('[data-all-toggle]')
+
+      if (!toggle) {
+        return
+      }
+
+      event.preventDefault()
+
+      const group = toggle.closest('.scheme-group')
+      const checkboxes = group.querySelectorAll('input[type="checkbox"]')
+      const selectAll = Array.from(checkboxes).some(
+        (checkbox) => !checkbox.checked
+      )
+
+      checkboxes.forEach((checkbox) => {
+        checkbox.checked = selectAll
+      })
+
+      toggle.textContent = selectAll
+        ? toggle.dataset.clearAllText
+        : toggle.dataset.selectAllText
+    })
+  </script>
+{% endmacro %}

@@ -1,280 +1,201 @@
 jest.mock('../../../../app/alerts', () => ({
-  getContactsByScheme: jest.fn(),
-  getAlertUpdateViewData: jest.fn(),
+  getAlertsByScheme: jest.fn(),
+  getAlertRecipientViewData: jest.fn(),
+  getAlertRemoveViewData: jest.fn(),
   updateAlertUser: jest.fn(),
   removeAlertUser: jest.fn()
 }))
-jest.mock('../../../../app/api', () => ({
-  getAlertingData: jest.fn()
+
+jest.mock('../../../../app/helpers', () => ({
+  getSchemes: jest.fn()
 }))
+
+jest.mock('../../../../app/api', () => ({
+  getAlertingData: jest.fn(),
+  getProcessingData: jest.fn()
+}))
+
 jest.mock('../../../../app/routes/schemas/user-schema', () => ({
   validate: jest.fn()
 }))
+
 jest.mock('../../../../app/routes/schemas/remove-user-schema', () => ({
   validate: jest.fn()
 }))
 
 const {
-  getContactsByScheme,
-  getAlertUpdateViewData,
+  getAlertRecipientViewData,
+  getAlertRemoveViewData,
   updateAlertUser,
   removeAlertUser
 } = require('../../../../app/alerts')
 const { getAlertingData } = require('../../../../app/api')
-const { alertAdmin } = require('../../../../app/auth/permissions')
 const { BAD_REQUEST } = require('../../../../app/constants/http-status-codes')
+const routes = require('../../../../app/routes/alerts')
 
-let createServer
-let server
+describe('Alerts route handlers', () => {
+  let h
 
-describe('Alerts test', () => {
-  jest.mock('../../../../app/auth')
+  const findRoute = (method, path) =>
+    routes.find((route) => route.method === method && route.path === path)
 
-  createServer = require('../../../../app/server')
-  const auth = {
-    strategy: 'session-auth',
-    credentials: {
-      scope: [alertAdmin],
-      account: {
-        name: 'TestUser'
-      }
-    }
-  }
-
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks()
-    server = await createServer()
-    await server.initialize()
-  })
-
-  afterEach(async () => {
-    await server.stop()
-  })
-
-  test('GET /alerts route returns 200 and renders schemes', async () => {
-    const fakeSchemes = [{ id: 1, name: 'Email' }]
-    getContactsByScheme.mockResolvedValue(fakeSchemes)
-
-    const options = {
-      method: 'GET',
-      url: '/alerts',
-      auth
+    h = {
+      view: jest.fn().mockReturnThis(),
+      redirect: jest.fn().mockReturnValue('redirected'),
+      code: jest.fn().mockReturnThis(),
+      takeover: jest.fn().mockReturnValue('taken over')
     }
+  })
 
-    const response = await server.inject(options)
+  test('GET /alerts/manage returns 200 and renders manage view when updated query present', async () => {
+    const route = findRoute('GET', '/alerts/manage')
+    getAlertingData.mockResolvedValue({
+      payload: { contact: { emailAddress: 'user@example.com' } }
+    })
 
-    expect(response.statusCode).toBe(200)
-    expect(getContactsByScheme).toHaveBeenCalled()
-    expect(response.payload).toContain('Email')
+    const result = await route.handler({ query: { updated: '123' } }, h)
+
+    expect(getAlertingData).toHaveBeenCalledWith('/contact/123')
+    expect(h.view).toHaveBeenCalledWith('alerts/manage', {
+      cards: expect.any(Array),
+      updated: '123',
+      emailAddress: 'user@example.com'
+    })
+    expect(result).toBe(h)
   })
 
   test('GET /alerts/information returns 200 and renders alert descriptions', async () => {
+    const route = findRoute('GET', '/alerts/information')
     const fakeAlertDescriptions = [{
       id: 'desc1',
       type: 'PAYMENT_ALERT',
       description: [
-        'This alert triggers on payment issues.',
-        'Please review payment details carefully.'
+        'This alert triggers on payment issues.'
       ]
     }]
+
     getAlertingData.mockResolvedValue({
       payload: { alertDescriptions: fakeAlertDescriptions }
     })
 
-    const options = {
-      method: 'GET',
-      url: '/alerts/information',
-      auth
-    }
+    const result = await route.handler({}, h)
 
-    const response = await server.inject(options)
-
-    expect(response.statusCode).toBe(200)
     expect(getAlertingData).toHaveBeenCalledWith('/alert-descriptions')
-    expect(response.payload).toContain('This alert triggers on payment issues.')
-  })
-})
-
-describe('Alerts GET /alerts/confirm-delete route tests', () => {
-  const auth = {
-    strategy: 'session-auth',
-    credentials: {
-      scope: [alertAdmin],
-      account: {
-        name: 'TestUser'
-      }
-    }
-  }
-
-  beforeEach(() => {
-    jest.clearAllMocks()
+    expect(h.view).toHaveBeenCalledWith('alerts/information', {
+      alertDescriptions: fakeAlertDescriptions
+    })
+    expect(result).toBe(h)
   })
 
-  test('GET /alerts/confirm-delete with valid contactId and emailAddress renders confirm view', async () => {
-    const contactId = 123
-    const emailAddress = 'test@example.com'
-    getAlertingData.mockResolvedValue({
-      payload: {
-        contact: { emailAddress }
-      }
+  test('GET /alerts/confirm-delete with valid query renders confirm view', async () => {
+    const route = findRoute('GET', '/alerts/confirm-delete')
+    getAlertRemoveViewData.mockResolvedValue({
+      contactId: '123',
+      emailAddress: 'test@example.com'
     })
 
-    const options = {
-      method: 'GET',
-      url: `/alerts/confirm-delete?contactId=${contactId}`,
-      auth
-    }
-
-    const response = await server.inject(options)
-
-    expect(getAlertingData).toHaveBeenCalledWith(`/contact/contactId/${encodeURIComponent(contactId)}`)
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain(emailAddress)
-    expect(response.payload).toContain(contactId.toString())
-  })
-
-  test('GET /alerts/confirm-delete with valid contactId but no emailAddress renders alerts view', async () => {
-    const contactId = 456
-    getAlertingData.mockResolvedValue({
-      payload: {
-        contact: {}
-      }
-    })
-    const fakeSchemes = [{ id: 1, name: 'Email' }]
-    getContactsByScheme.mockResolvedValue(fakeSchemes)
-
-    const options = {
-      method: 'GET',
-      url: `/alerts/confirm-delete?contactId=${contactId}`,
-      auth
-    }
-
-    const response = await server.inject(options)
-
-    expect(getAlertingData).toHaveBeenCalledWith(`/contact/contactId/${encodeURIComponent(contactId)}`)
-    expect(getContactsByScheme).toHaveBeenCalled()
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain('Email')
-  })
-
-  test('GET /alerts/confirm-delete with invalid contactId triggers validation failAction and renders alerts view', async () => {
-    const fakeSchemes = [{ id: 1, name: 'Email' }]
-    getContactsByScheme.mockResolvedValue(fakeSchemes)
-
-    const options = {
-      method: 'GET',
-      url: '/alerts/confirm-delete?contactId=invalid',
-      auth
-    }
-
-    const response = await server.inject(options)
-
-    expect(getContactsByScheme).toHaveBeenCalled()
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain('Email')
-  })
-
-  test('GET /alerts/confirm-delete without contactId triggers validation failAction and renders alerts view', async () => {
-    const fakeSchemes = [{ id: 1, name: 'Email' }]
-    getContactsByScheme.mockResolvedValue(fakeSchemes)
-
-    const options = {
-      method: 'GET',
-      url: '/alerts/confirm-delete',
-      auth
-    }
-
-    const response = await server.inject(options)
-
-    expect(getContactsByScheme).toHaveBeenCalled()
-    expect(response.statusCode).toBe(200)
-    expect(response.payload).toContain('Email')
-  })
-})
-
-describe('Alerts POST /alerts/update route tests', () => {
-  const auth = {
-    strategy: 'session-auth',
-    credentials: {
-      scope: [],
-      account: {
-        name: 'TestUser'
-      }
-    }
-  }
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  test('POST /alerts/update with action "remove" calls removeAlertUser and returns result', async () => {
-    const payload = { action: 'remove', contactId: '123' }
-    const h = {
-      view: jest.fn(),
-      code: jest.fn(() => h)
-    }
     const request = {
-      auth,
-      payload
+      query: { contactId: '123', emailAddress: 'test@example.com' }
     }
+
+    const result = await route.handler(request, h)
+
+    expect(getAlertRemoveViewData).toHaveBeenCalledWith(request)
+    expect(h.view).toHaveBeenCalledWith('alerts/confirm-delete', {
+      contactId: '123',
+      emailAddress: 'test@example.com'
+    })
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/confirm-delete without query still renders confirm route', async () => {
+    const route = findRoute('GET', '/alerts/confirm-delete')
+    getAlertRemoveViewData.mockResolvedValue({
+      contactId: undefined,
+      emailAddress: undefined
+    })
+
+    const request = { query: {} }
+
+    const result = await route.handler(request, h)
+
+    expect(getAlertRemoveViewData).toHaveBeenCalledWith(request)
+    expect(result).toBe(h)
+  })
+
+  test('POST /alerts/update with action remove calls removeAlertUser and returns its result', async () => {
+    const route = findRoute('POST', '/alerts/update')
     removeAlertUser.mockResolvedValue('remove-success')
 
-    const handler = require('../../../../app/routes/alerts').find(
-      route => route.method === 'POST' && route.path === '/alerts/update'
-    ).handler
+    const request = {
+      auth: { credentials: { account: { name: 'TestUser' } } },
+      payload: {
+        action: 'remove',
+        contactId: '123',
+        emailAddress: 'user@example.com'
+      }
+    }
 
-    const result = await handler(request, h)
+    const result = await route.handler(request, h)
 
-    expect(removeAlertUser).toHaveBeenCalledWith('TestUser', '123', h)
+    expect(removeAlertUser).toHaveBeenCalledWith(
+      'TestUser',
+      '123',
+      'user@example.com',
+      h
+    )
     expect(result).toBe('remove-success')
   })
 
-  test('POST /alerts/update with non-remove action calls updateAlertUser and returns result', async () => {
-    const payload = { action: 'update', foo: 'bar' }
-    const h = {
-      view: jest.fn(),
-      code: jest.fn(() => h)
-    }
-    const request = {
-      auth,
-      payload
-    }
+  test('POST /alerts/update with non-remove action calls updateAlertUser and returns its result', async () => {
+    const route = findRoute('POST', '/alerts/update')
     updateAlertUser.mockResolvedValue('update-success')
 
-    const handler = require('../../../../app/routes/alerts').find(
-      route => route.method === 'POST' && route.path === '/alerts/update'
-    ).handler
+    const request = {
+      auth: { credentials: { account: { name: 'TestUser' } } },
+      payload: {
+        action: 'update',
+        contactId: '123',
+        emailAddress: 'user@example.com'
+      }
+    }
 
-    const result = await handler(request, h)
+    const result = await route.handler(request, h)
 
-    expect(updateAlertUser).toHaveBeenCalledWith('TestUser', payload, h)
+    expect(updateAlertUser).toHaveBeenCalledWith(
+      'TestUser',
+      request.payload,
+      h,
+      '/alerts/manage?updated=123'
+    )
     expect(result).toBe('update-success')
   })
 
-  test('POST /alerts/update handler catches errors and renders error view with BAD_REQUEST', async () => {
-    const payload = { action: 'update', foo: 'bar' }
-    const request = {
-      auth,
-      payload
-    }
+  test('POST /alerts/update handler catches updateAlertUser errors and renders error view with BAD_REQUEST', async () => {
+    const route = findRoute('POST', '/alerts/update')
     const error = new Error('Something went wrong')
     updateAlertUser.mockRejectedValue(error)
-    getAlertUpdateViewData.mockResolvedValue({ some: 'viewdata' })
+    getAlertRecipientViewData.mockResolvedValue({ some: 'viewdata' })
 
-    const h = {
-      view: jest.fn(() => h),
-      code: jest.fn(() => h)
+    const request = {
+      auth: { credentials: { account: { name: 'TestUser' } } },
+      payload: {
+        action: 'update',
+        contactId: '123',
+        emailAddress: 'user@example.com'
+      }
     }
 
-    const handler = require('../../../../app/routes/alerts').find(
-      route => route.method === 'POST' && route.path === '/alerts/update'
-    ).handler
+    const result = await route.handler(request, h)
 
-    const result = await handler(request, h)
-
-    expect(updateAlertUser).toHaveBeenCalled()
-    expect(getAlertUpdateViewData).toHaveBeenCalledWith(request)
-    expect(h.view).toHaveBeenCalledWith('alerts/update', { some: 'viewdata', error })
+    expect(getAlertRecipientViewData).toHaveBeenCalledWith(request)
+    expect(h.view).toHaveBeenCalledWith('alerts/update', {
+      some: 'viewdata',
+      action: 'update',
+      error
+    })
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(result).toBe(h)
   })

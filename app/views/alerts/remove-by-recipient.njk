@@ -3,7 +3,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set pageTitle = "Delete user" %}
+{% set pageTitle = "Remove recipient" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
@@ -19,9 +19,6 @@
       }, {
         text: "Manage email alerts by recipient",
         href: "/alerts/manage-by-recipient"
-      }, { 
-        text: "Remove recipient",
-        href: "/alerts/remove-by-recipient"
       }, {
         text: pageTitle
       }]
@@ -33,26 +30,15 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <form
-        method="POST"
-        action="/alerts/update"
+        method="GET"
+        action="/alerts/confirm-delete"
         autocomplete="off"
         novalidate>
-        <input
-          type="hidden"
-          name="crumb"
-          value="{{crumb}}"
-        />
-        <input
-          type="hidden"
-          name="contactId"
-          value="{{contactId}}"
-        />
-        <input
-          type="hidden"
-          name="emailAddress"
-          value="{{emailAddress}}"
-        />
         <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+        <p class="govuk-body-m">
+          Search for recipient with an email address to view and remove all of
+          their email alerts.
+        </p>
         {% if error %}
           <div
             class="govuk-error-summary"
@@ -67,37 +53,42 @@
             </h2>
             <div class="govuk-error-summary__body">
               <ul class="govuk-list govuk-error-summary__list">
-                <span class="govuk-error-message"><span
-                    class="govuk-visually-hidden">Error:</span> {{
-                    error.message
-                  }}</span>
+                <li>
+                  <a href="#emailAddress">{{ error }}</a>
+                </li>
               </ul>
             </div>
           </div>
         {% endif %}
-        <p class="govuk-body">
-          Are you sure you want to remove {{ emailAddress }}?
-        </p>
-        <div class="govuk-warning-text">
-          <span
-            class="govuk-warning-text__icon"
-            aria-hidden="true">!</span>
-          <strong class="govuk-warning-text__text">
-            <span class="govuk-visually-hidden">Warning</span>
-            Removing this user will permanently remove this email address from
-            all alerting. If this email address needs to receive alerts again in
-            the future, they can be added again as a new alert recipient.
-          </strong>
+
+        <div
+          class="govuk-form-group{% if error %} govuk-form-group--error{% endif %}">
+          <label
+            class="govuk-label"
+            for="emailAddress">
+            Recipient email
+          </label>
+          {% if error %}
+            <p
+              id="emailAddress-error"
+              class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ error }}
+            </p>
+          {% endif %}
+          <input
+            class="govuk-input govuk-!-width-three-quarters{% if error %} govuk-input--error{% endif %}"
+            id="emailAddress"
+            name="emailAddress"
+            type="text"
+            value="{{ emailAddress }}"
+            {% if error %}aria-describedby="emailAddress-error"{% endif %}
+          />
         </div>
         {{
           govukButton({
-            text: "Remove email",
-            classes: "govuk-button--warning",
+            text: "Search",
             attributes: {
-              id: "remove",
-              type: "submit",
-              name: "action",
-              value: "remove"
+              id: "submit"
             }
           })
         }}
