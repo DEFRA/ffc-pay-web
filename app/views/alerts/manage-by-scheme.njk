@@ -1,112 +1,44 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/card-grid.njk' import cardGrid %}
+{% from 'macros/alert-notification-banner.njk' import alertNotificationBanner %}
 
 {% set pageTitle = "Manage email alerts by scheme" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {% include "macros/alert-breadcrumbs.njk" %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      {% if schemeName and emailAddress %}
-        <div
-          class="govuk-notification-banner govuk-notification-banner--success"
-          role="alert"
-          aria-labelledby="govuk-notification-banner-title"
-          data-module="govuk-notification-banner">
-          <div class="govuk-notification-banner__header">
-            <h2
-              class="govuk-notification-banner__title"
-              id="govuk-notification-banner-title-hold-added">
-              Success
-            </h2>
-          </div>
-          <div class="govuk-notification-banner__content">
-            <h3 class="govuk-notification-banner__heading">
-              {{ emailAddress }} has been added to receive alerts for {{ schemeName }}
-            </h3>
-          </div>
-        </div>
-      {% endif %}
-      <form
-        method="GET"
-        action="/alerts/by-scheme"
-        autocomplete="off"
-        novalidate>
-        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-        <p class="govuk-body-m">
-          Choose a scheme to view existing email alerts and manage who receives
-          each type of alert.
-        </p>
-        {% if error %}
-          <div
-            class="govuk-error-summary"
-            aria-labelledby="error-summary-title"
-            role="alert"
-            tabindex="-1"
-            data-module="govuk-error-summary">
-            <h2
-              class="govuk-error-summary__title"
-              id="error-summary-title">
-              There is a problem
-            </h2>
-            <div class="govuk-error-summary__body">
-              <ul class="govuk-list govuk-error-summary__list">
-                <li>
-                  <a href="#schemeId">{{ error }}</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        {% endif %}
+      {{ alertNotificationBanner(updated, removed, emailAddress) }}
 
-        {% if data.length %}
-          <div
-            class="govuk-form-group{% if error %} govuk-form-group--error{% endif %}">
-            <label
-              class="govuk-label"
-              for="schemeId">
-              Scheme
-            </label>
-            {% if error %}
-              <p
-                id="schemeId-error"
-                class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> {{ error }}
-              </p>
-            {% endif %}
-            <select
-              class="govuk-select{% if error %} govuk-select--error{% endif %}"
-              id="schemeId"
-              name="schemeId"
-              {% if error %}aria-describedby="schemeId-error"{% endif %}>
-              <option value="">Select a scheme</option>
-              {% for scheme in data %}
-                <option value="{{scheme.schemeId}}">{{ scheme.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          {{
-            govukButton({
-              text: "Continue",
-              attributes: {
-                id: "submit"
-              }
-            })
-          }}
-        {% else %}
-          <p
-            id="no-schemes"
-            class="govuk-body">
-            No schemes were found.
-          </p>
-        {% endif %}
-      </form>
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body">
+        Select a scheme to manage its email alerts.
+      </p>
+      <p class="govuk-body">
+        Use the cards below to choose the scheme you want to review or update.
+      </p>
+
+      {{ cardGrid(cards) }}
     </div>
   </div>
 {% endblock %}

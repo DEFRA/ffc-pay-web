@@ -1,0 +1,24 @@
+{% macro cardGrid(cards) %}
+  {% set cardGroups = [] %}
+  {% for i in range(0, cards | length, 2) %}
+    {% set cardGroups = cardGroups.concat([cards.slice(i, i + 2)]) %}
+  {% endfor %}
+
+  {% for group in cardGroups %}
+    <div class="govuk-cards govuk-cards--2">
+      {% for card in group %}
+        <div class="govuk-cards--2__item govuk-card--dashboard dashboard-card">
+          <h2 class="govuk-heading-m card__heading">
+            <a
+              href="{{ card.href }}"
+              class="govuk-link">{{ card.text }}</a>
+          </h2>
+          <div class="govuk-hint">{{ card.description }}</div>
+        </div>
+      {% endfor %}
+      {% if group | length == 1 %}
+        <div class="govuk-cards--2__item govuk-u-hidden"></div>
+      {% endif %}
+    </div>
+  {% endfor %}
+{% endmacro %}

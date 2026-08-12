@@ -2,8 +2,9 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "macros/alert-helpers.njk" import confirmationQueryParams %}
 {%
-  from "macros/alert-helpers.njk" import confirmationChangeLink, confirmationQueryParams
+  from "macros/alert-summary-cards.njk" import recipientSummaryCard, schemeSummaryCard, confirmationHiddenFields
 %}
 
 {% if not pageTitle %}
@@ -36,7 +37,7 @@
         href: "/alerts/manage-by-scheme"
       }, {
         text: schemeName ~ " email alerts",
-        href: "/alerts/by-scheme?schemeId=" ~ (schemeId | urlencode) 
+        href: "/alerts/by-scheme?schemeId=" ~ (schemeId | urlencode)
       }, {
         text: "Add new alert recipient for " ~ schemeName,
         href: "/alerts/add-recipient-by-scheme?" ~ confirmationQueryParams(breadcrumbData, schemes, scheme)
@@ -52,82 +53,29 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
-      <div class="govuk-summary-card">
-        <div class="govuk-summary-card__title-wrapper">
-          <h2 class="govuk-summary-card__title">Recipient</h2>
-
-          <ul class="govuk-summary-card__actions">
-            <li class="govuk-summary-card__action">
-              {{
-                confirmationChangeLink(
-                  formPath, 
-                  {
-                    emailAddress: emailAddress,
-                    action: action,
-                    schemeId: schemeId
-                  },
-                  schemes,
-                  'recipient email address',
-                  scheme
-                )
-              }}
-            </li>
-          </ul>
-        </div>
-
-        <div class="govuk-summary-card__content">
-          <dl class="govuk-summary-list">
-            <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">Email address</dt>
-              <dd class="govuk-summary-list__value">{{ emailAddress }}</dd>
-            </div>
-          </dl>
-        </div>
-      </div>
+      {{
+        recipientSummaryCard(
+          formPath,
+          { emailAddress: emailAddress, action: action, schemeId: schemeId },
+          schemes,
+          'recipient email address',
+          scheme,
+          emailAddress
+        )
+      }}
 
       {% for scheme in schemes %}
-        {% if scheme.alertTypes and scheme.alertTypes.length %}
-          <div class="govuk-summary-card">
-            <div class="govuk-summary-card__title-wrapper">
-              <h2 class="govuk-summary-card__title">
-                {{ scheme.schemeName }}
-              </h2>
-
-              <ul class="govuk-summary-card__actions">
-                <li class="govuk-summary-card__action">
-                  {{
-                    confirmationChangeLink(
-                      formPath,
-                      {
-                        emailAddress: emailAddress,
-                        action: action,
-                        schemeId: schemeId
-                      },
-                      schemes,
-                      'alert types for ' ~ scheme.schemeName,
-                      scheme
-                    )
-                  }}
-                </li>
-              </ul>
-            </div>
-
-            <div class="govuk-summary-card__content">
-              <dl class="govuk-summary-list">
-                <div class="govuk-summary-list__row">
-                  <dt class="govuk-summary-list__key">Alert types</dt>
-                  <dd class="govuk-summary-list__value">
-                    <ul class="govuk-list">
-                      {% for alertType in scheme.alertTypes %}
-                        <li>{{ formatAlertType(alertType) }}</li>
-                      {% endfor %}
-                    </ul>
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-        {% endif %}
+        {{
+          schemeSummaryCard(
+            scheme,
+            formPath,
+            { emailAddress: emailAddress, action: action, schemeId: schemeId },
+            schemes,
+            'alert types for ' ~ scheme.schemeName,
+            scheme,
+            formatAlertType
+          )
+        }}
       {% endfor %}
 
       <form
@@ -135,39 +83,9 @@
         action="{{ formAction }}"
         autocomplete="off"
         novalidate>
-        <input
-          type="hidden"
-          name="crumb"
-          value="{{ crumb }}"
-        />
-        <input
-          type="hidden"
-          name="emailAddress"
-          value="{{ emailAddress }}"
-        />
-        <input
-          type="hidden"
-          name="action"
-          value="{{ action }}"
-        />
-
-        {% if schemeId %}
-          <input
-            type="hidden"
-            name="schemeId"
-            value="{{ schemeId }}"
-          />
-        {% endif %}
-
-        {% for scheme in schemes %}
-          {% for alertType in scheme.alertTypes %}
-            <input
-              type="hidden"
-              name="{{ scheme.schemeId }}"
-              value="{{ alertType }}"
-            />
-          {% endfor %}
-        {% endfor %}
+        {{
+          confirmationHiddenFields(crumb, null, emailAddress, action, schemeId, schemes)
+        }}
 
         {{
           govukButton({
