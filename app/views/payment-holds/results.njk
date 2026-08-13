@@ -3,7 +3,8 @@
 {%
   from "macros/hold-breadcrumbs-with-search.njk" import holdBreadcrumbsWithSearch
 %}
-{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from 'macros/records-per-page.njk' import recordsPerPage %}
+{% from 'macros/build-pagination.njk' import buildPagination %}
 
 {% if frn and schemeName %}
   {% set pageTitle = "Payment holds for " ~ schemeName ~ " and " ~ frn %}
@@ -97,25 +98,7 @@
             <div class="govuk-grid-column-one-half govuk-!-padding-top-1">
               <div
                 style="display:flex;align-items:baseline;justify-content:flex-end;">
-                <div
-                  class="govuk-body-s"
-                  aria-label="Records per page"
-                  style="white-space:nowrap;vertical-align:baseline;">
-                  <span>Number of records per page:</span>&nbsp;
-                  {% set perPageOptions = [100, 500, 1000] %}
-                  {% for opt in perPageOptions %}
-                    {% if perPage == opt %}
-                      <strong>{{ opt }}</strong>
-                    {% else %}
-                      <a
-                        href="?perPage={{ opt }}&page=1{{ extraQuery }}"
-                        class="govuk-link">{{ opt }}</a>
-                    {% endif %}
-                    {% if not loop.last %}
-                      &nbsp;|&nbsp;
-                    {% endif %}
-                  {% endfor %}
-                </div>
+                {{ recordsPerPage(perPage, [100, 500, 1000], extraQuery) }}
               </div>
             </div>
           {% endif %}
@@ -246,33 +229,8 @@
         </table>
 
         {% if hasMultiplePages %}
-          {% set paginationPrevious = undefined %}
-          {% set paginationNext = undefined %}
-
-          {% if page > 1 %}
-            {%
-              set paginationPrevious = {
-                href: "?page=" + (page - 1) + "&perPage=" + perPage + extraQuery,
-                labelText: "Previous page"
-              }
-            %}
-          {% endif %}
-
-          {% if page < totalPages %}
-            {%
-              set paginationNext = {
-                href: "?page=" + (page + 1) + "&perPage=" + perPage + extraQuery,
-                labelText: "Next page"
-              }
-            %}
-          {% endif %}
-
           {{
-            govukPagination({
-              previous: paginationPrevious,
-              next: paginationNext,
-              items: paginationItems
-            })
+            buildPagination(page, totalPages, perPage, extraQuery, paginationItems)
           }}
         {% endif %}
       {% else %}

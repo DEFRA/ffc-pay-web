@@ -4,7 +4,8 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
-{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from 'macros/records-per-page.njk' import recordsPerPage %}
+{% from 'macros/build-pagination.njk' import buildPagination %}
 
 {% set pageTitle = "Search agreement closures" %}
 {% set hasMultiplePages = totalPages and totalPages > 1 %}
@@ -146,25 +147,7 @@
             <div class="govuk-grid-column-one-half govuk-!-padding-top-1">
               <div
                 style="display:flex;align-items:baseline;justify-content:flex-end;">
-                <div
-                  class="govuk-body-s"
-                  aria-label="Records per page"
-                  style="white-space:nowrap;vertical-align:baseline;">
-                  <span>Number of records per page:</span>&nbsp;
-                  {% set perPageOptions = [2500, 5000, 10000] %}
-                  {% for opt in perPageOptions %}
-                    {% if perPage == opt %}
-                      <strong>{{ opt }}</strong>
-                    {% else %}
-                      <a
-                        href="?perPage={{ opt }}&page=1{{ extraQuery }}"
-                        class="govuk-link">{{ opt }}</a>
-                    {% endif %}
-                    {% if not loop.last %}
-                      &nbsp;|&nbsp;
-                    {% endif %}
-                  {% endfor %}
-                </div>
+                {{ recordsPerPage(perPage, [2500, 5000, 10000], extraQuery) }}
               </div>
             </div>
           {% endif %}
@@ -259,33 +242,8 @@
         }}
 
         {% if hasMultiplePages %}
-          {% set paginationPrevious = undefined %}
-          {% set paginationNext = undefined %}
-
-          {% if page > 1 %}
-            {%
-              set paginationPrevious = {
-                href: "?page=" + (page - 1) + "&perPage=" + perPage + extraQuery,
-                labelText: "Previous page"
-              }
-            %}
-          {% endif %}
-
-          {% if page < totalPages %}
-            {%
-              set paginationNext = {
-                href: "?page=" + (page + 1) + "&perPage=" + perPage + extraQuery,
-                labelText: "Next page"
-              }
-            %}
-          {% endif %}
-
           {{
-            govukPagination({
-              previous: paginationPrevious,
-              next: paginationNext,
-              items: paginationItems
-            })
+            buildPagination(page, totalPages, perPage, extraQuery, paginationItems)
           }}
         {% endif %}
       {% else %}
