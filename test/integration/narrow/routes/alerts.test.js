@@ -24,20 +24,29 @@ jest.mock('../../../../app/routes/schemas/remove-user-schema', () => ({
 }))
 
 const {
+  getAlertsByScheme,
   getAlertRecipientViewData,
   getAlertRemoveViewData,
   updateAlertUser,
   removeAlertUser
 } = require('../../../../app/alerts')
-const { getAlertingData } = require('../../../../app/api')
-const { BAD_REQUEST } = require('../../../../app/constants/http-status-codes')
+const { getSchemes } = require('../../../../app/helpers')
+const { getAlertingData, getProcessingData } = require('../../../../app/api')
+const { BAD_REQUEST, PRECONDITION_FAILED } = require('../../../../app/constants/http-status-codes')
 const routes = require('../../../../app/routes/alerts')
 
 describe('Alerts route handlers', () => {
   let h
 
-  const findRoute = (method, path) =>
-    routes.find((route) => route.method === method && route.path === path)
+  const findRoute = (method, path) => {
+    const targetLast = String(path).split('/').filter(Boolean).pop()
+    return routes.find((route) => {
+      if (route.method !== method) return false
+      if (typeof route.path !== 'string') return false
+      const routeLast = route.path.split('/').filter(Boolean).pop()
+      return routeLast === targetLast
+    })
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -66,6 +75,79 @@ describe('Alerts route handlers', () => {
     expect(result).toBe(h)
   })
 
+  test('GET /alerts/manage-by-scheme returns 200 and renders scheme management view', async () => {
+    const route = findRoute('GET', '/alerts/manage-by-scheme')
+    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
+    getSchemes.mockResolvedValue(schemes)
+
+    const result = await route.handler({}, h)
+
+    expect(getSchemes).toHaveBeenCalledTimes(1)
+    expect(h.view).toHaveBeenCalledWith('alerts/manage-by-scheme', {
+      data: schemes,
+      schemeName: undefined,
+      emailAddress: undefined
+    })
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/by-scheme without schemeId returns precondition failure view', async () => {
+    const route = findRoute('GET', '/alerts/by-scheme')
+    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
+    getProcessingData.mockResolvedValue({
+      payload: { paymentSchemes: schemes }
+    })
+
+    const result = await route.handler({ query: {} }, h)
+
+    expect(getProcessingData).toHaveBeenCalled()
+    expect(h.view).toHaveBeenCalledWith('alerts/by-scheme', {
+      error: 'Select a scheme',
+      data: schemes
+    })
+    expect(h.code).toHaveBeenCalledWith(PRECONDITION_FAILED)
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/by-scheme with schemeId returns rendered scheme alerts view', async () => {
+    const route = findRoute('GET', '/alerts/by-scheme')
+    getAlertsByScheme.mockResolvedValue({
+      schemeName: 'Scheme 1',
+      formattedTypes: [{ displayType: 'Payment alert', users: [] }]
+    })
+
+    const result = await route.handler({ query: { schemeId: 'S1' } }, h)
+
+    expect(getAlertsByScheme).toHaveBeenCalledWith('S1')
+    expect(h.view).toHaveBeenCalledWith('alerts/by-scheme', {
+      types: [{ displayType: 'Payment alert', users: [] }],
+      schemeName: 'Scheme 1',
+      schemeId: 'S1'
+    })
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/by-scheme returns precondition failure when scheme lookup fails', async () => {
+    const route = findRoute('GET', '/alerts/by-scheme')
+    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
+    getAlertsByScheme.mockRejectedValue({ data: { payload: { message: 'Lookup failed' } } })
+    getProcessingData.mockResolvedValue({
+      payload: { paymentSchemes: schemes }
+    })
+
+    const result = await route.handler({ query: { schemeId: 'S1' } }, h)
+
+    expect(getAlertsByScheme).toHaveBeenCalledWith('S1')
+    expect(getProcessingData).toHaveBeenCalled()
+    expect(h.view).toHaveBeenCalledWith('alerts/by-scheme', {
+      error: 'Lookup failed',
+      schemeId: 'S1',
+      data: schemes
+    })
+    expect(h.code).toHaveBeenCalledWith(PRECONDITION_FAILED)
+    expect(result).toBe(h)
+  })
+
   test('GET /alerts/information returns 200 and renders alert descriptions', async () => {
     const route = findRoute('GET', '/alerts/information')
     const fakeAlertDescriptions = [{
@@ -85,6 +167,59 @@ describe('Alerts route handlers', () => {
     expect(getAlertingData).toHaveBeenCalledWith('/alert-descriptions')
     expect(h.view).toHaveBeenCalledWith('alerts/information', {
       alertDescriptions: fakeAlertDescriptions
+    })
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/update loads alert recipient data for an existing contact', async () => {
+    const route = findRoute('GET', '/alerts/update')
+    const viewData = {
+      schemesPayload: [],
+      alertTypesPayload: ['PAYMENT_ALERT'],
+      contactId: '123',
+      emailAddress: 'user@example.com'
+    }
+    getAlertRecipientViewData.mockResolvedValue(viewData)
+
+    const request = {
+      query: {
+        action: 'edit',
+        contactId: '123'
+      }
+    }
+
+    const result = await route.handler(request, h)
+
+    expect(getAlertRecipientViewData).toHaveBeenCalledWith(request, {
+      loadContact: true
+    })
+    expect(h.view).toHaveBeenCalledWith('alerts/update', {
+      ...viewData,
+      action: 'edit',
+      error: undefined
+    })
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/add-recipient-by-scheme renders the add recipient view', async () => {
+    const route = findRoute('GET', '/alerts/add-recipient-by-scheme')
+    const viewData = {
+      schemesPayload: [{ schemeId: 'S1', name: 'Scheme 1' }],
+      schemeId: 'S1',
+      alertTypesPayload: ['PAYMENT_ALERT']
+    }
+    getAlertRecipientViewData.mockResolvedValue(viewData)
+
+    const result = await route.handler({ query: { schemeId: 'S1' } }, h)
+
+    expect(getAlertRecipientViewData).toHaveBeenCalledWith({ query: { schemeId: 'S1' } })
+    expect(h.view).toHaveBeenCalledWith('alerts/add-recipient-by-scheme', {
+      ...viewData,
+      action: 'create',
+      error: undefined,
+      schemeName: 'Scheme 1',
+      pageTitle: 'Add new alert recipient for Scheme 1',
+      formAction: '/alerts/add-recipient-by-scheme-confirm'
     })
     expect(result).toBe(h)
   })
@@ -122,6 +257,46 @@ describe('Alerts route handlers', () => {
     const result = await route.handler(request, h)
 
     expect(getAlertRemoveViewData).toHaveBeenCalledWith(request)
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/manage-by-recipient returns a recipient management view with updated contact info', async () => {
+    const route = findRoute('GET', '/alerts/manage-by-recipient')
+    getAlertingData.mockResolvedValue({
+      payload: { contact: { emailAddress: 'user@example.com' } }
+    })
+
+    const result = await route.handler({ query: { updated: '123', removed: '456' } }, h)
+
+    expect(getAlertingData).toHaveBeenCalledWith('/contact/123')
+    expect(h.view).toHaveBeenCalledWith('alerts/manage-by-recipient', {
+      cards: expect.any(Array),
+      updated: '123',
+      removed: '456',
+      emailAddress: 'user@example.com'
+    })
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/update-by-recipient renders a search view with validation error when email is supplied', async () => {
+    const route = findRoute('GET', '/alerts/update-by-recipient')
+    const result = await route.handler({ query: { emailAddress: 'bad@example.com' } }, h)
+
+    expect(h.view).toHaveBeenCalledWith('alerts/update-by-recipient', {
+      emailAddress: 'bad@example.com',
+      error: 'The email address provided is either invalid or not configured to receive alerts'
+    })
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/remove-by-recipient renders a search view with validation error when email is supplied', async () => {
+    const route = findRoute('GET', '/alerts/remove-by-recipient')
+    const result = await route.handler({ query: { emailAddress: 'bad@example.com' } }, h)
+
+    expect(h.view).toHaveBeenCalledWith('alerts/remove-by-recipient', {
+      emailAddress: 'bad@example.com',
+      error: 'The email address provided is either invalid or not configured to receive alerts'
+    })
     expect(result).toBe(h)
   })
 
