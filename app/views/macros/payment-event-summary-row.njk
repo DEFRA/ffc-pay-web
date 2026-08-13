@@ -1,0 +1,24 @@
+{% from "macros/records-per-page.njk" import recordsPerPage %}
+
+{%
+  macro paymentEventSummaryRow(count, hasMultiplePages, perPage, options, extraQuery)
+%}
+  <div class="govuk-grid-row govuk-!-margin-bottom-3">
+    <div class="govuk-grid-column-one-half">
+      <p
+        class="govuk-body-m govuk-!-margin-0"
+        id="payment-event-count">
+        Showing {{ count }} payment event{{ 's' if count != 1 }}
+      </p>
+    </div>
+
+    {% if hasMultiplePages %}
+      <div class="govuk-grid-column-one-half">
+        <div
+          style="display:flex;align-items:baseline;justify-content:flex-end;">
+          {{ recordsPerPage(perPage, options, extraQuery) }}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endmacro %}

@@ -186,4 +186,44 @@ describe('Holds routes (integration narrow)', () => {
     expect(postProcessing).toHaveBeenCalledWith('/add-hold-type', { categoryName: 'New Cat', schemeId: '7' }, null)
     expect(h.redirect).toHaveBeenCalledWith(`${HOLDS_ROUTES.TYPES}?createdCategory=${encodeURIComponent('New Cat')}`)
   })
+
+  test.each([
+    {
+      description: 'missing',
+      payload: {
+        categoryName: 'Test Category'
+      }
+    },
+    {
+      description: 'not a number',
+      payload: {
+        holdCategoryId: 'invalid',
+        categoryName: 'Test Category'
+      }
+    },
+    {
+      description: 'not an integer',
+      payload: {
+        holdCategoryId: 1.5,
+        categoryName: 'Test Category'
+      }
+    }
+  ])(
+    'POST edit type validation returns custom message when holdCategoryId is $description',
+    ({ payload }) => {
+      const routes = require('../../../../app/routes/holds')
+      const route = routes.find(route =>
+        route.method === 'POST' &&
+        route.path === HOLDS_ROUTES.EDIT_TYPE
+      )
+
+      const schema = route.options.validate.payload
+      const { error } = schema.validate(payload)
+
+      expect(error).toBeDefined()
+      expect(error.details[0].message).toBe(
+        'A hold category must be selected to edit'
+      )
+    }
+  )
 })

@@ -115,9 +115,13 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const holdCategoryId = request.query?.holdCategoryId
-        if (!holdCategoryId) return h.redirect(HOLDS_ROUTES.TYPES)
+        if (!holdCategoryId) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
         const category = await getEditableCategory(holdCategoryId)
-        if (mandatoryHoldTypes.includes(category.name)) return h.redirect(HOLDS_ROUTES.TYPES)
+        if (mandatoryHoldTypes.includes(category.name)) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
         return h.view(HOLDS_VIEWS.EDIT_TYPE, {
           schemeName: category.schemeName,
           categoryName: category.name,
@@ -159,9 +163,13 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const holdCategoryId = request.query?.holdCategoryId
-        if (!holdCategoryId) return h.redirect(HOLDS_ROUTES.TYPES)
+        if (!holdCategoryId) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
         const category = await getEditableCategory(holdCategoryId)
-        if (mandatoryHoldTypes.includes(category.name)) return h.redirect(HOLDS_ROUTES.TYPES)
+        if (mandatoryHoldTypes.includes(category.name)) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
         return h.view(HOLDS_VIEWS.REMOVE_TYPE, {
           schemeName: category.schemeName,
           categoryName: category.name,
@@ -177,9 +185,13 @@ module.exports = [
       auth: AUTH_SCOPE,
       handler: async (request, h) => {
         const holdCategoryId = request.payload?.holdCategoryId
-        if (!holdCategoryId) return h.redirect(HOLDS_ROUTES.TYPES)
+        if (!holdCategoryId) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
         const category = await getEditableCategory(holdCategoryId)
-        if (mandatoryHoldTypes.includes(category.name)) return h.redirect(HOLDS_ROUTES.TYPES)
+        if (mandatoryHoldTypes.includes(category.name)) {
+          return h.redirect(HOLDS_ROUTES.TYPES)
+        }
         try {
           await postProcessing(HOLDS_ROUTES.REMOVE_TYPE_API, { holdCategoryId })
           return h.redirect(`${HOLDS_ROUTES.TYPES}?removedCategory=${encodeURIComponent(category.name)}`)

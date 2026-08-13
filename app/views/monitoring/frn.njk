@@ -1,7 +1,7 @@
 {% extends '_layout.njk' %}
 
 {% from 'macros/events-breadcrumbs.njk' import eventsBreadcrumbs %}
-{% from 'macros/records-per-page.njk' import recordsPerPage %}
+{% from 'macros/payment-event-summary-row.njk' import paymentEventSummaryRow %}
 {% from 'macros/build-pagination.njk' import buildPagination %}
 
 {% set pageTitle = "FRN payment history" %}
@@ -40,26 +40,9 @@
 
         <h2 class="govuk-heading-m">{{ frn }} event history</h2>
 
-        <div class="govuk-grid-row govuk-!-margin-bottom-3">
-          <div class="govuk-grid-column-one-half">
-            <p
-              class="govuk-body-m govuk-!-margin-0"
-              id="payment-event-count">
-              Showing {{ payments.length }} payment event{{
-                's' if payments.length != 1
-              }}
-            </p>
-          </div>
-
-          {% if hasMultiplePages %}
-            <div class="govuk-grid-column-one-half">
-              <div
-                style="display:flex;align-items:baseline;justify-content:flex-end;">
-                {{ recordsPerPage(perPage, [100, 500, 1000], extraQuery) }}
-              </div>
-            </div>
-          {% endif %}
-        </div>
+        {{
+          paymentEventSummaryRow(payments.length, hasMultiplePages, perPage, [100, 500, 1000], extraQuery)
+        }}
 
         <table class="govuk-table">
           <thead class="govuk-table__head">
