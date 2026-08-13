@@ -1,50 +1,33 @@
 {% extends '_layout.njk' %}
 
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from 'macros/card-grid.njk' import cardGrid %}
-{% from 'macros/alert-notification-banner.njk' import alertNotificationBanner %}
+{%
+  from "macros/alert-helpers.njk" import alertManagementBreadcrumbs, alertManagementPageContent
+%}
 
 {% set pageTitle = "Manage email alerts by recipient" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{
-    govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      }, {
-        text: "Manage email alerts",
-        href: "/alerts/manage"
-      }, {
-        text: pageTitle
-      }]
-    })
-  }}
+  {{ alertManagementBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      {{ alertNotificationBanner(updated, removed, emailAddress) }}
-
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-
-      <p class="govuk-body">
-        Update, add and remove email alerts using the recipient's email address.
-      </p>
-      <p class="govuk-body">
-        Details of the alert types including what the recipient should do, can
-        be found on the <a
-          href="/alerts/information"
-          class="govuk-link"
-          target="_blank"
-          rel="noopener noreferrer">alerts information page</a> (opens in a new
-        tab).
-      </p>
-
-      {{ cardGrid(cards) }}
+      {{
+        alertManagementPageContent(
+          pageTitle,
+          [
+            "Update, add and remove email alerts using the recipient's email address.",
+            'Details of the alert types including what the recipient should do, can be found on the <a href="/alerts/information" class="govuk-link" target="_blank" rel="noopener noreferrer">alerts information page</a> (opens in a new tab).'
+          ],
+          cards,
+          updated,
+          removed,
+          emailAddress
+        )
+      }}
     </div>
   </div>
 {% endblock %}

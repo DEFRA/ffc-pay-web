@@ -1,11 +1,13 @@
 {% extends '_layout.njk' %}
 
+{% from "macros/alert-helpers.njk" import alertManagementBreadcrumbs %}
+
 {% set pageTitle = "Alerts information" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {% include "macros/alert-breadcrumbs.njk" %}
+  {{ alertManagementBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}

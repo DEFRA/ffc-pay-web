@@ -1,15 +1,16 @@
 {% extends '_layout.njk' %}
 
-{% from 'macros/breadcrumbs.njk' import breadcrumbs %}
+{%
+  from 'macros/alert-helpers.njk' import alertManagementBreadcrumbs, alertNotificationBanner
+%}
 {% from 'macros/card-grid.njk' import cardGrid %}
-{% from 'macros/alert-notification-banner.njk' import alertNotificationBanner %}
 
 {% set pageTitle = "Manage email alerts" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{ breadcrumbs(pageTitle) }}
+  {{ alertManagementBreadcrumbs(pageTitle) }}
 {% endblock %}
 
 {% block content %}

@@ -2,9 +2,8 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "macros/alert-helpers.njk" import confirmationQueryParams %}
 {%
-  from "macros/alert-summary-cards.njk" import recipientSummaryCard, schemeSummaryCard, confirmationHiddenFields
+  from "macros/alert-helpers.njk" import confirmationQueryParams, recipientSummaryCard, schemeSummaryCard, confirmationHiddenFields
 %}
 
 {% if not pageTitle %}

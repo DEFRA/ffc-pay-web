@@ -3,6 +3,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/accordion/macro.njk" import govukAccordion %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "macros/alert-helpers.njk" import alertManagementBreadcrumbs %}
 
 {% if contactId %}
   {% set pageTitle = "Update " ~ emailAddress ~ " alerts" %}
@@ -14,7 +15,7 @@
 
 {% block beforeContent %}
   {% if contactId %}
-    {% include "macros/alert-breadcrumbs.njk" %}
+    {{ alertManagementBreadcrumbs(pageTitle) }}
   {% else %}
     {{
       govukBreadcrumbs({
@@ -201,7 +202,7 @@
               </fieldset>
             </div>
           {% endset %}
-          
+
           {%
             set accordionItems = (accordionItems.push({
               heading: {
