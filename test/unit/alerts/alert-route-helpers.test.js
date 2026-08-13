@@ -25,7 +25,7 @@ jest.mock('../../../app/alerts/update-alert-user', () => ({
   updateAlertUser: jest.fn()
 }))
 
-const { normaliseValues } = require('../../../app/alerts/get-alert-recipient-view-data')
+const { normaliseValues, getAlertRecipientViewData } = require('../../../app/alerts/get-alert-recipient-view-data')
 const userSchema = require('../../../app/routes/schemas/user-schema')
 const removeUserSchema = require('../../../app/routes/schemas/remove-user-schema')
 const { updateAlertUser } = require('../../../app/alerts/update-alert-user')
@@ -70,6 +70,7 @@ describe('alert-route-helpers', () => {
   test('formatAlertType converts underscore strings into capitalised words', () => {
     expect(formatAlertType('EMAIL_DAILY')).toBe('Email Daily')
     expect(formatAlertType('')).toBe('')
+    expect(formatAlertType('SINGLE')).toBe('Single')
   })
 
   test('getValidationError returns concatenated detail messages if present', () => {
@@ -79,6 +80,10 @@ describe('alert-route-helpers', () => {
 
   test('getValidationError falls back to message when details absent', () => {
     expect(getValidationError({ message: 'fallback' })).toBe('fallback')
+  })
+
+  test('getValidationError falls back to message when details empty', () => {
+    expect(getValidationError({ details: [], message: 'empty' })).toBe('empty')
   })
 
   test('getAccountName returns account.name when present', () => {
@@ -97,6 +102,11 @@ describe('alert-route-helpers', () => {
     ).toBe('carol@example.com')
   })
 
+  test('getAccountName returns undefined when no account present', () => {
+    expect(getAccountName({})).toBeUndefined()
+    expect(getAccountName({ auth: {} })).toBeUndefined()
+  })
+
   test('getSchemeName returns the matching scheme name by schemeId', () => {
     const schemes = [
       { schemeId: 1, name: 'Scheme One' },
@@ -104,6 +114,11 @@ describe('alert-route-helpers', () => {
     ]
     expect(getSchemeName(schemes, 1)).toBe('Scheme One')
     expect(getSchemeName(schemes, '2')).toBe('Scheme Two')
+  })
+
+  test('getSchemeName returns undefined when not found', () => {
+    const schemes = [{ schemeId: 1, name: 'Scheme One' }]
+    expect(getSchemeName(schemes, 'missing')).toBeUndefined()
   })
 
   test('getSchemeSummaries builds summaries using normaliseValues', () => {
@@ -179,6 +194,12 @@ describe('alert-route-helpers', () => {
 
       expect(getValidationRedirect('/path', request, error)).toBe('/path?foo=bar&validationError=oops')
     })
+
+    test('encodes special characters and arrays correctly', () => {
+      const request = { payload: { email: 'a@b.com', tags: ['x y', 'z'] } }
+      const error = { message: 'err msg' }
+      expect(getValidationRedirect('/p', request, error)).toBe('/p?email=a%40b.com&tags=x+y&tags=z&validationError=err+msg')
+    })
   })
 
   describe('createConfirmationView', () => {
@@ -216,6 +237,35 @@ describe('alert-route-helpers', () => {
       expect(h.redirect).toHaveBeenCalledWith('/form?foo=bar&validationError=validation+failed')
       expect(h.takeover).toHaveBeenCalled()
       expect(result).toBe('taken over')
+    })
+
+    test('handler renders confirmation view with computed schemeName and schemes summary', async () => {
+      const request = {
+        payload: { emailAddress: 'test@example.com' }
+      }
+      const data = {
+        schemesPayload: [{ schemeId: 'S1', name: 'Scheme 1' }],
+        schemeId: 'S1',
+        alertTypesPayload: []
+      }
+      getAlertRecipientViewData.mockResolvedValue(data)
+
+      const h = { view: jest.fn().mockReturnValue('rendered') }
+
+      const result = await route.handler(request, h)
+
+      expect(getAlertRecipientViewData).toHaveBeenCalledWith(request)
+      expect(h.view).toHaveBeenCalledWith('alerts/confirm', expect.objectContaining({
+        action: 'save',
+        pageTitle: 'Confirm page',
+        formPath: '/form',
+        formAction: '/form-action',
+        schemeId: 'S1',
+        schemeName: 'Scheme 1',
+        schemes: expect.any(Array),
+        formatAlertType: expect.any(Function)
+      }))
+      expect(result).toBe('rendered')
     })
   })
 
