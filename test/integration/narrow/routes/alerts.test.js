@@ -375,8 +375,6 @@ describe('Alerts route handlers', () => {
     expect(result).toBe(h)
   })
 
-  // ...existing code...
-
   test('GET /alerts/manage without updated renders manage view with undefined email', async () => {
     const route = findRoute('GET', '/alerts/manage')
 
@@ -453,5 +451,159 @@ describe('Alerts route handlers', () => {
     })
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(result).toBe(h)
+  })
+
+  test('calls handleAlertingError for GET /alerts/manage when getAlertingData rejects', async () => {
+    jest.resetModules()
+    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
+    const handle = jest.fn().mockReturnValue('handled-manage')
+    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
+
+    const api = require('../../../../app/api')
+    api.getAlertingData.mockRejectedValue(new Error('manage fail'))
+
+    const routesLocal = require('../../../../app/routes/alerts')
+    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
+
+    const route = findLocal('GET', '/alerts/manage')
+    const result = await route.handler({ query: { updated: '123' } }, h)
+
+    expect(handle).toHaveBeenCalled()
+    expect(result).toBe('handled-manage')
+  })
+
+  test('calls handleAlertingError for GET /alerts/manage-by-scheme when getSchemes rejects', async () => {
+    jest.resetModules()
+    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
+    const handle = jest.fn().mockReturnValue('handled-manage-by-scheme')
+    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
+
+    const helpers = require('../../../../app/helpers')
+    helpers.getSchemes.mockRejectedValue(new Error('schemes fail'))
+
+    const routesLocal = require('../../../../app/routes/alerts')
+    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
+
+    const route = findLocal('GET', '/alerts/manage-by-scheme')
+    const result = await route.handler({}, h)
+
+    expect(handle).toHaveBeenCalled()
+    expect(result).toBe('handled-manage-by-scheme')
+  })
+
+  test('calls handleAlertingError for GET /alerts/information when getAlertingData rejects', async () => {
+    jest.resetModules()
+    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
+    const handle = jest.fn().mockReturnValue('handled-information')
+    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
+
+    const api = require('../../../../app/api')
+    api.getAlertingData.mockRejectedValue(new Error('info fail'))
+
+    const routesLocal = require('../../../../app/routes/alerts')
+    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
+
+    const route = findLocal('GET', '/alerts/information')
+    const result = await route.handler({}, h)
+
+    expect(handle).toHaveBeenCalled()
+    expect(result).toBe('handled-information')
+  })
+
+  test('calls handleAlertingError for GET /alerts/update when getAlertRecipientViewData rejects', async () => {
+    jest.resetModules()
+    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
+    const handle = jest.fn().mockReturnValue('handled-update')
+    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
+
+    const alertsMod = require('../../../../app/alerts')
+    alertsMod.getAlertRecipientViewData.mockRejectedValue(new Error('update fail'))
+
+    const routesLocal = require('../../../../app/routes/alerts')
+    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
+
+    const route = findLocal('GET', '/alerts/update')
+    const result = await route.handler({ query: { action: 'edit', contactId: '123' } }, h)
+
+    expect(handle).toHaveBeenCalled()
+    expect(result).toBe('handled-update')
+  })
+
+  test('calls handleAlertingError for GET /alerts/add-recipient-by-scheme when getAlertRecipientViewData rejects', async () => {
+    jest.resetModules()
+    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
+    const handle = jest.fn().mockReturnValue('handled-add-recipient')
+    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
+
+    const alertsMod = require('../../../../app/alerts')
+    alertsMod.getAlertRecipientViewData.mockRejectedValue(new Error('add-recipient fail'))
+
+    const routesLocal = require('../../../../app/routes/alerts')
+    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
+
+    const route = findLocal('GET', '/alerts/add-recipient-by-scheme')
+    const result = await route.handler({ query: { schemeId: 'S1' } }, h)
+
+    expect(handle).toHaveBeenCalled()
+    expect(result).toBe('handled-add-recipient')
+  })
+
+  test('calls handleAlertingError for POST /alerts/update-confirm when getAlertRecipientViewData rejects', async () => {
+    jest.resetModules()
+    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
+    const handle = jest.fn().mockReturnValue('handled-update-confirm')
+    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
+
+    const alertsMod = require('../../../../app/alerts')
+    alertsMod.getAlertRecipientViewData.mockRejectedValue(new Error('confirm fail'))
+
+    const routesLocal = require('../../../../app/routes/alerts')
+    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
+
+    const route = findLocal('POST', '/alerts/update-confirm')
+    const request = { payload: { contactId: '123' } }
+    const result = await route.handler(request, h)
+
+    expect(handle).toHaveBeenCalled()
+    expect(result).toBe('handled-update-confirm')
+  })
+
+  test('calls handleAlertingError for GET /alerts/confirm-delete when getAlertRemoveViewData rejects', async () => {
+    jest.resetModules()
+    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
+    const handle = jest.fn().mockReturnValue('handled-confirm-delete')
+    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
+
+    const alertsMod = require('../../../../app/alerts')
+    alertsMod.getAlertRemoveViewData.mockRejectedValue(new Error('remove confirm fail'))
+
+    const routesLocal = require('../../../../app/routes/alerts')
+    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
+
+    const route = findLocal('GET', '/alerts/confirm-delete')
+    const request = { query: {} }
+    const result = await route.handler(request, h)
+
+    expect(handle).toHaveBeenCalled()
+    expect(result).toBe('handled-confirm-delete')
+  })
+
+  test('calls handleAlertingError for GET /alerts/manage-by-recipient when getAlertingData rejects', async () => {
+    jest.resetModules()
+    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
+    const handle = jest.fn().mockReturnValue('handled-manage-by-recipient')
+    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
+
+    const api = require('../../../../app/api')
+    api.getAlertingData.mockRejectedValue(new Error('manage-by-recipient fail'))
+
+    const routesLocal = require('../../../../app/routes/alerts')
+    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
+
+    const route = findLocal('GET', '/alerts/manage-by-recipient')
+    const result = await route.handler({ query: { updated: '123' } }, h)
+
+    expect(handle).toHaveBeenCalled()
+    expect(result).toBe('handled-manage-by-recipient')
   })
 })
