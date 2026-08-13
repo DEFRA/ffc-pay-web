@@ -1,0 +1,55 @@
+{#
+  Builds and renders the govukPagination component with previous/next
+  links, given the current page state. Replaces the repeated
+  paginationPrevious / paginationNext construction found across the
+  monitoring and closure list views.
+
+  Params:
+    page             - current page number (Number)
+    totalPages       - total number of pages (Number)
+    perPage          - current page size (Number)
+    extraQuery       - additional querystring to preserve on the links,
+                       including a leading "&", or an empty string
+    paginationItems  - the "items" array to pass through to govukPagination
+                       (page-number links); pass through from the caller
+
+  Usage:
+    {% from "macros/build-pagination.njk" import buildPagination %}
+    {% if hasMultiplePages %}
+      {{ buildPagination(page, totalPages, perPage, extraQuery, paginationItems) }}
+    {% endif %}
+#}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{%
+  macro buildPagination(page, totalPages, perPage, extraQuery, paginationItems)
+%}
+  {% set paginationPrevious = undefined %}
+  {% set paginationNext = undefined %}
+
+  {% if page > 1 %}
+    {%
+      set paginationPrevious = {
+        href: "?page=" + (page - 1) + "&perPage=" + perPage + extraQuery,
+        labelText: "Previous page"
+      }
+    %}
+  {% endif %}
+
+  {% if page < totalPages %}
+    {%
+      set paginationNext = {
+        href: "?page=" + (page + 1) + "&perPage=" + perPage + extraQuery,
+        labelText: "Next page"
+      }
+    %}
+  {% endif %}
+
+  {{
+    govukPagination({
+      previous: paginationPrevious,
+      next: paginationNext,
+      items: paginationItems
+    })
+  }}
+{% endmacro %}

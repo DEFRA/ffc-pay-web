@@ -5,8 +5,36 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% set pageTitle = "Statement search results" %}
+{% set itemLimit = limit or 2500 %}
+{%
+  set totalPages = (totalCount / itemLimit) | round(0, 'ceil') if totalCount else 0
+%}
+{% set hasMultiplePages = totalPages > 1 %}
 
-{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+{% set extraQuery = '' %}
+{% if schemeId %}
+  {% set extraQuery = extraQuery + '&schemeId=' + schemeId %}
+{% endif %}
+{% if marketingYear %}
+  {% set extraQuery = extraQuery + '&marketingYear=' + marketingYear %}
+{% endif %}
+{% if frn %}
+  {% set extraQuery = extraQuery + '&frn=' + frn %}
+{% endif %}
+{% if filename %}
+  {% set extraQuery = extraQuery + '&filename=' + filename %}
+{% endif %}
+{% if timestamp %}
+  {% set extraQuery = extraQuery + '&timestamp=' + timestamp %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if hasMultiplePages %}
+    Page {{ pageNumber }} - {{ pageTitle }} - {{ serviceName }}
+  {% else %}
+    {{ pageTitle }} - {{ serviceName }}
+  {% endif %}
+{% endblock %}
 
 {% block beforeContent %}
   {{
@@ -40,85 +68,62 @@
 
       {% if totalCount %}
         <p class="govuk-body">
-          Download and view statements matching your search criteria, or <a
-            href="/download-statements">start a new search.</a>
+          Download and view statements matching your search criteria, or
+          <a
+            href="/download-statements"
+            class="govuk-link">start a new search</a>.
         </p>
       {% endif %}
 
       {% if statements and statements.length > 0 %}
-        {% set resultCount = statements.length %}
-        {% set itemLimit = limit or 100 %}
-        {% set startItem = ((pageNumber - 1) * itemLimit) + 1 %}
-        {% set endItem = startItem + resultCount - 1 %}
-
-        <div class="govuk-grid-row govuk-!-margin-bottom-4">
-          <div class="govuk-grid-column-full govuk-!-text-align-right">
-            <form
-              id="limit-form"
-              method="GET"
-              action="/statement-results"
-              style="display: inline;">
-              <input
-                type="hidden"
-                name="schemeId"
-                value="{{ schemeId }}"
-              />
-              <input
-                type="hidden"
-                name="marketingYear"
-                value="{{ marketingYear }}"
-              />
-              <input
-                type="hidden"
-                name="frn"
-                value="{{ frn }}"
-              />
-              <input
-                type="hidden"
-                name="filename"
-                value="{{ filename }}"
-              />
-              <input
-                type="hidden"
-                name="timestamp"
-                value="{{ timestamp }}"
-              />
-              <input
-                type="hidden"
-                name="pageNumber"
-                value="0"
-              />
-              <label
-                class="govuk-label govuk-!-display-inline-block govuk-!-margin-right-2 govuk-!-margin-bottom-0"
-                for="limit-select">Results per page</label>
-              <select
-                class="govuk-select"
-                id="limit-select"
-                name="limit"
-                onchange="this.form.submit()">
-                {% for opt in [100, 250, 500, 1000] %}
-                  <option
-                    value="{{ opt }}"
-                    {% if itemLimit == opt %}selected{% endif %}>
-                    {{ opt }}
-                  </option>
-                {% endfor %}
-              </select>
-            </form>
-          </div>
-        </div>
-
         {% if totalCount %}
-          <div class="govuk-grid-row govuk-!-margin-bottom-4">
-            <div class="govuk-grid-column-one-half">
-              <p class="govuk-body govuk-!-margin-bottom-0">
-                <h2 class="govuk-heading-m govuk-!-margin-bottom-0">
-                  [{{ totalCount }}] Statements
-                </h2>
-              </p>
-            </div>
-          </div>
+          <p class="govuk-body">
+            We've found {{ totalCount }} statement{{ 's' if totalCount != 1 }}.
+          </p>
         {% endif %}
+
+        <h2 class="govuk-heading-m">Statements</h2>
+
+        <div class="govuk-grid-row govuk-!-margin-bottom-3">
+          <div class="govuk-grid-column-one-half">
+            <p
+              class="govuk-body-m govuk-!-margin-0"
+              id="statement-count">
+              Showing {{ statements.length }} statement{{
+                's' if statements.length != 1
+              }}
+            </p>
+          </div>
+
+          {% if hasMultiplePages %}
+            <div class="govuk-grid-column-one-half">
+              <div
+                style="display:flex;align-items:baseline;justify-content:flex-end;">
+                <div
+                  class="govuk-body-s govuk-!-margin-0"
+                  aria-label="Records per page"
+                  style="white-space:nowrap;vertical-align:baseline;">
+                  <span>Number of records per page:</span>&nbsp;
+                  {% set perPageOptions = [2500, 5000, 10000] %}
+                  {% for opt in perPageOptions %}
+                    {% if itemLimit == opt %}
+                      <strong>{{ opt }}</strong>
+                    {% else %}
+                      <a
+                        class="govuk-link"
+                        href="?limit={{ opt }}&pageNumber=0{{ extraQuery }}">{{
+                        opt
+                      }}</a>
+                    {% endif %}
+                    {% if not loop.last %}
+                      &nbsp;|&nbsp;
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
 
         <table class="govuk-table">
           <caption class="govuk-visually-hidden">
@@ -165,10 +170,13 @@
                     <a
                       href="/download-statements/download/{{ statement.filename }}"
                       class="govuk-link">
-                      Download <span class="govuk-visually-hidden">statement for
-                        {{ statement.scheme }} {{ statement.year }} FRN {{
-                          statement.frn
-                        }}</span>
+                      Download
+                      <span class="govuk-visually-hidden">
+                        statement for {{ statement.scheme }} {{
+                          statement.year
+                        }}
+                        FRN {{ statement.frn }}
+                      </span>
                     </a>
                   {% else %}
                     <span class="govuk-body-s">File unavailable</span>
@@ -230,81 +238,71 @@
             {% endif %}
           </form>
 
-          {% if totalCount %}
-            {% set totalPages = (totalCount / itemLimit) | round(0, 'ceil') %}
-            {% set paginationItems = [] %}
-            {% set rangePageStart = pageNumber - 1 %}
-            {% set rangePageEnd = pageNumber + 1 %}
+          {% set paginationItems = [] %}
+          {% set rangePageStart = pageNumber - 1 %}
+          {% set rangePageEnd = pageNumber + 1 %}
 
-            {% for i in range(1, totalPages + 1) %}
-              {% set pageIndex = i - 1 %}
-              {%
-                set clickAttributes = { 'onclick': "document.getElementById('pagination-page-number').value = " ~ pageIndex ~ "; document.getElementById('pagination-form').submit(); return false;" }
-              %}
+          {% for i in range(1, totalPages + 1) %}
+            {% set pageIndex = i - 1 %}
+            {%
+              set clickAttributes = {
+                'onclick': "document.getElementById('pagination-page-number').value = " ~ pageIndex ~ "; document.getElementById('pagination-form').submit(); return false;"
+              }
+            %}
 
+            {%
+              if i == 1 or i == totalPages or (i >= rangePageStart and i <= rangePageEnd)
+            %}
               {%
-                if i == 1 or i == totalPages or (i >= rangePageStart and i <= rangePageEnd)
+                set _ = paginationItems.push({
+                  number: i,
+                  href: '#',
+                  current: (i === pageNumber),
+                  attributes: clickAttributes
+                })
               %}
-                {%
-                  set _ = paginationItems.push({
-                      number: i,
-                      href: '#',
-                      current: (i === pageNumber),
-                      attributes: clickAttributes
-                  })
-                %}
-              {% elif i == 2 and rangePageStart > 2 %}
-                {% set _ = paginationItems.push({ ellipsis: true }) %}
-              {% elif i == totalPages - 1 and rangePageEnd < totalPages - 1 %}
-                {% set _ = paginationItems.push({ ellipsis: true }) %}
-              {% endif %}
-            {% endfor %}
-            {% set prevConfig = false %}
-            {% if pageNumber > 1 %}
-              {%
-                set prevConfig = {
-                href: '#',
-                attributes: { 'onclick': "document.getElementById('pagination-page-number').value = " ~ (pageNumber - 2) ~ "; document.getElementById('pagination-form').submit(); return false;" }
-                }
-              %}
+            {% elif i == 2 and rangePageStart > 3 %}
+              {% set _ = paginationItems.push({ ellipsis: true }) %}
+            {% elif i == totalPages - 1 and rangePageEnd < totalPages - 1 %}
+              {% set _ = paginationItems.push({ ellipsis: true }) %}
             {% endif %}
-            {% set nextConfig = false %}
-            {% if pageNumber < totalPages %}
-              {%
-                set nextConfig = {
+          {% endfor %}
+
+          {% set paginationPrevious = undefined %}
+          {% set paginationNext = undefined %}
+
+          {% if pageNumber > 1 %}
+            {%
+              set paginationPrevious = {
                 href: '#',
-                attributes: { 'onclick': "document.getElementById('pagination-page-number').value = " ~ pageNumber ~ "; document.getElementById('pagination-form').submit(); return false;" }
+                labelText: 'Previous page',
+                attributes: {
+                  'onclick': "document.getElementById('pagination-page-number').value = " ~ (pageNumber - 2) ~ "; document.getElementById('pagination-form').submit(); return false;"
                 }
-              %}
-            {% endif %}
+              }
+            %}
+          {% endif %}
+
+          {% if pageNumber < totalPages %}
+            {%
+              set paginationNext = {
+                href: '#',
+                labelText: 'Next page',
+                attributes: {
+                  'onclick': "document.getElementById('pagination-page-number').value = " ~ pageNumber ~ "; document.getElementById('pagination-form').submit(); return false;"
+                }
+              }
+            %}
+          {% endif %}
+
+          {% if hasMultiplePages %}
             {{
               govukPagination({
-                  previous: prevConfig if prevConfig else undefined,
-                  next: nextConfig if nextConfig else undefined,
-                  items: paginationItems
+                previous: paginationPrevious,
+                next: paginationNext,
+                items: paginationItems
               })
             }}
-          {% elif continuationToken %}
-            {%
-              set prevAttrs = {'onclick': "document.getElementById('pagination-page-number').value = " ~ (pageNumber - 2) ~ "; document.getElementById('pagination-form').submit(); return false;"}
-            %}
-            {%
-              set nextAttrs = {'onclick': "document.getElementById('pagination-page-number').value = " ~ pageNumber ~ "; document.getElementById('pagination-form').submit(); return false;"}
-            %}
-
-            {% if pageNumber > 1 and continuationToken %}
-              {{
-                govukPagination({ previous: { href: '#', attributes: prevAttrs }, next: { href: '#', attributes: nextAttrs } })
-              }}
-            {% elif pageNumber > 1 %}
-              {{
-                govukPagination({ previous: { href: '#', attributes: prevAttrs } })
-              }}
-            {% else %}
-              {{
-                govukPagination({ next: { href: '#', attributes: nextAttrs } })
-              }}
-            {% endif %}
           {% endif %}
         {% endif %}
       {% else %}
@@ -312,8 +310,11 @@
           No statements were found for the entered search criteria.
         </p>
         <p class="govuk-body">
-          Return to '<a href="/download-statements">download-statements</a>' and
-          try again.
+          Return to
+          <a
+            href="/download-statements"
+            class="govuk-link">download statements</a>
+          and try again.
         </p>
       {% endif %}
     </div>

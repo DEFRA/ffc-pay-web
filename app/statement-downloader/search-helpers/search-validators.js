@@ -1,5 +1,5 @@
 const DEFAULT_SEARCH_LIMIT = 100
-const MAX_SEARCH_LIMIT = 1000
+const MAX_SEARCH_LIMIT = 10000
 
 const validateAndNormalizeLimit = (limit) => {
   const normalized = Number(limit)

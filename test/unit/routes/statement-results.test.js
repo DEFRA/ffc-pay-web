@@ -16,7 +16,7 @@ const {
 
 describe('statement-results route', () => {
   const RESULTS_VIEW = 'statement-results'
-  const FILE_LIMIT = 100
+  const FILE_LIMIT = 2500
 
   let mockRequest
   let mockH

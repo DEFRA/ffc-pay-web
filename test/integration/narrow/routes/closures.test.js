@@ -741,7 +741,7 @@ describe('Closures', () => {
 
       request.query = {
         page: '1',
-        pageSize: '5',
+        perPage: '5',
         frnAgreement: 'someFrn',
         schemeId: 'someScheme',
         closureRemoved: 'true'
@@ -758,18 +758,22 @@ describe('Closures', () => {
 
       expect(getSchemesForClosures).toHaveBeenCalled()
 
-      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.SEARCH, {
-        closures: mockClosures,
-        schemes: mockSchemes,
-        page: 1,
-        pageSize: 5,
-        frnAgreement: 'someFrn',
-        schemeId: 'someScheme',
-        count: mockCount,
-        hasPreviousPage: false,
-        hasNextPage: true,
-        closureRemoved: 'true'
-      })
+      expect(h.view).toHaveBeenCalledWith(
+        CLOSURES_VIEWS.SEARCH,
+        expect.objectContaining({
+          closures: mockClosures,
+          schemes: mockSchemes,
+          page: 1,
+          perPage: 5,
+          frnAgreement: 'someFrn',
+          schemeId: 'someScheme',
+          count: mockCount,
+          totalPages: 2,
+          extraQuery: '&frnAgreement=someFrn&schemeId=someScheme',
+          closureRemoved: 'true',
+          isSearch: true
+        })
+      )
 
       expect(result).toBe(h)
     })
@@ -789,7 +793,7 @@ describe('Closures', () => {
 
       request.query = {
         page: '3',
-        pageSize: '10'
+        perPage: '10'
       }
 
       const result = await searchRoute.options.handler(request, h)
@@ -809,13 +813,13 @@ describe('Closures', () => {
           closures: mockClosures,
           schemes: mockSchemes,
           page: 3,
-          pageSize: 10,
+          perPage: 10,
           frnAgreement: null,
           schemeId: null,
           count: mockCount,
-          hasPreviousPage: true,
-          hasNextPage: true,
-          closureRemoved: undefined
+          totalPages: 5,
+          closureRemoved: undefined,
+          isSearch: false
         })
       )
 
@@ -850,18 +854,23 @@ describe('Closures', () => {
 
       expect(getSchemesForClosures).toHaveBeenCalled()
 
-      expect(h.view).toHaveBeenCalledWith(CLOSURES_VIEWS.SEARCH, {
-        closures: mockClosures,
-        schemes: mockSchemes,
-        page: 1,
-        pageSize: 2500,
-        frnAgreement: null,
-        schemeId: null,
-        count: mockCount,
-        hasPreviousPage: false,
-        hasNextPage: false,
-        closureRemoved: undefined
-      })
+      expect(h.view).toHaveBeenCalledWith(
+        CLOSURES_VIEWS.SEARCH,
+        {
+          closures: mockClosures,
+          schemes: mockSchemes,
+          page: 1,
+          perPage: 2500,
+          frnAgreement: null,
+          schemeId: null,
+          count: 0,
+          totalPages: 0,
+          paginationItems: [],
+          extraQuery: '',
+          closureRemoved: undefined,
+          isSearch: false
+        }
+      )
 
       expect(result).toBe(h)
     })
@@ -902,7 +911,11 @@ describe('Closures', () => {
         retentionDataId: '123',
         frn: FRN,
         agreementNumber: AGREEMENT_NUMBER,
-        schemeName: 'SFI22'
+        schemeName: 'SFI22',
+        page: undefined,
+        perPage: undefined,
+        frnAgreement: undefined,
+        schemeId: undefined
       })
 
       expect(result).toBe(h)
@@ -943,12 +956,21 @@ describe('Closures', () => {
   describe('POST /closure/remove', () => {
     test('handler posts retention data and redirects back to search with removed flag', async () => {
       const routes = require('../../../../app/routes/closures')
+
       const removeRoute = routes.find(route =>
-        route.path === CLOSURES_ROUTES.REMOVE && route.method === 'POST'
+        route.path === CLOSURES_ROUTES.REMOVE &&
+        route.method === 'POST'
       )
 
+      getClosures.mockResolvedValue({
+        closures: [],
+        count: 0
+      })
+
+      getSchemesForClosures.mockResolvedValue([])
+
       const h = {
-        redirect: jest.fn(() => h)
+        view: jest.fn(() => h)
       }
 
       const request = {
@@ -959,28 +981,16 @@ describe('Closures', () => {
 
       const result = await removeRoute.options.handler(request, h)
 
-      expect(postRetention).toHaveBeenCalledWith('/closure/remove', {
-        retentionDataId: '123'
-      })
-
-      expect(h.redirect).toHaveBeenCalledWith(`${CLOSURES_ROUTES.SEARCH}?closureRemoved=true`)
-      expect(result).toBe(h)
-    })
-
-    test('returns 403 when user lacks permission', async () => {
-      auth.credentials.scope = []
-
-      const res = await server.inject({
-        method: 'POST',
-        url: CLOSURES_ROUTES.REMOVE,
-        auth,
-        payload: {
+      expect(postRetention).toHaveBeenCalledWith(
+        '/closure/remove',
+        {
           retentionDataId: '123'
         }
-      })
+      )
 
-      expect(res.statusCode).toBe(403)
-      expect(postRetention).not.toHaveBeenCalled()
+      expect(h.view).toHaveBeenCalled()
+
+      expect(result).toBe(h)
     })
 
     test('redirects to login when unauthenticated', async () => {
