@@ -606,4 +606,57 @@ describe('Alerts route handlers', () => {
     expect(handle).toHaveBeenCalled()
     expect(result).toBe('handled-manage-by-recipient')
   })
+
+  test('validate.failAction for POST /alerts/update-confirm redirects and takes over', async () => {
+    const route = findRoute('POST', '/alerts/update-confirm')
+    const hFail = {
+      redirect: jest.fn().mockReturnThis(),
+      takeover: jest.fn().mockReturnValue('taken over')
+    }
+
+    const result = await route.options.validate.failAction({ payload: { contactId: '1' } }, hFail, new Error('val err'))
+
+    expect(hFail.redirect).toHaveBeenCalled()
+    expect(hFail.takeover).toHaveBeenCalled()
+    expect(result).toBe('taken over')
+  })
+
+  test('validate.failAction for POST /alerts/update (non-remove) redirects and takes over', async () => {
+    const route = findRoute('POST', '/alerts/update')
+    const hFail = {
+      redirect: jest.fn().mockReturnThis(),
+      takeover: jest.fn().mockReturnValue('taken over')
+    }
+
+    const request = { payload: { action: 'update', contactId: '1' } }
+    const result = await route.options.validate.failAction(request, hFail, new Error('val err'))
+
+    expect(hFail.redirect).toHaveBeenCalled()
+    expect(hFail.takeover).toHaveBeenCalled()
+    expect(result).toBe('taken over')
+  })
+
+  test('validate.failAction for POST /alerts/update (remove) renders update view with BAD_REQUEST', async () => {
+    const route = findRoute('POST', '/alerts/update')
+    const viewData = { some: 'viewdata' }
+    getAlertRecipientViewData.mockResolvedValue(viewData)
+
+    const request = { payload: { action: 'remove', contactId: '123', emailAddress: 'a@b.c' } }
+    const hLocal = {
+      view: jest.fn().mockReturnThis(),
+      code: jest.fn().mockReturnThis(),
+      takeover: jest.fn().mockReturnThis()
+    }
+
+    const result = await route.options.validate.failAction(request, hLocal, new Error('validation error'))
+
+    expect(getAlertRecipientViewData).toHaveBeenCalledWith(request)
+    expect(hLocal.view).toHaveBeenCalledWith('alerts/update', {
+      ...viewData,
+      action: 'remove',
+      error: 'validation error'
+    })
+    expect(hLocal.code).toHaveBeenCalledWith(BAD_REQUEST)
+    expect(result).toBe(hLocal)
+  })
 })
