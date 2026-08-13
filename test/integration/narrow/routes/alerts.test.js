@@ -374,4 +374,84 @@ describe('Alerts route handlers', () => {
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(result).toBe(h)
   })
+
+  // ...existing code...
+
+  test('GET /alerts/manage without updated renders manage view with undefined email', async () => {
+    const route = findRoute('GET', '/alerts/manage')
+
+    const result = await route.handler({ query: {} }, h)
+
+    expect(h.view).toHaveBeenCalledWith('alerts/manage', {
+      cards: expect.any(Array),
+      updated: undefined,
+      emailAddress: undefined
+    })
+    expect(result).toBe(h)
+  })
+
+  test('POST /alerts/update with schemeId calls updateAlertUser and constructs alertsByScheme redirect', async () => {
+    const route = findRoute('POST', '/alerts/update')
+    updateAlertUser.mockResolvedValue('update-success')
+
+    const request = {
+      auth: { credentials: { account: { name: 'TestUser' } } },
+      payload: {
+        action: 'update',
+        schemeId: 'S1',
+        emailAddress: 'user@example.com'
+      }
+    }
+
+    const expectedRedirect = `/alerts/by-scheme?schemeId=${encodeURIComponent('S1')}&emailAddress=${encodeURIComponent('user@example.com')}`
+
+    const result = await route.handler(request, h)
+
+    expect(updateAlertUser).toHaveBeenCalledWith(
+      'TestUser',
+      request.payload,
+      h,
+      expectedRedirect
+    )
+    expect(result).toBe('update-success')
+  })
+
+  test('GET /alerts/remove-by-recipient without email renders view with null error', async () => {
+    const route = findRoute('GET', '/alerts/remove-by-recipient')
+
+    const result = await route.handler({ query: {} }, h)
+
+    expect(h.view).toHaveBeenCalledWith('alerts/remove-by-recipient', {
+      emailAddress: undefined,
+      error: null
+    })
+    expect(result).toBe(h)
+  })
+
+  test('POST /alerts/update with action remove that errors renders update view with BAD_REQUEST', async () => {
+    const route = findRoute('POST', '/alerts/update')
+    const error = new Error('Remove failed')
+    removeAlertUser.mockRejectedValue(error)
+    getAlertRecipientViewData.mockResolvedValue({ some: 'viewdata' })
+
+    const request = {
+      auth: { credentials: { account: { name: 'TestUser' } } },
+      payload: {
+        action: 'remove',
+        contactId: '123',
+        emailAddress: 'user@example.com'
+      }
+    }
+
+    const result = await route.handler(request, h)
+
+    expect(getAlertRecipientViewData).toHaveBeenCalledWith(request)
+    expect(h.view).toHaveBeenCalledWith('alerts/update', {
+      some: 'viewdata',
+      action: 'remove',
+      error
+    })
+    expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
+    expect(result).toBe(h)
+  })
 })
