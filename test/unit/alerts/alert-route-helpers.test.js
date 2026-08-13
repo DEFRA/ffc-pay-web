@@ -200,6 +200,12 @@ describe('alert-route-helpers', () => {
       const error = { message: 'err msg' }
       expect(getValidationRedirect('/p', request, error)).toBe('/p?email=a%40b.com&tags=x+y&tags=z&validationError=err+msg')
     })
+
+    test('handles missing payload by returning only validationError', () => {
+      const request = {}
+      const error = { message: 'no payload' }
+      expect(getValidationRedirect('/nop', request, error)).toBe('/nop?validationError=no+payload')
+    })
   })
 
   describe('createConfirmationView', () => {
@@ -264,6 +270,38 @@ describe('alert-route-helpers', () => {
         schemeName: 'Scheme 1',
         schemes: expect.any(Array),
         formatAlertType: expect.any(Function)
+      }))
+      expect(result).toBe('rendered')
+    })
+
+    test('handler returns handleAlertingError result when getAlertRecipientViewData rejects', async () => {
+      const request = { payload: {} }
+      getAlertRecipientViewData.mockRejectedValue(new Error('recipient fail'))
+      const result = await route.handler(request, {})
+
+      expect(result.isBoom).toBe(true)
+      expect(result.output.statusCode).toBe(502)
+      expect(result.message).toContain('Alerting Service is unavailable')
+      expect(result.message).toContain('recipient fail')
+    })
+
+    test('handler computes undefined schemeName when no schemeId present', async () => {
+      const request = { payload: {} }
+      const data = {
+        schemesPayload: [{ schemeId: 'S1', name: 'Scheme 1' }],
+        schemeId: undefined,
+        alertTypesPayload: []
+      }
+      getAlertRecipientViewData.mockResolvedValue(data)
+
+      const h = { view: jest.fn().mockReturnValue('rendered') }
+
+      const result = await route.handler(request, h)
+
+      expect(getAlertRecipientViewData).toHaveBeenCalledWith(request)
+      expect(h.view).toHaveBeenCalledWith('alerts/confirm', expect.objectContaining({
+        schemeId: undefined,
+        schemeName: undefined
       }))
       expect(result).toBe('rendered')
     })
