@@ -43,10 +43,18 @@
         {% if errors %}
           {% set errorList = [] %}
           {% for errorDetail in errors.details %}
+            {% set errorHref = "#" %}
+            {% if errorDetail.path[0] == "frn" %}
+              {% set errorHref = "#frn" %}
+            {% elif errorDetail.path[0] == "selectScheme" %}
+              {% set errorHref = "#selectScheme" %}
+            {% elif errorDetail.path[0] == "holdCategoryId" %}
+              {% set errorHref = "#selectHoldCategoryId" %}
+            {% endif %}
             {%
               set errorList = (errorList.push({
                 text: errorDetail.message,
-                href: "#" + (errorDetail.context.key if errorDetail.context.key else "frn")
+                href: errorHref
               }), errorList)
             %}
           {% endfor %}
@@ -60,10 +68,16 @@
         {% endif %}
 
         {% set frnError = null %}
+        {% set schemeError = null %}
+        {% set holdCategoryError = null %}
         {% if errors %}
           {% for errorDetail in errors.details %}
-            {% if errorDetail.context.key == "frn" %}
+            {% if errorDetail.path[0] == "frn" %}
               {% set frnError = { text: errorDetail.message } %}
+            {% elif errorDetail.path[0] == "selectScheme" %}
+              {% set schemeError = { text: errorDetail.message } %}
+            {% elif errorDetail.path[0] == "holdCategoryId" %}
+              {% set holdCategoryError = { text: errorDetail.message } %}
             {% endif %}
           {% endfor %}
         {% endif %}
@@ -85,7 +99,7 @@
         }}
 
         {{
-          holdSelectionRadios(holdCategoryRadios, selectScheme, selectHoldCategoryId)
+          holdSelectionRadios(holdCategoryRadios, selectScheme, selectHoldCategoryId, schemeError, holdCategoryError)
         }}
 
         <div class="govuk-button-group">

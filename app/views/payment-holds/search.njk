@@ -5,6 +5,7 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% set pageTitle = "Search for a payment hold" %}
 
@@ -23,6 +24,34 @@
         Search for an existing payment hold using the Firm Reference Number
         (FRN), scheme or a combination of both.
       </p>
+
+      {% if errors %}
+        {% set errorList = [] %}
+        {% for errorDetail in errors.details %}
+          {%
+            set errorList = (errorList.push({
+              text: errorDetail.message,
+              href: "#payment-hold-search"
+            }), errorList)
+          %}
+        {% endfor %}
+
+        {{
+          govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: errorList
+          })
+        }}
+      {% endif %}
+
+      {% set frnError = null %}
+      {% if errors %}
+        {% for errorDetail in errors.details %}
+          {% if errorDetail.context.key == "frn" %}
+            {% set frnError = { text: errorDetail.message } %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
 
       <form
         class="govuk-!-margin-bottom-6"
@@ -46,6 +75,7 @@
             id: "payment-hold-search",
             name: "frn",
             type: "search",
+            errorMessage: frnError,
             classes: "govuk-input--width-20",
             value: model.value
           })

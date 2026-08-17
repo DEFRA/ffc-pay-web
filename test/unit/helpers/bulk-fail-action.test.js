@@ -41,7 +41,15 @@ describe('bulkFailAction', () => {
     await bulkFailAction(request, h, error)
 
     expectViewAndCode(
-      { details: [{ message: 'The uploaded file is too large. Please upload a file smaller than 1 MB.' }] },
+      {
+        details: [{
+          message: 'The uploaded file is too large. Please upload a file smaller than 1 MB.',
+          context: {
+            key: 'file'
+          },
+          path: ['file']
+        }]
+      },
       'test-crumb'
     )
   })

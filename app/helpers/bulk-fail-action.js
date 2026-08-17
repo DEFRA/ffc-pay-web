@@ -30,7 +30,7 @@ const bulkFailAction = async (request, h, error) => {
     return h
       .view(BULK, {
         holdCategoryRadios,
-        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }] },
+        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`, path: ['file'], context: { key: 'file' } }] },
         selectScheme,
         selectHoldCategoryId,
         crumb,

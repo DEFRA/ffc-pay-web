@@ -3,6 +3,7 @@
 {% from 'macros/closure-breadcrumbs.njk' import closureBreadcrumbs %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
 
 {% set pageTitle = "Bulk add agreement closures" %}
 
@@ -71,7 +72,9 @@
           {%
             set field = (err.path and err.path[0]) or (err.context and err.context.key)
           %}
-          {% if field == 'file' %}{% set fileError = err.message %}{% endif %}
+          {% if field == 'file' %}{% set fileError = { text: err.message } %}{%
+            endif
+          %}
         {% endfor %}
       {% endif %}
 
@@ -87,29 +90,18 @@
           value="{{crumb}}"
         />
 
-        <div
-          class="govuk-form-group {% if fileError %}govuk-form-group--error{% endif %}">
-          <label
-            class="govuk-label govuk-label-s"
-            for="file">
-            Upload a file
-          </label>
-          {% if fileError %}
-            <p
-              id="file-error"
-              class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> {{ fileError }}
-            </p>
-          {% endif %}
-          <input
-            class="govuk-file-upload {% if fileError %}govuk-file-upload--error{% endif %}"
-            id="file"
-            name="file"
-            type="file"
-            value="{{ file }}"
-            {% if fileError %}aria-describedby="file-error"{% endif %}
-          />
-        </div>
+        {{
+          govukFileUpload({
+            id: "file",
+            name: "file",
+            label: {
+              html: '<span class="govuk-!-font-weight-bold">Upload a CSV file</span>'
+            },
+            value: file,
+            javascript: true,
+            errorMessage: fileError
+          })
+        }}
 
         {{
           govukButton({

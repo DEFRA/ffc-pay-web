@@ -74,9 +74,18 @@
         {% if errors %}
           {% set errorList = [] %}
           {% for error in errors.details %}
+            {% set errorHref = "#" %}
+            {% if error.path[0] == "file" %}
+              {% set errorHref = "#file" %}
+            {% elif error.path[0] == "selectScheme" %}
+              {% set errorHref = "#selectScheme" %}
+            {% elif error.path[0] == "holdCategoryId" %}
+              {% set errorHref = "#selectHoldCategoryId" %}
+            {% endif %}
             {%
               set errorList = (errorList.push({
-                text: error.message
+                text: error.message,
+                href: errorHref
               }), errorList)
             %}
           {% endfor %}
@@ -89,6 +98,24 @@
           }}
         {% endif %}
 
+        {% set fileError = null %}
+        {% set schemeError = null %}
+        {% set holdCategoryError = null %}
+        {% if errors %}
+          {% for error in errors.details %}
+            {% if error.path[0] == "file" %}
+              {% set fileError = { text: error.message } %}
+            {% elif error.path[0] == "selectScheme" %}
+              {% set schemeError = { text: error.message } %}
+            {% elif error.path[0] == "holdCategoryId" %}
+              {% set holdCategoryError = { text: error.message } %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if not fileError and fileErrorMessage %}
+          {% set fileError = fileErrorMessage %}
+        {% endif %}
+
         {{
           govukFileUpload({
             id: "file",
@@ -97,12 +124,14 @@
               text: "Upload a CSV file",
               classes: "govuk-label--s"
             },
-            value: file
+            value: file,
+            javascript: true,
+            errorMessage: fileError
           })
         }}
 
         {{
-          holdSelectionRadios(holdCategoryRadios, selectScheme, selectHoldCategoryId)
+          holdSelectionRadios(holdCategoryRadios, selectScheme, selectHoldCategoryId, schemeError, holdCategoryError)
         }}
 
         <div class="govuk-button-group">
