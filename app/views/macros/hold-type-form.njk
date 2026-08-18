@@ -20,12 +20,6 @@
       />
     {% endif %}
 
-    <h1 class="govuk-heading-l">{{ params.pageTitle }}</h1>
-
-    {% if params.paragraphText %}
-      <p class="govuk-body">{{ params.paragraphText }}</p>
-    {% endif %}
-
     {% set schemeIdError = null %}
     {% set categoryNameError = null %}
     {% if params.errors %}
@@ -61,6 +55,12 @@
           errorList: errorList
         })
       }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">{{ params.pageTitle }}</h1>
+
+    {% if params.paragraphText %}
+      <p class="govuk-body">{{ params.paragraphText }}</p>
     {% endif %}
 
     {% if params.showSchemeSelect %}

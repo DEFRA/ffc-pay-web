@@ -18,13 +18,6 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-
-      <p class="govuk-body">
-        Search for an existing payment hold using the Firm Reference Number
-        (FRN), scheme or a combination of both.
-      </p>
-
       {% if errors %}
         {% set errorList = [] %}
         {% for errorDetail in errors.details %}
@@ -52,6 +45,13 @@
           {% endif %}
         {% endfor %}
       {% endif %}
+
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body">
+        Search for an existing payment hold using the Firm Reference Number
+        (FRN), scheme or a combination of both.
+      </p>
 
       <form
         class="govuk-!-margin-bottom-6"

@@ -16,29 +16,6 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-      {%
-        set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Agreement closures - service design.pdf' | urlencode
-      %}
-
-      <p class="govuk-body">
-        Bulk adding new agreement closures allows the Payment Hub to manage data
-        retention for the data it holds related to payment requests.
-      </p>
-      <p class="govuk-body">
-        For guidance including how to format the csv file <a
-          class="govuk-link"
-          href="{{ pdfDownloadLink }}"
-          target="_blank"
-          rel="noopener noreferrer">download the agreement closure guide
-          (PDF)</a>.
-      </p>
-      <p class="govuk-body">
-        Alternatively, you can <a
-          href="/closure/add"
-          class="govuk-link">create a singular agreement closure</a>.
-      </p>
-
       {% if errors %}
         <div
           class="govuk-error-summary"
@@ -66,7 +43,6 @@
           </div>
         </div>
 
-        {# Build per-field error variables from errors.details #}
         {% set fileError = null %}
         {% for err in errors.details %}
           {%
@@ -77,6 +53,29 @@
           %}
         {% endfor %}
       {% endif %}
+
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      {%
+        set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Agreement closures - service design.pdf' | urlencode
+      %}
+
+      <p class="govuk-body">
+        Bulk adding new agreement closures allows the Payment Hub to manage data
+        retention for the data it holds related to payment requests.
+      </p>
+      <p class="govuk-body">
+        For guidance including how to format the csv file <a
+          class="govuk-link"
+          href="{{ pdfDownloadLink }}"
+          target="_blank"
+          rel="noopener noreferrer">download the agreement closure guide
+          (PDF)</a>.
+      </p>
+      <p class="govuk-body">
+        Alternatively, you can <a
+          href="/closure/add"
+          class="govuk-link">create a singular agreement closure</a>.
+      </p>
 
       <form
         method="POST"

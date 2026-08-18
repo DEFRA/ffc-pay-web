@@ -49,28 +49,7 @@
           name="type"
           value="{{type}}"
         />
-        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-        <p class="govuk-body">
-          {% if type == 'add' %}
-            Add multiple payment holds to a scheme and a hold type by uploading
-            a CSV file.
-          {% else %}
-            Remove multiple payment holds from a scheme and a hold type by
-            uploading a CSV file.
-          {% endif %}
-        </p>
-        <details class="govuk-details">
-          <summary class="govuk-details__summary">
-            <span class="govuk-details__summary-text">
-              Help with CSV file format
-            </span>
-          </summary>
-          <div class="govuk-details__text">
-            CSVs should only contain a list of ten-digit FRNs to be placed on
-            hold, with each separated by a comma. Other formats may not be read
-            correctly.
-          </div>
-        </details>
+
         {% if errors %}
           {% set errorList = [] %}
           {% for error in errors.details %}
@@ -115,6 +94,29 @@
         {% if not fileError and fileErrorMessage %}
           {% set fileError = fileErrorMessage %}
         {% endif %}
+
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+        <p class="govuk-body">
+          {% if type == 'add' %}
+            Add multiple payment holds to a scheme and a hold type by uploading
+            a CSV file.
+          {% else %}
+            Remove multiple payment holds from a scheme and a hold type by
+            uploading a CSV file.
+          {% endif %}
+        </p>
+        <details class="govuk-details">
+          <summary class="govuk-details__summary">
+            <span class="govuk-details__summary-text">
+              Help with CSV file format
+            </span>
+          </summary>
+          <div class="govuk-details__text">
+            CSVs should only contain a list of ten-digit FRNs to be placed on
+            hold, with each separated by a comma. Other formats may not be read
+            correctly.
+          </div>
+        </details>
 
         {{
           govukFileUpload({

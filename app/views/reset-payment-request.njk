@@ -33,7 +33,6 @@
           name="crumb"
           value="{{crumb}}"
         />
-        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
         {% if error %}
           <div
@@ -58,6 +57,8 @@
             </div>
           </div>
         {% endif %}
+
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
         <div
           class="govuk-form-group{% if error %} govuk-form-group--error{% endif %}">

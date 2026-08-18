@@ -28,18 +28,6 @@
           value="{{ crumb }}"
         />
 
-        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-
-        <p class="govuk-body">
-          To create a new payment hold enter the 10 digit Firm Reference Number
-          (FRN), select the scheme and the hold type.
-        </p>
-
-        <p class="govuk-body">
-          If you want to add more than one hold, you can <a
-            href="/payment-holds/bulk"
-            class="govuk-link">bulk add holds</a>.
-        </p>
         {% if errors %}
           {% set errorList = [] %}
           {% for errorDetail in errors.details %}
@@ -81,6 +69,19 @@
             {% endif %}
           {% endfor %}
         {% endif %}
+
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+        <p class="govuk-body">
+          To create a new payment hold enter the 10 digit Firm Reference Number
+          (FRN), select the scheme and the hold type.
+        </p>
+
+        <p class="govuk-body">
+          If you want to add more than one hold, you can <a
+            href="/payment-holds/bulk"
+            class="govuk-link">bulk add holds</a>.
+        </p>
 
         {{
           govukInput({

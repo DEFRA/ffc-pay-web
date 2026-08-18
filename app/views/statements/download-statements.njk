@@ -27,12 +27,6 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-    </div>
-  </div>
-
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
       {% set filenameError = null %}
       {% set schemeError = null %}
       {% set yearError = null %}
@@ -89,6 +83,12 @@
         }}
       {% endif %}
 
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
       <p class="govuk-body">
         Statements provide customers with payment details. <br />
         You can search for a specific statement by entering the full file name,

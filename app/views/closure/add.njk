@@ -25,20 +25,6 @@
           name="crumb"
           value="{{crumb}}"
         />
-        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-
-        <p class="govuk-body">
-          Adding a new agreement closure allows the Payment Hub to manage data
-          retention for the data it holds related to payment requests.
-        </p>
-        <p class="govuk-body">
-          If you need any support, contact the Payment Hub team.
-        </p>
-        <p class="govuk-body">
-          Alternatively, you can <a
-            href="/closure/bulk"
-            class="govuk-link">add agreement closures in bulk</a>.
-        </p>
 
         {% if errors %}
           <div
@@ -60,7 +46,6 @@
             </div>
           </div>
 
-          {# Build per-field error variables from errors.details #}
           {% set frnError = null %}
           {% set agreementError = null %}
           {% set schemeIdError = null %}
@@ -89,6 +74,21 @@
             {% endif %}
           {% endfor %}
         {% endif %}
+
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+        <p class="govuk-body">
+          Adding a new agreement closure allows the Payment Hub to manage data
+          retention for the data it holds related to payment requests.
+        </p>
+        <p class="govuk-body">
+          If you need any support, contact the Payment Hub team.
+        </p>
+        <p class="govuk-body">
+          Alternatively, you can <a
+            href="/closure/bulk"
+            class="govuk-link">add agreement closures in bulk</a>.
+        </p>
 
         <div
           class="govuk-form-group {% if frnError %}govuk-form-group--error{% endif %}">

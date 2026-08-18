@@ -34,7 +34,7 @@
           name="contactId"
           value="{{contactId}}"
         />
-        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
         {% if error %}
           {%
             set errorList = [{
@@ -60,6 +60,9 @@
             }
           %}
         {% endif %}
+
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
         {{
           govukInput({
             label: {
