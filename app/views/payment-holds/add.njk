@@ -40,11 +40,15 @@
               {% set errorHref = "#selectHoldCategoryId" %}
             {% endif %}
             {%
-              set errorList = (errorList.push({
-                text: errorDetail.message,
-                href: errorHref
-              }), errorList)
+              if errorDetail.path[0] != "holdCategoryId" or selectScheme or not (holdCategoryRadios and holdCategoryRadios.length > 0)
             %}
+              {%
+                set errorList = (errorList.push({
+                  text: errorDetail.message,
+                  href: errorHref
+                }), errorList)
+              %}
+            {% endif %}
           {% endfor %}
 
           {{
@@ -64,7 +68,9 @@
               {% set frnError = { text: errorDetail.message } %}
             {% elif errorDetail.path[0] == "selectScheme" %}
               {% set schemeError = { text: errorDetail.message } %}
-            {% elif errorDetail.path[0] == "holdCategoryId" %}
+            {%
+              elif errorDetail.path[0] == "holdCategoryId" and (selectScheme or not (holdCategoryRadios and holdCategoryRadios.length > 0))
+            %}
               {% set holdCategoryError = { text: errorDetail.message } %}
             {% endif %}
           {% endfor %}

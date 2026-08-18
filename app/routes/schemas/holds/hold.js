@@ -14,7 +14,12 @@ module.exports = Joi.object({
       })
       return errors
     }),
-  selectScheme: Joi.string().optional(),
+  selectScheme: Joi.string().optional().error(errors => {
+    errors.forEach(err => {
+      err.message = 'Choose a scheme'
+    })
+    return errors
+  }),
   holdCategoryId: Joi.number()
     .integer()
     .required()
@@ -24,4 +29,5 @@ module.exports = Joi.object({
       })
       return errors
     })
+
 })
