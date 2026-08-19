@@ -11,13 +11,18 @@ const mandatoryHoldTypes = require('../../constants/mandatory-hold-types')
 const AUTH_SCOPE = { scope: [applicationAdmin, holdAdmin] }
 
 const categoryNameSchema = Joi.string()
+  .max(60)
   .required()
   .invalid(...mandatoryHoldTypes)
   .error(errors => {
     errors.forEach(error => {
-      error.message = error.code === 'any.invalid'
-        ? 'This hold type name is reserved and cannot be used'
-        : 'Provide a hold type name'
+      if (error.code === 'any.invalid') {
+        error.message = 'This hold type name is reserved and cannot be used'
+      } else if (error.code === 'string.max') {
+        error.message = 'Hold type name must be 60 characters or fewer'
+      } else {
+        error.message = 'Provide a hold type name'
+      }
     })
     return errors
   })
