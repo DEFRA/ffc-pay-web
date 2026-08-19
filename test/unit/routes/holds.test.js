@@ -690,4 +690,36 @@ describe('holds route methods', () => {
     expect(out.ctx.selectHoldCategoryId).toEqual('42')
     expect(out).toHaveProperty('takeover')
   })
+
+  test('ADD_TYPE schema: categoryName with exactly 60 characters is valid', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const schema = route.options.validate.payload
+
+    await expect(
+      schema.validateAsync({
+        schemeId: 1,
+        categoryName: 'A'.repeat(60)
+      })
+    ).resolves.toBeDefined()
+  })
+
+  test('ADD_TYPE schema: categoryName longer than 60 characters produces max length message', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const schema = route.options.validate.payload
+
+    try {
+      await schema.validateAsync({
+        schemeId: 1,
+        categoryName: 'A'.repeat(61)
+      })
+
+      throw new Error('validation did not fail')
+    } catch (err) {
+      expect(
+        err.details.some(
+          d => d.message === 'Hold type name must be 60 characters or fewer'
+        )
+      ).toBeTruthy()
+    }
+  })
 })

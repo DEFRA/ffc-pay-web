@@ -27,21 +27,68 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
+      {% set filenameError = null %}
+      {% set schemeError = null %}
+      {% set yearError = null %}
+      {% set frnError = null %}
+      {% set timestampError = null %}
+
+      {% if error and error.details %}
+        {% set errorList = [] %}
+
+        {% for errorDetail in error.details %}
+          {% set errorKey = errorDetail.context.key %}
+          {% set errorHref = "#filename" %}
+
+          {% if errorKey == "filename" %}
+            {% set filenameError = { text: errorDetail.message } %}
+            {% set errorHref = "#filename" %}
+          {% elseif errorKey == "schemeId" %}
+            {% set schemeError = { text: errorDetail.message } %}
+            {% set errorHref = "#schemeId" %}
+          {% elseif errorKey == "marketingYear" %}
+            {% set yearError = { text: errorDetail.message } %}
+            {% set errorHref = "#marketingYear" %}
+          {% elseif errorKey == "frn" %}
+            {% set frnError = { text: errorDetail.message } %}
+            {% set errorHref = "#frn" %}
+          {% elseif errorKey == "timestamp" %}
+            {% set timestampError = { text: errorDetail.message } %}
+            {% set errorHref = "#timestamp" %}
+          {% endif %}
+
+          {%
+            set errorList = (errorList.push({
+              text: errorDetail.message,
+              href: errorHref
+            }), errorList)
+          %}
+        {% endfor %}
+
+        {{
+          govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: errorList
+          })
+        }}
+      {% elseif error %}
+        {{
+          govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: [{
+              text: error.message,
+              href: "#filename"
+            }]
+          })
+        }}
+      {% endif %}
+
       <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
     </div>
   </div>
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      {% if error %}
-        {{
-          govukErrorSummary({
-            titleText: "There is a problem",
-            errorList: [{ text: error.message }]
-          })
-        }}
-      {% endif %}
-
       <p class="govuk-body">
         Statements provide customers with payment details. <br />
         You can search for a specific statement by entering the full file name,
@@ -60,6 +107,7 @@
           name="crumb"
           value="{{ crumb }}"
         />
+
         {{
           govukInput({
             id: "filename",
@@ -69,15 +117,16 @@
               classes: "govuk-label--s"
             },
             classes: "govuk-input--width-30",
-            value: filename
+            value: filename,
+            errorMessage: filenameError
           })
         }}
 
-        {{ schemeSelect(schemes, schemeId) }}
+        {{ schemeSelect(schemes, schemeId, schemeError) }}
 
-        {{ yearInput(marketingYear) }}
+        {{ yearInput(marketingYear, yearError) }}
 
-        {{ frnInput(frn) }}
+        {{ frnInput(frn, frnError) }}
 
         {{
           govukInput({
@@ -87,11 +136,15 @@
               text: "Timestamp",
               classes: "govuk-label--s"
             },
-            hint: { text: "For example, 06-01-2026 18:00" },
+            hint: {
+              text: "For example, 06-01-2026 18:00"
+            },
             classes: "govuk-input--width-20",
-            value: timestamp
+            value: timestamp,
+            errorMessage: timestampError
           })
         }}
+
         {{ submitButton('Search') }}
       </form>
     </div>

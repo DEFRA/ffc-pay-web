@@ -1,10 +1,11 @@
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 
 {%
-  macro holdSelectionRadios(holdCategorys, selectScheme, selectedHoldCategoryId)
+  macro holdSelectionRadios(holdCategorys, selectScheme, selectedHoldCategoryId, schemeError, holdCategoryError)
 %}
   {% if holdCategorys and holdCategorys.length > 0 %}
-    <div class="govuk-form-group">
+    <div
+      class="govuk-form-group{% if schemeError %} govuk-form-group--error{% endif %}">
       <label
         class="govuk-label"
         for="selectScheme">
@@ -15,11 +16,20 @@
         class="govuk-hint">
         Select a scheme to view hold types
       </div>
+      {% if schemeError %}
+        <p
+          id="selectScheme-error"
+          class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{
+            schemeError.text
+          }}
+        </p>
+      {% endif %}
       <select
-        class="govuk-select"
+        class="govuk-select{% if schemeError %} govuk-select--error{% endif %}"
         id="selectScheme"
         name="selectScheme"
-        aria-describedby="scheme-hint">
+        aria-describedby="scheme-hint{% if schemeError %} selectScheme-error{% endif %}">
         <option
           value=""
           {% if not selectScheme %}selected{% endif %}>
@@ -38,7 +48,8 @@
     <div
       class="govuk-inset-text"
       id="hold-types-container">
-      <div class="govuk-form-group">
+      <div
+        class="govuk-form-group{% if holdCategoryError %} govuk-form-group--error{% endif %}">
         <label
           class="govuk-label"
           for="selectHoldCategoryId">
@@ -49,11 +60,20 @@
           class="govuk-hint">
           Select the hold type
         </div>
+        {% if holdCategoryError %}
+          <p
+            id="selectHoldCategoryId-error"
+            class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> {{
+              holdCategoryError.text
+            }}
+          </p>
+        {% endif %}
         <select
-          class="govuk-select"
+          class="govuk-select{% if holdCategoryError %} govuk-select--error{% endif %}"
           id="selectHoldCategoryId"
           name="holdCategoryId"
-          aria-describedby="hold-hint">
+          aria-describedby="hold-hint{% if holdCategoryError %} selectHoldCategoryId-error{% endif %}">
           <option
             value=""
             data-scheme-name="blank"

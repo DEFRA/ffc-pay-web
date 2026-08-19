@@ -3,6 +3,7 @@
 {% from 'macros/closure-breadcrumbs.njk' import closureBreadcrumbs %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
 
 {% set pageTitle = "Bulk add agreement closures" %}
 
@@ -15,29 +16,6 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
-      {%
-        set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Agreement closures - service design.pdf' | urlencode
-      %}
-
-      <p class="govuk-body">
-        Bulk adding new agreement closures allows the Payment Hub to manage data
-        retention for the data it holds related to payment requests.
-      </p>
-      <p class="govuk-body">
-        For guidance including how to format the csv file <a
-          class="govuk-link"
-          href="{{ pdfDownloadLink }}"
-          target="_blank"
-          rel="noopener noreferrer">download the agreement closure guide
-          (PDF)</a>.
-      </p>
-      <p class="govuk-body">
-        Alternatively, you can <a
-          href="/closure/add"
-          class="govuk-link">create a singular agreement closure</a>.
-      </p>
-
       {% if errors %}
         <div
           class="govuk-error-summary"
@@ -65,15 +43,39 @@
           </div>
         </div>
 
-        {# Build per-field error variables from errors.details #}
         {% set fileError = null %}
         {% for err in errors.details %}
           {%
             set field = (err.path and err.path[0]) or (err.context and err.context.key)
           %}
-          {% if field == 'file' %}{% set fileError = err.message %}{% endif %}
+          {% if field == 'file' %}{% set fileError = { text: err.message } %}{%
+            endif
+          %}
         {% endfor %}
       {% endif %}
+
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      {%
+        set pdfDownloadLink = '/status-report/download?file-name=' ~ 'reports/DS1-Agreement closures - service design.pdf' | urlencode
+      %}
+
+      <p class="govuk-body">
+        Bulk adding new agreement closures allows the Payment Hub to manage data
+        retention for the data it holds related to payment requests.
+      </p>
+      <p class="govuk-body">
+        For guidance including how to format the csv file <a
+          class="govuk-link"
+          href="{{ pdfDownloadLink }}"
+          target="_blank"
+          rel="noopener noreferrer">download the agreement closure guide
+          (PDF)</a>.
+      </p>
+      <p class="govuk-body">
+        Alternatively, you can <a
+          href="/closure/add"
+          class="govuk-link">create a singular agreement closure</a>.
+      </p>
 
       <form
         method="POST"
@@ -87,29 +89,18 @@
           value="{{crumb}}"
         />
 
-        <div
-          class="govuk-form-group {% if fileError %}govuk-form-group--error{% endif %}">
-          <label
-            class="govuk-label govuk-label-s"
-            for="file">
-            Upload a file
-          </label>
-          {% if fileError %}
-            <p
-              id="file-error"
-              class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> {{ fileError }}
-            </p>
-          {% endif %}
-          <input
-            class="govuk-file-upload {% if fileError %}govuk-file-upload--error{% endif %}"
-            id="file"
-            name="file"
-            type="file"
-            value="{{ file }}"
-            {% if fileError %}aria-describedby="file-error"{% endif %}
-          />
-        </div>
+        {{
+          govukFileUpload({
+            id: "file",
+            name: "file",
+            label: {
+              html: '<span class="govuk-!-font-weight-bold">Upload a CSV file</span>'
+            },
+            value: file,
+            javascript: true,
+            errorMessage: fileError
+          })
+        }}
 
         {{
           govukButton({

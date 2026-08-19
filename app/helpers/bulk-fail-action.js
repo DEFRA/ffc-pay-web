@@ -16,13 +16,7 @@ const bulkFailAction = async (request, h, error) => {
   const crumb = request.payload?.crumb ?? request.state.crumb
 
   const selectHoldCategoryId = request.payload?.holdCategoryId
-  let selectScheme
-  if (selectHoldCategoryId) {
-    const selectedCategory = paymentHoldCategories.find(c => String(c.holdCategoryId) === String(selectHoldCategoryId))
-    if (selectedCategory?.schemeName) {
-      selectScheme = selectedCategory.schemeName
-    }
-  }
+  const selectScheme = request.payload?.selectScheme
 
   const type = request.payload?.type
 
@@ -30,7 +24,7 @@ const bulkFailAction = async (request, h, error) => {
     return h
       .view(BULK, {
         holdCategoryRadios,
-        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.` }] },
+        errors: { details: [{ message: `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`, path: ['file'], context: { key: 'file' } }] },
         selectScheme,
         selectHoldCategoryId,
         crumb,
