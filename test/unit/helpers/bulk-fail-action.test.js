@@ -9,15 +9,28 @@ describe('bulkFailAction', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    request = { payload: { crumb: 'test-crumb' }, state: { crumb: 'state-crumb' } }
+    request = {
+      payload: {
+        crumb: 'test-crumb'
+      },
+      state: {
+        crumb: 'state-crumb'
+      }
+    }
 
-    h = { view: jest.fn(() => h), code: jest.fn(() => h), takeover: jest.fn() }
+    h = {
+      view: jest.fn(() => h),
+      code: jest.fn(() => h),
+      takeover: jest.fn()
+    }
 
     holdCategories = {
       schemes: [
         { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] }
       ],
-      paymentHoldCategories: [{ holdCategoryId: 'cat1', schemeId: 'scheme1', name: 'Category 1' }]
+      paymentHoldCategories: [
+        { holdCategoryId: 'cat1', schemeId: 'scheme1', name: 'Category 1' }
+      ]
     }
 
     getHoldCategories.mockResolvedValue(holdCategories)
@@ -26,17 +39,31 @@ describe('bulkFailAction', () => {
   const expectViewAndCode = (expectedErrors, crumb) => {
     expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
       holdCategoryRadios: [
-        { scheme: { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] }, radios: [] }
+        {
+          scheme: {
+            name: 'scheme1',
+            radios: [{ value: 'cat1', text: 'Category 1' }]
+          },
+          radios: []
+        }
       ],
       errors: expectedErrors,
-      crumb
+      crumb,
+      type: undefined,
+      selectScheme: undefined,
+      selectHoldCategoryId: undefined
     })
+
     expect(h.code).toHaveBeenCalledWith(400)
     expect(h.takeover).toHaveBeenCalled()
   }
 
   test('handles 413 error', async () => {
-    const error = { output: { statusCode: 413 } }
+    const error = {
+      output: {
+        statusCode: 413
+      }
+    }
 
     await bulkFailAction(request, h, error)
 
@@ -63,53 +90,66 @@ describe('bulkFailAction', () => {
   })
 
   test('uses state crumb if payload crumb missing', async () => {
-    const requestWithoutPayloadCrumb = { state: { crumb: 'state-crumb' } }
+    const requestWithoutPayloadCrumb = {
+      state: {
+        crumb: 'state-crumb'
+      }
+    }
 
     await bulkFailAction(requestWithoutPayloadCrumb, h, {})
 
     expectViewAndCode({}, 'state-crumb')
   })
 
-  test('includes selectHoldCategoryId when provided but schemeName missing', async () => {
+  test('includes selectHoldCategoryId when provided', async () => {
     request.payload.holdCategoryId = 'cat1'
 
     await bulkFailAction(request, h, {})
 
     expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
       holdCategoryRadios: [
-        { scheme: { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] }, radios: [] }
+        {
+          scheme: {
+            name: 'scheme1',
+            radios: [{ value: 'cat1', text: 'Category 1' }]
+          },
+          radios: []
+        }
       ],
       errors: {},
       selectScheme: undefined,
       selectHoldCategoryId: 'cat1',
-      crumb: 'test-crumb'
+      crumb: 'test-crumb',
+      type: undefined
     })
+
     expect(h.code).toHaveBeenCalledWith(400)
     expect(h.takeover).toHaveBeenCalled()
   })
 
-  test('includes selectScheme when selected category has schemeName', async () => {
-    const holdCategoriesWithSchemeName = {
-      schemes: [
-        { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] }
-      ],
-      paymentHoldCategories: [{ holdCategoryId: 'cat1', schemeId: 'scheme1', schemeName: 'scheme1', name: 'Category 1' }]
-    }
-    getHoldCategories.mockResolvedValue(holdCategoriesWithSchemeName)
-
+  test('preserves submitted selectScheme value', async () => {
     request.payload.holdCategoryId = 'cat1'
+    request.payload.selectScheme = 'scheme1'
 
     await bulkFailAction(request, h, {})
 
     expect(h.view).toHaveBeenCalledWith('payment-holds/bulk', {
       holdCategoryRadios: [
-        { scheme: { name: 'scheme1', radios: [{ value: 'cat1', text: 'Category 1' }] }, radios: [] }
+        {
+          scheme: {
+            name: 'scheme1',
+            radios: [{ value: 'cat1', text: 'Category 1' }]
+          },
+          radios: []
+        }
       ],
       errors: {},
       selectScheme: 'scheme1',
       selectHoldCategoryId: 'cat1',
-      crumb: 'test-crumb'
+      crumb: 'test-crumb',
+      type: undefined
     })
+
     expect(h.code).toHaveBeenCalledWith(400)
     expect(h.takeover).toHaveBeenCalled()
   })

@@ -16,13 +16,7 @@ const bulkFailAction = async (request, h, error) => {
   const crumb = request.payload?.crumb ?? request.state.crumb
 
   const selectHoldCategoryId = request.payload?.holdCategoryId
-  let selectScheme
-  if (selectHoldCategoryId) {
-    const selectedCategory = paymentHoldCategories.find(c => String(c.holdCategoryId) === String(selectHoldCategoryId))
-    if (selectedCategory?.schemeName) {
-      selectScheme = selectedCategory.schemeName
-    }
-  }
+  const selectScheme = request.payload?.selectScheme
 
   const type = request.payload?.type
 
