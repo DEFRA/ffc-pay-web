@@ -1,10 +1,19 @@
 {% extends '_layout.njk' %}
 
 {% from 'macros/events-breadcrumbs.njk' import eventsBreadcrumbs %}
+{% from 'macros/payment-event-summary-row.njk' import paymentEventSummaryRow %}
+{% from 'macros/build-pagination.njk' import buildPagination %}
 
 {% set pageTitle = "FRN payment history" %}
+{% set hasMultiplePages = totalPages and totalPages > 1 %}
 
-{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+{% block pageTitle %}
+  {% if hasMultiplePages %}
+    Page {{ page }} - {{ pageTitle }} - {{ serviceName }}
+  {% else %}
+    {{ pageTitle }} - {{ serviceName }}
+  {% endif %}
+{% endblock %}
 
 {% block beforeContent %}
   {{ eventsBreadcrumbs(pageTitle) }}
@@ -18,10 +27,22 @@
       {% if payments.length %}
         <p class="govuk-body-m">
           View the payment history for the entered FRN or
-          <a href="/monitoring">start a new search</a>.
+          <a
+            class="govuk-link"
+            href="/monitoring">start a new search</a>.
         </p>
 
-        <h1 class="govuk-heading-m">{{ frn }} event history</h1>
+        <p class="govuk-body">
+          We've found {{ numberOfPayments }} payment event{{
+            's' if numberOfPayments != 1
+          }}.
+        </p>
+
+        <h2 class="govuk-heading-m">{{ frn }} event history</h2>
+
+        {{
+          paymentEventSummaryRow(payments.length, hasMultiplePages, perPage, [100, 500, 1000], extraQuery)
+        }}
 
         <table class="govuk-table">
           <thead class="govuk-table__head">
@@ -82,9 +103,9 @@
                 </td>
                 <td class="govuk-table__cell govuk-body-s">
                   <strong
-                    class="govuk-tag {% if payment.status.state == 'Completed' %}govuk-tag--green{% elif payment.status.state == 'Waiting' %}govuk-tag--yellow{% endif %}">{{
-                    payment.status.detail
-                  }}</strong>
+                    class="govuk-tag {% if payment.status.state == 'Completed' %}govuk-tag--green{% elif payment.status.state == 'Waiting' %}govuk-tag--yellow{% endif %}">
+                    {{ payment.status.detail }}
+                  </strong>
                 </td>
                 <td
                   class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">
@@ -92,12 +113,19 @@
                 </td>
                 <td class="govuk-table__cell govuk-body-s">
                   <a
+                    class="govuk-link"
                     href="/monitoring/payments/correlation-id?correlationId={{ payment.correlationId }}">View</a>
                 </td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
+
+        {% if hasMultiplePages %}
+          {{
+            buildPagination(page, totalPages, perPage, extraQuery, paginationItems)
+          }}
+        {% endif %}
       {% else %}
         <p
           id="no-hold-text"

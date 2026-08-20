@@ -20,19 +20,31 @@
       />
     {% endif %}
 
-    <h1 class="govuk-heading-l">{{ params.pageTitle }}</h1>
-
-    {% if params.paragraphText %}
-      <p class="govuk-body">{{ params.paragraphText }}</p>
+    {% set schemeIdError = null %}
+    {% set categoryNameError = null %}
+    {% if params.errors %}
+      {% for errorDetail in params.errors.details %}
+        {% if errorDetail.path[0] == "schemeId" %}
+          {% set schemeIdError = { text: errorDetail.message } %}
+        {% elif errorDetail.path[0] == "categoryName" %}
+          {% set categoryNameError = { text: errorDetail.message } %}
+        {% endif %}
+      {% endfor %}
     {% endif %}
 
     {% if params.errors %}
       {% set errorList = [] %}
       {% for errorDetail in params.errors.details %}
+        {% set errorHref = "#" %}
+        {% if errorDetail.path[0] == "schemeId" %}
+          {% set errorHref = "#schemeId" %}
+        {% elif errorDetail.path[0] == "categoryName" %}
+          {% set errorHref = "#categoryName" %}
+        {% endif %}
         {%
           set errorList = (errorList.push({
             text: errorDetail.message,
-            href: "#" + (errorDetail.context.key if errorDetail.context.key else "frn")
+            href: errorHref
           }), errorList)
         %}
       {% endfor %}
@@ -45,15 +57,32 @@
       }}
     {% endif %}
 
+    <h1 class="govuk-heading-l">{{ params.pageTitle }}</h1>
+
+    {% if params.paragraphText %}
+      <p class="govuk-body">{{ params.paragraphText }}</p>
+    {% endif %}
+
     {% if params.showSchemeSelect %}
-      <div class="govuk-form-group">
+      <div
+        class="govuk-form-group{% if schemeIdError %} govuk-form-group--error{% endif %}">
         <label
           class="govuk-label"
           for="schemeId">Scheme</label>
+        {% if schemeIdError %}
+          <p
+            id="schemeId-error"
+            class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> {{
+              schemeIdError.text
+            }}
+          </p>
+        {% endif %}
         <select
-          class="govuk-select"
+          class="govuk-select{% if schemeIdError %} govuk-select--error{% endif %}"
           id="schemeId"
-          name="schemeId">
+          name="schemeId"
+          {% if schemeIdError %}aria-describedby="schemeId-error"{% endif %}>
           <option
             value=""
             {% if not schemeId %}selected{% endif %}>
@@ -72,16 +101,29 @@
       </div>
     {% endif %}
 
-    <div class="govuk-form-group">
+    <div
+      class="govuk-form-group{% if categoryNameError %} govuk-form-group--error{% endif %}">
       <label
         class="govuk-label"
         for="categoryName">Payment hold type name</label>
+      {% if categoryNameError %}
+        <p
+          id="categoryName-error"
+          class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{
+            categoryNameError.text
+          }}
+        </p>
+      {% endif %}
       <input
-        class="govuk-input"
+        class="govuk-input{% if categoryNameError %} govuk-input--error{% endif %}"
         id="categoryName"
         name="categoryName"
         type="text"
         value="{{ params.categoryName }}"
+        {% if categoryNameError %}
+          aria-describedby="categoryName-error"
+        {% endif %}
       />
     </div>
 

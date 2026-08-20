@@ -4,7 +4,7 @@ const maxFRN = 9999999999
 const minYear = 2020
 const maxYear = 2099
 const limitStart = 1
-const limitEnd = 1000
+const limitEnd = 10000
 
 module.exports = Joi.object({
   filename: Joi.string()
@@ -26,13 +26,25 @@ module.exports = Joi.object({
     .min(minYear)
     .max(maxYear)
     .optional()
-    .allow('', null),
+    .allow('', null)
+    .messages({
+      'number.base': 'Marketing year must be a number',
+      'number.integer': 'Marketing year must be an integer',
+      'number.min': `Marketing year must be greater than or equal to ${minYear}`,
+      'number.max': `Marketing year must be less than or equal to ${maxYear}`
+    }),
   frn: Joi.number()
     .integer()
     .min(minFRN)
     .max(maxFRN)
     .optional()
-    .allow('', null),
+    .allow('', null)
+    .messages({
+      'number.base': 'FRN must be a number',
+      'number.integer': 'FRN must be an integer',
+      'number.min': `FRN must be greater than or equal to ${minFRN}`,
+      'number.max': `FRN must be less than or equal to ${maxFRN}`
+    }),
   timestamp: Joi.alternatives().try(
     // Format 1: DD-MM-YYYY (e.g., 25-12-2026)
     Joi.string().pattern(/^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-\d{4}$/),

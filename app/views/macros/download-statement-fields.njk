@@ -1,10 +1,11 @@
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% macro downloadPageTitle(text) %}
   <h1 class="govuk-heading-l">{{ text }}</h1>
 {% endmacro %}
 
-{% macro schemeSelect(schemes, selectedSchemeId = '') %}
+{% macro schemeSelect(schemes, selectedSchemeId = '', errorMessage = null) %}
   <div class="govuk-form-group">
     <fieldset class="govuk-fieldset">
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
@@ -24,6 +25,8 @@
                 name="schemeId"
                 type="radio"
                 value="{{ scheme.schemeId }}"
+                errorMessage:
+                errorMessage
                 {% if scheme.schemeId == selectedSchemeId %}checked{% endif %}
               />
               <label
@@ -39,40 +42,38 @@
   </div>
 {% endmacro %}
 
-{% macro yearInput(yearValue = '') %}
-  <div class="govuk-form-group">
-    <label
-      class="govuk-label govuk-label--s"
-      for="marketingYear">
-      Marketing year
-    </label>
-    <input
-      class="govuk-input govuk-input--width-4"
-      id="marketingYear"
-      name="marketingYear"
-      type="text"
-      value="{{ yearValue }}"
-      inputmode="numeric"
-    />
-  </div>
+{% macro yearInput(yearValue = '', errorMessage = null) %}
+  {{
+    govukInput({
+      id: "marketingYear",
+      name: "marketingYear",
+      label: {
+        text: "Marketing year",
+        classes: "govuk-label--s"
+      },
+      classes: "govuk-input--width-4",
+      value: yearValue,
+      inputmode: "numeric",
+      errorMessage: errorMessage
+    })
+  }}
 {% endmacro %}
 
-{% macro frnInput(frnValue = '') %}
-  <div class="govuk-form-group">
-    <label
-      class="govuk-label govuk-label--s"
-      for="frn">
-      Firm reference number (FRN)
-    </label>
-    <input
-      class="govuk-input govuk-input--width-10"
-      id="frn"
-      name="frn"
-      type="text"
-      value="{{ frnValue }}"
-      inputmode="numeric"
-    />
-  </div>
+{% macro frnInput(frnValue = '', errorMessage = null) %}
+  {{
+    govukInput({
+      id: "frn",
+      name: "frn",
+      label: {
+        text: "Firm reference number (FRN)",
+        classes: "govuk-label--s"
+      },
+      classes: "govuk-input--width-10",
+      value: frnValue,
+      inputmode: "numeric",
+      errorMessage: errorMessage
+    })
+  }}
 {% endmacro %}
 
 {% macro submitButton(label = "Search statements") %}
