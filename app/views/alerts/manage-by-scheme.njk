@@ -16,19 +16,19 @@
 {% endblock %}
 
 {% block content %}
-  <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
-  <p class="govuk-body">
-    Choose a scheme to view existing email alerts and manage who receives each
-    type of alert.
-  </p>
+      <p class="govuk-body">
+        Choose a scheme to view existing email alerts and manage who receives
+        each type of alert.
+      </p>
 
-  <form
-    method="GET"
-    action="/alerts/by-scheme"
-    class="govuk-!-margin-bottom-6">
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-full">
+      <form
+        method="GET"
+        action="/alerts/by-scheme"
+        class="govuk-!-margin-bottom-6">
         {% set schemeItems = [] %}
         {% for scheme in schemes %}
           {%
@@ -51,18 +51,18 @@
             items: schemeItems
           })
         }}
-      </div>
-    </div>
 
-    <div class="govuk-button-group">
-      {{
-        govukButton({
-          text: "Search",
-          attributes: {
-            id: "submit"
-          }
-        })
-      }}
+        <div class="govuk-button-group">
+          {{
+            govukButton({
+              text: "Search",
+              attributes: {
+                id: "submit"
+              }
+            })
+          }}
+        </div>
+      </form>
     </div>
-  </form>
+  </div>
 {% endblock %}

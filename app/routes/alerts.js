@@ -137,11 +137,13 @@ module.exports = [
             )
         })
 
-        const successMessage = request.query?.success === 'true'
-          ? request.query?.successAction === 'create'
+        let successMessage
+
+        if (request.query?.success === 'true') {
+          successMessage = request.query?.successAction === 'create'
             ? `${data.emailAddress} will now receive the selected email alerts.`
             : `Alerts for ${data.emailAddress} have been updated.`
-          : undefined
+        }
 
         return h.view(views.update, {
           ...data,
@@ -150,6 +152,8 @@ module.exports = [
           successMessage
         })
       } catch (error) {
+        console.error('Failed to load alert recipient', error)
+
         return h.redirect(
           `${paths.updateByRecipient}?emailAddress=${encodeURIComponent(
             request.query?.emailAddress || ''
