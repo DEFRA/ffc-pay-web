@@ -21,7 +21,8 @@ describe('hold schema validator', () => {
       [{ frn: 10000000000, holdCategoryId: 1 }, /FRN \(Firm Reference Number\) must be 10 digits/],
       [{ frn: 1234567890.5, holdCategoryId: 1 }, /FRN \(Firm Reference Number\) must be 10 digits/],
       [{ frn: 1234567890 }, /Choose a hold category/],
-      [{ frn: 1234567890, holdCategoryId: 'abc' }, /Choose a hold category/]
+      [{ frn: 1234567890, holdCategoryId: 'abc' }, /Choose a hold category/],
+      [{ frn: 1234567890, holdCategoryId: 1, selectScheme: 123 }, /Choose a scheme/]
     ])('input %# produces expected error', (input, expectedMessage) => {
       const { error } = holdSchema.validate(input)
       expect(error).toBeDefined()

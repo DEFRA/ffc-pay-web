@@ -1,0 +1,35 @@
+{#
+  Renders the "Number of records per page: 100 | 500 | 1000" selector
+  used across paginated list views.
+
+  Params:
+    perPage      - the currently selected page size (Number)
+    options      - array of selectable page sizes, e.g. [100, 500, 1000]
+    extraQuery   - any additional querystring to preserve on the links,
+                   including a leading "&" (e.g. "&batch=" + batch),
+                   or an empty string if there's nothing to preserve
+
+  Usage:
+    {% from "macros/records-per-page.njk" import recordsPerPage %}
+    {{ recordsPerPage(perPage, [100, 500, 1000], extraQuery) }}
+#}
+{% macro recordsPerPage(perPage, options, extraQuery) %}
+  <div
+    class="govuk-body-s govuk-!-margin-0"
+    aria-label="Records per page"
+    style="white-space:nowrap;vertical-align:baseline;">
+    <span>Number of records per page:</span>&nbsp;
+    {% for opt in options %}
+      {% if perPage == opt %}
+        <strong>{{ opt }}</strong>
+      {% else %}
+        <a
+          class="govuk-link"
+          href="?page=1&perPage={{ opt }}{{ extraQuery }}">{{ opt }}</a>
+      {% endif %}
+      {% if not loop.last %}
+        &nbsp;|&nbsp;
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endmacro %}

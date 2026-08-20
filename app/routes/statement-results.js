@@ -8,7 +8,7 @@ const {
 } = require('../statement-downloader/search-helpers/download-helper')
 
 const RESULTS_VIEW = 'statement-results'
-const fileLimit = 100
+const fileLimit = 2500
 const AUTH_SCOPE = { scope: [applicationAdmin, statusReportsDelinked] }
 
 const handleValidationFailure = (request, h, error) => {

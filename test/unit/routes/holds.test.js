@@ -193,12 +193,23 @@ describe('holds route methods', () => {
     const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'POST')
     const h = makeH()
     const reqFRN = { payload: { frn: '10' } }
-    const resFRN = await route.options.handler(reqFRN, h)
-    expect(resFRN.view).toEqual(HOLDS_VIEWS.HOLDS)
-    expect(resFRN.ctx.paymentHolds.length).toBe(2)
-    const reqScheme = { payload: { name: 'B' } }
-    const resScheme = await route.options.handler(reqScheme, h)
-    expect(resScheme.ctx.paymentHolds.length).toBe(2)
+
+    await route.options.handler(reqFRN, h)
+
+    expect(h.redirect).toHaveBeenCalledWith(
+      `${HOLDS_ROUTES.HOLDS}?page=1&perPage=100&frn=10`
+    )
+    const reqScheme = {
+      payload: {
+        name: 'B'
+      }
+    }
+
+    await route.options.handler(reqScheme, h)
+
+    expect(h.redirect).toHaveBeenCalledWith(
+      `${HOLDS_ROUTES.HOLDS}?page=1&perPage=100&name=B`
+    )
   })
 
   test('POST holds handler filters by both schemeName and frn when both frn and name provided', async () => {
@@ -210,12 +221,18 @@ describe('holds route methods', () => {
     getHolds.mockResolvedValue(holds)
     const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'POST')
     const h = makeH()
-    const reqBoth = { payload: { frn: '10', name: 'B' } }
-    const resBoth = await route.options.handler(reqBoth, h)
-    expect(resBoth.view).toEqual(HOLDS_VIEWS.HOLDS)
-    expect(resBoth.ctx.paymentHolds.every(p => p.frn === '10')).toBeTruthy()
-    expect(resBoth.ctx.paymentHolds.every(p => p.holdCategorySchemeName === 'B')).toBeTruthy()
-    expect(resBoth.ctx.paymentHolds.length).toBe(1)
+    const reqBoth = {
+      payload: {
+        frn: '10',
+        name: 'B'
+      }
+    }
+
+    await route.options.handler(reqBoth, h)
+
+    expect(h.redirect).toHaveBeenCalledWith(
+      `${HOLDS_ROUTES.HOLDS}?page=1&perPage=100&frn=10&name=B`
+    )
   })
 
   test('POST holds handler returns all results when no frn or name provided', async () => {
@@ -227,10 +244,12 @@ describe('holds route methods', () => {
     const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'POST')
     const h = makeH()
     const reqNone = { payload: {} }
-    const resNone = await route.options.handler(reqNone, h)
-    expect(resNone.view).toEqual(HOLDS_VIEWS.HOLDS)
-    expect(resNone.ctx.paymentHolds.length).toBe(2)
-    expect(resNone.ctx.numberOfHolds).toBe(2)
+
+    await route.options.handler(reqNone, h)
+
+    expect(h.redirect).toHaveBeenCalledWith(
+      `${HOLDS_ROUTES.HOLDS}?page=1&perPage=100`
+    )
   })
 
   test('POST holds validation failAction returns search view with errors and takes over', async () => {
@@ -553,34 +572,37 @@ describe('holds route methods', () => {
   })
 
   test('POST holds handler filters by schemeName exact match', async () => {
-    const holds = [
-      { frn: '1', holdCategorySchemeName: 'Match' },
-      { frn: '2', holdCategorySchemeName: 'Nope' }
-    ]
-    getHolds.mockResolvedValue(holds)
     const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'POST')
     const h = makeH()
-    const req = { payload: { name: 'Match' } }
-    const res = await route.options.handler(req, h)
-    expect(res.view).toEqual(HOLDS_VIEWS.HOLDS)
-    expect(res.ctx.paymentHolds).toEqual([{ frn: '1', holdCategorySchemeName: 'Match' }])
-    expect(res.ctx.numberOfHolds).toBe(1)
+
+    const req = {
+      payload: {
+        name: 'Match'
+      }
+    }
+
+    await route.options.handler(req, h)
+
+    expect(h.redirect).toHaveBeenCalledWith(
+      `${HOLDS_ROUTES.HOLDS}?page=1&perPage=100&name=Match`
+    )
   })
 
   test('POST holds handler filters when payload.name matches holdCategorySchemeName', async () => {
-    const holds = [
-      { frn: '100', holdCategorySchemeName: 'SchemeX' },
-      { frn: '101', holdCategorySchemeName: 'SchemeY' },
-      { frn: '102', holdCategorySchemeName: 'SchemeX' }
-    ]
-    getHolds.mockResolvedValue(holds)
     const route = findRouteByPath(HOLDS_ROUTES.HOLDS, 'POST')
     const h = makeH()
-    const req = { payload: { name: 'SchemeX' } }
-    const res = await route.options.handler(req, h)
-    expect(res.view).toEqual(HOLDS_VIEWS.HOLDS)
-    expect(res.ctx.paymentHolds).toEqual([{ frn: '100', holdCategorySchemeName: 'SchemeX' }, { frn: '102', holdCategorySchemeName: 'SchemeX' }])
-    expect(res.ctx.numberOfHolds).toBe(2)
+
+    const req = {
+      payload: {
+        name: 'SchemeX'
+      }
+    }
+
+    await route.options.handler(req, h)
+
+    expect(h.redirect).toHaveBeenCalledWith(
+      `${HOLDS_ROUTES.HOLDS}?page=1&perPage=100&name=SchemeX`
+    )
   })
 
   test('ADD_TYPE validation failAction returns view when categoryName is reserved', async () => {
@@ -667,5 +689,37 @@ describe('holds route methods', () => {
     expect(out.ctx.selectScheme).toEqual('MyScheme')
     expect(out.ctx.selectHoldCategoryId).toEqual('42')
     expect(out).toHaveProperty('takeover')
+  })
+
+  test('ADD_TYPE schema: categoryName with exactly 60 characters is valid', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const schema = route.options.validate.payload
+
+    await expect(
+      schema.validateAsync({
+        schemeId: 1,
+        categoryName: 'A'.repeat(60)
+      })
+    ).resolves.toBeDefined()
+  })
+
+  test('ADD_TYPE schema: categoryName longer than 60 characters produces max length message', async () => {
+    const route = findRouteByPath(HOLDS_ROUTES.ADD_TYPE, 'POST')
+    const schema = route.options.validate.payload
+
+    try {
+      await schema.validateAsync({
+        schemeId: 1,
+        categoryName: 'A'.repeat(61)
+      })
+
+      throw new Error('validation did not fail')
+    } catch (err) {
+      expect(
+        err.details.some(
+          d => d.message === 'Hold type name must be 60 characters or fewer'
+        )
+      ).toBeTruthy()
+    }
   })
 })

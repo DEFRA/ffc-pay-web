@@ -4,8 +4,74 @@ const {
   getPaymentsByCorrelationId,
   getPaymentsByBatch
 } = require('../payments')
+const buildPaginationItems = require('../helpers/build-pagination-items')
+const { parsePaginationParams } = require('../helpers/list-view')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
+const DEFAULT_PER_PAGE = 100
+
+const buildFrnViewModel = ({ allPayments, frn, page, perPage }) => {
+  const numberOfPayments = allPayments.length
+  const totalPages = Math.ceil(numberOfPayments / perPage)
+  const selectedPage = totalPages > 0 && page > totalPages ? totalPages : page
+  const startIndex = (selectedPage - 1) * perPage
+  const payments = allPayments.slice(startIndex, startIndex + perPage)
+  const paginationItems = buildPaginationItems(
+    selectedPage,
+    totalPages,
+    perPage,
+    { frn }
+  )
+  const extraQuery = frn
+    ? `&frn=${encodeURIComponent(frn)}`
+    : ''
+
+  return {
+    frn,
+    payments,
+    page: selectedPage,
+    perPage,
+    numberOfPayments,
+    totalPages,
+    paginationItems,
+    extraQuery
+  }
+}
+
+const buildBatchViewModel = ({ allPayments, batch, page, perPage }) => {
+  const numberOfPayments = allPayments.length
+
+  const totalPages = Math.ceil(numberOfPayments / perPage)
+
+  const selectedPage =
+    totalPages > 0 && page > totalPages
+      ? totalPages
+      : page
+
+  const startIndex = (selectedPage - 1) * perPage
+
+  const payments = allPayments.slice(
+    startIndex,
+    startIndex + perPage
+  )
+
+  const paginationItems = buildPaginationItems(
+    selectedPage,
+    totalPages,
+    perPage,
+    { batch }
+  )
+
+  return {
+    batch,
+    payments,
+    page: selectedPage,
+    perPage,
+    numberOfPayments,
+    totalPages,
+    paginationItems
+  }
+}
 
 module.exports = [
   {
@@ -37,8 +103,19 @@ module.exports = [
       if (!frn) {
         return h.redirect('/monitoring?error=true&errorField=frn')
       }
-      const payments = await getPaymentsByFrn(frn)
-      return h.view('monitoring/frn', { frn, payments })
+
+      const { page, perPage } = parsePaginationParams(
+        request.query,
+        DEFAULT_PER_PAGE
+      )
+      const allPayments = await getPaymentsByFrn(frn)
+
+      return h.view('monitoring/frn', buildFrnViewModel({
+        allPayments,
+        frn,
+        page,
+        perPage
+      }))
     }
   },
   {
@@ -61,11 +138,27 @@ module.exports = [
     },
     handler: async (request, h) => {
       const batch = request.query.batch
+
       if (!batch) {
         return h.redirect('/monitoring?error=true&errorField=batch')
       }
-      const payments = await getPaymentsByBatch(batch)
-      return h.view('monitoring/batch', { batch, payments })
+
+      const { page, perPage } = parsePaginationParams(
+        request.query,
+        DEFAULT_PER_PAGE
+      )
+
+      const allPayments = await getPaymentsByBatch(batch)
+
+      return h.view(
+        'monitoring/batch',
+        buildBatchViewModel({
+          allPayments,
+          batch,
+          page,
+          perPage
+        })
+      )
     }
   }
 ]

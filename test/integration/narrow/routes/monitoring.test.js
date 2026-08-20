@@ -104,3 +104,63 @@ describe('Monitoring routes', () => {
     })
   })
 })
+
+test('GET /monitoring/payments/frn redirects when frn is not supplied', async () => {
+  const response = await server.inject({
+    method: 'GET',
+    url: '/monitoring/payments/frn',
+    auth
+  })
+
+  expect(response.statusCode).toBe(302)
+  expect(response.headers.location)
+    .toBe('/monitoring?error=true&errorField=frn')
+})
+
+test('GET /monitoring/batch/name redirects when batch is not supplied', async () => {
+  const response = await server.inject({
+    method: 'GET',
+    url: '/monitoring/batch/name',
+    auth
+  })
+
+  expect(response.statusCode).toBe(302)
+  expect(response.headers.location)
+    .toBe('/monitoring?error=true&errorField=batch')
+})
+
+test('GET /monitoring/batch/name displays batch payments', async () => {
+  mockGetPaymentsByBatch.mockResolvedValue([
+    { paymentRequestId: 1 },
+    { paymentRequestId: 2 }
+  ])
+
+  const response = await server.inject({
+    method: 'GET',
+    url: '/monitoring/batch/name?batch=BATCH001',
+    auth
+  })
+
+  expect(mockGetPaymentsByBatch)
+    .toHaveBeenCalledWith('BATCH001')
+
+  expect(response.statusCode).toBe(200)
+})
+
+test('GET /monitoring/batch/name clamps page to total pages', async () => {
+  mockGetPaymentsByBatch.mockResolvedValue([
+    { id: 1 },
+    { id: 2 }
+  ])
+
+  const response = await server.inject({
+    method: 'GET',
+    url: '/monitoring/batch/name?batch=BATCH001&page=99&perPage=1',
+    auth
+  })
+
+  expect(mockGetPaymentsByBatch)
+    .toHaveBeenCalledWith('BATCH001')
+
+  expect(response.statusCode).toBe(200)
+})
