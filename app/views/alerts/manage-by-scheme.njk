@@ -4,6 +4,9 @@
   from "macros/alert-helpers.njk" import alertManagementBreadcrumbs, alertManagementPageContent
 %}
 
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
 {% set pageTitle = "Manage email alerts by scheme" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
@@ -13,21 +16,53 @@
 {% endblock %}
 
 {% block content %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
+  <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+  <p class="govuk-body">
+    Choose a scheme to view existing email alerts and manage who receives each
+    type of alert.
+  </p>
+
+  <form
+    method="GET"
+    action="/alerts/by-scheme"
+    class="govuk-!-margin-bottom-6">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        {% set schemeItems = [] %}
+        {% for scheme in schemes %}
+          {%
+            set schemeItems = (schemeItems.push({
+              value: scheme.schemeId,
+              text: scheme.name,
+              selected: schemeName == scheme.name
+            }), schemeItems)
+          %}
+        {% endfor %}
+
+        {{
+          govukSelect({
+            id: "schemeId",
+            name: "schemeId",
+            label: {
+              text: "Select scheme",
+              classes: "govuk-label--s"
+            },
+            items: schemeItems
+          })
+        }}
+      </div>
+    </div>
+
+    <div class="govuk-button-group">
       {{
-        alertManagementPageContent(
-          pageTitle,
-          [
-            "Select a scheme to manage its email alerts.",
-            "Use the cards below to choose the scheme you want to review or update."
-          ],
-          cards,
-          updated,
-          removed,
-          emailAddress
-        )
+        govukButton({
+          text: "Search",
+          attributes: {
+            id: "submit"
+          }
+        })
       }}
     </div>
-  </div>
+  </form>
 {% endblock %}

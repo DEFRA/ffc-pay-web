@@ -77,7 +77,7 @@ const returnErrorView = async (h, contactId, modifiedBy, error) => {
   return h
     .view('alerts/update', {
       ...viewData,
-      error
+      error: error?.message ?? String(error)
     })
     .code(BAD_REQUEST)
     .takeover()

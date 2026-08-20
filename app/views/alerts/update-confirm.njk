@@ -10,7 +10,7 @@
   set pageTitle = "Check alerts for " ~ emailAddress ~ " are correct before saving"
 %}
 {%
-  set updatePageTitle = contactId ? "Update " ~ emailAddress ~ " alerts" : "Add new alert recipient"
+  set updatePageTitle = ("Update " ~ emailAddress ~ " alerts") if contactId else "Add new alert recipient"
 %}
 {%
   set breadcrumbData = {

@@ -1,4 +1,4 @@
-const { Boom } = require('@hapi/boom')
+const Boom = require('@hapi/boom')
 const { applicationAdmin, alertAdmin } = require('../auth/permissions')
 const { normaliseValues, getAlertRecipientViewData } = require('./get-alert-recipient-view-data')
 const userSchema = require('../routes/schemas/user-schema')

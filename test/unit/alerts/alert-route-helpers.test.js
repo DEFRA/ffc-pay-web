@@ -1,11 +1,9 @@
 jest.mock('@hapi/boom', () => ({
-  Boom: {
-    badGateway: jest.fn((message) => ({
-      isBoom: true,
-      output: { statusCode: 502 },
-      message
-    }))
-  }
+  badGateway: jest.fn((message) => ({
+    isBoom: true,
+    output: { statusCode: 502 },
+    message
+  }))
 }))
 
 jest.mock('../../../app/alerts/get-alert-recipient-view-data', () => ({

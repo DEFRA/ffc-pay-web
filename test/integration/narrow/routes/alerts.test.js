@@ -84,7 +84,7 @@ describe('Alerts route handlers', () => {
 
     expect(getSchemes).toHaveBeenCalledTimes(1)
     expect(h.view).toHaveBeenCalledWith('alerts/manage-by-scheme', {
-      data: schemes,
+      schemes,
       schemeName: undefined,
       emailAddress: undefined
     })
@@ -280,7 +280,12 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/update-by-recipient renders a search view with validation error when email is supplied', async () => {
     const route = findRoute('GET', '/alerts/update-by-recipient')
-    const result = await route.handler({ query: { emailAddress: 'bad@example.com' } }, h)
+    const result = await route.handler({
+      query: {
+        emailAddress: 'bad@example.com',
+        validationError: 'true'
+      }
+    }, h)
 
     expect(h.view).toHaveBeenCalledWith('alerts/update-by-recipient', {
       emailAddress: 'bad@example.com',
@@ -343,7 +348,7 @@ describe('Alerts route handlers', () => {
       'TestUser',
       request.payload,
       h,
-      '/alerts/manage?updated=123'
+      '/alerts/update?emailAddress=user%40example.com&success=true&successAction=update&contactId=123'
     )
     expect(result).toBe('update-success')
   })
@@ -369,7 +374,7 @@ describe('Alerts route handlers', () => {
     expect(h.view).toHaveBeenCalledWith('alerts/update', {
       some: 'viewdata',
       action: 'update',
-      error
+      error: error.message
     })
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(result).toBe(h)
@@ -388,7 +393,7 @@ describe('Alerts route handlers', () => {
     expect(result).toBe(h)
   })
 
-  test('POST /alerts/update with schemeId calls updateAlertUser and constructs alertsByScheme redirect', async () => {
+  test('POST /alerts/update with schemeId calls updateAlertUser and constructs success redirect', async () => {
     const route = findRoute('POST', '/alerts/update')
     updateAlertUser.mockResolvedValue('update-success')
 
@@ -401,7 +406,9 @@ describe('Alerts route handlers', () => {
       }
     }
 
-    const expectedRedirect = `/alerts/by-scheme?schemeId=${encodeURIComponent('S1')}&emailAddress=${encodeURIComponent('user@example.com')}`
+    const expectedRedirect = `/alerts/update?emailAddress=${encodeURIComponent(
+      'user@example.com'
+    )}&success=true&successAction=update`
 
     const result = await route.handler(request, h)
 
@@ -447,7 +454,7 @@ describe('Alerts route handlers', () => {
     expect(h.view).toHaveBeenCalledWith('alerts/update', {
       some: 'viewdata',
       action: 'remove',
-      error
+      error: error.message
     })
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(result).toBe(h)
@@ -510,23 +517,27 @@ describe('Alerts route handlers', () => {
     expect(result).toBe('handled-information')
   })
 
-  test('calls handleAlertingError for GET /alerts/update when getAlertRecipientViewData rejects', async () => {
-    jest.resetModules()
-    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
-    const handle = jest.fn().mockReturnValue('handled-update')
-    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
+  test('GET /alerts/update redirects to update-by-recipient when getAlertRecipientViewData rejects', async () => {
+    const route = findRoute('GET', '/alerts/update')
 
-    const alertsMod = require('../../../../app/alerts')
-    alertsMod.getAlertRecipientViewData.mockRejectedValue(new Error('update fail'))
+    getAlertRecipientViewData.mockRejectedValue(
+      new Error('update fail')
+    )
 
-    const routesLocal = require('../../../../app/routes/alerts')
-    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
+    h.redirect.mockReturnValue('redirected')
 
-    const route = findLocal('GET', '/alerts/update')
-    const result = await route.handler({ query: { action: 'edit', contactId: '123' } }, h)
+    const result = await route.handler({
+      query: {
+        action: 'edit',
+        emailAddress: 'bad@example.com'
+      }
+    }, h)
 
-    expect(handle).toHaveBeenCalled()
-    expect(result).toBe('handled-update')
+    expect(h.redirect).toHaveBeenCalledWith(
+      '/alerts/update-by-recipient?emailAddress=bad%40example.com&validationError=true'
+    )
+
+    expect(result).toBe('redirected')
   })
 
   test('calls handleAlertingError for GET /alerts/add-recipient-by-scheme when getAlertRecipientViewData rejects', async () => {

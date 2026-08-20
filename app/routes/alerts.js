@@ -55,7 +55,7 @@ module.exports = [
         const schemes = await getSchemes()
 
         return h.view(views.manageByScheme, {
-          data: schemes,
+          schemes,
           schemeName: request.query?.schemeName,
           emailAddress: request.query?.emailAddress
         })
@@ -84,10 +84,15 @@ module.exports = [
 
       try {
         const alertsForScheme = await getAlertsByScheme(schemeId)
+
         return h.view(views.alertsByScheme, {
           types: alertsForScheme.formattedTypes,
           schemeName: alertsForScheme.schemeName,
-          schemeId
+          schemeId,
+          successMessage:
+            request.query?.success === 'true'
+              ? `${request.query.emailAddress} will now receive email alerts for ${alertsForScheme.schemeName}.`
+              : undefined
         })
       } catch (error) {
         const schemes = await getProcessingData(SCHEMES_PATH)
@@ -132,13 +137,24 @@ module.exports = [
             )
         })
 
+        const successMessage = request.query?.success === 'true'
+          ? request.query?.successAction === 'create'
+            ? `${data.emailAddress} will now receive the selected email alerts.`
+            : `Alerts for ${data.emailAddress} have been updated.`
+          : undefined
+
         return h.view(views.update, {
           ...data,
           action: 'edit',
-          error: request.query?.validationError
+          error: request.query?.validationError,
+          successMessage
         })
       } catch (error) {
-        return handleAlertingError(error)
+        return h.redirect(
+          `${paths.updateByRecipient}?emailAddress=${encodeURIComponent(
+            request.query?.emailAddress || ''
+          )}&validationError=true`
+        )
       }
     }
   },
@@ -221,19 +237,21 @@ module.exports = [
             h
           )
         }
+        const successRedirectParams = new URLSearchParams({
+          emailAddress: request.payload.emailAddress,
+          success: 'true',
+          successAction: request.payload.action
+        })
+
+        if (request.payload.contactId) {
+          successRedirectParams.set('contactId', request.payload.contactId)
+        }
+
         return await updateAlertUser(
           getAccountName(request),
           request.payload,
           h,
-          request.payload.schemeId
-            ? `${paths.alertsByScheme}?schemeId=${encodeURIComponent(
-              request.payload.schemeId
-            )}&emailAddress=${encodeURIComponent(
-              request.payload.emailAddress
-            )}`
-            : `${paths.manage}?updated=${encodeURIComponent(
-              request.payload.contactId || request.payload.emailAddress
-            )}`
+          `${paths.update}?${successRedirectParams.toString()}`
         )
       } catch (error) {
         try {
@@ -243,7 +261,7 @@ module.exports = [
             .view(views.update, {
               ...data,
               action: request.payload.action,
-              error
+              error: getValidationError(error)
             })
             .code(BAD_REQUEST)
         } catch (viewError) {
@@ -289,17 +307,11 @@ module.exports = [
     paths.addRecipientByScheme,
     'create',
     async (request) => {
-      const schemes = await getSchemes()
-      const schemeName = getSchemeName(
-        schemes,
+      return `${paths.alertsByScheme}?schemeId=${encodeURIComponent(
         request.payload.schemeId
-      )
-
-      return `${paths.manageByScheme}?schemeName=${encodeURIComponent(
-        schemeName || ''
       )}&emailAddress=${encodeURIComponent(
         request.payload.emailAddress || ''
-      )}`
+      )}&success=true`
     }
   ),
   {
@@ -382,7 +394,7 @@ module.exports = [
 
       return h.view(views.updateByRecipient, {
         emailAddress,
-        error: emailAddress
+        error: request.query?.validationError
           ? 'The email address provided is either invalid or not configured to receive alerts'
           : null
       })

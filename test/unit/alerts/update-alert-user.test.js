@@ -111,7 +111,12 @@ describe('updateAlertUser', () => {
       query: { contactId: payload.contactId },
       auth: { credentials: { account: { name: modifiedBy } } }
     })
-    expect(h.view).toHaveBeenCalledWith('alerts/update', expect.objectContaining({ error: expect.any(Error) }))
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/update',
+      expect.objectContaining({
+        error: 'At least one alert type must be selected.'
+      })
+    )
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(h.takeover).toHaveBeenCalled()
     expect(result).toBe(h)
@@ -151,7 +156,12 @@ describe('updateAlertUser', () => {
 
     const result = await updateAlertUser(modifiedBy, { ...payload }, h)
 
-    expect(h.view).toHaveBeenCalledWith('alerts/update', expect.objectContaining({ error }))
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/update',
+      expect.objectContaining({
+        error: error.message
+      })
+    )
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(h.takeover).toHaveBeenCalled()
     expect(postAlerting).not.toHaveBeenCalled()
@@ -171,7 +181,12 @@ describe('updateAlertUser', () => {
 
     const result = await updateAlertUser(modifiedBy, { ...payload }, h)
 
-    expect(h.view).toHaveBeenCalledWith('alerts/update', expect.objectContaining({ error }))
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/update',
+      expect.objectContaining({
+        error: error.message
+      })
+    )
     expect(h.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(h.takeover).toHaveBeenCalled()
     expect(result).toBe(h)
