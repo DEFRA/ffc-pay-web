@@ -34,6 +34,8 @@ const { getSchemes } = require('../../../../app/helpers')
 const { getAlertingData, getProcessingData } = require('../../../../app/api')
 const { BAD_REQUEST, PRECONDITION_FAILED } = require('../../../../app/constants/http-status-codes')
 const routes = require('../../../../app/routes/alerts')
+const userSchema = require('../../../../app/routes/schemas/user-schema')
+const removeUserSchema = require('../../../../app/routes/schemas/remove-user-schema')
 
 describe('Alerts route handlers', () => {
   let h
@@ -696,5 +698,222 @@ describe('Alerts route handlers', () => {
     })
     expect(hLocal.code).toHaveBeenCalledWith(BAD_REQUEST)
     expect(result).toBe(hLocal)
+  })
+
+  test('GET /alerts/by-scheme returns no scheme found error for invalid schemeId', async () => {
+    const route = findRoute('GET', '/alerts/by-scheme')
+
+    const schemes = [
+      { schemeId: 'S1', name: 'Scheme 1' }
+    ]
+
+    getProcessingData.mockResolvedValue({
+      payload: {
+        paymentSchemes: schemes
+      }
+    })
+
+    const result = await route.handler({
+      query: {
+        schemeId: '999'
+      }
+    }, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/by-scheme',
+      {
+        error: 'No scheme found for Scheme ID 999',
+        schemeId: '999',
+        data: schemes
+      }
+    )
+
+    expect(h.code).toHaveBeenCalledWith(PRECONDITION_FAILED)
+    expect(result).toBe(h)
+  })
+
+  test('GET /alerts/update builds create success message', async () => {
+    const route = findRoute('GET', '/alerts/update')
+
+    getAlertRecipientViewData.mockResolvedValue({
+      emailAddress: 'user@example.com'
+    })
+
+    await route.handler({
+      query: {
+        success: 'true',
+        successAction: 'create'
+      }
+    }, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/update',
+      expect.objectContaining({
+        successMessage:
+          'user@example.com will now receive the selected email alerts.'
+      })
+    )
+  })
+
+  test('GET /alerts/update builds update success message', async () => {
+    const route = findRoute('GET', '/alerts/update')
+
+    getAlertRecipientViewData.mockResolvedValue({
+      emailAddress: 'user@example.com'
+    })
+
+    await route.handler({
+      query: {
+        success: 'true',
+        successAction: 'edit'
+      }
+    }, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/update',
+      expect.objectContaining({
+        successMessage:
+          'Alerts for user@example.com have been updated.'
+      })
+    )
+  })
+
+  test('POST /alerts/update-confirm renders confirmation view', async () => {
+    const route = findRoute('POST', '/alerts/update-confirm')
+
+    getAlertRecipientViewData.mockResolvedValue({
+      schemesPayload: [],
+      alertTypesPayload: []
+    })
+
+    await route.handler({
+      payload: {
+        contactId: '123',
+        emailAddress: 'user@example.com',
+        action: 'edit'
+      }
+    }, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/update-confirm',
+      expect.objectContaining({
+        contactId: '123',
+        emailAddress: 'user@example.com'
+      })
+    )
+  })
+
+  test('POST /alerts/update validation uses remove validator', async () => {
+    const route = findRoute('POST', '/alerts/update')
+
+    removeUserSchema.validate.mockReturnValue({
+      error: null
+    })
+
+    await route.options.validate.payload({
+      action: 'remove'
+    })
+
+    expect(removeUserSchema.validate).toHaveBeenCalledWith({
+      action: 'remove'
+    })
+  })
+
+  test('POST /alerts/update validation uses user validator', async () => {
+    const route = findRoute('POST', '/alerts/update')
+
+    userSchema.validate.mockReturnValue({
+      error: null
+    })
+
+    await route.options.validate.payload({
+      action: 'edit'
+    })
+
+    expect(userSchema.validate).toHaveBeenCalledWith({
+      action: 'edit'
+    })
+  })
+
+  test('GET /alerts/add-recipient-by-scheme returns no scheme found error', async () => {
+    const route = findRoute('GET', '/alerts/add-recipient-by-scheme')
+
+    getAlertRecipientViewData.mockResolvedValue({
+      schemesPayload: [],
+      schemeId: '999'
+    })
+
+    getProcessingData.mockResolvedValue({
+      payload: {
+        paymentSchemes: []
+      }
+    })
+
+    await route.handler({
+      query: {
+        schemeId: '999'
+      }
+    }, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/add-recipient-by-scheme',
+      {
+        error: 'No scheme found for Scheme ID 999',
+        data: []
+      }
+    )
+
+    expect(h.code).toHaveBeenCalledWith(PRECONDITION_FAILED)
+  })
+
+  test('GET /alerts/add-recipient-by-scheme passes validation error through sanitiser', async () => {
+    const route = findRoute('GET', '/alerts/add-recipient-by-scheme')
+
+    getAlertRecipientViewData.mockResolvedValue({
+      schemesPayload: [{
+        schemeId: 'S1',
+        name: 'Scheme 1'
+      }],
+      schemeId: 'S1'
+    })
+
+    await route.handler({
+      query: {
+        schemeId: 'S1',
+        validationError: 'Email address is required'
+      }
+    }, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/add-recipient-by-scheme',
+      expect.objectContaining({
+        error: 'Email address is required'
+      })
+    )
+  })
+
+  test('GET /alerts/confirm-delete redirects for NOT_FOUND errors', async () => {
+    const route = findRoute('GET', '/alerts/confirm-delete')
+
+    getAlertRemoveViewData.mockRejectedValue({
+      isBoom: true,
+      output: {
+        statusCode: 404
+      }
+    })
+
+    h.redirect.mockReturnValue('redirected')
+
+    const result = await route.handler({
+      query: {
+        emailAddress: 'missing@example.com'
+      }
+    }, h)
+
+    expect(h.redirect).toHaveBeenCalledWith(
+      '/alerts/remove-by-recipient?emailAddress=missing%40example.com&validationError=true'
+    )
+
+    expect(result).toBe('redirected')
   })
 })

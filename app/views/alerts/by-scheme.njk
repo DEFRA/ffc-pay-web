@@ -6,6 +6,9 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{%
+  from "macros/alert-helpers.njk" import schemeSearchBreadcrumbs, schemeManagementBreadcrumbs
+%}
 
 {%
   set pageTitle = "Manage email alerts by scheme" if error else (schemeName ~ " email alerts")
@@ -15,36 +18,9 @@
 
 {% block beforeContent %}
   {% if error and not schemeName %}
-    {{
-      govukBreadcrumbs({
-        items: [{
-          text: "Home",
-          href: "/"
-        }, {
-          text: "Manage email alerts",
-          href: "/alerts/manage"
-        }, {
-          text: "Manage email alerts by scheme"
-        }]
-      })
-    }}
+    {{ schemeSearchBreadcrumbs() }}
   {% else %}
-    {{
-      govukBreadcrumbs({
-        items: [{
-          text: "Home",
-          href: "/"
-        }, {
-          text: "Manage email alerts",
-          href: "/alerts/manage"
-        }, {
-          text: "Manage email alerts by scheme",
-          href: "/alerts/manage-by-scheme"
-        }, {
-          text: pageTitle
-        }]
-      })
-    }}
+    {{ schemeManagementBreadcrumbs(pageTitle) }}
   {% endif %}
 {% endblock %}
 

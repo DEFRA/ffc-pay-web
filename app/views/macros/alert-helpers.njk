@@ -396,3 +396,62 @@
     {% endfor %}
   {% endfor %}
 {% endmacro %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% macro schemeSearchBreadcrumbs() %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: "Manage email alerts by scheme"
+      }]
+    })
+  }}
+{% endmacro %}
+
+{% macro schemeManagementBreadcrumbs(pageTitle) %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: "Manage email alerts by scheme",
+        href: "/alerts/manage-by-scheme"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endmacro %}
+
+{% macro addRecipientBreadcrumbs(schemeName, schemeId, pageTitle) %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: "Manage email alerts by scheme",
+        href: "/alerts/manage-by-scheme"
+      }, {
+        text: schemeName ~ " email alerts",
+        href: "/alerts/by-scheme?schemeId=" ~ (schemeId | urlencode)
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endmacro %}

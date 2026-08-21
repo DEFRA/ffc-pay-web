@@ -8,7 +8,7 @@
   from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner
 %}
 {%
-  from "macros/alert-helpers.njk" import hiddenRecipientFields, alertCheckboxes, alertToggleScript
+  from "macros/alert-helpers.njk" import hiddenRecipientFields, alertCheckboxes, alertToggleScript, schemeSearchBreadcrumbs, addRecipientBreadcrumbs
 %}
 
 {% if error and not schemeName %}
@@ -23,38 +23,14 @@
 
 {% block beforeContent %}
   {% if error and not schemeName %}
-    {{
-      govukBreadcrumbs({
-        items: [{
-          text: "Home",
-          href: "/"
-        }, {
-          text: "Manage email alerts",
-          href: "/alerts/manage"
-        }, {
-          text: "Manage email alerts by scheme"
-        }]
-      })
-    }}
+    {{ schemeSearchBreadcrumbs() }}
   {% else %}
     {{
-      govukBreadcrumbs({
-        items: [{
-          text: "Home",
-          href: "/"
-        }, {
-          text: "Manage email alerts",
-          href: "/alerts/manage"
-        }, {
-          text: "Manage email alerts by scheme",
-          href: "/alerts/manage-by-scheme"
-        }, {
-          text: schemeName ~ " email alerts",
-          href: "/alerts/by-scheme?schemeId=" ~ (schemeId | urlencode)
-        }, {
-          text: pageTitle
-        }]
-      })
+      addRecipientBreadcrumbs(
+        schemeName,
+        schemeId,
+        pageTitle
+      )
     }}
   {% endif %}
 {% endblock %}
