@@ -6,7 +6,7 @@ const {
   getAlertRecipientViewData,
   getAlertRemoveViewData
 } = require('../alerts')
-const { BAD_REQUEST, NOT_AUTHORIZED, PRECONDITION_FAILED } = require('../constants/http-status-codes')
+const { BAD_REQUEST, NOT_AUTHORIZED, NOT_FOUND, PRECONDITION_FAILED } = require('../constants/http-status-codes')
 const { getAlertingData, getProcessingData } = require('../api')
 const {
   PAYMENT_ALERTS_LINKS,
@@ -14,7 +14,7 @@ const {
 } = require('../constants/section-links')
 const { SCHEMES_PATH } = require('../constants/common-api-urls')
 const { getSchemes } = require('../helpers')
-const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, getAccountName, createConfirmationView, createSaveRoute, getSchemeName } = require('../alerts/alert-route-helpers')
+const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, sanitiseValidationError, getAccountName, createConfirmationView, createSaveRoute, getSchemeName } = require('../alerts/alert-route-helpers')
 
 module.exports = [
   {
@@ -83,6 +83,22 @@ module.exports = [
       }
 
       try {
+        const schemes = await getProcessingData(SCHEMES_PATH)
+
+        const scheme = schemes?.payload?.paymentSchemes?.find(
+          x => String(x.schemeId) === String(schemeId)
+        )
+
+        if (!scheme) {
+          return h
+            .view(views.alertsByScheme, {
+              error: `No scheme found for Scheme ID ${schemeId}`,
+              schemeId,
+              data: schemes?.payload?.paymentSchemes
+            })
+            .code(PRECONDITION_FAILED)
+        }
+
         const alertsForScheme = await getAlertsByScheme(schemeId)
 
         return h.view(views.alertsByScheme, {
@@ -148,7 +164,7 @@ module.exports = [
         return h.view(views.update, {
           ...data,
           action: 'edit',
-          error: request.query?.validationError,
+          error: sanitiseValidationError(request.query?.validationError),
           successMessage
         })
       } catch (error) {
@@ -286,10 +302,21 @@ module.exports = [
           data.schemeId
         )
 
+        if (!schemeName) {
+          const schemes = await getProcessingData(SCHEMES_PATH)
+
+          return h
+            .view(views.addRecipientByScheme, {
+              error: `No scheme found for Scheme ID ${data.schemeId}`,
+              data: schemes?.payload?.paymentSchemes
+            })
+            .code(PRECONDITION_FAILED)
+        }
+
         return h.view(views.addRecipientByScheme, {
           ...data,
           action: 'create',
-          error: request.query?.validationError,
+          error: sanitiseValidationError(request.query?.validationError),
           schemeName,
           pageTitle: `Add new alert recipient for ${schemeName}`,
           formAction: paths.addRecipientBySchemeConfirm
@@ -348,12 +375,14 @@ module.exports = [
       } catch (error) {
         if (
           error?.isBoom &&
-          [BAD_REQUEST, NOT_AUTHORIZED].includes(error.output?.statusCode)
+          [BAD_REQUEST, NOT_AUTHORIZED, NOT_FOUND].includes(
+            error.output?.statusCode
+          )
         ) {
           return h.redirect(
             `${paths.removeByRecipient}?emailAddress=${encodeURIComponent(
               request.query?.emailAddress || ''
-            )}`
+            )}&validationError=true`
           )
         }
 
@@ -413,7 +442,7 @@ module.exports = [
 
       return h.view(views.removeByRecipient, {
         emailAddress,
-        error: emailAddress || request.query?.validationError
+        error: request.query?.validationError
           ? 'The email address provided is either invalid or not configured to receive alerts'
           : null
       })

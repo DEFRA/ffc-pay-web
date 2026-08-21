@@ -36,6 +36,34 @@ const views = {
   removeByRecipient: 'alerts/remove-by-recipient'
 }
 
+const KNOWN_VALIDATION_MESSAGES = new Set([
+  // user-schema.js
+  'Email address is required',
+  'Email address must be a string',
+  'Email address must be a valid email',
+  'An issue occurred linking this update to an existing record. Please inform the Payments & Documents Services team.',
+  'Action is required',
+  'Action must be a string',
+  'Action must be edit or create',
+  'Select at least one alert type',
+  // remove-user-schema.js
+  'A user must be specified to remove',
+  'Action must be remove'
+])
+
+const GENERIC_VALIDATION_MESSAGE = 'There was a problem with your submission. Please try again.'
+
+const sanitiseValidationError = (value) => {
+  if (!value) {
+    return null
+  }
+
+  const messages = String(value).split(', ')
+  const allKnown = messages.every((message) => KNOWN_VALIDATION_MESSAGES.has(message))
+
+  return allKnown ? String(value) : GENERIC_VALIDATION_MESSAGE
+}
+
 const handleAlertingError = (error) => {
   console.error('Alerting Service error:', error)
 
@@ -193,6 +221,7 @@ module.exports = {
   handleAlertingError,
   formatAlertType,
   getValidationError,
+  sanitiseValidationError,
   getAccountName,
   getSchemeName,
   getSchemeSummaries,

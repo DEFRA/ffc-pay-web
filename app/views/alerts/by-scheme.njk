@@ -4,135 +4,210 @@
 {% from "govuk/components/accordion/macro.njk" import govukAccordion %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
-{% set pageTitle = schemeName ~ " email alerts" %}
+{%
+  set pageTitle = "Manage email alerts by scheme" if error else (schemeName ~ " email alerts")
+%}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {{
-    govukBreadcrumbs({
-      items: [{
-        text: "Home",
-        href: "/"
-      }, {
-        text: "Manage email alerts",
-        href: "/alerts/manage"
-      }, {
-        text: "Manage email alerts by scheme",
-        href: "/alerts/manage-by-scheme"
-      }, {
-        text: pageTitle
-      }]
-    })
-  }}
+  {% if error and not schemeName %}
+    {{
+      govukBreadcrumbs({
+        items: [{
+          text: "Home",
+          href: "/"
+        }, {
+          text: "Manage email alerts",
+          href: "/alerts/manage"
+        }, {
+          text: "Manage email alerts by scheme"
+        }]
+      })
+    }}
+  {% else %}
+    {{
+      govukBreadcrumbs({
+        items: [{
+          text: "Home",
+          href: "/"
+        }, {
+          text: "Manage email alerts",
+          href: "/alerts/manage"
+        }, {
+          text: "Manage email alerts by scheme",
+          href: "/alerts/manage-by-scheme"
+        }, {
+          text: pageTitle
+        }]
+      })
+    }}
+  {% endif %}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      {% if successMessage %}
+      {% if error %}
         {{
-          govukNotificationBanner({
-            type: "success",
-            titleText: "Success",
-            text: successMessage
+          govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: [{ text: error, href: "#schemeId" }]
           })
         }}
-      {% endif %}
 
-      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
-      <p class="govuk-body">
-        View email alerts for {{ schemeName }} and add or remove the email
-        address for the recipient of all alerts or individual scheme alerts.
-      </p>
-      <p class="govuk-body">
-        Details of the alert types including what the recipient should do, can
-        be found on the <a
-          href="/alerts/information"
-          class="govuk-link"
-          target="_blank"
-          rel="noopener noreferrer">alerts information page</a> (opens in a new
-        tab).
-      </p>
+        <p class="govuk-body">
+          Select a scheme to view and manage its email alerts.
+        </p>
 
-      {{
-        govukButton({
-          text: "Add a new recipient",
-          href: "/alerts/add-recipient-by-scheme?schemeId=" ~ ( schemeId | urlencode )
-        })
-      }}
+        <form
+          method="GET"
+          action="/alerts/by-scheme"
+          class="govuk-!-margin-bottom-6">
+          {% set schemeItems = [] %}
+          {% for scheme in data %}
+            {%
+              set schemeItems = (schemeItems.push({
+                value: scheme.schemeId,
+                text: scheme.name,
+                selected: schemeId == scheme.schemeId
+              }), schemeItems)
+            %}
+          {% endfor %}
 
-      {% set accordionItems = [] %}
+          {{
+            govukSelect({
+              id: "schemeId",
+              name: "schemeId",
+              label: {
+                text: "Select scheme",
+                classes: "govuk-label--s"
+              },
+              items: schemeItems
+            })
+          }}
 
-      {% for alertType in types %}
-        {% set tableRows = [] %}
+          <div class="govuk-button-group">
+            {{
+              govukButton({
+                text: "Search",
+                attributes: {
+                  id: "submit"
+                }
+              })
+            }}
+          </div>
+        </form>
+      {% else %}
+        {% if successMessage %}
+          {{
+            govukNotificationBanner({
+              type: "success",
+              titleText: "Success",
+              text: successMessage
+            })
+          }}
+        {% endif %}
 
-        {% for user in alertType.users %}
-          {% set contactId = user.contactId | string | urlencode %}
+        <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+        <p class="govuk-body">
+          View email alerts for {{ schemeName }} and add or remove the email
+          address for the recipient of all alerts or individual scheme alerts.
+        </p>
+        <p class="govuk-body">
+          Details of the alert types including what the recipient should do, can
+          be found on the
+          <a
+            href="/alerts/information"
+            class="govuk-link"
+            target="_blank"
+            rel="noopener noreferrer">alerts information page</a> (opens in a
+          new tab).
+        </p>
+
+        {{
+          govukButton({
+            text: "Add a new recipient",
+            href: "/alerts/add-recipient-by-scheme?schemeId=" ~ ( schemeId | urlencode )
+          })
+        }}
+
+        {% set accordionItems = [] %}
+
+        {% for alertType in types %}
+          {% set tableRows = [] %}
+
+          {% for user in alertType.users %}
+            {% set contactId = user.contactId | string | urlencode %}
+            {%
+              set editHref =
+              "/alerts/update?contactId="
+              ~ contactId
+            %}
+            {% set editLinkHtml %}
+              <a
+                href="{{ editHref }}"
+                class="govuk-link">
+                Edit<span class="govuk-visually-hidden">
+                  alert settings for {{ user.emailAddress }}</span>
+              </a>
+            {% endset %}
+
+            {%
+              set tableRows = (tableRows.push([
+                { text: user.emailAddress },
+                { html: editLinkHtml }
+              ]), tableRows)
+            %}
+          {% endfor %}
+
+          {% if tableRows.length %}
+            {% set tableHtml %}
+              {{
+                govukTable({
+                  caption: alertType.displayType ~ " users",
+                  captionClasses: "govuk-visually-hidden",
+                  head: [
+                    { text: "Email Address" },
+                    { text: "Action" }
+                  ],
+                  rows: tableRows
+                })
+              }}
+            {% endset %}
+          {% else %}
+            {% set tableHtml %}
+              <p class="govuk-body">
+                There are no users currently receiving alerts for this type.
+              </p>
+            {% endset %}
+          {% endif %}
+
           {%
-            set editHref =
-            "/alerts/update?contactId="
-            ~ contactId
-          %}
-          {% set editLinkHtml %}
-            <a
-              href="{{ editHref }}"
-              class="govuk-link">
-              Edit<span class="govuk-visually-hidden">
-                alert settings for {{ user.emailAddress }}</span>
-            </a>
-          {% endset %}
-
-          {%
-            set tableRows = (tableRows.push([
-              { text: user.emailAddress },
-              { html: editLinkHtml }
-            ]), tableRows)
+            set accordionItems = (accordionItems.push({
+              heading: {
+                text: alertType.displayType
+              },
+              content: {
+                html: tableHtml
+              }
+            }), accordionItems)
           %}
         {% endfor %}
 
-        {% if tableRows.length %}
-          {% set tableHtml %}
-            {{
-              govukTable({
-                caption: alertType.displayType ~ " users",
-                captionClasses: "govuk-visually-hidden",
-                head: [
-                  { text: "Email Address" },
-                  { text: "Action" }
-                ],
-                rows: tableRows
-              })
-            }}
-          {% endset %}
-        {% else %}
-          {% set tableHtml %}
-            <p class="govuk-body">
-              There are no users currently receiving alerts for this type.
-            </p>
-          {% endset %}
-        {% endif %}
-
-        {%
-          set accordionItems = (accordionItems.push({
-            heading: {
-              text: alertType.displayType
-            },
-            content: {
-              html: tableHtml
-            }
-          }), accordionItems)
-        %}
-      {% endfor %}
-
-      {{
-        govukAccordion({
-          id: "alert-types-accordion",
-          items: accordionItems
-        })
-      }}
+        {{
+          govukAccordion({
+            id: "alert-types-accordion",
+            items: accordionItems
+          })
+        }}
+      {% endif %}
     </div>
   </div>
 {% endblock %}

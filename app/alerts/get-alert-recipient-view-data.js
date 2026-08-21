@@ -70,7 +70,7 @@ const getAlertRecipientViewData = async (request, options = {}) => {
   const payload = request.payload ?? {}
   const contactId = query.contactId || payload.contactId
   const emailAddress = query.emailAddress || payload.emailAddress
-  const schemeId = query.schemeId || payload.schemeId
+  const schemeId = query.schemeId ?? payload.schemeId
   const action = query.action || payload.action
 
   const contactPayload = await getContactPayload(

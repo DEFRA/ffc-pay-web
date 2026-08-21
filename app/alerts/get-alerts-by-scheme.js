@@ -2,6 +2,15 @@ const { getAlertingData } = require('../api')
 
 const getAlertsByScheme = async (schemeId) => {
   const users = await getAlertingData(`/contact-list/by-scheme/${encodeURIComponent(schemeId)}`)
+  const schemeName = users?.payload?.schemeName
+
+  if (!schemeName) {
+    const error = new Error(`No scheme found for Scheme ID ${schemeId}`)
+    error.isBoom = true
+    error.output = { statusCode: 404 }
+    throw error
+  }
+
   const usersPayload = users?.payload?.contacts ?? []
 
   const alertTypes = await getAlertingData('/alert-types')
@@ -31,7 +40,7 @@ const getAlertsByScheme = async (schemeId) => {
 
   return {
     formattedTypes,
-    schemeName: users?.payload?.schemeName
+    schemeName
   }
 }
 
