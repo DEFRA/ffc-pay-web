@@ -196,7 +196,8 @@ describe('Alerts route handlers', () => {
     expect(h.view).toHaveBeenCalledWith('alerts/update', {
       ...viewData,
       action: 'edit',
-      error: undefined
+      error: null,
+      successMessage: undefined
     })
     expect(result).toBe(h)
   })
@@ -216,7 +217,7 @@ describe('Alerts route handlers', () => {
     expect(h.view).toHaveBeenCalledWith('alerts/add-recipient-by-scheme', {
       ...viewData,
       action: 'create',
-      error: undefined,
+      error: null,
       schemeName: 'Scheme 1',
       pageTitle: 'Add new alert recipient for Scheme 1',
       formAction: '/alerts/add-recipient-by-scheme-confirm'
@@ -296,13 +297,39 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/remove-by-recipient renders a search view with validation error when email is supplied', async () => {
     const route = findRoute('GET', '/alerts/remove-by-recipient')
-    const result = await route.handler({ query: { emailAddress: 'bad@example.com' } }, h)
+    const result = await route.handler({
+      query: {
+        emailAddress: 'bad@example.com',
+        validationError: true
+      }
+    }, h)
 
-    expect(h.view).toHaveBeenCalledWith('alerts/remove-by-recipient', {
-      emailAddress: 'bad@example.com',
-      error: 'The email address provided is either invalid or not configured to receive alerts'
-    })
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/remove-by-recipient',
+      {
+        emailAddress: 'bad@example.com',
+        error:
+          'The email address provided is either invalid or not configured to receive alerts'
+      }
+    )
     expect(result).toBe(h)
+  })
+
+  test('GET /alerts/remove-by-recipient does not show an error when only email is supplied', async () => {
+    const route = findRoute('GET', '/alerts/remove-by-recipient')
+    await route.handler({
+      query: {
+        emailAddress: 'bad@example.com'
+      }
+    }, h)
+
+    expect(h.view).toHaveBeenCalledWith(
+      'alerts/remove-by-recipient',
+      {
+        emailAddress: 'bad@example.com',
+        error: null
+      }
+    )
   })
 
   test('POST /alerts/update with action remove calls removeAlertUser and returns its result', async () => {
