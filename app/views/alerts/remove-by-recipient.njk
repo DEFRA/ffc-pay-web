@@ -1,0 +1,35 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "macros/alert-helpers.njk" import recipientSearchForm %}
+
+{% set pageTitle = "Remove recipient" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{
+    govukBreadcrumbs({ items: [
+      { text: "Home", href: "/" },
+      { text: "Manage email alerts", href: "/alerts/manage" },
+      { text: "Manage email alerts by recipient", href: "/alerts/manage-by-recipient" },
+      { text: pageTitle }
+    ] })
+  }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {{
+        recipientSearchForm(
+          "/alerts/confirm-delete",
+          pageTitle,
+          "Search for recipient with an email address to view and remove all of their email alerts.",
+          emailAddress,
+          error
+        )
+      }}
+    </div>
+  </div>
+{% endblock %}

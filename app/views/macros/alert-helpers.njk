@@ -1,0 +1,457 @@
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "macros/card-grid.njk" import cardGrid %}
+
+{%
+  macro recipientSearchForm(action, pageTitle, introText, emailAddress, error)
+%}
+  <form
+    method="GET"
+    action="{{ action }}"
+    autocomplete="off"
+    novalidate>
+    <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+    <p class="govuk-body-m">
+      {{ introText }}
+    </p>
+
+    {% if error %}
+      <div
+        class="govuk-error-summary"
+        aria-labelledby="error-summary-title"
+        role="alert"
+        tabindex="-1"
+        data-module="govuk-error-summary">
+        <h2
+          class="govuk-error-summary__title"
+          id="error-summary-title">
+          There is a problem
+        </h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>
+              <a href="#emailAddress">{{ error }}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
+    <div
+      class="govuk-form-group{% if error %} govuk-form-group--error{% endif %}">
+      <label
+        class="govuk-label"
+        for="emailAddress">
+        Recipient email
+      </label>
+      {% if error %}
+        <p
+          id="emailAddress-error"
+          class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{ error }}
+        </p>
+      {% endif %}
+      <input
+        class="govuk-input govuk-!-width-three-quarters{% if error %} govuk-input--error{% endif %}"
+        id="emailAddress"
+        name="emailAddress"
+        type="text"
+        value="{{ emailAddress }}"
+        {% if error %}aria-describedby="emailAddress-error"{% endif %}
+      />
+    </div>
+
+    {{
+      govukButton({
+        text: "Search",
+        attributes: {
+          id: "submit"
+        }
+      })
+    }}
+  </form>
+{% endmacro %}
+
+{% macro hiddenRecipientFields(data, includeSchemeId = true) %}
+  <input
+    type="hidden"
+    name="crumb"
+    value="{{ data.crumb }}"
+  />
+
+  <input
+    type="hidden"
+    name="contactId"
+    value="{{ data.contactId }}"
+  />
+
+  {% if data.includeEmailAddress %}
+    <input
+      type="hidden"
+      name="emailAddress"
+      value="{{ data.emailAddress }}"
+    />
+  {% endif %}
+
+  <input
+    type="hidden"
+    name="action"
+    value="{{ data.action }}"
+  />
+
+  {% if includeSchemeId and data.schemeId %}
+    <input
+      type="hidden"
+      name="schemeId"
+      value="{{ data.schemeId }}"
+    />
+  {% endif %}
+{% endmacro %}
+
+{% macro alertCheckboxes(data) %}
+  {% for scheme in data.schemesPayload %}
+    {% set schemeForId = scheme.name | lower | replace(' ', '-') %}
+
+    <div
+      class="govuk-form-group scheme-group"
+      data-scheme-id="{{ scheme.schemeId }}">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">Alerts</h2>
+        </legend>
+
+        <div class="govuk-hint">
+          Select all that apply, or
+          <a
+            href="#"
+            class="govuk-link govuk-link--no-visited-state"
+            data-all-toggle
+            data-select-all-text="select all alerts for {{ scheme.name }}"
+            data-clear-all-text="clear all alerts for {{ scheme.name }}">
+            select all alerts for {{ scheme.name }}
+          </a>
+        </div>
+
+        <div
+          class="govuk-checkboxes"
+          data-module="govuk-checkboxes">
+          {% for alertType in data.alertTypesPayload %}
+            {% set alertForId = alertType | lower | replace(' ', '-') %}
+            <div class="govuk-checkboxes__item">
+              <input
+                class="govuk-checkboxes__input"
+                id="{{ schemeForId }}-{{ alertForId }}"
+                name="{{ scheme.schemeId }}"
+                type="checkbox"
+                value="{{ alertType }}"
+                {%
+                  if data.selectedAlerts[alertType] and data.selectedAlerts[alertType][scheme.schemeId]
+                %}
+                  checked
+                {% endif %}
+              />
+              <label
+                class="govuk-label govuk-checkboxes__label"
+                for="{{ schemeForId }}-{{ alertForId }}">
+                {{ alertType | replace('_', ' ') | capitalize }}
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+  {% endfor %}
+{% endmacro %}
+
+{%
+  macro confirmationChangeLink(path, data, schemes, spanText, currentScheme = null)
+%}
+  <a
+    class="govuk-link"
+    href="{{ path }}?emailAddress={{ data.emailAddress | urlencode }}&action={{ data.action | urlencode }}{% if data.schemeId %}&schemeId={{ data.schemeId | urlencode }}{% endif %}{% for scheme in schemes %}{% if not currentScheme or scheme.schemeId == currentScheme.schemeId %}{% for alertType in scheme.alertTypes %}&{{ scheme.schemeId }}={{ alertType | urlencode }}{% endfor %}{% endif %}{% endfor %}">
+    Change
+    <span class="govuk-visually-hidden">{{ spanText }}</span>
+  </a>
+{% endmacro %}
+
+{% macro confirmationQueryParams(data, schemes, currentScheme = null) %}
+  emailAddress={{ data.emailAddress | urlencode }}&action={{
+    data.action | urlencode
+  }}{% if data.schemeId %}&schemeId={{ data.schemeId | urlencode }}{% endif %}{%
+    for scheme in schemes
+  %}{% if not currentScheme or scheme.schemeId == currentScheme.schemeId %}{%
+        for alertType in scheme.alertTypes
+      %}&{{ scheme.schemeId }}={{ alertType | urlencode }}{% endfor %}{%
+      endif
+    %}{% endfor %}
+{% endmacro %}
+
+{% macro alertToggleScript() %}
+  <script>
+  document.addEventListener('click', (event) => {
+      const toggle = event.target.closest('[data-all-toggle]')
+
+      if (!toggle) {
+        return
+      }
+
+      event.preventDefault()
+
+      const group = toggle.closest('.scheme-group')
+      const checkboxes = group.querySelectorAll('input[type="checkbox"]')
+      const selectAll = Array.from(checkboxes).some(
+        (checkbox) => !checkbox.checked
+      )
+
+      checkboxes.forEach((checkbox) => {
+        checkbox.checked = selectAll
+      })
+
+      toggle.textContent = selectAll
+        ? toggle.dataset.clearAllText
+        : toggle.dataset.selectAllText
+    })
+  </script>
+{% endmacro %}
+
+{% macro alertNotificationBanner(updated, removed, emailAddress) %}
+  {% if updated %}
+    <div
+      class="govuk-notification-banner govuk-notification-banner--success"
+      role="alert"
+      aria-labelledby="govuk-notification-banner-title"
+      data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2
+          class="govuk-notification-banner__title"
+          id="govuk-notification-banner-title-hold-added">
+          Success
+        </h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <h3 class="govuk-notification-banner__heading">
+          Alerts for {{ emailAddress }} have been updated.
+        </h3>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if removed %}
+    <div
+      class="govuk-notification-banner govuk-notification-banner--success"
+      role="alert"
+      aria-labelledby="govuk-notification-banner-title"
+      data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2
+          class="govuk-notification-banner__title"
+          id="govuk-notification-banner-title-hold-added">
+          Success
+        </h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <h3 class="govuk-notification-banner__heading">
+          {{ removed }} and their alerts have been removed
+        </h3>
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro alertManagementBreadcrumbs(pageTitle) %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endmacro %}
+
+{%
+  macro alertManagementPageContent(pageTitle, introParagraphs, cards, updated, removed, emailAddress)
+%}
+  {{ alertNotificationBanner(updated, removed, emailAddress) }}
+
+  <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+  {% for paragraph in introParagraphs %}
+    <p class="govuk-body">
+      {{ paragraph | safe }}
+    </p>
+  {% endfor %}
+
+  {{ cardGrid(cards) }}
+{% endmacro %}
+
+{%
+  macro recipientSummaryCard(formPath, queryData, schemes, changeLinkLabel, changeLinkTarget, emailAddress)
+%}
+  <div class="govuk-summary-card">
+    <div class="govuk-summary-card__title-wrapper">
+      <h2 class="govuk-summary-card__title">Recipient</h2>
+      <ul class="govuk-summary-card__actions">
+        <li class="govuk-summary-card__action">
+          {{
+            confirmationChangeLink(formPath, queryData, schemes, changeLinkLabel, changeLinkTarget)
+          }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="govuk-summary-card__content">
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Email address</dt>
+          <dd class="govuk-summary-list__value">{{ emailAddress }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+{% endmacro %}
+
+{%
+  macro schemeSummaryCard(scheme, formPath, queryData, schemes, changeLinkLabel, changeLinkTarget, formatAlertType)
+%}
+  {% if scheme.alertTypes and scheme.alertTypes.length %}
+    <div class="govuk-summary-card">
+      <div class="govuk-summary-card__title-wrapper">
+        <h2 class="govuk-summary-card__title">{{ scheme.schemeName }}</h2>
+        <ul class="govuk-summary-card__actions">
+          <li class="govuk-summary-card__action">
+            {{
+              confirmationChangeLink(formPath, queryData, schemes, changeLinkLabel, changeLinkTarget)
+            }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="govuk-summary-card__content">
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">Alert types</dt>
+            <dd class="govuk-summary-list__value">
+              <ul class="govuk-list">
+                {% for alertType in scheme.alertTypes %}
+                  <li>{{ formatAlertType(alertType) }}</li>
+                {% endfor %}
+              </ul>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{%
+  macro confirmationHiddenFields(crumb, contactId, emailAddress, action, schemeId, schemes)
+%}
+  <input
+    type="hidden"
+    name="crumb"
+    value="{{ crumb }}"
+  />
+
+  {% if contactId %}
+    <input
+      type="hidden"
+      name="contactId"
+      value="{{ contactId }}"
+    />
+  {% endif %}
+
+  <input
+    type="hidden"
+    name="emailAddress"
+    value="{{ emailAddress }}"
+  />
+  <input
+    type="hidden"
+    name="action"
+    value="{{ action }}"
+  />
+
+  {% if schemeId %}
+    <input
+      type="hidden"
+      name="schemeId"
+      value="{{ schemeId }}"
+    />
+  {% endif %}
+
+  {% for scheme in schemes %}
+    {% for alertType in scheme.alertTypes %}
+      <input
+        type="hidden"
+        name="{{ scheme.schemeId }}"
+        value="{{ alertType }}"
+      />
+    {% endfor %}
+  {% endfor %}
+{% endmacro %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% macro schemeSearchBreadcrumbs() %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: "Manage email alerts by scheme"
+      }]
+    })
+  }}
+{% endmacro %}
+
+{% macro schemeManagementBreadcrumbs(pageTitle) %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: "Manage email alerts by scheme",
+        href: "/alerts/manage-by-scheme"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endmacro %}
+
+{% macro addRecipientBreadcrumbs(schemeName, schemeId, pageTitle) %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: "Manage email alerts by scheme",
+        href: "/alerts/manage-by-scheme"
+      }, {
+        text: schemeName ~ " email alerts",
+        href: "/alerts/by-scheme?schemeId=" ~ (schemeId | urlencode)
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endmacro %}

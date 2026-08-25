@@ -1,13 +1,32 @@
 {% extends '_layout.njk' %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% set pageTitle = "Delete user" %}
 
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {% include "macros/alert-breadcrumbs.njk" %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: "Manage email alerts by recipient",
+        href: "/alerts/manage-by-recipient"
+      }, {
+        text: "Remove recipient",
+        href: "/alerts/remove-by-recipient"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
 {% endblock %}
 
 {% block content %}
@@ -27,6 +46,11 @@
           type="hidden"
           name="contactId"
           value="{{contactId}}"
+        />
+        <input
+          type="hidden"
+          name="emailAddress"
+          value="{{emailAddress}}"
         />
         <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
         {% if error %}

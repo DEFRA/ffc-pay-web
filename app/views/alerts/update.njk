@@ -1,11 +1,15 @@
 {% extends '_layout.njk' %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/input/macro.njk" import govukInput %}
-{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{%
+  from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner
+%}
+{% from "macros/alert-helpers.njk" import alertManagementBreadcrumbs %}
 
 {% if contactId %}
-  {% set pageTitle = "Update alert recipient" %}
+  {% set pageTitle = "Update " ~ emailAddress ~ " alerts" %}
 {% else %}
   {% set pageTitle = "Add new alert recipient" %}
 {% endif %}
@@ -13,163 +17,255 @@
 {% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
 
 {% block beforeContent %}
-  {% include "macros/alert-breadcrumbs.njk" %}
+  {% if contactId %}
+    {{ alertManagementBreadcrumbs(pageTitle) }}
+  {% else %}
+    {{
+      govukBreadcrumbs({
+        items: [{
+          text: "Home",
+          href: "/"
+        }, {
+          text: "Manage email alerts",
+          href: "/alerts/manage"
+        }, {
+          text: "Manage email alerts by recipient",
+          href: "/alerts/manage-by-recipient"
+        }, {
+          text: pageTitle
+        }]
+      })
+    }}
+  {% endif %}
 {% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
+      {% if successMessage %}
+        {{
+          govukNotificationBanner({
+            type: "success",
+            titleText: "Success",
+            text: successMessage
+          })
+        }}
+      {% endif %}
+
       <form
         method="POST"
-        action="/alerts/update"
+        action="{{ formAction or '/alerts/update-confirm' }}"
         autocomplete="off"
         novalidate>
+        {% if contactId %}
+          <input
+            type="hidden"
+            name="contactId"
+            value="{{ contactId }}"
+          />
+          <input
+            type="hidden"
+            name="emailAddress"
+            value="{{ emailAddress }}"
+          />
+        {% endif %}
         <input
           type="hidden"
           name="crumb"
-          value="{{crumb}}"
-        />
-        <input
-          type="hidden"
-          name="contactId"
-          value="{{contactId}}"
+          value="{{ crumb }}"
         />
 
         {% if error %}
-          {%
-            set errorList = [{
-              text: error.message,
-              href: "#emailAddress"
-            }]
-          %}
-
-          {{
-            govukErrorSummary({
-              titleText: "There is a problem",
-              errorList: errorList
-            })
-          }}
-        {% endif %}
-
-        {% set emailAddressError = null %}
-
-        {% if error %}
-          {%
-            set emailAddressError = {
-              text: error.message
-            }
-          %}
+          <div
+            class="govuk-error-summary"
+            aria-labelledby="error-summary-title"
+            role="alert"
+            tabindex="-1"
+            data-module="govuk-error-summary">
+            <h2
+              class="govuk-error-summary__title"
+              id="error-summary-title">
+              There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li>
+                  <a href="#emailAddress">{{ error }}</a>
+                </li>
+              </ul>
+            </div>
+          </div>
         {% endif %}
 
         <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
 
-        {{
-          govukInput({
-            label: {
-              text: "Email address",
-              classes: "govuk-label-s"
-            },
-            id: "emailAddress",
-            name: "emailAddress",
-            type: "email",
-            value: emailAddress,
-            errorMessage: emailAddressError
-          })
-        }}
-        <div class="govuk-form-group">
-          <label
-            class="govuk-label"
-            for="selectView">
-            Select a scheme to view alerts for
-          </label>
-          <select
-            class="govuk-select"
-            id="selectView"
-            name="selectView">
-            <option
-              value="all"
-              {% if selectView == 'all' or selectView == null %}
-                selected
-              {% endif %}>
-              All
-            </option>
-            {% for scheme in schemesPayload %}
-              <option
-                value="{{ scheme.schemeId }}"
-                {% if selectView == scheme.schemeId %}selected{% endif %}>
-                {{ scheme.name }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
+        {% if contactId %}
+          <p class="govuk-body">
+            View and update email alerts for an existing recipient. Find out
+            more about alert types on the <a
+              href="/alerts/information"
+              class="govuk-link"
+              target="_blank"
+              rel="noopener noreferrer">alerts information page</a> (opens in a
+            new tab).
+          </p>
+
+          <h2 class="govuk-heading-m">Schemes and alerts</h2>
+          <p class="govuk-body">
+            The schemes for which this recipient currently receives alerts are
+            expanded in the section below. You can view, add or remove alerts
+            from these schemes. You can also add alerts from the other schemes
+            to reflect what the recipient should now receive.
+          </p>
+        {% else %}
+          <p class="govuk-body">
+            Add a new recipient to all alerts or by alert type for all schemes.
+          </p>
+          <p class="govuk-body">
+            Find out more about alert types on the <a
+              href="/alerts/information"
+              class="govuk-link"
+              target="_blank"
+              rel="noopener noreferrer">alerts information page</a> (opens in a
+            new tab).
+          </p>
+        {% endif %}
+
+        {% if not contactId %}
+          <div
+            class="govuk-form-group{% if error %} govuk-form-group--error{% endif %}">
+            <label
+              class="govuk-label govuk-label--s"
+              for="emailAddress">
+              Email address
+            </label>
+
+            {% if error %}
+              <span
+                id="emailAddress-error"
+                class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span>
+                {{ error }}
+              </span>
+            {% endif %}
+
+            <input
+              class="govuk-input{% if error %} govuk-input--error{% endif %}"
+              id="emailAddress"
+              name="emailAddress"
+              type="email"
+              value="{{ emailAddress or '' }}"
+              {% if error %}aria-describedby="emailAddress-error"{% endif %}
+            />
+          </div>
+        {% endif %}
+        {% set accordionItems = [] %}
 
         {% for scheme in schemesPayload %}
-          <div
-            class="govuk-form-group scheme-group"
-            data-scheme-id="{{ scheme.schemeId }}">
-            {% set schemeForId = scheme.name | lower | replace(' ', '-') %}
-            <fieldset class="govuk-fieldset">
-              <legend class="govuk-fieldset__legend">
-                Alert types for {{ scheme.name }}
-              </legend>
-              <div
-                class="govuk-checkboxes"
-                data-module="govuk-checkboxes">
-                <div class="govuk-checkboxes__item">
-                  <input
-                    class="govuk-checkboxes__input"
-                    id="{{ schemeForId }}-all"
-                    name="{{ scheme.schemeId }}"
-                    type="checkbox"
-                    value="all"
-                    data-behaviour="exclusive"
-                  />
-                  <label
-                    class="govuk-label govuk-checkboxes__label"
-                    for="{{ schemeForId }}-all">
-                    Receive all alerts for this scheme
-                  </label>
+          {% set schemeForId = scheme.name | lower | replace(' ', '-') %}
+
+          {% set schemeHtml %}
+            <div
+              class="govuk-form-group scheme-group"
+              data-scheme-id="{{ scheme.schemeId }}">
+              <fieldset class="govuk-fieldset">
+                <legend
+                  class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  <h2 class="govuk-fieldset__heading">
+                    Alerts
+                  </h2>
+                </legend>
+                <div
+                  id="{{ schemeForId }}-hint"
+                  class="govuk-hint">
+                  Select all that apply, or <a
+                    href="#"
+                    class="govuk-link govuk-link--no-visited-state"
+                    data-all-toggle
+                    data-select-all-text="select all alerts for {{ scheme.name }}"
+                    data-clear-all-text="clear all alerts for {{ scheme.name }}">
+                    select all alerts for {{ scheme.name }}
+                  </a>
                 </div>
                 <div
-                  id="{{schemeForId}}-hint"
-                  class="govuk-hint govuk-!-margin-top-3 govuk-!-margin-bottom-3">
-                  or, select individual alerts to receive:
-                </div>
-                {% for alertType in alertTypesPayload %}
-                  <div class="govuk-checkboxes__item">
-                    {% set alertForId = alertType | lower | replace(' ', '-') %}
-                    <input
-                      class="govuk-checkboxes__input"
-                      id="{{ schemeForId }}-{{ alertForId }}"
-                      name="{{ scheme.schemeId }}"
-                      type="checkbox"
-                      value="{{ alertType }}"
+                  class="govuk-checkboxes"
+                  data-module="govuk-checkboxes">
+                  {% for alertType in alertTypesPayload %}
+                    <div class="govuk-checkboxes__item">
                       {%
-                        if selectedAlerts[alertType] and selectedAlerts[alertType][scheme.schemeId]
+                        set alertForId = alertType | lower | replace(' ', '-')
                       %}
-                        checked
-                      {% endif %}
-                    />
-                    {% set parts = alertType.split('_') %}
-                    <label
-                      class="govuk-label govuk-checkboxes__label"
-                      for="{{ schemeForId }}-{{ alertForId }}">
-                      {% for part in parts %}
-                        {{ part | capitalize }}{% if not loop.last %}
+                      <input
+                        class="govuk-checkboxes__input"
+                        id="{{ schemeForId }}-{{ alertForId }}"
+                        name="{{ scheme.schemeId }}"
+                        type="checkbox"
+                        value="{{ alertType }}"
+                        {%
+                          if selectedAlerts[alertType] and selectedAlerts[alertType][scheme.schemeId]
+                        %}
+                          checked
                         {% endif %}
-                      {% endfor %}
-                    </label>
-                  </div>
-                {% endfor %}
-              </div>
-            </fieldset>
-          </div>
+                      />
+                      {% set parts = alertType.split('_') %}
+                      <label
+                        class="govuk-label govuk-checkboxes__label"
+                        for="{{ schemeForId }}-{{ alertForId }}">
+                        {% for part in parts %}
+                          {{ part | capitalize }}{% if not loop.last %}{%
+                            endif
+                          %}
+                        {% endfor %}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            </div>
+          {% endset %}
+
+          {%
+            set accordionItems = (accordionItems.push({
+              heading: {
+                text: scheme.name
+              },
+              content: {
+                html: schemeHtml
+              }
+            }), accordionItems)
+          %}
         {% endfor %}
+        {{
+          govukAccordion({
+            id: "scheme-alert-accordion",
+            items: accordionItems
+          })
+        }}
+
+        <div class="app-back-to-top app-back-to-top--fixed">
+          <a
+            class="govuk-link govuk-link--no-visited-state app-back-to-top__link"
+            href="#top">
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              class="app-back-to-top__icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="17"
+              viewBox="0 0 13 17">
+              <path
+                fill="currentColor"
+                d="M6.5 0L0 6.5 1.4 8l4-4v12.7h2V4l4.3 4L13 6.4z">
+              </path>
+            </svg>Back to top
+          </a>
+        </div>
         <div class="govuk-button-group">
           {% if contactId %}
             {{
               govukButton({
-                text: "Confirm changes",
+                text: "Continue",
                 attributes: {
                   id: "submit",
                   type: "submit",
@@ -178,17 +274,13 @@
                 }
               })
             }}
-            <button
-              onclick="window.location.href='/alerts/confirm-delete?contactId={{ contactId }}'"
-              type="button"
-              class="govuk-button govuk-button--warning"
-              data-module="govuk-button">
-              Remove email
-            </button>
+            <a
+              class="govuk-link"
+              href="/alerts/manage">Cancel</a>
           {% else %}
             {{
               govukButton({
-                text: "Create",
+                text: "Continue",
                 attributes: {
                   id: "submit",
                   type: "submit",
@@ -203,24 +295,42 @@
     </div>
   </div>
   <script>
-  document.addEventListener('DOMContentLoaded', function () {
-      const selectView = document.getElementById('selectView')
-      const schemeGroups = document.querySelectorAll('.scheme-group')
+  document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.scheme-group').forEach((group) => {
+        const toggleLink = group.querySelector('[data-all-toggle]')
+        const items = Array.from(
+          group.querySelectorAll('input[type="checkbox"]')
+        )
 
-      function filterSchemes() {
-        const selected = selectView.value
-        schemeGroups.forEach(group => {
-          if (selected === 'all' || group.dataset.schemeId === selected) {
-            group.style.display = 'block'
-          } else {
-            group.style.display = 'none'
-          }
+        if (!toggleLink || items.length === 0) {
+          return
+        }
+
+        const isAllChecked = () => items.every((item) => item.checked)
+
+        const syncToggleLink = () => {
+          const allChecked = isAllChecked()
+          toggleLink.textContent = allChecked
+            ? toggleLink.dataset.clearAllText
+            : toggleLink.dataset.selectAllText
+          toggleLink.setAttribute('aria-pressed', String(allChecked))
+        }
+
+        toggleLink.addEventListener('click', (event) => {
+          event.preventDefault()
+          const shouldCheck = !isAllChecked()
+          items.forEach((item) => {
+            item.checked = shouldCheck
+          })
+          syncToggleLink()
         })
-      }
 
-      selectView.addEventListener('change', filterSchemes)
+        items.forEach((item) => {
+          item.addEventListener('change', syncToggleLink)
+        })
 
-      filterSchemes()
+        syncToggleLink()
+      })
     })
   </script>
 {% endblock %}

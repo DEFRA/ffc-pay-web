@@ -1,0 +1,33 @@
+{% extends '_layout.njk' %}
+
+{%
+  from "macros/alert-helpers.njk" import alertManagementBreadcrumbs, alertManagementPageContent
+%}
+
+{% set pageTitle = "Manage email alerts by recipient" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ alertManagementBreadcrumbs(pageTitle) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {{
+        alertManagementPageContent(
+          pageTitle,
+          [
+            "Update, add and remove email alerts using the recipient's email address.",
+            'Details of the alert types including what the recipient should do, can be found on the <a href="/alerts/information" class="govuk-link" target="_blank" rel="noopener noreferrer">alerts information page</a> (opens in a new tab).'
+          ],
+          cards,
+          updated,
+          removed,
+          emailAddress
+        )
+      }}
+    </div>
+  </div>
+{% endblock %}

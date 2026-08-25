@@ -1,0 +1,101 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{%
+  from "macros/alert-helpers.njk" import confirmationQueryParams, recipientSummaryCard, schemeSummaryCard, confirmationHiddenFields
+%}
+
+{% if not pageTitle %}
+  {%
+    set pageTitle = "Confirm recipient email and alert details before saving"
+  %}
+{% endif %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {%
+    set breadcrumbData = {
+      emailAddress: emailAddress,
+      action: action,
+      schemeId: schemeId
+    }
+  %}
+
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: "Manage email alerts",
+        href: "/alerts/manage"
+      }, {
+        text: "Manage email alerts by scheme",
+        href: "/alerts/manage-by-scheme"
+      }, {
+        text: schemeName ~ " email alerts",
+        href: "/alerts/by-scheme?schemeId=" ~ (schemeId | urlencode)
+      }, {
+        text: "Add new alert recipient for " ~ schemeName,
+        href: "/alerts/add-recipient-by-scheme?" ~ confirmationQueryParams(breadcrumbData, schemes, scheme)
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      {{
+        recipientSummaryCard(
+          formPath,
+          { emailAddress: emailAddress, action: action, schemeId: schemeId },
+          schemes,
+          'recipient email address',
+          scheme,
+          emailAddress
+        )
+      }}
+
+      {% for scheme in schemes %}
+        {{
+          schemeSummaryCard(
+            scheme,
+            formPath,
+            { emailAddress: emailAddress, action: action, schemeId: schemeId },
+            schemes,
+            'alert types for ' ~ scheme.schemeName,
+            scheme,
+            formatAlertType
+          )
+        }}
+      {% endfor %}
+
+      <form
+        method="POST"
+        action="{{ formAction }}"
+        autocomplete="off"
+        novalidate>
+        {{
+          confirmationHiddenFields(crumb, null, emailAddress, action, schemeId, schemes)
+        }}
+
+        {{
+          govukButton({
+            text: "Confirm changes",
+            attributes: {
+              id: "submit",
+              type: "submit"
+            }
+          })
+        }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

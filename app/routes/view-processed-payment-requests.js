@@ -3,8 +3,8 @@ const { getPaymentsByScheme } = require('../payments')
 const { getProcessingData } = require('../api')
 
 const HTTP_STATUS = require('../constants/http-status-codes')
+const { SCHEMES_PATH } = require('../constants/common-api-urls')
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
-const schemesPath = '/payment-schemes'
 const monitorSchemesPath = 'monitoring/schemes'
 
 module.exports = [
@@ -15,7 +15,7 @@ module.exports = [
       auth: AUTH_SCOPE
     },
     handler: async (_request, h) => {
-      const schemes = await getProcessingData(schemesPath)
+      const schemes = await getProcessingData(SCHEMES_PATH)
       return h.view(monitorSchemesPath, {
         data: schemes?.payload?.paymentSchemes
       })
@@ -31,7 +31,7 @@ module.exports = [
       const { schemeId } = request.query
 
       if (!schemeId) {
-        const schemes = await getProcessingData(schemesPath)
+        const schemes = await getProcessingData(SCHEMES_PATH)
         return h
           .view(monitorSchemesPath, {
             error: 'Select a scheme',
@@ -46,7 +46,7 @@ module.exports = [
           data: processedPaymentRequests
         })
       } catch (err) {
-        const schemes = await getProcessingData(schemesPath)
+        const schemes = await getProcessingData(SCHEMES_PATH)
         return h
           .view(monitorSchemesPath, {
             error: err.data?.payload?.message ?? err.message,

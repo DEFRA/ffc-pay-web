@@ -25,9 +25,15 @@ const GENERATE_REPORTS_LINKS = [
 ]
 
 const PAYMENT_ALERTS_LINKS = [
-  { href: '/alerts', text: 'Alerts', homeAuth: [permissions.applicationAdmin, permissions.alertAdmin] },
-  { href: '/alerts/information', text: 'Alerts information' },
-  { href: '/alerts/update', text: 'Add new alert recipient' }
+  { href: '/alerts/manage', text: 'Manage email alerts', homeAuth: [permissions.applicationAdmin, permissions.alertAdmin] },
+  { href: '/alerts/manage-by-scheme', text: 'Manage by scheme', description: 'View, edit and add alert recipients by individual scheme' },
+  { href: '/alerts/manage-by-recipient', text: 'Manage by recipient', description: 'View, edit and add alert recipients by email address' }
+]
+
+const PAYMENT_ALERTS_BY_RECIPIENT_LINKS = [
+  { href: '/alerts/update-by-recipient', text: 'Update recipient alerts', description: 'View and/or update a recipient\'s email alerts' },
+  { href: '/alerts/update', text: 'Add new recipient', description: 'Add a new recipient and set email alerts for schemes' },
+  { href: '/alerts/remove-by-recipient', text: 'Remove recipient', description: 'Remove a recipient and their email alerts' }
 ]
 
 const AGREEMENT_CLOSURES_LINKS = [
@@ -71,6 +77,7 @@ module.exports = {
   FINANCE_REPORTS_LINKS,
   GENERATE_REPORTS_LINKS,
   PAYMENT_ALERTS_LINKS,
+  PAYMENT_ALERTS_BY_RECIPIENT_LINKS,
   AGREEMENT_CLOSURES_LINKS,
   MONITORING_LINKS,
   MANUAL_PAYMENTS_LINKS,

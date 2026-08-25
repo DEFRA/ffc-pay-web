@@ -1,14 +1,16 @@
+jest.mock('../../../app/api', () => ({
+  getProcessingData: jest.fn()
+}))
+
 const api = require('../../../app/api')
 const { getSchemes } = require('../../../app/helpers/get-schemes')
-
-jest.mock('../../../app/api')
 
 describe('getSchemes', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test('fetches schemes and renames SFI to SFI22, and Vet Visits to AHWR', async () => {
+  test('fetches schemes and renames SFI to SFI22 and Vet Visits to Annual Health and Welfare Review', async () => {
     const mockSchemes = [
       { name: 'Scheme A' },
       { name: 'SFI' },

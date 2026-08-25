@@ -1,17 +1,18 @@
 const { postAlerting, getAlertingData } = require('../api')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
-const { getAlertUpdateViewData } = require('./get-alert-update-view-data')
+const { getAlertRecipientViewData } = require('./get-alert-recipient-view-data')
 const { isEmailTaken, isEmailBlocked } = require('./validation')
 
 const addAlertTypeToData = (data, alertType, keyNumber) => {
   if (!data[alertType]) {
     data[alertType] = []
   }
+
   data[alertType].push(keyNumber)
 }
 
 const processPayloadEntry = async (data, key, value) => {
-  if (key === 'contactId' || key === 'emailAddress') {
+  if (key === 'contactId' || key === 'emailAddress' || key === 'schemeId') {
     return
   }
 
@@ -23,9 +24,11 @@ const processPayloadEntry = async (data, key, value) => {
 
   const allAlertTypes = await getAlertingData('/alert-types')
   const allAlertTypesPayload = allAlertTypes?.payload?.alertTypes ?? []
+
   if (alertTypes.includes('all')) {
     alertTypes = allAlertTypesPayload
   }
+
   for (const alertType of alertTypes) {
     addAlertTypeToData(data, alertType, Number(key))
   }
@@ -49,11 +52,14 @@ const buildUpdateData = async (payload, contactId, modifiedBy) => {
   }
 
   const alertTypeKeys = Object.keys(data).filter(
-    key => !['emailAddress', 'contactId', 'modifiedBy'].includes(key)
+    (key) => !['emailAddress', 'contactId', 'modifiedBy'].includes(key)
   )
-  const allEmpty = alertTypeKeys.every(key => Array.isArray(data[key]) && data[key].length === 0)
 
-  if (alertTypeKeys.length === 0 || (alertTypeKeys.length > 0 && allEmpty)) {
+  const allEmpty = alertTypeKeys.every(
+    (key) => Array.isArray(data[key]) && data[key].length === 0
+  )
+
+  if (alertTypeKeys.length === 0 || allEmpty) {
     throw new Error('At least one alert type must be selected.')
   }
 
@@ -65,18 +71,25 @@ const returnErrorView = async (h, contactId, modifiedBy, error) => {
     query: { contactId },
     auth: { credentials: { account: { name: modifiedBy } } }
   }
-  const viewData = await getAlertUpdateViewData(minimalRequest)
+
+  const viewData = await getAlertRecipientViewData(minimalRequest)
 
   return h
-    .view(
-      'alerts/update',
-      { ...viewData, error }
-    )
+    .view('alerts/update', {
+      ...viewData,
+      error: error?.message ?? String(error)
+    })
     .code(BAD_REQUEST)
     .takeover()
 }
 
-const updateAlertUser = async (modifiedBy, payload, h) => {
+const updateAlertUser = async (
+  modifiedBy,
+  payload,
+  h,
+  redirectPath,
+  errorRedirectPath
+) => {
   const { emailAddress, contactId } = payload
 
   try {
@@ -86,8 +99,20 @@ const updateAlertUser = async (modifiedBy, payload, h) => {
     const data = await buildUpdateData(payload, contactId, modifiedBy)
 
     await postAlerting('/update-contact', data, null)
-    return h.redirect('/alerts')
+
+    return h.redirect(
+      redirectPath ||
+      `/alerts/manage-by-recipient?updated=${encodeURIComponent(
+        contactId
+      )}`
+    )
   } catch (err) {
+    if (errorRedirectPath) {
+      return h
+        .redirect(errorRedirectPath(err))
+        .takeover()
+    }
+
     return returnErrorView(h, contactId, modifiedBy, err)
   }
 }

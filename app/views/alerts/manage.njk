@@ -1,0 +1,41 @@
+{% extends '_layout.njk' %}
+
+{% from 'macros/alert-helpers.njk' import alertNotificationBanner %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/card-grid.njk' import cardGrid %}
+
+{% set pageTitle = "Manage email alerts" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{
+    govukBreadcrumbs({
+      items: [{
+        text: "Home",
+        href: "/"
+      }, {
+        text: pageTitle
+      }]
+    })
+  }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {{ alertNotificationBanner(updated, removed, emailAddress) }}
+
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body">
+        Email alerts are emails sent to a recipient when certain events happen.
+        They are set up by the admin team when a scheme is added to the payment
+        hub. They can be managed by individual scheme, or by a recipient’s
+        email address if you need to update multiple schemes.
+      </p>
+
+      {{ cardGrid(cards) }}
+    </div>
+  </div>
+{% endblock %}
