@@ -2,7 +2,7 @@ const { getStatementSchemes } = require('../../../app/helpers/get-statement-sche
 const { getSchemes } = require('../../../app/helpers/get-schemes')
 
 jest.mock('../../../app/helpers/get-schemes')
-jest.mock('../../../app/constants/schemes', () => ({
+jest.mock('../../../app/constants/statement-abbreviations', () => ({
   statementAbbreviations: {
     1: 'SFI',
     2: 'BPS',
@@ -39,17 +39,6 @@ describe('get-statement-schemes', () => {
         { schemeId: 1, name: 'SFI' },
         { schemeId: 3, name: 'CS' },
         { schemeId: 5, name: 'Other' }
-      ])
-
-      const result = await getStatementSchemes()
-
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual({ schemeId: 1, name: 'SFI' })
-    })
-
-    test('should rename SFI22 to SFI', async () => {
-      getSchemes.mockResolvedValue([
-        { schemeId: 1, name: 'SFI22' }
       ])
 
       const result = await getStatementSchemes()
@@ -125,21 +114,6 @@ describe('get-statement-schemes', () => {
       await getStatementSchemes()
 
       expect(getSchemes).toHaveBeenCalledTimes(1)
-    })
-
-    test('should handle SFI22 rename with additional properties', async () => {
-      getSchemes.mockResolvedValue([
-        { schemeId: 1, name: 'SFI22', code: 'SFI22', active: true }
-      ])
-
-      const result = await getStatementSchemes()
-
-      expect(result[0]).toEqual({
-        schemeId: 1,
-        name: 'SFI',
-        code: 'SFI22',
-        active: true
-      })
     })
 
     test('should maintain order of schemes from getSchemes', async () => {
@@ -240,24 +214,10 @@ describe('get-statement-schemes', () => {
         expect(result[0].name).toBe('')
       })
 
-      test('should only rename exact match of SFI22', async () => {
-        getSchemes.mockResolvedValue([
-          { schemeId: 1, name: 'SFI22' },
-          { schemeId: 2, name: 'SFI22_NEW' },
-          { schemeId: 4, name: 'sfi22' }
-        ])
-
-        const result = await getStatementSchemes()
-
-        expect(result[0].name).toBe('SFI')
-        expect(result[1].name).toBe('SFI22_NEW')
-        expect(result[2].name).toBe('sfi22')
-      })
-
       test('should handle schemes with duplicate schemeIds', async () => {
         getSchemes.mockResolvedValue([
           { schemeId: 1, name: 'SFI' },
-          { schemeId: 1, name: 'SFI22' }
+          { schemeId: 1, name: 'SFI' }
         ])
 
         const result = await getStatementSchemes()

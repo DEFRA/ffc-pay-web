@@ -1,9 +1,11 @@
 const Boom = require('@hapi/boom')
+const { getSchemeNameFromSchemeId } = require('ffc-pay-schemes')
 const { applicationAdmin, alertAdmin } = require('../auth/permissions')
 const { normaliseValues, getAlertRecipientViewData } = require('./get-alert-recipient-view-data')
 const userSchema = require('../routes/schemas/user-schema')
 const removeUserSchema = require('../routes/schemas/remove-user-schema')
 const { updateAlertUser } = require('./update-alert-user')
+
 const AUTH_SCOPE = { scope: [applicationAdmin, alertAdmin] }
 
 const paths = {
@@ -91,11 +93,6 @@ const getAccountName = (request) => {
   return account?.name || account?.username || account?.email
 }
 
-const getSchemeName = (schemes, schemeId) =>
-  schemes.find(
-    (scheme) => String(scheme.schemeId) === String(schemeId)
-  )?.name
-
 const getSchemeSummaries = (schemes, payload) =>
   schemes.map((scheme) => ({
     schemeId: scheme.schemeId,
@@ -166,7 +163,7 @@ const createConfirmationView = (
       const data = await getAlertRecipientViewData(request)
       const schemeId = request.payload.schemeId || data.schemeId
       const schemeName = schemeId
-        ? getSchemeName(data.schemesPayload, schemeId)
+        ? getSchemeNameFromSchemeId(schemeId)
         : undefined
 
       return h.view(confirmView, {
@@ -223,7 +220,6 @@ module.exports = {
   getValidationError,
   sanitiseValidationError,
   getAccountName,
-  getSchemeName,
   getSchemeSummaries,
   validateUserPayload,
   validateRemovePayload,

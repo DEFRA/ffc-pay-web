@@ -33,8 +33,8 @@ jest.mock('../../../../app/closure', () => ({
 
 beforeEach(() => {
   getSchemesForClosures.mockResolvedValue([
-    { schemeId: 'SFI', name: 'SFI Scheme' },
-    { schemeId: 'OTHER', name: 'Other Scheme' }
+    { schemeId: 'SFI', schemeName: 'SFI Scheme' },
+    { schemeId: 'OTHER', schemeName: 'Other Scheme' }
   ])
 })
 
@@ -47,7 +47,7 @@ const mockGetClosures = () => {
       closures: [{
         frn: FRN,
         agreementNumber: AGREEMENT_NUMBER,
-        schemeName: 'SFI22',
+        schemeName: 'SFI',
         endDate: '2023-09-12'
       }]
     }
@@ -110,7 +110,7 @@ describe('Closures', () => {
     test('GET /closure/search with search params returns correct view and flags', async () => {
       const mockClosures = [{ id: 1 }]
       const mockCount = 10
-      const mockSchemes = [{ schemeId: 'test', name: 'Test Scheme' }]
+      const mockSchemes = [{ schemeId: 'test', schemeName: 'Test Scheme' }]
 
       getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
       getSchemesForClosures.mockResolvedValue(mockSchemes)
@@ -516,8 +516,8 @@ describe('Closures', () => {
 
     test('handler returns confirmation view with selected scheme name', async () => {
       const schemes = [
-        { schemeId: 'SFI', name: 'SFI Scheme' },
-        { schemeId: 'OTHER', name: 'Other Scheme' }
+        { schemeId: 'SFI', schemeName: 'SFI Scheme' },
+        { schemeId: 'OTHER', schemeName: 'Other Scheme' }
       ]
 
       getSchemesForClosures.mockResolvedValue(schemes)
@@ -541,7 +541,7 @@ describe('Closures', () => {
 
     test('handler returns confirmation view without scheme name when selected scheme is not found', async () => {
       getSchemesForClosures.mockResolvedValue([
-        { schemeId: 'OTHER', name: 'Other Scheme' }
+        { schemeId: 'OTHER', schemeName: 'Other Scheme' }
       ])
 
       const result = await addConfirmRoute.options.handler(request, h)
@@ -562,7 +562,7 @@ describe('Closures', () => {
     test('failAction returns add view with errors, schemes and submitted values', async () => {
       const error = new Error('Validation failed')
       const schemes = [
-        { schemeId: 'SFI', name: 'SFI Scheme' }
+        { schemeId: 'SFI', schemeName: 'SFI Scheme' }
       ]
 
       getSchemesForClosures.mockResolvedValue(schemes)
@@ -596,7 +596,7 @@ describe('Closures', () => {
       )
 
       const schemes = [
-        { schemeId: 'SFI', name: 'SFI Scheme' }
+        { schemeId: 'SFI', schemeName: 'SFI Scheme' }
       ]
 
       getSchemesForClosures.mockResolvedValue(schemes)
@@ -734,7 +734,7 @@ describe('Closures', () => {
 
       const mockClosures = [{ id: 1 }]
       const mockCount = 10
-      const mockSchemes = [{ schemeId: 'test', name: 'Test Scheme' }]
+      const mockSchemes = [{ schemeId: 'test', schemeName: 'Test Scheme' }]
 
       getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
       getSchemesForClosures.mockResolvedValue(mockSchemes)
@@ -835,7 +835,7 @@ describe('Closures', () => {
       const mockClosures = []
       const mockCount = 0
       const mockSchemes = [
-        { schemeId: 'SFI', name: 'SFI Scheme' }
+        { schemeId: 'SFI', schemeName: 'SFI Scheme' }
       ]
 
       getClosures.mockResolvedValue({ closures: mockClosures, count: mockCount })
@@ -878,7 +878,7 @@ describe('Closures', () => {
 
   describe('GET /closure/remove/confirm', () => {
     test('loads remove confirmation page with query values', async () => {
-      const url = `${CLOSURES_ROUTES.REMOVE_CONFIRM}?retentionDataId=123&frn=${FRN}&agreementNumber=${AGREEMENT_NUMBER}&schemeName=SFI22`
+      const url = `${CLOSURES_ROUTES.REMOVE_CONFIRM}?retentionDataId=123&frn=${FRN}&agreementNumber=${AGREEMENT_NUMBER}&schemeName=SFI`
 
       const { res, $ } = await loadPage('GET', url, auth)
 
@@ -901,7 +901,7 @@ describe('Closures', () => {
           retentionDataId: '123',
           frn: FRN,
           agreementNumber: AGREEMENT_NUMBER,
-          schemeName: 'SFI22'
+          schemeName: 'SFI'
         }
       }
 
@@ -911,7 +911,7 @@ describe('Closures', () => {
         retentionDataId: '123',
         frn: FRN,
         agreementNumber: AGREEMENT_NUMBER,
-        schemeName: 'SFI22',
+        schemeName: 'SFI',
         page: undefined,
         perPage: undefined,
         frnAgreement: undefined,
@@ -936,7 +936,7 @@ describe('Closures', () => {
     test('returns 403 when user lacks permission', async () => {
       auth.credentials.scope = []
 
-      const url = `${CLOSURES_ROUTES.REMOVE_CONFIRM}?retentionDataId=123&frn=${FRN}&agreementNumber=${AGREEMENT_NUMBER}&schemeName=SFI22`
+      const url = `${CLOSURES_ROUTES.REMOVE_CONFIRM}?retentionDataId=123&frn=${FRN}&agreementNumber=${AGREEMENT_NUMBER}&schemeName=SFI`
 
       const { res } = await loadPage('GET', url, auth)
 
@@ -944,7 +944,7 @@ describe('Closures', () => {
     })
 
     test('redirects to login when unauthenticated', async () => {
-      const url = `${CLOSURES_ROUTES.REMOVE_CONFIRM}?retentionDataId=123&frn=${FRN}&agreementNumber=${AGREEMENT_NUMBER}&schemeName=SFI22`
+      const url = `${CLOSURES_ROUTES.REMOVE_CONFIRM}?retentionDataId=123&frn=${FRN}&agreementNumber=${AGREEMENT_NUMBER}&schemeName=SFI`
 
       const { res } = await loadPage('GET', url)
 

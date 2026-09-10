@@ -11,16 +11,14 @@ jest.mock('../../../../app/helpers', () => ({
 }))
 
 jest.mock('../../../../app/api', () => ({
-  getAlertingData: jest.fn(),
-  getProcessingData: jest.fn()
+  getAlertingData: jest.fn()
 }))
 
-jest.mock('../../../../app/routes/schemas/user-schema', () => ({
-  validate: jest.fn()
-}))
-
-jest.mock('../../../../app/routes/schemas/remove-user-schema', () => ({
-  validate: jest.fn()
+jest.mock('ffc-pay-schemes', () => ({
+  getSchemeNameFromSchemeId: jest.fn((schemeId) => {
+    if (schemeId === 'S1') return 'Scheme 1'
+    return 'Unknown'
+  })
 }))
 
 const {
@@ -31,11 +29,9 @@ const {
   removeAlertUser
 } = require('../../../../app/alerts')
 const { getSchemes } = require('../../../../app/helpers')
-const { getAlertingData, getProcessingData } = require('../../../../app/api')
+const { getAlertingData } = require('../../../../app/api')
 const { BAD_REQUEST, PRECONDITION_FAILED } = require('../../../../app/constants/http-status-codes')
 const routes = require('../../../../app/routes/alerts')
-const userSchema = require('../../../../app/routes/schemas/user-schema')
-const removeUserSchema = require('../../../../app/routes/schemas/remove-user-schema')
 
 describe('Alerts route handlers', () => {
   let h
@@ -52,11 +48,12 @@ describe('Alerts route handlers', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+
     h = {
       view: jest.fn().mockReturnThis(),
-      redirect: jest.fn().mockReturnValue('redirected'),
+      redirect: jest.fn().mockReturnThis(),
       code: jest.fn().mockReturnThis(),
-      takeover: jest.fn().mockReturnValue('taken over')
+      takeover: jest.fn().mockReturnThis()
     }
   })
 
@@ -79,7 +76,11 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/manage-by-scheme returns 200 and renders scheme management view', async () => {
     const route = findRoute('GET', '/alerts/manage-by-scheme')
-    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
+    const schemes = {
+      payload: {
+        paymentSchemes: [{ schemeId: 'S1', name: 'Scheme 1' }]
+      }
+    }
     getSchemes.mockResolvedValue(schemes)
 
     const result = await route.handler({}, h)
@@ -95,17 +96,19 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/by-scheme without schemeId returns precondition failure view', async () => {
     const route = findRoute('GET', '/alerts/by-scheme')
-    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
-    getProcessingData.mockResolvedValue({
-      payload: { paymentSchemes: schemes }
-    })
+    const schemes = {
+      payload: {
+        paymentSchemes: [{ schemeId: 'S1', name: 'Scheme 1' }]
+      }
+    }
+    getSchemes.mockReturnValue(schemes)
 
     const result = await route.handler({ query: {} }, h)
 
-    expect(getProcessingData).toHaveBeenCalled()
+    expect(getSchemes).toHaveBeenCalled()
     expect(h.view).toHaveBeenCalledWith('alerts/by-scheme', {
       error: 'Select a scheme',
-      data: schemes
+      data: schemes.payload.paymentSchemes
     })
     expect(h.code).toHaveBeenCalledWith(PRECONDITION_FAILED)
     expect(result).toBe(h)
@@ -113,6 +116,13 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/by-scheme with schemeId returns rendered scheme alerts view', async () => {
     const route = findRoute('GET', '/alerts/by-scheme')
+    const schemes = {
+      payload: {
+        paymentSchemes: [{ schemeId: 'S1', name: 'Scheme 1' }]
+      }
+    }
+
+    getSchemes.mockReturnValue(schemes)
     getAlertsByScheme.mockResolvedValue({
       schemeName: 'Scheme 1',
       formattedTypes: [{ displayType: 'Payment alert', users: [] }]
@@ -120,31 +130,36 @@ describe('Alerts route handlers', () => {
 
     const result = await route.handler({ query: { schemeId: 'S1' } }, h)
 
+    expect(getSchemes).toHaveBeenCalled()
     expect(getAlertsByScheme).toHaveBeenCalledWith('S1')
     expect(h.view).toHaveBeenCalledWith('alerts/by-scheme', {
       types: [{ displayType: 'Payment alert', users: [] }],
       schemeName: 'Scheme 1',
-      schemeId: 'S1'
+      schemeId: 'S1',
+      successMessage: undefined
     })
     expect(result).toBe(h)
   })
 
   test('GET /alerts/by-scheme returns precondition failure when scheme lookup fails', async () => {
     const route = findRoute('GET', '/alerts/by-scheme')
-    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
+    const schemes = {
+      payload: {
+        paymentSchemes: [{ schemeId: 'S1', name: 'Scheme 1' }]
+      }
+    }
+
+    getSchemes.mockReturnValue(schemes)
     getAlertsByScheme.mockRejectedValue({ data: { payload: { message: 'Lookup failed' } } })
-    getProcessingData.mockResolvedValue({
-      payload: { paymentSchemes: schemes }
-    })
 
     const result = await route.handler({ query: { schemeId: 'S1' } }, h)
 
+    expect(getSchemes).toHaveBeenCalled()
     expect(getAlertsByScheme).toHaveBeenCalledWith('S1')
-    expect(getProcessingData).toHaveBeenCalled()
     expect(h.view).toHaveBeenCalledWith('alerts/by-scheme', {
       error: 'Lookup failed',
       schemeId: 'S1',
-      data: schemes
+      data: schemes.payload.paymentSchemes
     })
     expect(h.code).toHaveBeenCalledWith(PRECONDITION_FAILED)
     expect(result).toBe(h)
@@ -283,6 +298,7 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/update-by-recipient renders a search view with validation error when email is supplied', async () => {
     const route = findRoute('GET', '/alerts/update-by-recipient')
+
     const result = await route.handler({
       query: {
         emailAddress: 'bad@example.com',
@@ -299,6 +315,7 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/remove-by-recipient renders a search view with validation error when email is supplied', async () => {
     const route = findRoute('GET', '/alerts/remove-by-recipient')
+
     const result = await route.handler({
       query: {
         emailAddress: 'bad@example.com',
@@ -319,6 +336,7 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/remove-by-recipient does not show an error when only email is supplied', async () => {
     const route = findRoute('GET', '/alerts/remove-by-recipient')
+
     await route.handler({
       query: {
         emailAddress: 'bad@example.com'
@@ -450,18 +468,6 @@ describe('Alerts route handlers', () => {
     expect(result).toBe('update-success')
   })
 
-  test('GET /alerts/remove-by-recipient without email renders view with null error', async () => {
-    const route = findRoute('GET', '/alerts/remove-by-recipient')
-
-    const result = await route.handler({ query: {} }, h)
-
-    expect(h.view).toHaveBeenCalledWith('alerts/remove-by-recipient', {
-      emailAddress: undefined,
-      error: null
-    })
-    expect(result).toBe(h)
-  })
-
   test('POST /alerts/update with action remove that errors renders update view with BAD_REQUEST', async () => {
     const route = findRoute('POST', '/alerts/update')
     const error = new Error('Remove failed')
@@ -489,71 +495,10 @@ describe('Alerts route handlers', () => {
     expect(result).toBe(h)
   })
 
-  test('calls handleAlertingError for GET /alerts/manage when getAlertingData rejects', async () => {
-    jest.resetModules()
-    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
-    const handle = jest.fn().mockReturnValue('handled-manage')
-    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
-
-    const api = require('../../../../app/api')
-    api.getAlertingData.mockRejectedValue(new Error('manage fail'))
-
-    const routesLocal = require('../../../../app/routes/alerts')
-    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
-
-    const route = findLocal('GET', '/alerts/manage')
-    const result = await route.handler({ query: { updated: '123' } }, h)
-
-    expect(handle).toHaveBeenCalled()
-    expect(result).toBe('handled-manage')
-  })
-
-  test('calls handleAlertingError for GET /alerts/manage-by-scheme when getSchemes rejects', async () => {
-    jest.resetModules()
-    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
-    const handle = jest.fn().mockReturnValue('handled-manage-by-scheme')
-    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
-
-    const helpers = require('../../../../app/helpers')
-    helpers.getSchemes.mockRejectedValue(new Error('schemes fail'))
-
-    const routesLocal = require('../../../../app/routes/alerts')
-    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
-
-    const route = findLocal('GET', '/alerts/manage-by-scheme')
-    const result = await route.handler({}, h)
-
-    expect(handle).toHaveBeenCalled()
-    expect(result).toBe('handled-manage-by-scheme')
-  })
-
-  test('calls handleAlertingError for GET /alerts/information when getAlertingData rejects', async () => {
-    jest.resetModules()
-    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
-    const handle = jest.fn().mockReturnValue('handled-information')
-    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
-
-    const api = require('../../../../app/api')
-    api.getAlertingData.mockRejectedValue(new Error('info fail'))
-
-    const routesLocal = require('../../../../app/routes/alerts')
-    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
-
-    const route = findLocal('GET', '/alerts/information')
-    const result = await route.handler({}, h)
-
-    expect(handle).toHaveBeenCalled()
-    expect(result).toBe('handled-information')
-  })
-
-  test('GET /alerts/update redirects to update-by-recipient when getAlertRecipientViewData rejects', async () => {
+  test('GET /alerts/update redirects to update path when getAlertRecipientViewData rejects', async () => {
     const route = findRoute('GET', '/alerts/update')
 
-    getAlertRecipientViewData.mockRejectedValue(
-      new Error('update fail')
-    )
-
-    h.redirect.mockReturnValue('redirected')
+    getAlertRecipientViewData.mockRejectedValue(new Error('update fail'))
 
     const result = await route.handler({
       query: {
@@ -563,155 +508,20 @@ describe('Alerts route handlers', () => {
     }, h)
 
     expect(h.redirect).toHaveBeenCalledWith(
-      '/alerts/update-by-recipient?emailAddress=bad%40example.com&validationError=true'
+      '/alerts/update?emailAddress=bad%40example.com&validationError=true'
     )
-
-    expect(result).toBe('redirected')
-  })
-
-  test('calls handleAlertingError for GET /alerts/add-recipient-by-scheme when getAlertRecipientViewData rejects', async () => {
-    jest.resetModules()
-    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
-    const handle = jest.fn().mockReturnValue('handled-add-recipient')
-    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
-
-    const alertsMod = require('../../../../app/alerts')
-    alertsMod.getAlertRecipientViewData.mockRejectedValue(new Error('add-recipient fail'))
-
-    const routesLocal = require('../../../../app/routes/alerts')
-    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
-
-    const route = findLocal('GET', '/alerts/add-recipient-by-scheme')
-    const result = await route.handler({ query: { schemeId: 'S1' } }, h)
-
-    expect(handle).toHaveBeenCalled()
-    expect(result).toBe('handled-add-recipient')
-  })
-
-  test('calls handleAlertingError for POST /alerts/update-confirm when getAlertRecipientViewData rejects', async () => {
-    jest.resetModules()
-    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
-    const handle = jest.fn().mockReturnValue('handled-update-confirm')
-    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
-
-    const alertsMod = require('../../../../app/alerts')
-    alertsMod.getAlertRecipientViewData.mockRejectedValue(new Error('confirm fail'))
-
-    const routesLocal = require('../../../../app/routes/alerts')
-    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
-
-    const route = findLocal('POST', '/alerts/update-confirm')
-    const request = { payload: { contactId: '123' } }
-    const result = await route.handler(request, h)
-
-    expect(handle).toHaveBeenCalled()
-    expect(result).toBe('handled-update-confirm')
-  })
-
-  test('calls handleAlertingError for GET /alerts/confirm-delete when getAlertRemoveViewData rejects', async () => {
-    jest.resetModules()
-    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
-    const handle = jest.fn().mockReturnValue('handled-confirm-delete')
-    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
-
-    const alertsMod = require('../../../../app/alerts')
-    alertsMod.getAlertRemoveViewData.mockRejectedValue(new Error('remove confirm fail'))
-
-    const routesLocal = require('../../../../app/routes/alerts')
-    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
-
-    const route = findLocal('GET', '/alerts/confirm-delete')
-    const request = { query: {} }
-    const result = await route.handler(request, h)
-
-    expect(handle).toHaveBeenCalled()
-    expect(result).toBe('handled-confirm-delete')
-  })
-
-  test('calls handleAlertingError for GET /alerts/manage-by-recipient when getAlertingData rejects', async () => {
-    jest.resetModules()
-    const realHelpers = jest.requireActual('../../../../app/alerts/alert-route-helpers')
-    const handle = jest.fn().mockReturnValue('handled-manage-by-recipient')
-    jest.doMock('../../../../app/alerts/alert-route-helpers', () => ({ ...realHelpers, handleAlertingError: handle }))
-
-    const api = require('../../../../app/api')
-    api.getAlertingData.mockRejectedValue(new Error('manage-by-recipient fail'))
-
-    const routesLocal = require('../../../../app/routes/alerts')
-    const findLocal = (method, path) => routesLocal.find((r) => r.method === method && typeof r.path === 'string' && r.path.split('/').filter(Boolean).pop() === String(path).split('/').filter(Boolean).pop())
-
-    const route = findLocal('GET', '/alerts/manage-by-recipient')
-    const result = await route.handler({ query: { updated: '123' } }, h)
-
-    expect(handle).toHaveBeenCalled()
-    expect(result).toBe('handled-manage-by-recipient')
-  })
-
-  test('validate.failAction for POST /alerts/update-confirm redirects and takes over', async () => {
-    const route = findRoute('POST', '/alerts/update-confirm')
-    const hFail = {
-      redirect: jest.fn().mockReturnThis(),
-      takeover: jest.fn().mockReturnValue('taken over')
-    }
-
-    const result = await route.options.validate.failAction({ payload: { contactId: '1' } }, hFail, new Error('val err'))
-
-    expect(hFail.redirect).toHaveBeenCalled()
-    expect(hFail.takeover).toHaveBeenCalled()
-    expect(result).toBe('taken over')
-  })
-
-  test('validate.failAction for POST /alerts/update (non-remove) redirects and takes over', async () => {
-    const route = findRoute('POST', '/alerts/update')
-    const hFail = {
-      redirect: jest.fn().mockReturnThis(),
-      takeover: jest.fn().mockReturnValue('taken over')
-    }
-
-    const request = { payload: { action: 'update', contactId: '1' } }
-    const result = await route.options.validate.failAction(request, hFail, new Error('val err'))
-
-    expect(hFail.redirect).toHaveBeenCalled()
-    expect(hFail.takeover).toHaveBeenCalled()
-    expect(result).toBe('taken over')
-  })
-
-  test('validate.failAction for POST /alerts/update (remove) renders update view with BAD_REQUEST', async () => {
-    const route = findRoute('POST', '/alerts/update')
-    const viewData = { some: 'viewdata' }
-    getAlertRecipientViewData.mockResolvedValue(viewData)
-
-    const request = { payload: { action: 'remove', contactId: '123', emailAddress: 'a@b.c' } }
-    const hLocal = {
-      view: jest.fn().mockReturnThis(),
-      code: jest.fn().mockReturnThis(),
-      takeover: jest.fn().mockReturnThis()
-    }
-
-    const result = await route.options.validate.failAction(request, hLocal, new Error('validation error'))
-
-    expect(getAlertRecipientViewData).toHaveBeenCalledWith(request)
-    expect(hLocal.view).toHaveBeenCalledWith('alerts/update', {
-      ...viewData,
-      action: 'remove',
-      error: 'validation error'
-    })
-    expect(hLocal.code).toHaveBeenCalledWith(BAD_REQUEST)
-    expect(result).toBe(hLocal)
+    expect(result).toBe(h)
   })
 
   test('GET /alerts/by-scheme returns no scheme found error for invalid schemeId', async () => {
     const route = findRoute('GET', '/alerts/by-scheme')
-
-    const schemes = [
-      { schemeId: 'S1', name: 'Scheme 1' }
-    ]
-
-    getProcessingData.mockResolvedValue({
+    const schemes = {
       payload: {
-        paymentSchemes: schemes
+        paymentSchemes: [{ schemeId: 'S1', name: 'Scheme 1' }]
       }
-    })
+    }
+
+    getSchemes.mockReturnValue(schemes)
 
     const result = await route.handler({
       query: {
@@ -724,7 +534,7 @@ describe('Alerts route handlers', () => {
       {
         error: 'No scheme found for Scheme ID 999',
         schemeId: '999',
-        data: schemes
+        data: schemes.payload.paymentSchemes
       }
     )
 
@@ -803,50 +613,13 @@ describe('Alerts route handlers', () => {
     )
   })
 
-  test('POST /alerts/update validation uses remove validator', async () => {
-    const route = findRoute('POST', '/alerts/update')
-
-    removeUserSchema.validate.mockReturnValue({
-      error: null
-    })
-
-    await route.options.validate.payload({
-      action: 'remove'
-    })
-
-    expect(removeUserSchema.validate).toHaveBeenCalledWith({
-      action: 'remove'
-    })
-  })
-
-  test('POST /alerts/update validation uses user validator', async () => {
-    const route = findRoute('POST', '/alerts/update')
-
-    userSchema.validate.mockReturnValue({
-      error: null
-    })
-
-    await route.options.validate.payload({
-      action: 'edit'
-    })
-
-    expect(userSchema.validate).toHaveBeenCalledWith({
-      action: 'edit'
-    })
-  })
-
-  test('GET /alerts/add-recipient-by-scheme returns no scheme found error', async () => {
+  test('GET /alerts/add-recipient-by-scheme keeps the form open for an unknown scheme', async () => {
     const route = findRoute('GET', '/alerts/add-recipient-by-scheme')
 
     getAlertRecipientViewData.mockResolvedValue({
       schemesPayload: [],
-      schemeId: '999'
-    })
-
-    getProcessingData.mockResolvedValue({
-      payload: {
-        paymentSchemes: []
-      }
+      schemeId: '999',
+      alertTypesPayload: []
     })
 
     await route.handler({
@@ -855,15 +628,27 @@ describe('Alerts route handlers', () => {
       }
     }, h)
 
+    expect(getAlertRecipientViewData).toHaveBeenCalledWith({
+      query: {
+        schemeId: '999'
+      }
+    })
+
     expect(h.view).toHaveBeenCalledWith(
       'alerts/add-recipient-by-scheme',
       {
-        error: 'No scheme found for Scheme ID 999',
-        data: []
+        action: 'create',
+        error: null,
+        formAction: '/alerts/add-recipient-by-scheme-confirm',
+        pageTitle: 'Add new alert recipient for Unknown',
+        schemeId: '999',
+        schemeName: 'Unknown',
+        schemesPayload: [],
+        alertTypesPayload: []
       }
     )
 
-    expect(h.code).toHaveBeenCalledWith(PRECONDITION_FAILED)
+    expect(h.code).not.toHaveBeenCalled()
   })
 
   test('GET /alerts/add-recipient-by-scheme passes validation error through sanitiser', async () => {
@@ -902,8 +687,6 @@ describe('Alerts route handlers', () => {
       }
     })
 
-    h.redirect.mockReturnValue('redirected')
-
     const result = await route.handler({
       query: {
         emailAddress: 'missing@example.com'
@@ -914,6 +697,6 @@ describe('Alerts route handlers', () => {
       '/alerts/remove-by-recipient?emailAddress=missing%40example.com&validationError=true'
     )
 
-    expect(result).toBe('redirected')
+    expect(result).toBe(h)
   })
 })

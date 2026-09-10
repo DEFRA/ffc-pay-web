@@ -1,8 +1,9 @@
 jest.mock('../../../../app/api')
 
+const { getSchemeNames } = require('ffc-pay-schemes')
 const { getStatementMetrics } = require('../../../../app/metrics/queries/statement-aggregator')
 const { getStatementPublisherData } = require('../../../../app/api')
-const SCHEME_NAMES = require('../../../../app/constants/scheme-names')
+const { SFI, DELINKED, SFI23 } = getSchemeNames()
 
 describe('statement-aggregator', () => {
   let consoleErrorSpy
@@ -65,7 +66,7 @@ describe('statement-aggregator', () => {
         const result = await getStatementMetrics()
 
         expect(result.data.statementsByScheme[0].schemeName)
-          .toBe(SCHEME_NAMES.DELINKED)
+          .toBe(DELINKED)
       })
 
       test('should transform Sustainable Farming Incentive scheme name', async () => {
@@ -81,7 +82,7 @@ describe('statement-aggregator', () => {
         const result = await getStatementMetrics()
 
         expect(result.data.statementsByScheme[0].schemeName)
-          .toBe(SCHEME_NAMES.SFI)
+          .toBe(SFI)
       })
 
       test('should transform Sustainable Farming Incentive 2023 scheme name', async () => {
@@ -97,7 +98,7 @@ describe('statement-aggregator', () => {
         const result = await getStatementMetrics()
 
         expect(result.data.statementsByScheme[0].schemeName)
-          .toBe(SCHEME_NAMES.SFI23)
+          .toBe(SFI23)
       })
 
       test('should leave unknown scheme names unchanged', async () => {

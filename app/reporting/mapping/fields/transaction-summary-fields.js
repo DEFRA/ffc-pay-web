@@ -1,7 +1,7 @@
 module.exports = {
   ID: 'correlationId',
   FRN: 'frn',
-  ClaimID: 'claimNumber',
+  ClaimID: 'contractNumber',
   AgreementNumber: 'agreementNumber',
   RevenueOrCapital: 'revenueOrCapital',
   Year: 'year',

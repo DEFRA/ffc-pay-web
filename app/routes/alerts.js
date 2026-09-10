@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const { getSchemeNameFromSchemeId } = require('ffc-pay-schemes')
 const {
   updateAlertUser,
   removeAlertUser,
@@ -7,14 +8,13 @@ const {
   getAlertRemoveViewData
 } = require('../alerts')
 const { BAD_REQUEST, NOT_AUTHORIZED, NOT_FOUND, PRECONDITION_FAILED } = require('../constants/http-status-codes')
-const { getAlertingData, getProcessingData } = require('../api')
+const { getAlertingData } = require('../api')
 const {
   PAYMENT_ALERTS_LINKS,
   PAYMENT_ALERTS_BY_RECIPIENT_LINKS
 } = require('../constants/section-links')
-const { SCHEMES_PATH } = require('../constants/common-api-urls')
 const { getSchemes } = require('../helpers')
-const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, sanitiseValidationError, getAccountName, createConfirmationView, createSaveRoute, getSchemeName } = require('../alerts/alert-route-helpers')
+const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, sanitiseValidationError, getAccountName, createConfirmationView, createSaveRoute } = require('../alerts/alert-route-helpers')
 
 module.exports = [
   {
@@ -72,7 +72,7 @@ module.exports = [
       const { schemeId } = request.query
 
       if (!schemeId) {
-        const schemes = await getProcessingData(SCHEMES_PATH)
+        const schemes = getSchemes()
 
         return h
           .view(views.alertsByScheme, {
@@ -83,7 +83,7 @@ module.exports = [
       }
 
       try {
-        const schemes = await getProcessingData(SCHEMES_PATH)
+        const schemes = getSchemes()
 
         const scheme = schemes?.payload?.paymentSchemes?.find(
           x => String(x.schemeId) === String(schemeId)
@@ -111,7 +111,7 @@ module.exports = [
               : undefined
         })
       } catch (error) {
-        const schemes = await getProcessingData(SCHEMES_PATH)
+        const schemes = getSchemes()
 
         return h
           .view(views.alertsByScheme, {
@@ -171,7 +171,7 @@ module.exports = [
         console.error('Failed to load alert recipient', error)
 
         return h.redirect(
-          `${paths.updateByRecipient}?emailAddress=${encodeURIComponent(
+          `${paths.update}?emailAddress=${encodeURIComponent(
             request.query?.emailAddress || ''
           )}&validationError=true`
         )
@@ -297,13 +297,12 @@ module.exports = [
     handler: async (request, h) => {
       try {
         const data = await getAlertRecipientViewData(request)
-        const schemeName = getSchemeName(
-          data.schemesPayload,
+        const schemeName = getSchemeNameFromSchemeId(
           data.schemeId
         )
 
         if (!schemeName) {
-          const schemes = await getProcessingData(SCHEMES_PATH)
+          const schemes = getSchemes()
 
           return h
             .view(views.addRecipientByScheme, {
