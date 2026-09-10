@@ -1,6 +1,9 @@
+const { getSchemeNames } = require('ffc-pay-schemes')
 const { getHoldCategories, getHolds } = require('../../app/holds')
 jest.mock('../../app/api.js')
 const { getProcessingData } = require('../../app/api')
+
+const { SFI_PILOT, LUMP_SUMS, BPS } = getSchemeNames()
 
 describe('Get hold categories', () => {
   const mockPaymentHoldCategories = [{
@@ -18,11 +21,8 @@ describe('Get hold categories', () => {
   })
 
   test.each([
-    ['Vet Visits', 'Annual Health and Welfare Review'],
-    ['SFI', 'SFI22'],
-    ['SFI Pilot', 'SFI Pilot'],
-    ['Lump Sums', 'Lump Sums'],
-    ['LNR', 'LNR']
+    [SFI_PILOT, SFI_PILOT],
+    [LUMP_SUMS, LUMP_SUMS]
   ])('maps schemeName "%s" to "%s"', async (input, expected) => {
     mockPaymentHoldCategories[0].schemeName = input
     setupMockCategories(mockPaymentHoldCategories)
@@ -63,7 +63,7 @@ describe('Get holds', () => {
   const mockPaymentHolds = [{
     dateTimeClosed: null,
     dateTimeAdded: '2024-08-19T12:34:56Z',
-    holdCategorySchemeName: 'SFI',
+    holdCategorySchemeName: SFI_PILOT,
     marketingYear: null
   }]
 
@@ -82,7 +82,7 @@ describe('Get holds', () => {
 
     expect(result[0]).toMatchObject({
       dateTimeAdded: '19/08/2024 12:34',
-      holdCategorySchemeName: 'SFI22',
+      holdCategorySchemeName: SFI_PILOT,
       marketingYear: 'All',
       canBeRemoved: true
     })
@@ -120,7 +120,7 @@ describe('Get holds', () => {
       {
         dateTimeClosed: null,
         dateTimeAdded: '2024-08-19T12:34:56Z',
-        holdCategorySchemeName: 'BPS',
+        holdCategorySchemeName: BPS,
         marketingYear: '2024',
         agreementNumber: null,
         contractNumber: null
@@ -128,7 +128,7 @@ describe('Get holds', () => {
       {
         dateTimeClosed: null,
         dateTimeAdded: '2024-08-19T12:34:56Z',
-        holdCategorySchemeName: 'LNR',
+        holdCategorySchemeName: SFI_PILOT,
         marketingYear: '2024',
         agreementNumber: null,
         contractNumber: '123'
@@ -136,7 +136,7 @@ describe('Get holds', () => {
       {
         dateTimeClosed: null,
         dateTimeAdded: '2024-08-19T12:34:56Z',
-        holdCategorySchemeName: 'BPS',
+        holdCategorySchemeName: BPS,
         marketingYear: null,
         agreementNumber: 'A1',
         contractNumber: 'C1'

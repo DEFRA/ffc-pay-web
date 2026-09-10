@@ -1,6 +1,6 @@
 const { parseStatementFilename } = require('../../../app/helpers/parse-statement-filename')
 
-jest.mock('../../../app/constants/schemes', () => ({
+jest.mock('../../../app/constants/statement-abbreviations', () => ({
   statementAbbreviations: {
     1: 'SFI',
     2: 'BPS',

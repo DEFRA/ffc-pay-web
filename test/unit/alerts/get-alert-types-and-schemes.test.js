@@ -1,66 +1,69 @@
 const { getAlertTypesAndSchemes } = require('../../../app/alerts')
-const { getProcessingData, getAlertingData } = require('../../../app/api')
-const { sanitizeSchemes } = require('../../../app/helpers')
+const { getAlertingData } = require('../../../app/api')
+const { getSchemes } = require('../../../app/helpers')
 
-jest.mock('../../../app/api')
-jest.mock('../../../app/helpers')
+jest.mock('../../../app/api', () => ({
+  getAlertingData: jest.fn()
+}))
+
+jest.mock('../../../app/helpers', () => ({
+  getSchemes: jest.fn()
+}))
 
 describe('getAlertTypesAndSchemes', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test('returns sanitized schemes and alert types from API responses', async () => {
-    const mockSchemes = [{ id: 1, name: 'Scheme1' }]
-    const mockSanitizedSchemes = [{ id: 1, name: 'SanitizedScheme1' }]
-    const mockAlertTypes = [{ id: 10, type: 'AlertType1' }]
+  test('returns schemes and alert types when alerting data is present', async () => {
+    const schemes = ['scheme-a', 'scheme-b']
+    const alertTypes = [
+      { id: 'type-1', name: 'Alert type 1' },
+      { id: 'type-2', name: 'Alert type 2' }
+    ]
 
-    getProcessingData.mockResolvedValue({ payload: { paymentSchemes: mockSchemes } })
-    sanitizeSchemes.mockReturnValue(mockSanitizedSchemes)
-    getAlertingData.mockResolvedValue({ payload: { alertTypes: mockAlertTypes } })
+    getSchemes.mockReturnValue(schemes)
+    getAlertingData.mockResolvedValue({
+      payload: {
+        alertTypes
+      }
+    })
 
     const result = await getAlertTypesAndSchemes()
 
-    expect(getProcessingData).toHaveBeenCalledWith('/payment-schemes')
-    expect(sanitizeSchemes).toHaveBeenCalledWith(mockSchemes)
+    expect(getSchemes).toHaveBeenCalledTimes(1)
     expect(getAlertingData).toHaveBeenCalledWith('/alert-types')
     expect(result).toEqual({
-      sanitizedSchemesPayload: mockSanitizedSchemes,
-      alertTypesPayload: mockAlertTypes
+      schemes,
+      alertTypesPayload: alertTypes
     })
   })
 
-  test.each([
-    [{}, [], {}],
-    [null, [], undefined]
-  ])(
-    'handles missing or null API responses gracefully: %p',
-    async (processingPayload, sanitizedReturn, alertingPayload) => {
-      getProcessingData.mockResolvedValue(processingPayload)
-      sanitizeSchemes.mockReturnValue(sanitizedReturn)
-      getAlertingData.mockResolvedValue(alertingPayload)
+  test('returns an empty alertTypesPayload when the API response has no payload', async () => {
+    const schemes = ['scheme-a']
 
-      const result = await getAlertTypesAndSchemes()
+    getSchemes.mockReturnValue(schemes)
+    getAlertingData.mockResolvedValue({})
 
-      expect(sanitizeSchemes).toHaveBeenCalledWith(sanitizedReturn === [] ? [] : [])
-      expect(result).toEqual({
-        sanitizedSchemesPayload: [],
-        alertTypesPayload: []
-      })
-    }
-  )
+    const result = await getAlertTypesAndSchemes()
 
-  test('propagates errors from getProcessingData', async () => {
-    const error = new Error('processing error')
-    getProcessingData.mockRejectedValue(error)
-    await expect(getAlertTypesAndSchemes()).rejects.toThrow('processing error')
+    expect(result).toEqual({
+      schemes,
+      alertTypesPayload: []
+    })
   })
 
-  test('propagates errors from getAlertingData', async () => {
-    getProcessingData.mockResolvedValue({ payload: { paymentSchemes: [] } })
-    sanitizeSchemes.mockReturnValue([])
-    const error = new Error('alerting error')
-    getAlertingData.mockRejectedValue(error)
-    await expect(getAlertTypesAndSchemes()).rejects.toThrow('alerting error')
+  test('returns an empty alertTypesPayload when the API response is undefined', async () => {
+    const schemes = ['scheme-a']
+
+    getSchemes.mockReturnValue(schemes)
+    getAlertingData.mockResolvedValue(undefined)
+
+    const result = await getAlertTypesAndSchemes()
+
+    expect(result).toEqual({
+      schemes,
+      alertTypesPayload: []
+    })
   })
 })

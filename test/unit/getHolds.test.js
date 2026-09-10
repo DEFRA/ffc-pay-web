@@ -1,5 +1,8 @@
+const { getSchemeNames } = require('ffc-pay-schemes')
 const { getHolds } = require('../../app/holds')
 const { mockPaymentHolds } = require('../mocks/objects/holds')
+
+const { SFI, BPS, CS } = getSchemeNames()
 
 jest.mock('../../app/api')
 const { getProcessingData } = require('../../app/api')
@@ -14,7 +17,7 @@ describe('Get holds', () => {
     const result = await getHolds()
     expect(result[0]).toMatchObject({
       dateTimeAdded: '19/08/2024 12:34',
-      holdCategorySchemeName: 'SFI22',
+      holdCategorySchemeName: SFI,
       marketingYear: 'All',
       canBeRemoved: true
     })
@@ -36,10 +39,10 @@ describe('Get holds', () => {
 
   test('handles canBeRemoved logic for BPS/non-BPS and missing fields', async () => {
     const holds = [
-      { dateTimeClosed: null, dateTimeAdded: '2024-08-19T12:34:56Z', holdCategorySchemeName: 'BPS', marketingYear: '2024', agreementNumber: null, contractNumber: null },
-      { dateTimeClosed: null, dateTimeAdded: '2024-08-19T12:34:56Z', holdCategorySchemeName: 'LNR', marketingYear: '2024', agreementNumber: null, contractNumber: '123' },
-      { dateTimeClosed: null, dateTimeAdded: '2024-08-19T12:34:56Z', holdCategorySchemeName: 'BPS', marketingYear: null, agreementNumber: 'A1', contractNumber: 'C1' },
-      { dateTimeClosed: null, dateTimeAdded: '2024-08-19T12:34:56Z', holdCategorySchemeName: 'SFI' }
+      { dateTimeClosed: null, dateTimeAdded: '2024-08-19T12:34:56Z', holdCategorySchemeName: BPS, marketingYear: '2024', agreementNumber: null, contractNumber: null },
+      { dateTimeClosed: null, dateTimeAdded: '2024-08-19T12:34:56Z', holdCategorySchemeName: CS, marketingYear: '2024', agreementNumber: null, contractNumber: '123' },
+      { dateTimeClosed: null, dateTimeAdded: '2024-08-19T12:34:56Z', holdCategorySchemeName: BPS, marketingYear: null, agreementNumber: 'A1', contractNumber: 'C1' },
+      { dateTimeClosed: null, dateTimeAdded: '2024-08-19T12:34:56Z', holdCategorySchemeName: SFI }
     ]
     setupMock(holds)
     const result = await getHolds()

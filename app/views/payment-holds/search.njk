@@ -97,11 +97,11 @@
               Search all schemes
             </option>
             {% for scheme in schemes %}
-              {% if scheme and scheme.name is defined %}
+              {% if scheme and scheme.schemeName is defined %}
                 <option
-                  value="{{ scheme.name }}"
-                  {% if scheme.name == name %}selected{% endif %}>
-                  {{ scheme.name }}
+                  value="{{ scheme.schemeName }}"
+                  {% if scheme.schemeName == name %}selected{% endif %}>
+                  {{ scheme.schemeName }}
                 </option>
               {% endif %}
             {% endfor %}

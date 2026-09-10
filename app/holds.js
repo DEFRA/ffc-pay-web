@@ -1,5 +1,8 @@
 const moment = require('moment')
+const { getSchemeNames } = require('ffc-pay-schemes')
 const { getProcessingData } = require('./api')
+
+const { BPS } = getSchemeNames()
 
 const getHolds = async (page = 1, pageSize = 100, usePagination = true) => {
   let url = '/payment-holds'
@@ -9,15 +12,12 @@ const getHolds = async (page = 1, pageSize = 100, usePagination = true) => {
   const { payload } = await getProcessingData(url)
   return payload.paymentHolds?.filter(x => x.dateTimeClosed == null).map(x => {
     x.dateTimeAdded = moment(x.dateTimeAdded).format('DD/MM/YYYY HH:mm')
-    if (x.holdCategorySchemeName === 'SFI') {
-      x.holdCategorySchemeName = 'SFI22'
-    }
 
     const fieldsToFormat = ['marketingYear', 'agreementNumber', 'contractNumber']
     fieldsToFormat.forEach(field => {
       if (!x[field]) {
         x[field] = 'All'
-        if (x.holdCategorySchemeName !== 'BPS' || field === 'marketingYear') {
+        if (x.holdCategorySchemeName !== BPS || field === 'marketingYear') {
           x.canBeRemoved = true
         }
       }
@@ -29,11 +29,7 @@ const getHolds = async (page = 1, pageSize = 100, usePagination = true) => {
 const getHoldCategories = async () => {
   const { payload } = await getProcessingData('/payment-hold-categories')
 
-  const mappedCategories = payload.paymentHoldCategories.map(category => ({
-    ...category,
-    schemeName: normalizeSchemeName(category.schemeName)
-  }))
-    .sort((a, b) => a.name.localeCompare(b.name))
+  const mappedCategories = payload.paymentHoldCategories.sort((a, b) => a.name.localeCompare(b.name))
 
   const schemesMap = Object.fromEntries(
     mappedCategories.map(c => [c.schemeId, { id: c.schemeId, name: c.schemeName }])
@@ -44,17 +40,6 @@ const getHoldCategories = async () => {
   return {
     schemes,
     paymentHoldCategories: mappedCategories
-  }
-}
-
-const normalizeSchemeName = (name) => {
-  switch (name) {
-    case 'Vet Visits':
-      return 'Annual Health and Welfare Review'
-    case 'SFI':
-      return 'SFI22'
-    default:
-      return name
   }
 }
 
