@@ -14,5 +14,7 @@ module.exports = {
   SFI_EXPANDED: 'SFI-EO',
   COHT_REVENUE: 'CS-HT (Revenue)',
   COHT_CAPITAL: 'CS-HT (Capital)',
-  FPTT: 'FPTT'
+  FPTT: 'FPTT',
+  WMP: 'Woodland Management Plan',
+  SFI26: 'SFI-26'
 }

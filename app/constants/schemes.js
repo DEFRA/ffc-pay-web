@@ -14,7 +14,9 @@ const schemes = {
   SFI_EXPANDED: 14,
   CSHT_REVENUE: 15,
   CSHT_CAPITAL: 16,
-  FPTT: 17
+  FPTT: 17,
+  WMP: 18,
+  SFI26: 19
 }
 
 const statementAbbreviations = {
