@@ -13,7 +13,6 @@ const { readableStreamReturn } = require('./readable-stream-return')
 const { renderErrorPage } = require('./render-error-page')
 const { createFormRoute, createDownloadRoute } = require('./report-route-generator')
 const { generateReportHandler } = require('./generate-report-handler')
-const { sanitizeSchemes } = require('./sanitize-schemes')
 const { groupHoldCategoriesByScheme } = require('./group-hold-categories-by-scheme')
 const { getSchemesForClosures } = require('./get-schemes-for-closures')
 
@@ -36,6 +35,5 @@ module.exports = {
   renderErrorPage,
   createFormRoute,
   createDownloadRoute,
-  generateReportHandler,
-  sanitizeSchemes
+  generateReportHandler
 }

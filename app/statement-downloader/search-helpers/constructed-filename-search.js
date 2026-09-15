@@ -1,4 +1,4 @@
-const { statementAbbreviations } = require('../../constants/schemes')
+const { statementAbbreviations } = require('../../constants/statement-abbreviations')
 const { filenameSearch } = require('./filename-search')
 
 const constructedFilenameSearch = async (criteria) => {
