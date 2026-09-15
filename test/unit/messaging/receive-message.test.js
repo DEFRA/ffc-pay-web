@@ -3,20 +3,20 @@ const mockReceiveMessages = jest.fn()
 const mockCompleteMessage = jest.fn()
 const mockCloseConnection = jest.fn()
 
-const mockMessageReceiver = jest.fn().mockImplementation(() => {
-  return {
-    acceptSession: mockAcceptSession,
-    receiveMessages: mockReceiveMessages,
-    completeMessage: mockCompleteMessage,
-    closeConnection: mockCloseConnection
-  }
-})
+const mockReceiver = {
+  acceptSession: mockAcceptSession,
+  receiveMessages: mockReceiveMessages,
+  completeMessage: mockCompleteMessage,
+  closeConnection: mockCloseConnection
+}
 
-jest.mock('ffc-messaging', () => {
-  return {
-    MessageReceiver: mockMessageReceiver
-  }
-})
+const mockGetReceiver = jest.fn().mockReturnValue(mockReceiver)
+const mockReceiveServiceBusMessage = jest.fn()
+
+jest.mock('../../../app/messaging/service-bus', () => ({
+  getReceiver: mockGetReceiver,
+  receiveMessage: mockReceiveServiceBusMessage
+}))
 
 const { MESSAGE_ID } = require('../../mocks/messaging/message-id')
 const { RESPONSE_MESSAGE } = require('../../mocks/messaging/message')
@@ -28,19 +28,19 @@ let config
 describe('receiveMessage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockReceiveMessages.mockReturnValue([RESPONSE_MESSAGE])
+    mockReceiveServiceBusMessage.mockReturnValue([RESPONSE_MESSAGE])
     config = {}
   })
 
-  test('creates message receiver and accepts session', async () => {
+  test('creates receiver and accepts session', async () => {
     await receiveMessage(MESSAGE_ID, config)
-    expect(mockMessageReceiver).toHaveBeenCalledWith(config)
+    expect(mockGetReceiver).toHaveBeenCalledWith(config)
     expect(mockAcceptSession).toHaveBeenCalledWith(MESSAGE_ID)
   })
 
   test('receives messages with correct parameters', async () => {
     await receiveMessage(MESSAGE_ID, config)
-    expect(mockReceiveMessages).toHaveBeenCalledWith(1, { maxWaitTimeInMs: 50000 })
+    expect(mockReceiveServiceBusMessage).toHaveBeenCalledWith(mockReceiver, 1, { maxWaitTimeInMs: 50000 })
   })
 
   test('completes message and closes connection when messages received', async () => {
@@ -51,7 +51,7 @@ describe('receiveMessage', () => {
   })
 
   test('handles no messages gracefully', async () => {
-    mockReceiveMessages.mockReturnValue([])
+    mockReceiveServiceBusMessage.mockReturnValue([])
     const result = await receiveMessage(MESSAGE_ID, config)
     expect(mockCompleteMessage).not.toHaveBeenCalled()
     expect(mockCloseConnection).toHaveBeenCalledTimes(1)
