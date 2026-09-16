@@ -1,8 +1,7 @@
 const { getProcessingData } = require('../../api')
-const SCHEME_NAMES = require('../../constants/scheme-names')
 
 const transformPaymentScheme = (scheme) => ({
-  schemeName: transformSchemeName(scheme.schemeName),
+  schemeName: scheme.schemeName,
   schemeYear: scheme.schemeYear,
   totalPayments: scheme.totalPayments || 0,
   totalValue: Number.parseInt(scheme.totalValue) || 0,
@@ -11,9 +10,6 @@ const transformPaymentScheme = (scheme) => ({
     processed: scheme.processedPayments || 0
   }
 })
-
-const transformSchemeName = schemeName =>
-  SCHEME_NAMES[schemeName] ?? schemeName
 
 const buildTotalMetrics = (payload) => ({
   totalPayments: payload.totalPayments || 0,

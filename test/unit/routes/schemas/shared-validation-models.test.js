@@ -1,5 +1,7 @@
-const { BPS, CS, SFI } = require('../../../../app/constants/schemes')
+const { getSchemeIds } = require('ffc-pay-schemes')
 const { createValidationSchema } = require('../../../../app/routes/schemas/shared-validation-models')
+
+const { BPS, CS, SFI } = getSchemeIds()
 
 describe('Validation Schema - Comprehensive Tests', () => {
   const baseRequiredFields = {

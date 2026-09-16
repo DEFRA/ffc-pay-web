@@ -9,8 +9,6 @@ describe('Get hold categories', () => {
   afterEach(() => jest.clearAllMocks())
 
   test.each([
-    ['Vet Visits', 'Annual Health and Welfare Review'],
-    ['SFI', 'SFI22'],
     ['SFI Pilot', 'SFI Pilot'],
     ['Lump Sums', 'Lump Sums'],
     ['LNR', 'LNR']

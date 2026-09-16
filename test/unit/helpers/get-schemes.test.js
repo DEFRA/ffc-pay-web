@@ -1,8 +1,8 @@
-jest.mock('../../../app/api', () => ({
-  getProcessingData: jest.fn()
+jest.mock('ffc-pay-schemes', () => ({
+  getSchemes: jest.fn()
 }))
 
-const api = require('../../../app/api')
+const { getSchemes: getUnorderedSchemes } = require('ffc-pay-schemes')
 const { getSchemes } = require('../../../app/helpers/get-schemes')
 
 describe('getSchemes', () => {
@@ -10,61 +10,27 @@ describe('getSchemes', () => {
     jest.clearAllMocks()
   })
 
-  test('fetches schemes and renames SFI to SFI22 and Vet Visits to Annual Health and Welfare Review', async () => {
-    const mockSchemes = [
-      { name: 'Scheme A' },
-      { name: 'SFI' },
-      { name: 'Vet Visits' }
-    ]
-
-    api.getProcessingData.mockResolvedValue({
-      payload: {
-        paymentSchemes: mockSchemes
-      }
-    })
-
-    const result = await getSchemes()
-
-    expect(result).toEqual([
-      { name: 'Annual Health and Welfare Review' },
-      { name: 'Scheme A' },
-      { name: 'SFI22' }
+  test('returns schemes sorted by schemeName', () => {
+    getUnorderedSchemes.mockReturnValue([
+      { schemeId: 3, schemeName: 'Zulu' },
+      { schemeId: 1, schemeName: 'Alpha' },
+      { schemeId: 2, schemeName: 'Bravo' }
     ])
-  })
 
-  test('renames multiple SFI schemes to SFI22', async () => {
-    const mockSchemes = [
-      { name: 'SFI' },
-      { name: 'SFI' },
-      { name: 'Non-SFI' }
-    ]
-
-    api.getProcessingData.mockResolvedValue({
-      payload: {
-        paymentSchemes: mockSchemes
-      }
-    })
-
-    const result = await getSchemes()
-
-    expect(result).toEqual([
-      { name: 'Non-SFI' },
-      { name: 'SFI22' },
-      { name: 'SFI22' }
+    expect(getSchemes()).toEqual([
+      { schemeId: 1, schemeName: 'Alpha' },
+      { schemeId: 2, schemeName: 'Bravo' },
+      { schemeId: 3, schemeName: 'Zulu' }
     ])
+
+    expect(getUnorderedSchemes).toHaveBeenCalledTimes(1)
   })
 
-  test('returns an empty array when no schemes exist', async () => {
-    api.getProcessingData.mockResolvedValue({
-      payload: { paymentSchemes: [] }
-    })
+  test('returns an empty array when no schemes are returned', () => {
+    getUnorderedSchemes.mockReturnValue([])
 
-    const result = await getSchemes()
-    expect(result).toEqual([])
-  })
+    expect(getSchemes()).toEqual([])
 
-  test('throws error when API call fails', async () => {
-    api.getProcessingData.mockRejectedValue(new Error('API error'))
-    await expect(getSchemes()).rejects.toThrow('API error')
+    expect(getUnorderedSchemes).toHaveBeenCalledTimes(1)
   })
 })

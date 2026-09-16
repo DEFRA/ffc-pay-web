@@ -8,7 +8,7 @@ describe('Get closures', () => {
   let mockClosures = [{
     frn: FRN,
     agreementNumber: AGREEMENT_NUMBER,
-    schemeName: 'SFI22',
+    schemeName: 'SFI',
     endDate: '12/12/2023'
   }]
 
@@ -24,7 +24,7 @@ describe('Get closures', () => {
     mockClosures = [{
       frn: FRN,
       agreementNumber: AGREEMENT_NUMBER,
-      schemeName: 'SFI22',
+      schemeName: 'SFI',
       endDate: '12/12/2023'
     }]
   })
@@ -48,20 +48,6 @@ describe('Get closures', () => {
     mockGetClosures(mockClosures)
     const result = await getClosures()
     expect(result.closures[0].endDate).toBe('12/12/2023')
-  })
-
-  test('Scheme name SFI should be reformatted to correct SFI22', async () => {
-    mockClosures[0].schemeName = 'SFI'
-    mockGetClosures(mockClosures)
-    const result = await getClosures()
-    expect(result.closures[0].schemeName).toBe('SFI22')
-  })
-
-  test('Scheme name Vet Visits should be reformatted to correct Annual Health Welfare Review', async () => {
-    mockClosures[0].schemeName = 'Vet Visits'
-    mockGetClosures(mockClosures)
-    const result = await getClosures()
-    expect(result.closures[0].schemeName).toBe('Annual Health and Welfare Review')
   })
 
   test('URL params include frnAgreement only if provided', async () => {
