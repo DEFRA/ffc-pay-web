@@ -95,11 +95,11 @@
             </option>
 
             {% for scheme in schemes %}
-              {% if scheme and scheme.name is defined %}
+              {% if scheme and scheme.schemeName is defined %}
                 <option
                   value="{{ scheme.schemeId }}"
                   {% if scheme.schemeId == schemeId %}selected{% endif %}>
-                  {{ scheme.name }}
+                  {{ scheme.schemeName }}
                 </option>
               {% endif %}
             {% endfor %}

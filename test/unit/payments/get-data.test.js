@@ -66,29 +66,6 @@ describe('get data', () => {
     expect(result).toBe(null)
   })
 
-  test('should change scheme from SFI to SFI22 in response data', async () => {
-    getDataRequestFile.mockResolvedValue({
-      readableStreamBody: {
-        on: jest.fn((event, callback) => {
-          if (event === 'data') {
-            callback(Buffer.from('{"data": [{"scheme": "SFI"}, {"scheme": "OTHER"}, {"scheme": "SFI"}]}'))
-          }
-          if (event === 'end') {
-            callback()
-          }
-        })
-      }
-    })
-
-    const result = await getData(CATEGORY, VALUE)
-
-    expect(result).toEqual([
-      { scheme: 'SFI22' },
-      { scheme: 'OTHER' },
-      { scheme: 'SFI22' }
-    ])
-  })
-
   test('should log and return null if no data is available', async () => {
     getDataRequestFile.mockResolvedValue({
       readableStreamBody: {

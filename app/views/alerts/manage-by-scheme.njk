@@ -34,8 +34,8 @@
           {%
             set schemeItems = (schemeItems.push({
               value: scheme.schemeId,
-              text: scheme.name,
-              selected: schemeName == scheme.name
+              text: scheme.schemeName,
+              selected: schemeName == scheme.schemeName
             }), schemeItems)
           %}
         {% endfor %}

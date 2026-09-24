@@ -187,7 +187,7 @@ module.exports = [
           frn,
           agreement,
           schemeId,
-          schemeName: selectedScheme?.name,
+          schemeName: selectedScheme?.schemeName,
           day,
           month,
           year

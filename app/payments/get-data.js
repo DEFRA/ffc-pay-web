@@ -56,10 +56,7 @@ const getData = async (category, value) => {
     return parsedData.data
   }
 
-  const transformedData = parsedData.data.map(item => ({
-    ...item,
-    scheme: item.scheme === 'SFI' ? 'SFI22' : item.scheme
-  }))
+  const transformedData = parsedData.data
   return transformedData
 }
 

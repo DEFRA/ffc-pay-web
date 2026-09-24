@@ -6,6 +6,10 @@ jest.mock('@hapi/boom', () => ({
   }))
 }))
 
+jest.mock('ffc-pay-schemes', () => ({
+  getSchemeNameFromSchemeId: jest.fn()
+}))
+
 jest.mock('../../../app/alerts/get-alert-recipient-view-data', () => ({
   normaliseValues: jest.fn(),
   getAlertRecipientViewData: jest.fn()
@@ -23,6 +27,7 @@ jest.mock('../../../app/alerts/update-alert-user', () => ({
   updateAlertUser: jest.fn()
 }))
 
+const { getSchemeNameFromSchemeId } = require('ffc-pay-schemes')
 const { normaliseValues, getAlertRecipientViewData } = require('../../../app/alerts/get-alert-recipient-view-data')
 const userSchema = require('../../../app/routes/schemas/user-schema')
 const removeUserSchema = require('../../../app/routes/schemas/remove-user-schema')
@@ -31,8 +36,8 @@ const {
   handleAlertingError,
   formatAlertType,
   getValidationError,
+  sanitiseValidationError,
   getAccountName,
-  getSchemeName,
   getSchemeSummaries,
   validateUserPayload,
   validateRemovePayload,
@@ -48,6 +53,15 @@ describe('alert-route-helpers', () => {
     normaliseValues.mockImplementation((value) =>
       Array.isArray(value) ? value : [value]
     )
+
+    getSchemeNameFromSchemeId.mockImplementation((schemeId) => {
+      const schemeMap = {
+        1: 'Scheme One',
+        2: 'Scheme Two'
+      }
+
+      return schemeMap[schemeId]
+    })
   })
 
   test('handleAlertingError returns Boom object unchanged when error is already Boom', () => {
@@ -84,6 +98,25 @@ describe('alert-route-helpers', () => {
     expect(getValidationError({ details: [], message: 'empty' })).toBe('empty')
   })
 
+  test('sanitiseValidationError returns null for empty input', () => {
+    expect(sanitiseValidationError()).toBeNull()
+    expect(sanitiseValidationError(null)).toBeNull()
+  })
+
+  test('sanitiseValidationError preserves known validation messages', () => {
+    const value = 'Email address is required, Action is required'
+
+    expect(sanitiseValidationError(value)).toBe(value)
+  })
+
+  test('sanitiseValidationError returns generic message when validation contains unknown content', () => {
+    const value = 'Email address is required, Something unexpected'
+
+    expect(sanitiseValidationError(value)).toBe(
+      'There was a problem with your submission. Please try again.'
+    )
+  })
+
   test('getAccountName returns account.name when present', () => {
     expect(
       getAccountName({ auth: { credentials: { account: { name: 'Tess Ting' } } } })
@@ -103,20 +136,6 @@ describe('alert-route-helpers', () => {
   test('getAccountName returns undefined when no account present', () => {
     expect(getAccountName({})).toBeUndefined()
     expect(getAccountName({ auth: {} })).toBeUndefined()
-  })
-
-  test('getSchemeName returns the matching scheme name by schemeId', () => {
-    const schemes = [
-      { schemeId: 1, name: 'Scheme One' },
-      { schemeId: '2', name: 'Scheme Two' }
-    ]
-    expect(getSchemeName(schemes, 1)).toBe('Scheme One')
-    expect(getSchemeName(schemes, '2')).toBe('Scheme Two')
-  })
-
-  test('getSchemeName returns undefined when not found', () => {
-    const schemes = [{ schemeId: 1, name: 'Scheme One' }]
-    expect(getSchemeName(schemes, 'missing')).toBeUndefined()
   })
 
   test('getSchemeSummaries builds summaries using normaliseValues', () => {
@@ -196,6 +215,7 @@ describe('alert-route-helpers', () => {
     test('encodes special characters and arrays correctly', () => {
       const request = { payload: { email: 'a@b.com', tags: ['x y', 'z'] } }
       const error = { message: 'err msg' }
+
       expect(getValidationRedirect('/p', request, error)).toBe('/p?email=a%40b.com&tags=x+y&tags=z&validationError=err+msg')
     })
 
@@ -245,11 +265,14 @@ describe('alert-route-helpers', () => {
 
     test('handler renders confirmation view with computed schemeName and schemes summary', async () => {
       const request = {
-        payload: { emailAddress: 'test@example.com' }
+        payload: {
+          schemeId: 1,
+          1: ['EMAIL']
+        }
       }
       const data = {
-        schemesPayload: [{ schemeId: 'S1', name: 'Scheme 1' }],
-        schemeId: 'S1',
+        schemesPayload: [{ schemeId: 1, name: 'Scheme One' }],
+        schemeId: 1,
         alertTypesPayload: []
       }
       getAlertRecipientViewData.mockResolvedValue(data)
@@ -259,16 +282,20 @@ describe('alert-route-helpers', () => {
       const result = await route.handler(request, h)
 
       expect(getAlertRecipientViewData).toHaveBeenCalledWith(request)
-      expect(h.view).toHaveBeenCalledWith('alerts/confirm', expect.objectContaining({
-        action: 'save',
-        pageTitle: 'Confirm page',
-        formPath: '/form',
-        formAction: '/form-action',
-        schemeId: 'S1',
-        schemeName: 'Scheme 1',
-        schemes: expect.any(Array),
-        formatAlertType: expect.any(Function)
-      }))
+      expect(getSchemeNameFromSchemeId).toHaveBeenCalledWith(1)
+      expect(h.view).toHaveBeenCalledWith(
+        'alerts/confirm',
+        expect.objectContaining({
+          action: 'save',
+          pageTitle: 'Confirm page',
+          formPath: '/form',
+          formAction: '/form-action',
+          schemeId: 1,
+          schemeName: 'Scheme One',
+          schemes: expect.any(Array),
+          formatAlertType: expect.any(Function)
+        })
+      )
       expect(result).toBe('rendered')
     })
 
@@ -286,7 +313,7 @@ describe('alert-route-helpers', () => {
     test('handler computes undefined schemeName when no schemeId present', async () => {
       const request = { payload: {} }
       const data = {
-        schemesPayload: [{ schemeId: 'S1', name: 'Scheme 1' }],
+        schemesPayload: [{ schemeId: 1, name: 'Scheme One' }],
         schemeId: undefined,
         alertTypesPayload: []
       }
@@ -297,21 +324,21 @@ describe('alert-route-helpers', () => {
       const result = await route.handler(request, h)
 
       expect(getAlertRecipientViewData).toHaveBeenCalledWith(request)
-      expect(h.view).toHaveBeenCalledWith('alerts/confirm', expect.objectContaining({
-        schemeId: undefined,
-        schemeName: undefined
-      }))
+      expect(getSchemeNameFromSchemeId).not.toHaveBeenCalled()
+      expect(h.view).toHaveBeenCalledWith(
+        'alerts/confirm',
+        expect.objectContaining({
+          schemeId: undefined,
+          schemeName: undefined
+        })
+      )
       expect(result).toBe('rendered')
     })
   })
 
   describe('createSaveRoute', () => {
     test('handler passes account name, payload and redirect path to updateAlertUser', async () => {
-      const route = createSaveRoute(
-        '/save',
-        'update',
-        '/redirect'
-      )
+      const route = createSaveRoute('/save', 'update', '/redirect')
       const request = {
         payload: { email: 'test@example.com' },
         auth: { credentials: { account: { name: 'Tess Ting' } } }
@@ -332,11 +359,7 @@ describe('alert-route-helpers', () => {
 
     test('handler resolves redirect path function before calling updateAlertUser', async () => {
       const redirectPath = jest.fn().mockResolvedValue('/computed-redirect')
-      const route = createSaveRoute(
-        '/save',
-        'update',
-        redirectPath
-      )
+      const route = createSaveRoute('/save', 'update', redirectPath)
       const request = {
         payload: { email: 'test@example.com' },
         auth: { credentials: { account: { name: 'Tess Ting' } } }
@@ -356,11 +379,7 @@ describe('alert-route-helpers', () => {
     })
 
     test('handler passes a validation callback that uses getValidationRedirect', async () => {
-      const route = createSaveRoute(
-        '/save',
-        'update',
-        '/redirect'
-      )
+      const route = createSaveRoute('/save', 'update', '/redirect')
       const request = {
         payload: { email: 'test@example.com' },
         auth: { credentials: { account: { name: 'Tess Ting' } } }
