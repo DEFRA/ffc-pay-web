@@ -1,5 +1,5 @@
 const db = require('../statement-db-search')
-const { statementAbbreviations } = require('../../constants/schemes')
+const { statementAbbreviations } = require('../../constants/statement-abbreviations')
 const { createStatementResultFromDBRow } = require('./create-statement')
 
 const dbSearch = async (pageLimit, offset, criteria = {}) => {

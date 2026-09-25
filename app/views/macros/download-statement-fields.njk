@@ -16,7 +16,7 @@
         data-module="govuk-radios">
         {% for scheme in schemes %}
           {%
-            if scheme and scheme.schemeId is defined and scheme.name is defined
+            if scheme and scheme.schemeId is defined and scheme.schemeName is defined
           %}
             <div class="govuk-radios__item">
               <input
@@ -32,7 +32,7 @@
               <label
                 class="govuk-label govuk-radios__label"
                 for="schemeId-{{ loop.index }}">
-                {{ scheme.name }}
+                {{ scheme.schemeName }}
               </label>
             </div>
           {% endif %}

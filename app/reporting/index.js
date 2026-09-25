@@ -1,8 +1,8 @@
+const JSONStream = require('JSONStream')
+const { format } = require('@fast-csv/format')
 const { getDataRequestFile } = require('../storage/pay-reports')
 const { getDataFields } = require('./mapping')
 const { createTransformStream } = require('./create-transform-stream')
-const JSONStream = require('JSONStream')
-const { format } = require('@fast-csv/format')
 
 const generateReport = async (filename, reportType, onComplete) => {
   try {

@@ -1,6 +1,6 @@
 module.exports = {
   FRN: 'frn',
-  ClaimID: 'claimNumber',
+  ClaimID: 'contractNumber',
   RevenueOrCapital: 'revenueOrCapital',
   AgreementNumber: 'agreementNumber',
   Year: 'year',

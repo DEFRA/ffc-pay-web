@@ -162,7 +162,7 @@
         {% set accordionItems = [] %}
 
         {% for scheme in schemesPayload %}
-          {% set schemeForId = scheme.name | lower | replace(' ', '-') %}
+          {% set schemeForId = scheme.schemeName | lower | replace(' ', '-') %}
 
           {% set schemeHtml %}
             <div
@@ -182,9 +182,9 @@
                     href="#"
                     class="govuk-link govuk-link--no-visited-state"
                     data-all-toggle
-                    data-select-all-text="select all alerts for {{ scheme.name }}"
-                    data-clear-all-text="clear all alerts for {{ scheme.name }}">
-                    select all alerts for {{ scheme.name }}
+                    data-select-all-text="select all alerts for {{ scheme.schemeName }}"
+                    data-clear-all-text="clear all alerts for {{ scheme.schemeName }}">
+                    select all alerts for {{ scheme.schemeName }}
                   </a>
                 </div>
                 <div
@@ -227,7 +227,7 @@
           {%
             set accordionItems = (accordionItems.push({
               heading: {
-                text: scheme.name
+                text: scheme.schemeName
               },
               content: {
                 html: schemeHtml
