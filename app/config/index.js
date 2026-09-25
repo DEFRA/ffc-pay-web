@@ -105,9 +105,9 @@ value.cache = cacheConfig
 
 value.cache.catboxOptions = value.useRedis
   ? {
-    ...cacheConfig.catboxOptions,
-    tls: value.isDev ? undefined : { minVersion: 'TLSv1.2' }
-  }
+      ...cacheConfig.catboxOptions,
+      tls: value.isDev ? undefined : { minVersion: 'TLSv1.2' }
+    }
   : {}
 value.cache.catbox = value.useRedis ? require('@hapi/catbox-redis') : require('@hapi/catbox-memory')
 
