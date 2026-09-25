@@ -47,4 +47,24 @@ describe('isEmailTaken', () => {
     await isEmailTaken(email, 1)
     expect(getAlertingData).toHaveBeenCalledWith('/contact/email/user%2Btest%40example.com')
   })
+
+  test('calls getAlertingData with lower-cased email address', async () => {
+    getAlertingData.mockResolvedValue({ payload: { contact: null } })
+
+    await isEmailTaken('Test.User@Example.COM', 1)
+
+    expect(getAlertingData).toHaveBeenCalledWith(
+      '/contact/email/test.user%40example.com'
+    )
+  })
+
+  test('trims whitespace before calling getAlertingData', async () => {
+    getAlertingData.mockResolvedValue({ payload: { contact: null } })
+
+    await isEmailTaken('  test@example.com  ', 1)
+
+    expect(getAlertingData).toHaveBeenCalledWith(
+      '/contact/email/test%40example.com'
+    )
+  })
 })

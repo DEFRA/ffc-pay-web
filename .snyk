@@ -4,6 +4,6 @@ ignore:
   SNYK-JS-IOREDIS-19963957:
     - '*':
         reason: Temporary ignore for until dependency upgrade path is available
-        expires: 2026-10-08T16:54:00.000Z
-        created: 2026-09-24T16:54:00.000Z
+        expires: 2026-12-08T16:54:00.000Z
+        created: 2026-09-25T12:00:00.000Z
 patch: {}

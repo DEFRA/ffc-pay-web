@@ -1,7 +1,8 @@
 const { getAlertingData } = require('../../api')
 
 const isEmailTaken = async (emailAddress, contactId) => {
-  const emailCheckEndpoint = `/contact/email/${encodeURIComponent(emailAddress)}`
+  const normalizedEmail = emailAddress.trim().toLowerCase()
+  const emailCheckEndpoint = `/contact/email/${encodeURIComponent(normalizedEmail)}`
   const emailCheckResponse = await getAlertingData(emailCheckEndpoint)
   const existingContactId = emailCheckResponse?.payload?.contact?.contactId
   const normalizedExistingContactId = Number(existingContactId)
