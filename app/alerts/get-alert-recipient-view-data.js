@@ -63,8 +63,7 @@ const buildSelectedAlerts = (
 
 const getAlertRecipientViewData = async (request, options = {}) => {
   const { loadContact = false } = options
-  const { sanitizedSchemesPayload, alertTypesPayload } =
-    await getAlertTypesAndSchemes()
+  const { schemes, alertTypesPayload } = await getAlertTypesAndSchemes()
 
   const query = request.query ?? {}
   const payload = request.payload ?? {}
@@ -79,7 +78,7 @@ const getAlertRecipientViewData = async (request, options = {}) => {
     emailAddress
   )
 
-  const schemesPayload = getSchemesPayload(sanitizedSchemesPayload, schemeId)
+  const schemesPayload = getSchemesPayload(schemes, schemeId)
   const selectedAlerts = buildSelectedAlerts(
     alertTypesPayload,
     schemesPayload,

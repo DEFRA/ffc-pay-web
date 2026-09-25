@@ -94,7 +94,7 @@
               {% if scheme.schemeId == params.selectedSchemeId %}
                 selected
               {% endif %}>
-              {{ scheme.name }}
+              {{ scheme.name or scheme.schemeName }}
             </option>
           {% endfor %}
         </select>
