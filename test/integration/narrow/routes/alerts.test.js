@@ -16,7 +16,7 @@ jest.mock('../../../../app/api', () => ({
 
 jest.mock('ffc-pay-schemes', () => ({
   getSchemeNameFromSchemeId: jest.fn((schemeId) => {
-    if (schemeId === 'S1') return 'Scheme 1'
+    if (schemeId === 1) return 'Scheme 1'
     return 'Unknown'
   })
 }))
@@ -96,11 +96,7 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/by-scheme without schemeId returns precondition failure view', async () => {
     const route = findRoute('GET', '/alerts/by-scheme')
-    const schemes = {
-      payload: {
-        paymentSchemes: [{ schemeId: 'S1', name: 'Scheme 1' }]
-      }
-    }
+    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
     getSchemes.mockReturnValue(schemes)
 
     const result = await route.handler({ query: {} }, h)
@@ -108,7 +104,7 @@ describe('Alerts route handlers', () => {
     expect(getSchemes).toHaveBeenCalled()
     expect(h.view).toHaveBeenCalledWith('alerts/by-scheme', {
       error: 'Select a scheme',
-      data: schemes.payload.paymentSchemes
+      data: undefined
     })
     expect(h.code).toHaveBeenCalledWith(PRECONDITION_FAILED)
     expect(result).toBe(h)
@@ -116,11 +112,7 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/by-scheme with schemeId returns rendered scheme alerts view', async () => {
     const route = findRoute('GET', '/alerts/by-scheme')
-    const schemes = {
-      payload: {
-        paymentSchemes: [{ schemeId: 'S1', name: 'Scheme 1' }]
-      }
-    }
+    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
 
     getSchemes.mockReturnValue(schemes)
     getAlertsByScheme.mockResolvedValue({
@@ -143,11 +135,7 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/by-scheme returns precondition failure when scheme lookup fails', async () => {
     const route = findRoute('GET', '/alerts/by-scheme')
-    const schemes = {
-      payload: {
-        paymentSchemes: [{ schemeId: 'S1', name: 'Scheme 1' }]
-      }
-    }
+    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
 
     getSchemes.mockReturnValue(schemes)
     getAlertsByScheme.mockRejectedValue({ data: { payload: { message: 'Lookup failed' } } })
@@ -159,7 +147,7 @@ describe('Alerts route handlers', () => {
     expect(h.view).toHaveBeenCalledWith('alerts/by-scheme', {
       error: 'Lookup failed',
       schemeId: 'S1',
-      data: schemes.payload.paymentSchemes
+      data: undefined
     })
     expect(h.code).toHaveBeenCalledWith(PRECONDITION_FAILED)
     expect(result).toBe(h)
@@ -222,15 +210,15 @@ describe('Alerts route handlers', () => {
   test('GET /alerts/add-recipient-by-scheme renders the add recipient view', async () => {
     const route = findRoute('GET', '/alerts/add-recipient-by-scheme')
     const viewData = {
-      schemesPayload: [{ schemeId: 'S1', name: 'Scheme 1' }],
-      schemeId: 'S1',
+      schemesPayload: [{ schemeId: 1, name: 'Scheme 1' }],
+      schemeId: '1',
       alertTypesPayload: ['PAYMENT_ALERT']
     }
     getAlertRecipientViewData.mockResolvedValue(viewData)
 
-    const result = await route.handler({ query: { schemeId: 'S1' } }, h)
+    const result = await route.handler({ query: { schemeId: '1' } }, h)
 
-    expect(getAlertRecipientViewData).toHaveBeenCalledWith({ query: { schemeId: 'S1' } })
+    expect(getAlertRecipientViewData).toHaveBeenCalledWith({ query: { schemeId: '1' } })
     expect(h.view).toHaveBeenCalledWith('alerts/add-recipient-by-scheme', {
       ...viewData,
       action: 'create',
@@ -515,11 +503,7 @@ describe('Alerts route handlers', () => {
 
   test('GET /alerts/by-scheme returns no scheme found error for invalid schemeId', async () => {
     const route = findRoute('GET', '/alerts/by-scheme')
-    const schemes = {
-      payload: {
-        paymentSchemes: [{ schemeId: 'S1', name: 'Scheme 1' }]
-      }
-    }
+    const schemes = [{ schemeId: 'S1', name: 'Scheme 1' }]
 
     getSchemes.mockReturnValue(schemes)
 
@@ -534,7 +518,7 @@ describe('Alerts route handlers', () => {
       {
         error: 'No scheme found for Scheme ID 999',
         schemeId: '999',
-        data: schemes.payload.paymentSchemes
+        data: undefined
       }
     )
 
@@ -656,15 +640,15 @@ describe('Alerts route handlers', () => {
 
     getAlertRecipientViewData.mockResolvedValue({
       schemesPayload: [{
-        schemeId: 'S1',
+        schemeId: 1,
         name: 'Scheme 1'
       }],
-      schemeId: 'S1'
+      schemeId: '1'
     })
 
     await route.handler({
       query: {
-        schemeId: 'S1',
+        schemeId: '1',
         validationError: 'Email address is required'
       }
     }, h)

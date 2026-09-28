@@ -15,6 +15,7 @@ const {
 } = require('../constants/section-links')
 const { getSchemes } = require('../helpers')
 const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, sanitiseValidationError, getAccountName, createConfirmationView, createSaveRoute } = require('../alerts/alert-route-helpers')
+const unknown = require('../constants/unknown')
 
 module.exports = [
   {
@@ -85,7 +86,7 @@ module.exports = [
       try {
         const schemes = getSchemes()
 
-        const scheme = schemes?.payload?.paymentSchemes?.find(
+        const scheme = schemes?.find(
           x => String(x.schemeId) === String(schemeId)
         )
 
@@ -298,10 +299,10 @@ module.exports = [
       try {
         const data = await getAlertRecipientViewData(request)
         const schemeName = getSchemeNameFromSchemeId(
-          data.schemeId
+          Number(data.schemeId)
         )
 
-        if (!schemeName) {
+        if (!schemeName || schemeName === unknown) {
           const schemes = getSchemes()
 
           return h
