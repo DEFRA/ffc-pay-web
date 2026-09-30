@@ -13,17 +13,32 @@ describe('addDetailsToFilename', () => {
   })
 
   test.each([
-    [{ schemeId: 1, year: 2024, prn: 2, revenueOrCapital: 'Revenue', frn: 1234567890 },
-      'report_schemeId_1_year_2024_Revenue_2_frn_1234567890.csv'],
-    [{ schemeId: 1, year: 2024, prn: 3, frn: 555 },
-      'r_schemeId_1_year_2024_revenueOrCapital_3_frn_555.csv'],
-    [{ schemeId: 1, year: 2024, prn: 3, revenueOrCapital: '', frn: 2 },
-      'r_schemeId_1_year_2024_3_frn_2.csv'],
-    [{ schemeId: 42, year: 2025, revenueOrCapital: 'Cap' },
-      'f_schemeId_42_year_2025_Cap.csv'],
-    [{}, 'empty_revenueOrCapital.csv']
-  ])('formats filename correctly for query %p', (query, expected) => {
-    const baseName = expected.split('_')[0] + '.csv'
+    [
+      'report.csv',
+      { schemeId: 1, year: 2024, prn: 2, revenueOrCapital: 'Revenue', frn: 1234567890 },
+      'report_schemeId_1_year_2024_Revenue_2_frn_1234567890.csv'
+    ],
+    [
+      'r.csv',
+      { schemeId: 1, year: 2024, prn: 3, frn: 555 },
+      'r_schemeId_1_year_2024_3_frn_555.csv'
+    ],
+    [
+      'r.csv',
+      { schemeId: 1, year: 2024, prn: 3, revenueOrCapital: '', frn: 2 },
+      'r_schemeId_1_year_2024_3_frn_2.csv'
+    ],
+    [
+      'f.csv',
+      { schemeId: 42, year: 2025, revenueOrCapital: 'Cap' },
+      'f_schemeId_42_year_2025_Cap.csv'
+    ],
+    [
+      'empty.csv',
+      {},
+      'empty.csv'
+    ]
+  ])('formats filename correctly', (baseName, query, expected) => {
     expect(addDetailsToFilename(baseName, query)).toBe(expected)
   })
 })

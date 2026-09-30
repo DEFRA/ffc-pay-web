@@ -26,7 +26,7 @@ const addDetailsToFilename = (reportName, query) => {
 }
 
 const formatRevenueOrCapital = (value) => {
-  return value?.trim() ?? 'revenueOrCapital'
+  return value?.trim() || null
 }
 
 module.exports = {
