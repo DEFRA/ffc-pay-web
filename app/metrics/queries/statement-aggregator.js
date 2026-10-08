@@ -1,16 +1,18 @@
+const { getSchemeNames } = require('ffc-pay-schemes')
 const { getStatementPublisherData } = require('../../api')
-const SCHEME_NAMES = require('../../constants/scheme-names')
+
+const { SFI, DELINKED, SFI23 } = getSchemeNames()
 
 const transformStatementSchemeName = schemeName => {
   switch (schemeName) {
     case 'Delinked Payment Statement':
-      return SCHEME_NAMES.DELINKED
+      return DELINKED
 
     case 'Sustainable Farming Incentive':
-      return SCHEME_NAMES.SFI
+      return SFI
 
     case 'Sustainable Farming Incentive 2023':
-      return SCHEME_NAMES.SFI23
+      return SFI23
 
     default:
       return schemeName

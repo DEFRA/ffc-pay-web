@@ -32,15 +32,6 @@ const getClosures = async ({
 
     const closures = payload.closures?.map(closure => {
       closure.endDate = moment(closure.endDate).format('DD/MM/YYYY')
-
-      if (closure.schemeName === 'SFI') {
-        closure.schemeName = 'SFI22'
-      }
-
-      if (closure.schemeName === 'Vet Visits') {
-        closure.schemeName = 'Annual Health and Welfare Review'
-      }
-
       return closure
     }) ?? []
 

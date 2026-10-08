@@ -1,6 +1,6 @@
 const { search: dbSearch } = require('../statement-db-search')
 const { getStatementsContainer } = require('./get-statement-parts')
-const { statementAbbreviations } = require('../../constants/schemes')
+const { statementAbbreviations } = require('../../constants/statement-abbreviations')
 
 const createStatementResultFromService = (statement, downloadResponse = null) => {
   if (!statement?.filename) {

@@ -1,5 +1,7 @@
+const { getSourceSystems } = require('ffc-pay-schemes')
+
 const Joi = require('joi').extend(require('@joi/date'))
-const sourceSystems = require('../../../constants/source-systems')
+const sourceSystems = getSourceSystems()
 
 const minFRN = 1000000000
 const maxFRN = 9999999999

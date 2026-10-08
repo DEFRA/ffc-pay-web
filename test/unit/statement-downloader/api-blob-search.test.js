@@ -6,7 +6,7 @@ jest.mock('../../../app/statement-downloader/statement-db-search', () => ({
 jest.mock('../../../app/statement-downloader/search-helpers/get-statement-parts', () => ({
   getStatementsContainer: jest.fn()
 }))
-jest.mock('../../../app/constants/schemes', () => ({
+jest.mock('../../../app/constants/statement-abbreviations', () => ({
   statementAbbreviations: {
     1: 'DP',
     2: 'SFI'

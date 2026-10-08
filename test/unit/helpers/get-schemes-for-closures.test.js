@@ -2,9 +2,11 @@ jest.mock('../../../app/helpers/get-schemes', () => ({
   getSchemes: jest.fn()
 }))
 
-const { SFI, MANUAL, CS } = require('../../../app/constants/schemes')
+const { getSchemeIds } = require('ffc-pay-schemes')
 const { getSchemes } = require('../../../app/helpers/get-schemes')
 const { getSchemesForClosures } = require('../../../app/helpers/get-schemes-for-closures')
+
+const { SFI, MANUAL, CS } = getSchemeIds()
 
 describe('getSchemesForClosures', () => {
   beforeEach(() => {

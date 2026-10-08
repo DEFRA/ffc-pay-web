@@ -2,7 +2,7 @@ module.exports = {
   FRN: 'frn',
   DeltaAmount: 'deltaAmount',
   SourceSystem: 'sourceSystem',
-  ClaimID: 'claimNumber',
+  ClaimID: 'contractNumber',
   InvoiceNumber: 'invoiceNumber',
   PaymentRequestNumber: 'paymentRequestNumber',
   Year: 'year',

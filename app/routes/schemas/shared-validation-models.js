@@ -1,5 +1,7 @@
+const { getSchemeIds } = require('ffc-pay-schemes')
 const Joi = require('joi')
-const { BPS, CS } = require('../../constants/schemes')
+
+const { BPS, CS } = getSchemeIds()
 
 const frnGreaterThan = 999999999
 const frnLessThan = 10000000000

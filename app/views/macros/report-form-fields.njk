@@ -44,12 +44,12 @@
       {% endif %}
       {% for scheme in schemes %}
         {%
-          if scheme and scheme.schemeId is defined and scheme.name is defined
+          if scheme and scheme.schemeId is defined and scheme.schemeName is defined
         %}
           <option
             value="{{ scheme.schemeId }}"
             {% if scheme.schemeId == selectedSchemeId %}selected{% endif %}>
-            {{ scheme.name }}
+            {{ scheme.schemeName }}
           </option>
         {% endif %}
       {% endfor %}

@@ -2,7 +2,7 @@ const { constructedFilenameSearch } = require('../../../app/statement-downloader
 const { filenameSearch } = require('../../../app/statement-downloader/search-helpers/filename-search')
 
 jest.mock('../../../app/statement-downloader/search-helpers/filename-search')
-jest.mock('../../../app/constants/schemes', () => ({
+jest.mock('../../../app/constants/statement-abbreviations', () => ({
   statementAbbreviations: {
     1: 'SFI',
     2: 'BPS',

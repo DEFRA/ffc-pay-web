@@ -1,5 +1,7 @@
-const { BPS, CS } = require('../../../../app/constants/schemes')
+const { getSchemeIds } = require('ffc-pay-schemes')
 const validationSchema = require('../../../../app/routes/schemas/reports/claim-level-schema')
+
+const { BPS, CS } = getSchemeIds()
 
 const withRequired = obj => ({
   'report-title': 'T',

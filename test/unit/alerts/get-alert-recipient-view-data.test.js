@@ -36,7 +36,7 @@ describe('get-alert-recipient-view-data', () => {
 
   test('returns base data without loading contact when loadContact is false', async () => {
     getAlertTypesAndSchemes.mockResolvedValue({
-      sanitizedSchemesPayload: [{ schemeId: 1, name: 'Scheme One' }],
+      schemes: [{ schemeId: 1, name: 'Scheme One' }],
       alertTypesPayload: ['EMAIL']
     })
 
@@ -63,7 +63,7 @@ describe('get-alert-recipient-view-data', () => {
 
   test('loads contact when loadContact is true and contactId exists', async () => {
     getAlertTypesAndSchemes.mockResolvedValue({
-      sanitizedSchemesPayload: [{ schemeId: 1, name: 'Scheme One' }],
+      schemes: [{ schemeId: 1, name: 'Scheme One' }],
       alertTypesPayload: ['EMAIL', 'SMS']
     })
     getAlertingData.mockResolvedValue({
@@ -101,7 +101,7 @@ describe('get-alert-recipient-view-data', () => {
 
   test('uses payload when query values are missing', async () => {
     getAlertTypesAndSchemes.mockResolvedValue({
-      sanitizedSchemesPayload: [{ schemeId: 2, name: 'Scheme Two' }],
+      schemes: [{ schemeId: 2, name: 'Scheme Two' }],
       alertTypesPayload: ['EMAIL']
     })
 
@@ -122,7 +122,7 @@ describe('get-alert-recipient-view-data', () => {
 
   test('filters schemesPayload when schemeId is provided', async () => {
     getAlertTypesAndSchemes.mockResolvedValue({
-      sanitizedSchemesPayload: [
+      schemes: [
         { schemeId: 1, name: 'Scheme One' },
         { schemeId: 2, name: 'Scheme Two' }
       ],
@@ -144,7 +144,7 @@ describe('get-alert-recipient-view-data', () => {
 
   test('merges contact payload alert selections with query/payload selections', async () => {
     getAlertTypesAndSchemes.mockResolvedValue({
-      sanitizedSchemesPayload: [
+      schemes: [
         { schemeId: 1, name: 'Scheme A' },
         { schemeId: 2, name: 'Scheme B' }
       ],
@@ -186,7 +186,7 @@ describe('get-alert-recipient-view-data', () => {
   test('propagates errors from getAlertingData when loading contact', async () => {
     const error = new Error('failed contact')
     getAlertTypesAndSchemes.mockResolvedValue({
-      sanitizedSchemesPayload: [],
+      schemes: [],
       alertTypesPayload: []
     })
     getAlertingData.mockRejectedValue(error)

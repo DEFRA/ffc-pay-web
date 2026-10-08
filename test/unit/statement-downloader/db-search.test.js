@@ -4,7 +4,7 @@ const { createStatementResultFromDBRow } = require('../../../app/statement-downl
 
 jest.mock('../../../app/statement-downloader/statement-db-search')
 jest.mock('../../../app/statement-downloader/search-helpers/create-statement')
-jest.mock('../../../app/constants/schemes', () => ({
+jest.mock('../../../app/constants/statement-abbreviations', () => ({
   statementAbbreviations: {
     1: 'SFI',
     2: 'BPS',
