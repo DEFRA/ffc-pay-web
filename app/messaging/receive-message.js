@@ -1,10 +1,10 @@
-const { MessageReceiver } = require('ffc-messaging')
+const { getReceiver, receiveMessage: receiveServiceBusMessage } = require('./service-bus')
 
 const receiveMessage = async (messageId, config) => {
   let result
-  const receiver = new MessageReceiver(config)
+  const receiver = getReceiver(config)
   await receiver.acceptSession(messageId)
-  const messages = await receiver.receiveMessages(1, { maxWaitTimeInMs: 50000 })
+  const messages = await receiveServiceBusMessage(receiver, 1, { maxWaitTimeInMs: 50000 })
   if (messages.length) {
     result = messages[0].body
     await receiver.completeMessage(messages[0])
