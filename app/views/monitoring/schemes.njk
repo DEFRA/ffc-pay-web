@@ -67,8 +67,13 @@
               name="schemeId"
               {% if error %}aria-describedby="schemeId-error"{% endif %}>
               <option value="">Select a scheme</option>
+
               {% for scheme in data %}
-                <option value="{{scheme.schemeId}}">{{ scheme.schemeName }}</option>
+                <option
+                  value="{{ scheme.schemeId }}"
+                  {% if schemeId == scheme.schemeId %}selected{% endif %}>
+                  {{ scheme.schemeName }}
+                </option>
               {% endfor %}
             </select>
           </div>

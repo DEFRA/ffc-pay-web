@@ -31,11 +31,11 @@ module.exports = [
 
       if (!schemeId) {
         const schemes = getSchemes()
-        return h
-          .view(monitorSchemesPath, {
-            error: 'Select a scheme',
-            data: schemes?.payload?.paymentSchemes
-          })
+
+        return h.view(monitorSchemesPath, {
+          error: 'Select a scheme',
+          data: schemes
+        })
           .code(HTTP_STATUS.PRECONDITION_FAILED)
       }
 
@@ -46,12 +46,12 @@ module.exports = [
         })
       } catch (err) {
         const schemes = getSchemes()
-        return h
-          .view(monitorSchemesPath, {
-            error: err.data?.payload?.message ?? err.message,
-            schemeId,
-            data: schemes?.payload?.paymentSchemes
-          })
+
+        return h.view(monitorSchemesPath, {
+          error: err.data?.payload?.message ?? err.message,
+          schemeId,
+          data: schemes
+        })
           .code(HTTP_STATUS.PRECONDITION_FAILED)
       }
     }
