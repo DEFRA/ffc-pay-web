@@ -17,8 +17,8 @@ let server
 let auth
 
 const mockSchemes = [
-  { schemeId: '1', name: 'Scheme 1' },
-  { schemeId: '2', name: 'Scheme 2' }
+  { schemeId: '1', schemeName: 'Scheme 1' },
+  { schemeId: '2', schemeName: 'Scheme 2' }
 ]
 
 const mockProcessedPayments = [
@@ -157,11 +157,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
     })
 
     test('returns 412 and re-renders the schemes view with "Select a scheme" when schemeId is missing', async () => {
-      getSchemes.mockReturnValue({
-        payload: {
-          paymentSchemes: mockSchemes
-        }
-      })
+      getSchemes.mockReturnValue(mockSchemes)
 
       const res = await server.inject({
         method,
@@ -177,11 +173,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
     })
 
     test('returns 412 and re-renders the schemes view with "Select a scheme" when schemeId is an empty string', async () => {
-      getSchemes.mockReturnValue({
-        payload: {
-          paymentSchemes: mockSchemes
-        }
-      })
+      getSchemes.mockReturnValue(mockSchemes)
 
       const res = await server.inject({
         method,
@@ -196,11 +188,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
 
     describe('when getPaymentsByScheme throws', () => {
       test('returns 412 and shows the error message from a failed lookup with a payload message', async () => {
-        getSchemes.mockReturnValue({
-          payload: {
-            paymentSchemes: mockSchemes
-          }
-        })
+        getSchemes.mockReturnValue(mockSchemes)
         getPaymentsByScheme.mockRejectedValue({
           data: { payload: { message: 'Scheme not found' } }
         })
@@ -213,11 +201,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
       })
 
       test('returns 412 and falls back to err.message when no payload message is present', async () => {
-        getSchemes.mockReturnValue({
-          payload: {
-            paymentSchemes: mockSchemes
-          }
-        })
+        getSchemes.mockReturnValue(mockSchemes)
         getPaymentsByScheme.mockRejectedValue(new Error('Network failure'))
 
         const res = await server.inject({ method, url, auth })
@@ -228,11 +212,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
       })
 
       test('returns 412 and falls back to err.message when err.data exists but has no payload', async () => {
-        getSchemes.mockReturnValue({
-          payload: {
-            paymentSchemes: mockSchemes
-          }
-        })
+        getSchemes.mockReturnValue(mockSchemes)
         getPaymentsByScheme.mockRejectedValue({
           data: {},
           message: 'Some other failure'
@@ -246,11 +226,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
       })
 
       test('re-fetches the scheme list from getSchemes after the failure, to repopulate the dropdown', async () => {
-        getSchemes.mockReturnValue({
-          payload: {
-            paymentSchemes: mockSchemes
-          }
-        })
+        getSchemes.mockReturnValue(mockSchemes)
         getPaymentsByScheme.mockRejectedValue(new Error('boom'))
 
         const res = await server.inject({ method, url, auth })
@@ -262,11 +238,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
       })
 
       test('calls getPaymentsByScheme with the submitted schemeId before failing', async () => {
-        getSchemes.mockReturnValue({
-          payload: {
-            paymentSchemes: mockSchemes
-          }
-        })
+        getSchemes.mockReturnValue(mockSchemes)
         getPaymentsByScheme.mockRejectedValue(new Error('boom'))
 
         const res = await server.inject({
@@ -280,11 +252,7 @@ describe('Monitoring Schemes and Processed Payments', () => {
       })
 
       test('shows "No schemes were found." on the error path if the scheme re-fetch returns none', async () => {
-        getSchemes.mockReturnValue({
-          payload: {
-            paymentSchemes: []
-          }
-        })
+        getSchemes.mockReturnValue([])
         getPaymentsByScheme.mockRejectedValue(new Error('boom'))
 
         const res = await server.inject({ method, url, auth })
