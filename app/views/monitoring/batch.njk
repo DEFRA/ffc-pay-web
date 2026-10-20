@@ -117,7 +117,7 @@
                 </td>
                 <td class="govuk-table__cell govuk-body-s">
                   <strong
-                    class="govuk-tag {% if payment.status.state == 'Completed' %}govuk-tag--green{% elif payment.status.state == 'Waiting' %}govuk-tag--yellow{% endif %}">
+                    class="govuk-tag {% if payment.status.state == 'Completed' %}govuk-tag--green{% elif payment.status.state == 'Waiting' %}govuk-tag--yellow{% elif payment.status.state == 'Stopped' %}govuk-tag--red{% endif %}">
                     {{ payment.status.detail }}
                   </strong>
                 </td>
