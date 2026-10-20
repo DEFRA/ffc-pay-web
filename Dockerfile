@@ -32,5 +32,5 @@ EXPOSE ${PORT}
 
 COPY --from=development /home/node/app/ ./app/
 COPY --from=development /home/node/package*.json ./
-RUN HUSKY=0 npm ci --ignore-scripts
+RUN HUSKY=0 npm ci --omit-dev --ignore-scripts
 CMD [ "node", "app" ]

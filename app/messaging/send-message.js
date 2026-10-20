@@ -1,11 +1,10 @@
-const { MessageSender } = require('ffc-messaging')
+const { getSender, sendMessage: sendServiceBusMessage } = require('./service-bus')
 const { createMessage } = require('./create-message')
 
 const sendMessage = async (body, type, config, options) => {
+  const sender = getSender(config)
   const message = createMessage(body, type, options)
-  const sender = new MessageSender(config)
-  await sender.sendMessage(message)
-  await sender.closeConnection()
+  await sendServiceBusMessage(sender, message)
 }
 
 module.exports = {

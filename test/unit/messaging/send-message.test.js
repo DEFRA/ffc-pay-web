@@ -1,12 +1,16 @@
-const mockSendMessage = jest.fn()
-const mockCloseConnection = jest.fn()
+const mockSendMessages = jest.fn()
 
-const mockMessageSender = jest.fn().mockImplementation(() => ({
-  sendMessage: mockSendMessage,
-  closeConnection: mockCloseConnection
+const mockSender = {
+  sendMessages: mockSendMessages
+}
+
+const mockGetSender = jest.fn().mockReturnValue(mockSender)
+const mockSendServiceBusMessage = jest.fn()
+
+jest.mock('../../../app/messaging/service-bus', () => ({
+  getSender: mockGetSender,
+  sendMessage: mockSendServiceBusMessage
 }))
-
-jest.mock('ffc-messaging', () => ({ MessageSender: mockMessageSender }))
 jest.mock('../../../app/messaging/create-message')
 const { createMessage: mockCreateMessage } = require('../../../app/messaging/create-message')
 
@@ -28,13 +32,14 @@ describe('sendMessage', () => {
     config = {}
   })
 
-  test.each([
-    ['createMessage', () => sendMessage(BODY, TYPE, config, options), () => expect(mockCreateMessage).toHaveBeenCalledWith(BODY, TYPE, options)],
-    ['MessageSender', () => sendMessage(BODY, TYPE, config, options), () => expect(mockMessageSender).toHaveBeenCalledWith(config)],
-    ['sendMessage', () => sendMessage(BODY, TYPE, config, options), () => expect(mockSendMessage).toHaveBeenCalledWith(RESPONSE_MESSAGE)],
-    ['closeConnection', () => sendMessage(BODY, TYPE, config, options), () => expect(mockCloseConnection).toHaveBeenCalled()]
-  ])('should call %s correctly', async (_, sendMessage, expect) => {
-    await sendMessage()
-    expect()
+  test('creates sender and message', async () => {
+    await sendMessage(BODY, TYPE, config, options)
+    expect(mockGetSender).toHaveBeenCalledWith(config)
+    expect(mockCreateMessage).toHaveBeenCalledWith(BODY, TYPE, options)
+  })
+
+  test('sends message via service bus', async () => {
+    await sendMessage(BODY, TYPE, config, options)
+    expect(mockSendServiceBusMessage).toHaveBeenCalledWith(mockSender, RESPONSE_MESSAGE)
   })
 })
