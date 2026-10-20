@@ -82,7 +82,7 @@
     "webpack-cli": "4.10.0"
   },
   "overrides": {
-    "ioredis": "^6.0.0"
+    "ioredis": "6.0.0"
   },
   "nodemonConfig": {
     "ignore": [
