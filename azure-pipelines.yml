@@ -41,6 +41,7 @@ extends:
     npmLegacyPeerDeps: false   # Optional: default is false
     dockerFilePath: Dockerfile # Optional default is Dockerfile
     failOnThreshold: moderate  # Optional: moderate (default), low, high, critical
+    runSnykScan: false
     prDeployment: ${{ parameters.prDeployment }}
     branchDeployment: ${{ parameters.branchDeployment }}
     sndDeployment: ${{ parameters.sndDeployment }}
