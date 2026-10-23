@@ -166,14 +166,14 @@ test('GET /monitoring/batch/name clamps page to total pages', async () => {
 })
 
 describe('payment warning status tags', () => {
-  const stoppedPayment = { scheme: 'SFI', correlationId: 'abc', status: { name: 'Payment Rejected', detail: 'Payment request rejected', state: 'Stopped', warning: true } }
+  const failedPayment = { scheme: 'SFI', correlationId: 'abc', status: { name: 'Payment Rejected', detail: 'Payment request rejected', state: 'Failed', warning: true } }
   const pausedPayment = { scheme: 'SFI', correlationId: 'def', status: { name: 'Payment Invalid Bank', detail: 'No valid bank details held', state: 'Waiting', warning: true } }
 
   test.each([
     ['/monitoring/payments/frn?frn=1234567890', mockGetPaymentsByFrn],
     ['/monitoring/batch/name?batch=BATCH001', mockGetPaymentsByBatch]
-  ])('GET %s shows stopped warnings as red and paused warnings as yellow', async (url, mockGetPayments) => {
-    mockGetPayments.mockResolvedValue([stoppedPayment, pausedPayment])
+  ])('GET %s shows failed warnings as red and paused warnings as yellow', async (url, mockGetPayments) => {
+    mockGetPayments.mockResolvedValue([failedPayment, pausedPayment])
 
     const res = await server.inject({ method: 'GET', url, auth })
 
@@ -182,13 +182,13 @@ describe('payment warning status tags', () => {
     expect(res.payload).toMatch(/govuk-tag--yellow">\s*No valid bank details held/)
   })
 
-  test('GET /monitoring/payments/correlation-id shows warning events as stopped or paused', async () => {
+  test('GET /monitoring/payments/correlation-id shows warning events as failed or paused', async () => {
     mockGetPaymentsByCorrelationId.mockResolvedValue({
       frn: 1234567890,
       agreementNumber: 'A1',
       events: [
         { timestamp: '01/01/2026 10:00', status: { name: 'Extracted from batch', state: 'In Progress' } },
-        { timestamp: '01/01/2026 10:01', status: stoppedPayment.status },
+        { timestamp: '01/01/2026 10:01', status: failedPayment.status },
         { timestamp: '01/01/2026 10:02', status: pausedPayment.status, lastEvent: true }
       ]
     })
@@ -197,7 +197,7 @@ describe('payment warning status tags', () => {
 
     expect(res.statusCode).toBe(200)
     expect(res.payload).toContain('govuk-tag govuk-tag--green">Completed')
-    expect(res.payload).toContain('govuk-tag govuk-tag--red">Stopped')
+    expect(res.payload).toContain('govuk-tag govuk-tag--red">Failed')
     expect(res.payload).toContain('govuk-tag govuk-tag--yellow">Paused')
   })
 })
