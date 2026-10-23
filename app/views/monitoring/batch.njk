@@ -3,6 +3,7 @@
 {% from 'macros/events-breadcrumbs.njk' import eventsBreadcrumbs %}
 {% from 'macros/payment-event-summary-row.njk' import paymentEventSummaryRow %}
 {% from 'macros/build-pagination.njk' import buildPagination %}
+{% from 'macros/payment-status-tag.njk' import paymentStatusTag %}
 
 {% set pageTitle = "View batch file payments and their status" %}
 {% set hasMultiplePages = totalPages and totalPages > 1 %}
@@ -116,10 +117,7 @@
                   {{ payment.originalValueText }}
                 </td>
                 <td class="govuk-table__cell govuk-body-s">
-                  <strong
-                    class="govuk-tag {% if payment.status.state == 'Completed' %}govuk-tag--green{% elif payment.status.state == 'Waiting' %}govuk-tag--yellow{% endif %}">
-                    {{ payment.status.detail }}
-                  </strong>
+                  {{ paymentStatusTag(payment.status) }}
                 </td>
                 <td class="govuk-table__cell govuk-body-s">
                   <a
