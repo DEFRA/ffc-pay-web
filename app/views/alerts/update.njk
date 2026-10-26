@@ -159,6 +159,48 @@
             />
           </div>
         {% endif %}
+
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              <h2 class="govuk-fieldset__heading">
+                New scheme alerts
+              </h2>
+            </legend>
+
+            <div
+              id="scheme-added-hint"
+              class="govuk-hint">
+              Receive an email whenever a new scheme is added to Payment Hub.
+            </div>
+
+            <div
+              class="govuk-checkboxes"
+              data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input
+                  class="govuk-checkboxes__input"
+                  id="scheme-added"
+                  name="globalAlerts"
+                  type="checkbox"
+                  value="scheme_added"
+                  aria-describedby="scheme-added-hint"
+                  {%
+                    if selectedAlerts.scheme_added and selectedAlerts.scheme_added[0]
+                  %}
+                    checked
+                  {% endif %}
+                />
+                <label
+                  class="govuk-label govuk-checkboxes__label"
+                  for="scheme-added">
+                  Receive new scheme alerts
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
         {% set accordionItems = [] %}
 
         {% for scheme in schemesPayload %}
@@ -191,33 +233,37 @@
                   class="govuk-checkboxes"
                   data-module="govuk-checkboxes">
                   {% for alertType in alertTypesPayload %}
-                    <div class="govuk-checkboxes__item">
+                    {% if alertType != "scheme_added" %}
                       {%
                         set alertForId = alertType | lower | replace(' ', '-')
                       %}
-                      <input
-                        class="govuk-checkboxes__input"
-                        id="{{ schemeForId }}-{{ alertForId }}"
-                        name="{{ scheme.schemeId }}"
-                        type="checkbox"
-                        value="{{ alertType }}"
-                        {%
-                          if selectedAlerts[alertType] and selectedAlerts[alertType][scheme.schemeId]
-                        %}
-                          checked
-                        {% endif %}
-                      />
-                      {% set parts = alertType.split('_') %}
-                      <label
-                        class="govuk-label govuk-checkboxes__label"
-                        for="{{ schemeForId }}-{{ alertForId }}">
-                        {% for part in parts %}
-                          {{ part | capitalize }}{% if not loop.last %}{%
-                            endif
+
+                      <div class="govuk-checkboxes__item">
+                        <input
+                          class="govuk-checkboxes__input"
+                          id="{{ schemeForId }}-{{ alertForId }}"
+                          name="{{ scheme.schemeId }}"
+                          type="checkbox"
+                          value="{{ alertType }}"
+                          {%
+                            if selectedAlerts[alertType] and selectedAlerts[alertType][scheme.schemeId]
                           %}
-                        {% endfor %}
-                      </label>
-                    </div>
+                            checked
+                          {% endif %}
+                        />
+
+                        {% set parts = alertType.split('_') %}
+
+                        <label
+                          class="govuk-label govuk-checkboxes__label"
+                          for="{{ schemeForId }}-{{ alertForId }}">
+                          {% for part in parts %}
+                            {{ part | capitalize }}{% if not loop.last %}
+                            {% endif %}
+                          {% endfor %}
+                        </label>
+                      </div>
+                    {% endif %}
                   {% endfor %}
                 </div>
               </fieldset>

@@ -14,7 +14,7 @@ const {
   PAYMENT_ALERTS_BY_RECIPIENT_LINKS
 } = require('../constants/section-links')
 const { getSchemes } = require('../helpers')
-const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, sanitiseValidationError, getAccountName, createConfirmationView, createSaveRoute } = require('../alerts/alert-route-helpers')
+const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, sanitiseValidationError, getAccountName, createConfirmationView, createSaveRoute, getGlobalAlertTypes, } = require('../alerts/alert-route-helpers')
 const unknown = require('../constants/unknown')
 
 module.exports = [
@@ -196,6 +196,19 @@ module.exports = [
       try {
         const data = await getAlertRecipientViewData(request)
 
+        const schemes = getSchemeSummaries(
+          data.schemesPayload,
+          request.payload
+        )
+
+        const globalAlertTypes = getGlobalAlertTypes(
+          request.payload
+        )
+
+        const hasSchemeAlerts = schemes.some(
+          (scheme) => scheme.alertTypes?.length > 0
+        )
+
         return h.view(views.updateConfirm, {
           ...data,
           contactId: request.payload.contactId,
@@ -203,10 +216,9 @@ module.exports = [
           action: request.payload.action,
           formPath: paths.update,
           formAction: paths.update,
-          schemes: getSchemeSummaries(
-            data.schemesPayload,
-            request.payload
-          ),
+          schemes,
+          globalAlertTypes,
+          hasSchemeAlerts,
           formatAlertType
         })
       } catch (error) {

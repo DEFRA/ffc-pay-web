@@ -3,10 +3,19 @@ const { getAlertTypesAndSchemes } = require('./get-alert-types-and-schemes')
 
 const normaliseValues = (value) => {
   if (Array.isArray(value)) {
-    return value.filter(Boolean)
+    return value.filter(
+      (item) =>
+        item !== undefined &&
+        item !== null &&
+        item !== ''
+    )
   }
 
-  return value ? [value] : []
+  return value !== undefined &&
+    value !== null &&
+    value !== ''
+    ? [value]
+    : []
 }
 
 const getSelectedValues = (query, payload, key) => [

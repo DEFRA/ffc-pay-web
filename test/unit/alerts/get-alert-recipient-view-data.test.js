@@ -19,10 +19,16 @@ describe('get-alert-recipient-view-data', () => {
   })
 
   describe('normaliseValues', () => {
-    test('returns empty array for undefined values', () => {
-      expect(normaliseValues(undefined)).toEqual([])
+    test('should preserve zero as a valid value', () => {
+      expect(normaliseValues(0)).toEqual([0])
+      expect(normaliseValues([0])).toEqual([0])
+    })
+
+    test('should remove empty values', () => {
       expect(normaliseValues(null)).toEqual([])
+      expect(normaliseValues(undefined)).toEqual([])
       expect(normaliseValues('')).toEqual([])
+      expect(normaliseValues([])).toEqual([])
     })
 
     test('returns array of values for single string', () => {
