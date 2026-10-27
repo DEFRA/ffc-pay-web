@@ -136,26 +136,29 @@
           class="govuk-checkboxes"
           data-module="govuk-checkboxes">
           {% for alertType in data.alertTypesPayload %}
-            {% set alertForId = alertType | lower | replace(' ', '-') %}
-            <div class="govuk-checkboxes__item">
-              <input
-                class="govuk-checkboxes__input"
-                id="{{ schemeForId }}-{{ alertForId }}"
-                name="{{ scheme.schemeId }}"
-                type="checkbox"
-                value="{{ alertType }}"
-                {%
-                  if data.selectedAlerts[alertType] and data.selectedAlerts[alertType][scheme.schemeId]
-                %}
-                  checked
-                {% endif %}
-              />
-              <label
-                class="govuk-label govuk-checkboxes__label"
-                for="{{ schemeForId }}-{{ alertForId }}">
-                {{ alertType | replace('_', ' ') | capitalize }}
-              </label>
-            </div>
+            {% if alertType != "scheme_added" %}
+              {% set alertForId = alertType | lower | replace(' ', '-') %}
+
+              <div class="govuk-checkboxes__item">
+                <input
+                  class="govuk-checkboxes__input"
+                  id="{{ schemeForId }}-{{ alertForId }}"
+                  name="{{ scheme.schemeId }}"
+                  type="checkbox"
+                  value="{{ alertType }}"
+                  {%
+                    if data.selectedAlerts[alertType] and data.selectedAlerts[alertType][scheme.schemeId]
+                  %}
+                    checked
+                  {% endif %}
+                />
+                <label
+                  class="govuk-label govuk-checkboxes__label"
+                  for="{{ schemeForId }}-{{ alertForId }}">
+                  {{ alertType | replace('_', ' ') | capitalize }}
+                </label>
+              </div>
+            {% endif %}
           {% endfor %}
         </div>
       </fieldset>
@@ -317,7 +320,7 @@
 {% endmacro %}
 
 {%
-  macro schemeSummaryCard(scheme, formPath, queryData, schemes, changeLinkLabel, changeLinkTarget, formatAlertType)
+  macro schemeSummaryCard(scheme, formPath, queryData, schemes, changeLinkLabel, changeLinkTarget, formatAlertType, extraAlertTypes = [])
 %}
   {% if scheme.alertTypes and scheme.alertTypes.length %}
     <div class="govuk-summary-card">
@@ -341,6 +344,10 @@
                 {% for alertType in scheme.alertTypes %}
                   <li>{{ formatAlertType(alertType) }}</li>
                 {% endfor %}
+
+                {% for alertType in extraAlertTypes %}
+                  <li>{{ formatAlertType(alertType) }}</li>
+                {% endfor %}
               </ul>
             </dd>
           </div>
@@ -351,7 +358,7 @@
 {% endmacro %}
 
 {%
-  macro confirmationHiddenFields(crumb, contactId, emailAddress, action, schemeId, schemes)
+  macro confirmationHiddenFields(crumb, contactId, emailAddress, action, schemeId, schemes, globalAlertTypes = [])
 %}
   <input
     type="hidden"
@@ -394,6 +401,14 @@
         value="{{ alertType }}"
       />
     {% endfor %}
+  {% endfor %}
+
+  {% for alertType in globalAlertTypes %}
+    <input
+      type="hidden"
+      name="globalAlerts"
+      value="{{ alertType }}"
+    />
   {% endfor %}
 {% endmacro %}
 

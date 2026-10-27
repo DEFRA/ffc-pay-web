@@ -214,4 +214,70 @@ describe('updateAlertUser', () => {
       null
     )
   })
+
+  test('clears omitted alerts during a full recipient update', async () => {
+    getAlertingData.mockResolvedValue({
+      payload: {
+        alertTypes: [
+          'batch_rejected',
+          'batch_quarantined',
+          'scheme_added'
+        ]
+      }
+    })
+
+    await updateAlertUser(
+      'Test User',
+      {
+        contactId: '1',
+        emailAddress: 'alistair.wishart@atos.net',
+        globalAlerts: 'scheme_added',
+        action: 'edit'
+      },
+      h
+    )
+
+    expect(postAlerting).toHaveBeenCalledWith(
+      '/update-contact',
+      expect.objectContaining({
+        contactId: '1',
+        scheme_added: [0],
+        batch_rejected: [],
+        batch_quarantined: []
+      }),
+      null
+    )
+  })
+
+  test('does not clear omitted alerts during a scheme-scoped update', async () => {
+    getAlertingData.mockResolvedValue({
+      payload: {
+        alertTypes: [
+          'batch_rejected',
+          'batch_quarantined',
+          'scheme_added'
+        ]
+      }
+    })
+
+    await updateAlertUser(
+      'Test User',
+      {
+        contactId: '1',
+        emailAddress: 'alistair.wishart@atos.net',
+        schemeId: '6',
+        6: 'batch_rejected',
+        action: 'edit'
+      },
+      h
+    )
+
+    expect(postAlerting).toHaveBeenCalledWith(
+      '/update-contact',
+      expect.not.objectContaining({
+        batch_quarantined: []
+      }),
+      null
+    )
+  })
 })

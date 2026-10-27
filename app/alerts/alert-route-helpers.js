@@ -100,6 +100,9 @@ const getSchemeSummaries = (schemes, payload) =>
     alertTypes: normaliseValues(payload[scheme.schemeId])
   }))
 
+const getGlobalAlertTypes = (payload = {}) =>
+  normaliseValues(payload.globalAlerts)
+
 const validateUserPayload = (value) => {
   const { error } = userSchema.validate(value)
 
@@ -225,5 +228,6 @@ module.exports = {
   validateRemovePayload,
   getValidationRedirect,
   createConfirmationView,
-  createSaveRoute
+  createSaveRoute,
+  getGlobalAlertTypes
 }
