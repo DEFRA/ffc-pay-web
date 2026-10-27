@@ -1,8 +1,6 @@
 const { postAlerting, getAlertingData } = require('../api')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
-const {
-  getAlertRecipientViewData
-} = require('./get-alert-recipient-view-data')
+const { getAlertRecipientViewData } = require('./get-alert-recipient-view-data')
 const { isEmailTaken, isEmailBlocked } = require('./validation')
 
 const NON_ALERT_FIELDS = new Set([
@@ -80,12 +78,7 @@ const addEmptyAlertTypes = (
   allAlertTypes
 ) => {
   for (const alertType of allAlertTypes) {
-    if (
-      !Object.prototype.hasOwnProperty.call(
-        data,
-        alertType
-      )
-    ) {
+    if (!Object.hasOwn(data, alertType)) {
       data[alertType] = []
     }
   }

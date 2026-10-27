@@ -14,7 +14,7 @@ const {
   PAYMENT_ALERTS_BY_RECIPIENT_LINKS
 } = require('../constants/section-links')
 const { getSchemes } = require('../helpers')
-const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, sanitiseValidationError, getAccountName, createConfirmationView, createSaveRoute, getGlobalAlertTypes, } = require('../alerts/alert-route-helpers')
+const { AUTH_SCOPE, paths, views, handleAlertingError, validateUserPayload, getValidationRedirect, getSchemeSummaries, formatAlertType, validateRemovePayload, getValidationError, sanitiseValidationError, getAccountName, createConfirmationView, createSaveRoute, getGlobalAlertTypes } = require('../alerts/alert-route-helpers')
 const unknown = require('../constants/unknown')
 
 module.exports = [
