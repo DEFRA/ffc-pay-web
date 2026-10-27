@@ -146,8 +146,7 @@ const buildUpdateData = async (
     )
   }
 
-  const selectedAlertTypeKeys =
-    getSelectedAlertTypeKeys(data)
+  const selectedAlertTypeKeys = getSelectedAlertTypeKeys(data)
 
   const hasSelectedAlertType =
     selectedAlertTypeKeys.some(

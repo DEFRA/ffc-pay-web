@@ -104,11 +104,7 @@ const getGlobalAlertTypes = (payload = {}) =>
   normaliseValues(payload.globalAlerts)
 
 const validateUserPayload = (value) => {
-  console.log('validateUserPayload input:', value)
-
   const { error } = userSchema.validate(value)
-
-  console.log('validateUserPayload error:', error?.message)
 
   if (error) {
     throw error
