@@ -19,10 +19,17 @@ describe('get-alert-recipient-view-data', () => {
   })
 
   describe('normaliseValues', () => {
-    test('returns empty array for undefined values', () => {
-      expect(normaliseValues(undefined)).toEqual([])
-      expect(normaliseValues(null)).toEqual([])
+    test('preserves zero as a valid value', () => {
+      expect(normaliseValues(0)).toEqual([0])
+      expect(normaliseValues([0])).toEqual([0])
+    })
+
+    test('continues to remove other falsy values', () => {
+      expect(normaliseValues(false)).toEqual([])
+      expect(normaliseValues([false])).toEqual([])
       expect(normaliseValues('')).toEqual([])
+      expect(normaliseValues(null)).toEqual([])
+      expect(normaliseValues(undefined)).toEqual([])
     })
 
     test('returns array of values for single string', () => {

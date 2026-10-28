@@ -164,3 +164,40 @@ test('GET /monitoring/batch/name clamps page to total pages', async () => {
 
   expect(response.statusCode).toBe(200)
 })
+
+describe('payment warning status tags', () => {
+  const failedPayment = { scheme: 'SFI', correlationId: 'abc', status: { name: 'Payment Rejected', detail: 'Payment request rejected', state: 'Failed', warning: true } }
+  const pausedPayment = { scheme: 'SFI', correlationId: 'def', status: { name: 'Payment Invalid Bank', detail: 'No valid bank details held', state: 'Waiting', warning: true } }
+
+  test.each([
+    ['/monitoring/payments/frn?frn=1234567890', mockGetPaymentsByFrn],
+    ['/monitoring/batch/name?batch=BATCH001', mockGetPaymentsByBatch]
+  ])('GET %s shows failed warnings as red and paused warnings as yellow', async (url, mockGetPayments) => {
+    mockGetPayments.mockResolvedValue([failedPayment, pausedPayment])
+
+    const res = await server.inject({ method: 'GET', url, auth })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).toMatch(/govuk-tag--red">\s*Payment request rejected/)
+    expect(res.payload).toMatch(/govuk-tag--yellow">\s*No valid bank details held/)
+  })
+
+  test('GET /monitoring/payments/correlation-id shows warning events as failed or paused', async () => {
+    mockGetPaymentsByCorrelationId.mockResolvedValue({
+      frn: 1234567890,
+      agreementNumber: 'A1',
+      events: [
+        { timestamp: '01/01/2026 10:00', status: { name: 'Extracted from batch', state: 'In Progress' } },
+        { timestamp: '01/01/2026 10:01', status: failedPayment.status },
+        { timestamp: '01/01/2026 10:02', status: pausedPayment.status, lastEvent: true }
+      ]
+    })
+
+    const res = await server.inject({ method: 'GET', url: '/monitoring/payments/correlation-id?correlationId=abc', auth })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).toContain('govuk-tag govuk-tag--green">Completed')
+    expect(res.payload).toContain('govuk-tag govuk-tag--red">Failed')
+    expect(res.payload).toContain('govuk-tag govuk-tag--yellow">Paused')
+  })
+})

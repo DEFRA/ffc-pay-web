@@ -1,7 +1,9 @@
 const { getAlertingData } = require('../api')
 
 const getAlertsByScheme = async (schemeId) => {
-  const users = await getAlertingData(`/contact-list/by-scheme/${encodeURIComponent(schemeId)}`)
+  const users = await getAlertingData(
+    `/contact-list/by-scheme/${encodeURIComponent(schemeId)}`
+  )
   const schemeName = users?.payload?.schemeName
 
   const usersPayload = users?.payload?.contacts ?? []
@@ -9,12 +11,17 @@ const getAlertsByScheme = async (schemeId) => {
   const alertTypes = await getAlertingData('/alert-types')
   const alertTypesPayload = alertTypes?.payload?.alertTypes ?? []
 
+  const schemeAlertTypes = alertTypesPayload.filter(
+    (type) => type !== 'scheme_added'
+  )
+
   const normalizedSchemeId = Number(schemeId)
   const typesWithUsers = []
 
-  for (const type of alertTypesPayload) {
+  for (const type of schemeAlertTypes) {
     const matchingUsers = usersPayload.filter(user =>
-      Array.isArray(user[type]) && user[type].includes(normalizedSchemeId)
+      Array.isArray(user[type]) &&
+      user[type].includes(normalizedSchemeId)
     )
 
     typesWithUsers.push({

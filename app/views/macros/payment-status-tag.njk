@@ -1,0 +1,12 @@
+{% macro paymentStatusTag(status) %}
+  {%
+    set tagColours = {
+      Completed: 'govuk-tag--green',
+      Waiting: 'govuk-tag--yellow',
+      Failed: 'govuk-tag--red'
+    }
+  %}
+  <strong class="govuk-tag {{ tagColours[status.state] }}">
+    {{ status.detail }}
+  </strong>
+{% endmacro %}
