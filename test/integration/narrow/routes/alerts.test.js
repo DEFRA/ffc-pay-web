@@ -207,6 +207,44 @@ describe('Alerts route handlers', () => {
     expect(result).toBe(h)
   })
 
+  test('GET /alerts/update renders update view when recipient has no existing alerts', async () => {
+    const route = findRoute('GET', '/alerts/update')
+    const viewData = {
+      schemesPayload: [],
+      alertTypesPayload: ['PAYMENT_ALERT'],
+      selectedAlerts: {
+        PAYMENT_ALERT: {}
+      },
+      contactId: undefined,
+      emailAddress: 'missing@example.com'
+    }
+
+    getAlertRecipientViewData.mockResolvedValue(viewData)
+
+    const request = {
+      query: {
+        action: 'edit',
+        emailAddress: 'missing@example.com'
+      }
+    }
+
+    const result = await route.handler(request, h)
+
+    expect(getAlertRecipientViewData).toHaveBeenCalledWith(request, {
+      loadContact: true
+    })
+
+    expect(h.view).toHaveBeenCalledWith('alerts/update', {
+      ...viewData,
+      action: 'edit',
+      error: null,
+      successMessage: undefined
+    })
+
+    expect(h.redirect).not.toHaveBeenCalled()
+    expect(result).toBe(h)
+  })
+
   test('GET /alerts/add-recipient-by-scheme renders the add recipient view', async () => {
     const route = findRoute('GET', '/alerts/add-recipient-by-scheme')
     const viewData = {
