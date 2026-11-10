@@ -70,3 +70,15 @@ compose() {
   # Clean up
   compose down -v
 )
+
+# Report the Sonar Quality Gate for this branch using the coverage just generated
+if [ "${SONAR_SKIP_AUTOCHECK}" != "true" ]; then
+  if [ -n "${SONAR_TOKEN}" ]; then
+    "${projectRoot}/scripts/sonar" --after-tests
+  else
+    yellow='' dim='' reset=''
+    if [ -t 1 ] && [ -z "${NO_COLOR}" ]; then yellow='\033[1;33m' dim='\033[2m' reset='\033[0m'; fi
+    printf '\n%b⚠ SonarCloud Quality Gate check is not set up (SONAR_TOKEN is not set), so it was skipped.%b\n' "${yellow}" "${reset}"
+    printf '%b  Run ./setup in ffc-pay-core to add your token, or see scripts/sonar --help.%b\n' "${dim}" "${reset}"
+  fi
+fi
