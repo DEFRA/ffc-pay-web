@@ -19,7 +19,7 @@ describe('getDataFields', () => {
   })
 
   test('should throw error for unsupported report type', () => {
-    expect(() => getDataFields('NON_EXISTENT')).toThrowError(
+    expect(() => getDataFields('NON_EXISTENT')).toThrow(
       'Data mapper for Report Type: NON_EXISTENT does not match any mappers.'
     )
   })
