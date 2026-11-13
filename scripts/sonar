@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+
+# Local SonarCloud Quality Gate check, shared across FCP services.
+# The logic lives in DEFRA/ffc-shared-actions, run scripts/sonar --help for options.
+
+set -e
+
+checkUrl="${SONAR_CHECK_URL:-https://raw.githubusercontent.com/DEFRA/ffc-shared-actions/main/scripts/sonar-check.js}"
+checkScript="$(mktemp)"
+trap 'rm -f "${checkScript}"' EXIT
+
+if ! curl -sSfL "${checkUrl}" -o "${checkScript}"; then
+  red='' dim='' reset=''
+  if [ -t 2 ] && [ -z "${NO_COLOR}" ]; then red='\033[1;31m' dim='\033[2m' reset='\033[0m'; fi
+  printf '%b✖ Failed to fetch the shared Sonar check from %s%b\n' "${red}" "${checkUrl}" "${reset}" >&2
+  printf '%b  Check your connection, or set SONAR_SKIP_AUTOCHECK=true to run scripts/test without it.%b\n' "${dim}" "${reset}" >&2
+  exit 1
+fi
+
+cd "$(dirname "$0")/.."
+node "${checkScript}" "$@"
