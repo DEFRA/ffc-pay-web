@@ -9,9 +9,11 @@ const buildPaginationItems = require('../helpers/build-pagination-items')
 const { parsePaginationParams } = require('../helpers/list-view')
 const { getSchemes } = require('../helpers')
 const monitoringDateSchema = require('./schemas/monitoring-date-schema')
+const { BAD_REQUEST } = require('../constants/http-status-codes')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 const DEFAULT_PER_PAGE = 100
+const MONITORING_BY_DATE_VIEW = 'monitoring/monitoring-by-date'
 
 const buildFrnViewModel = ({ allPayments, frn, page, perPage }) => {
   const numberOfPayments = allPayments.length
@@ -169,9 +171,9 @@ module.exports = [
     options: {
       auth: AUTH_SCOPE
     },
-    handler: async (request, h) => {
+    handler: async (_request, h) => {
       const schemes = getSchemes()
-      return h.view('monitoring/monitoring-by-date', {
+      return h.view(MONITORING_BY_DATE_VIEW, {
         schemes
       })
     }
@@ -202,11 +204,11 @@ module.exports = [
           fieldErrors[errorName] = detail.message
         }
 
-        return h.view('monitoring/monitoring-by-date', {
+        return h.view(MONITORING_BY_DATE_VIEW, {
           schemes: getSchemes(),
           ...payload,
           ...fieldErrors
-        }).code(400)
+        }).code(BAD_REQUEST)
       }
 
       const { schemeId, day, month, year } = value
@@ -240,11 +242,11 @@ module.exports = [
           fieldErrors[errorName] = detail.message
         }
 
-        return h.view('monitoring/monitoring-by-date', {
+        return h.view(MONITORING_BY_DATE_VIEW, {
           schemes: getSchemes(),
           ...request.query,
           ...fieldErrors
-        }).code(400)
+        }).code(BAD_REQUEST)
       }
 
       const events = await getPaymentsByDate(value.schemeId, value.day, value.month, value.year)

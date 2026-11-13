@@ -5,7 +5,8 @@ const {
   getPaymentsByFrn: mockGetPaymentsByFrn,
   getPaymentsByCorrelationId: mockGetPaymentsByCorrelationId,
   getPaymentsByBatch: mockGetPaymentsByBatch,
-  getPaymentsByScheme: mockGetPaymentsByScheme
+  getPaymentsByScheme: mockGetPaymentsByScheme,
+  getPaymentsByDate: mockGetPaymentsByDate
 } = require('../../../../app/payments')
 
 const { DATA } = require('../../../mocks/values/data')
@@ -16,12 +17,15 @@ let server
 let auth
 
 beforeEach(async () => {
+  jest.clearAllMocks()
+
   auth = { strategy: 'session-auth', credentials: { scope: [holdAdmin] } }
 
   mockGetPaymentsByCorrelationId.mockResolvedValue(DATA)
   mockGetPaymentsByFrn.mockResolvedValue(DATA)
   mockGetPaymentsByBatch.mockResolvedValue(DATA)
   mockGetPaymentsByScheme.mockResolvedValue(DATA)
+  mockGetPaymentsByDate.mockResolvedValue(DATA)
 
   server = await createServer()
   await server.initialize()
@@ -44,9 +48,12 @@ const testRoute = (url, viewText = 'View payment events') => {
 }
 
 describe('Monitoring routes', () => {
-  ['/monitoring',
+  [
+    '/monitoring',
     '/monitoring/payments/correlation-id',
-    '/monitoring/view-processed-payment-requests'
+    '/monitoring/view-processed-payment-requests',
+    '/monitoring-by-date',
+    '/monitoring/date'
   ].forEach(path => {
     testRoute(path, path.includes('processed') ? 'View payment events by scheme' : 'View payment events')
   })
@@ -101,6 +108,47 @@ describe('Monitoring routes', () => {
 
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/monitoring?error=true&errorField=batch')
+    })
+  })
+
+  describe('monitoring-by-date routes', () => {
+    const validDate = {
+      schemeId: '1',
+      day: '29',
+      month: '2',
+      year: '2024'
+    }
+
+    test('GET /monitoring-by-date displays the date search form', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring-by-date',
+        auth
+      })
+
+      expect(res.statusCode).toBe(200)
+    })
+
+    test('GET /monitoring/date returns a bad request for invalid query values', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring/date?schemeId=1&day=31&month=4&year=2024',
+        auth
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(mockGetPaymentsByDate).not.toHaveBeenCalled()
+    })
+
+    test('GET /monitoring/date displays events for a valid date', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring/date?schemeId=1&day=29&month=2&year=2024',
+        auth
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(mockGetPaymentsByDate).toHaveBeenCalledWith(1, 29, 2, 2024)
     })
   })
 })

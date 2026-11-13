@@ -1,5 +1,9 @@
 const Joi = require('joi')
 
+const MAX_DAY = 31
+const MAX_MONTH = 12
+const MAX_YEAR = 9999
+
 const createNumberSchema = (label, min, max) =>
   Joi.number()
     .integer()
@@ -47,7 +51,7 @@ module.exports = Joi.object({
       'any.required': 'Select a scheme',
       'number.base': 'Select a valid scheme'
     }),
-  day: createNumberSchema('Day', 1, 31),
-  month: createNumberSchema('Month', 1, 12),
-  year: createNumberSchema('Year', 1, 9999)
+  day: createNumberSchema('Day', 1, MAX_DAY),
+  month: createNumberSchema('Month', 1, MAX_MONTH),
+  year: createNumberSchema('Year', 1, MAX_YEAR)
 }).custom(validateDate)
