@@ -112,13 +112,6 @@ describe('Monitoring routes', () => {
   })
 
   describe('monitoring-by-date routes', () => {
-    const validDate = {
-      schemeId: '1',
-      day: '29',
-      month: '2',
-      year: '2024'
-    }
-
     test('GET /monitoring-by-date displays the date search form', async () => {
       const res = await server.inject({
         method: 'GET',
