@@ -2,13 +2,18 @@ const { applicationAdmin, schemeAdmin, holdAdmin, dataView } = require('../auth/
 const {
   getPaymentsByFrn,
   getPaymentsByCorrelationId,
-  getPaymentsByBatch
+  getPaymentsByBatch,
+  getPaymentsByDate
 } = require('../payments')
 const buildPaginationItems = require('../helpers/build-pagination-items')
 const { parsePaginationParams } = require('../helpers/list-view')
+const { getSchemes } = require('../helpers')
+const monitoringDateSchema = require('./schemas/monitoring-date-schema')
+const { BAD_REQUEST } = require('../constants/http-status-codes')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 const DEFAULT_PER_PAGE = 100
+const MONITORING_BY_DATE_VIEW = 'monitoring/monitoring-by-date'
 
 const buildFrnViewModel = ({ allPayments, frn, page, perPage }) => {
   const numberOfPayments = allPayments.length
@@ -159,6 +164,96 @@ module.exports = [
           perPage
         })
       )
+    }
+  }, {
+    method: 'GET',
+    path: '/monitoring-by-date',
+    options: {
+      auth: AUTH_SCOPE
+    },
+    handler: async (_request, h) => {
+      const schemes = getSchemes()
+      return h.view(MONITORING_BY_DATE_VIEW, {
+        schemes
+      })
+    }
+  }, {
+    method: 'POST',
+    path: '/monitoring-by-date',
+    options: {
+      auth: AUTH_SCOPE
+    },
+    handler: async (request, h) => {
+      const payload = request.payload || {}
+      const { value, error } = monitoringDateSchema.validate(payload, {
+        abortEarly: false
+      })
+
+      if (error) {
+        const fieldErrorNames = {
+          schemeId: 'schemeIdError',
+          day: 'dayError',
+          month: 'monthError',
+          year: 'yearError'
+        }
+        const fieldErrors = {}
+
+        for (const detail of error.details) {
+          const field = detail.path[0]
+          const errorName = fieldErrorNames[field] || 'dateError'
+          fieldErrors[errorName] = detail.message
+        }
+
+        return h.view(MONITORING_BY_DATE_VIEW, {
+          schemes: getSchemes(),
+          ...payload,
+          ...fieldErrors
+        }).code(BAD_REQUEST)
+      }
+
+      const { schemeId, day, month, year } = value
+      return h.redirect(
+        `/monitoring/date?schemeId=${encodeURIComponent(schemeId)}&day=${encodeURIComponent(day)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`
+      )
+    }
+  }, {
+    method: 'GET',
+    path: '/monitoring/date',
+    options: {
+      auth: AUTH_SCOPE
+    },
+    handler: async (request, h) => {
+      const { value, error } = monitoringDateSchema.validate(request.query, {
+        abortEarly: false
+      })
+
+      if (error) {
+        const fieldErrorNames = {
+          schemeId: 'schemeIdError',
+          day: 'dayError',
+          month: 'monthError',
+          year: 'yearError'
+        }
+        const fieldErrors = {}
+
+        for (const detail of error.details) {
+          const field = detail.path[0]
+          const errorName = fieldErrorNames[field] || 'dateError'
+          fieldErrors[errorName] = detail.message
+        }
+
+        return h.view(MONITORING_BY_DATE_VIEW, {
+          schemes: getSchemes(),
+          ...request.query,
+          ...fieldErrors
+        }).code(BAD_REQUEST)
+      }
+
+      const events = await getPaymentsByDate(value.schemeId, value.day, value.month, value.year)
+      return h.view('monitoring/date', {
+        ...value,
+        events
+      })
     }
   }
 ]

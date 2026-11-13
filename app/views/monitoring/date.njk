@@ -1,0 +1,155 @@
+{% extends '_layout.njk' %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'macros/payment-event-summary-row.njk' import paymentEventSummaryRow %}
+{% from 'macros/build-pagination.njk' import buildPagination %}
+{% from 'macros/payment-status-tag.njk' import paymentStatusTag %}
+
+{% set pageTitle = "Ingestion date payment history" %}
+{% set hasMultiplePages = totalPages and totalPages > 1 %}
+
+{% block pageTitle %}
+  {% if hasMultiplePages %}
+    Page {{ page }} - {{ pageTitle }} - {{ serviceName }}
+  {% else %}
+    {{ pageTitle }} - {{ serviceName }}
+  {% endif %}
+{% endblock %}
+
+{% block beforeContent %}
+  {{
+  govukBreadcrumbs({
+    items: [{
+      text: "Home",
+      href: "/"
+    }, {
+      text: "View payment events by date",
+      href: "/monitoring-by-date"
+    }, {
+      text: pageTitle
+    }]
+  })
+}}
+
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      {% if payments.length %}
+        <p class="govuk-body-m">
+          View the payment history for the entered date or
+          <a
+            class="govuk-link"
+            href="/monitoring-by-date">start a new search</a>.
+        </p>
+
+        <p class="govuk-body">
+          We've found {{ numberOfPayments }} payment event{{
+            's' if numberOfPayments != 1
+          }}.
+        </p>
+
+        <h2 class="govuk-heading-m">{{ day }}/{{ month }}/{{ year }} ingestion history</h2>
+
+        {{
+          paymentEventSummaryRow(payments.length, hasMultiplePages, perPage, [100, 500, 1000], extraQuery)
+        }}
+
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th
+                scope="col"
+                class="govuk-table__header govuk-body-s">
+                Scheme
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header govuk-body-s">
+                Agreement
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header govuk-table__header--numeric govuk-body-s">
+                Payment request
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header govuk-table__header--numeric govuk-body-s">
+                Value
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header govuk-body-s">
+                Status
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header govuk-table__header--numeric govuk-body-s">
+                Last updated
+              </th>
+              <th
+                scope="col"
+                class="govuk-table__header govuk-body-s">
+                Activity
+              </th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for payment in payments %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell govuk-body-s">
+                  {{ payment.scheme }}
+                </td>
+                <td class="govuk-table__cell govuk-body-s">
+                  {{ payment.agreementNumber }}
+                </td>
+                <td
+                  class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">
+                  {{ payment.paymentRequestNumber }}
+                </td>
+                <td
+                  class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">
+                  {{ payment.originalValueText }}
+                </td>
+                <td class="govuk-table__cell govuk-body-s">
+                  {{ paymentStatusTag(payment.status) }}
+                </td>
+                <td
+                  class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">
+                  {{ payment.lastUpdated }}
+                </td>
+                <td class="govuk-table__cell govuk-body-s">
+                  <a
+                    class="govuk-link"
+                    href="/monitoring/payments/correlation-id?correlationId={{ payment.correlationId }}">View</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% if hasMultiplePages %}
+          {{
+            buildPagination(page, totalPages, perPage, extraQuery, paginationItems)
+          }}
+        {% endif %}
+      {% else %}
+        <p
+          id="no-hold-text"
+          class="govuk-body">
+          No payment events were found for ingestion date {{ day }}/{{ month }}/{{ year }}.
+        </p>
+
+        <p class="govuk-body">
+          <a
+            class="govuk-link"
+            href="/monitoring-by-date">Try searching for a payment event again.</a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
