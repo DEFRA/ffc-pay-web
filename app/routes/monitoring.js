@@ -2,10 +2,13 @@ const { applicationAdmin, schemeAdmin, holdAdmin, dataView } = require('../auth/
 const {
   getPaymentsByFrn,
   getPaymentsByCorrelationId,
-  getPaymentsByBatch
+  getPaymentsByBatch,
+  getPaymentsByDate
 } = require('../payments')
 const buildPaginationItems = require('../helpers/build-pagination-items')
 const { parsePaginationParams } = require('../helpers/list-view')
+const { getSchemes } = require('../helpers')
+const monitoringDateSchema = require('./schemas/monitoring-date-schema')
 
 const AUTH_SCOPE = { scope: [applicationAdmin, schemeAdmin, holdAdmin, dataView] }
 const DEFAULT_PER_PAGE = 100
@@ -159,6 +162,96 @@ module.exports = [
           perPage
         })
       )
+    }
+  }, {
+    method: 'GET',
+    path: '/monitoring-by-date',
+    options: {
+      auth: AUTH_SCOPE
+    },
+    handler: async (request, h) => {
+      const schemes = getSchemes()
+      return h.view('monitoring/monitoring-by-date', {
+        schemes
+      })
+    }
+  }, {
+    method: 'POST',
+    path: '/monitoring-by-date',
+    options: {
+      auth: AUTH_SCOPE
+    },
+    handler: async (request, h) => {
+      const payload = request.payload || {}
+      const { value, error } = monitoringDateSchema.validate(payload, {
+        abortEarly: false
+      })
+
+      if (error) {
+        const fieldErrorNames = {
+          schemeId: 'schemeIdError',
+          day: 'dayError',
+          month: 'monthError',
+          year: 'yearError'
+        }
+        const fieldErrors = {}
+
+        for (const detail of error.details) {
+          const field = detail.path[0]
+          const errorName = fieldErrorNames[field] || 'dateError'
+          fieldErrors[errorName] = detail.message
+        }
+
+        return h.view('monitoring/monitoring-by-date', {
+          schemes: getSchemes(),
+          ...payload,
+          ...fieldErrors
+        }).code(400)
+      }
+
+      const { schemeId, day, month, year } = value
+      return h.redirect(
+        `/monitoring/date?schemeId=${encodeURIComponent(schemeId)}&day=${encodeURIComponent(day)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`
+      )
+    }
+  }, {
+    method: 'GET',
+    path: '/monitoring/date',
+    options: {
+      auth: AUTH_SCOPE
+    },
+    handler: async (request, h) => {
+      const { value, error } = monitoringDateSchema.validate(request.query, {
+        abortEarly: false
+      })
+
+      if (error) {
+        const fieldErrorNames = {
+          schemeId: 'schemeIdError',
+          day: 'dayError',
+          month: 'monthError',
+          year: 'yearError'
+        }
+        const fieldErrors = {}
+
+        for (const detail of error.details) {
+          const field = detail.path[0]
+          const errorName = fieldErrorNames[field] || 'dateError'
+          fieldErrors[errorName] = detail.message
+        }
+
+        return h.view('monitoring/monitoring-by-date', {
+          schemes: getSchemes(),
+          ...request.query,
+          ...fieldErrors
+        }).code(400)
+      }
+
+      const events = await getPaymentsByDate(value.schemeId, value.day, value.month, value.year)
+      return h.view('monitoring/date', {
+        ...value,
+        events
+      })
     }
   }
 ]

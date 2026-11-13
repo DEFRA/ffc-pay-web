@@ -1,0 +1,222 @@
+{% extends "_layout.njk" %}
+
+{% from 'macros/breadcrumbs.njk' import breadcrumbs %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% set pageTitle = "View payment events by date" %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ breadcrumbs(pageTitle) }}
+{% endblock %}
+
+{% block content %}
+  {% set schemeError = { text: schemeIdError } if schemeIdError else null %}
+  {% set errorList = [] %}
+
+  {% if schemeError %}
+    {%
+      set errorList = (errorList.push({ text: schemeError.text, href: "#schemeId" }), errorList)
+    %}
+  {% endif %}
+  {% if dayError %}
+    {%
+      set errorList = (errorList.push({ text: dayError, href: "#day" }), errorList)
+    %}
+  {% endif %}
+  {% if monthError %}
+    {%
+      set errorList = (errorList.push({ text: monthError, href: "#month" }), errorList)
+    %}
+  {% endif %}
+  {% if yearError %}
+    {%
+      set errorList = (errorList.push({ text: yearError, href: "#year" }), errorList)
+    %}
+  {% endif %}
+  {% if dateError %}
+    {%
+      set errorList = (errorList.push({ text: dateError, href: "#day" }), errorList)
+    %}
+  {% endif %}
+  {% if error and not errorList.length %}
+    {%
+      set errorList = (errorList.push({ text: error, href: "#schemeId" }), errorList)
+    %}
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {% if errorList.length %}
+        {{
+          govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: errorList
+          })
+        }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+
+      <p class="govuk-body-m">
+        Search and view payment events and activity by date of receipt to
+        Payment Hub.
+      </p>
+
+      <form
+        class="govuk-!-margin-bottom-6"
+        action="/monitoring-by-date"
+        method="post"
+        role="search">
+        <input
+          type="hidden"
+          name="crumb"
+          value="{{crumb}}"
+        />
+        <div
+          class="govuk-form-group {% if schemeError %}govuk-form-group--error{% endif %}">
+          <label
+            class="govuk-label"
+            for="schemeId">Scheme</label>
+          {% if schemeError %}
+            <p
+              id="scheme-error"
+              class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{
+                schemeError.text
+              }}
+            </p>
+          {% endif %}
+          <select
+            class="govuk-select {% if schemeError %}govuk-select--error{% endif %}"
+            id="schemeId"
+            name="schemeId"
+            {% if schemeError %}aria-describedby="scheme-error"{% endif %}>
+            <option
+              value=""
+              {% if not schemeId %}selected{% endif %}>
+              Select a scheme
+            </option>
+            {% for scheme in schemes %}
+              <option
+                value="{{ scheme.schemeId }}"
+                {% if scheme.schemeId == schemeId %}selected{% endif %}>
+                {{ scheme.schemeName }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div
+          class="govuk-form-group {% if dayError or monthError or yearError or dateError %}govuk-form-group--error{% endif %}">
+          <fieldset
+            class="govuk-fieldset"
+            role="group"
+            aria-describedby="closure-date-hint{% if dayError %} day-error{% endif %}{% if monthError %} month-error{% endif %}{% if yearError %} year-error{% endif %}{% if dateError %} date-error{% endif %}">
+            <legend class="govuk-fieldset__legend govuk-label-s">
+              Date of receipt to Payment Hub
+            </legend>
+            <div
+              id="closure-date-hint"
+              class="govuk-hint">
+              For example, 27 11 2023
+            </div>
+
+            {% if dayError %}
+              <p
+                id="day-error"
+                class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{ dayError }}
+              </p>
+            {% endif %}
+            {% if monthError %}
+              <p
+                id="month-error"
+                class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{
+                  monthError
+                }}
+              </p>
+            {% endif %}
+            {% if yearError %}
+              <p
+                id="year-error"
+                class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{
+                  yearError
+                }}
+              </p>
+            {% endif %}
+            {% if dateError %}
+              <p
+                id="date-error"
+                class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span>
+                {{ dateError }}
+              </p>
+            {% endif %}
+
+            <div
+              class="govuk-date-input"
+              id="closure-date">
+              <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+                  <label
+                    class="govuk-label govuk-date-input__label"
+                    for="day">Day</label>
+                  <input
+                    class="govuk-input {% if dayError or dateError %}govuk-input--error{% endif %} govuk-date-input__input govuk-input--width-2"
+                    id="day"
+                    name="day"
+                    type="text"
+                    inputmode="numeric"
+                    value="{{ day }}"
+                  />
+                </div>
+              </div>
+              <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+                  <label
+                    class="govuk-label govuk-date-input__label"
+                    for="month">Month</label>
+                  <input
+                    class="govuk-input {% if monthError or dateError %}govuk-input--error{% endif %} govuk-date-input__input govuk-input--width-2"
+                    id="month"
+                    name="month"
+                    type="text"
+                    inputmode="numeric"
+                    value="{{ month }}"
+                  />
+                </div>
+              </div>
+              <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+                  <label
+                    class="govuk-label govuk-date-input__label"
+                    for="year">Year</label>
+                  <input
+                    class="govuk-input {% if yearError or dateError %}govuk-input--error{% endif %} govuk-date-input__input govuk-input--width-4"
+                    id="year"
+                    name="year"
+                    type="text"
+                    inputmode="numeric"
+                    value="{{ year }}"
+                  />
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        {{
+          govukButton({
+            text: "Search",
+            type: "submit"
+          })
+        }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
