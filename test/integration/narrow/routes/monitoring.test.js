@@ -12,6 +12,7 @@ const {
 const { DATA } = require('../../../mocks/values/data')
 const { holdAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
+const getCrumbs = require('../../../helpers/get-crumbs')
 
 let server
 let auth
@@ -112,14 +113,66 @@ describe('Monitoring routes', () => {
   })
 
   describe('monitoring-by-date routes', () => {
+    const dateFormUrl = '/monitoring-by-date'
+    const validDate = {
+      schemeId: '1',
+      day: '29',
+      month: '2',
+      year: '2024'
+    }
+
+    const postDateForm = async payload => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(
+        () => { },
+        server,
+        dateFormUrl,
+        auth
+      )
+
+      const formData = new URLSearchParams({
+        ...payload,
+        crumb: viewCrumb
+      }).toString()
+
+      return server.inject({
+        method: 'POST',
+        url: dateFormUrl,
+        payload: formData,
+        headers: {
+          cookie: `crumb=${cookieCrumb}`,
+          'content-type': 'application/x-www-form-urlencoded'
+        },
+        auth
+      })
+    }
+
     test('GET /monitoring-by-date displays the date search form', async () => {
       const res = await server.inject({
         method: 'GET',
-        url: '/monitoring-by-date',
+        url: dateFormUrl,
         auth
       })
 
       expect(res.statusCode).toBe(200)
+    })
+
+    test('POST /monitoring-by-date redirects with valid date values', async () => {
+      const res = await postDateForm(validDate)
+
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location)
+        .toBe('/monitoring/date?schemeId=1&day=29&month=2&year=2024')
+    })
+
+    test('POST /monitoring-by-date returns a bad request for an invalid date', async () => {
+      const res = await postDateForm({
+        ...validDate,
+        day: '31',
+        month: '4'
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(res.payload).toContain('Enter a valid date')
     })
 
     test('GET /monitoring/date returns a bad request for invalid query values', async () => {
@@ -234,7 +287,11 @@ describe('payment warning status tags', () => {
       ]
     })
 
-    const res = await server.inject({ method: 'GET', url: '/monitoring/payments/correlation-id?correlationId=abc', auth })
+    const res = await server.inject({
+      method: 'GET',
+      url: '/monitoring/payments/correlation-id?correlationId=abc',
+      auth
+    })
 
     expect(res.statusCode).toBe(200)
     expect(res.payload).toContain('govuk-tag govuk-tag--green">Completed')
