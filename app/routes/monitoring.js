@@ -249,10 +249,10 @@ module.exports = [
         }).code(BAD_REQUEST)
       }
 
-      const events = await getPaymentsByDate(value.schemeId, value.day, value.month, value.year)
+      const payments = await getPaymentsByDate(value.schemeId, value.day, value.month, value.year)
       return h.view('monitoring/date', {
         ...value,
-        events
+        payments
       })
     }
   }
