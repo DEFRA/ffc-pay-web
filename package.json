@@ -34,7 +34,7 @@
   "dependencies": {
     "@azure/identity": "4.14.1",
     "@azure/monitor-opentelemetry": "1.20.0",
-    "@azure/msal-node": "7.1.2",
+    "@azure/msal-node": "5.1.5",
     "@azure/service-bus": "7.9.5",
     "@azure/storage-blob": "12.31.0",
     "@fast-csv/format": "5.0.2",
