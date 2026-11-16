@@ -54,7 +54,7 @@
                   {% if event.timestamp and event.status.warning and event.status.state == 'Failed' %}
                     <strong
                       class="govuk-tag govuk-tag--red">Failed</strong>
-                  {% elif event.timestamp and event.status.warning %}
+                  {% elif event.timestamp and (event.status.warning or (event.lastEvent and event.status.state == 'Waiting')) %}
                     <strong
                       class="govuk-tag govuk-tag--yellow">Paused</strong>
                   {% elif event.timestamp %}
