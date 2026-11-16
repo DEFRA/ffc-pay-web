@@ -1,6 +1,6 @@
 {
   "name": "ffc-pay-web",
-  "version": "2.11.10",
+  "version": "2.11.11",
   "description": "FFC payment management service",
   "homepage": "https://github.com/DEFRA/ffc-pay-web",
   "main": "app/index.js",
@@ -33,7 +33,7 @@
   ],
   "license": "OGL-UK-3.0",
   "dependencies": {
-    "@azure/identity": "4.13.1",
+    "@azure/identity": "4.14.1",
     "@azure/monitor-opentelemetry": "1.20.0",
     "@azure/msal-node": "5.1.5",
     "@azure/service-bus": "7.9.5",
