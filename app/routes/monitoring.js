@@ -1,3 +1,4 @@
+const { getSchemeNameFromSchemeId } = require('ffc-pay-schemes')
 const { applicationAdmin, schemeAdmin, holdAdmin, dataView } = require('../auth/permissions')
 const {
   getPaymentsByFrn,
@@ -250,9 +251,11 @@ module.exports = [
       }
 
       const payments = await getPaymentsByDate(value.schemeId, value.day, value.month, value.year)
+      const schemeName = getSchemeNameFromSchemeId(value.schemeId)
       return h.view('monitoring/date', {
         ...value,
-        payments
+        payments,
+        schemeName
       })
     }
   }

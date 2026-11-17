@@ -5,7 +5,7 @@
 {% from 'macros/build-pagination.njk' import buildPagination %}
 {% from 'macros/payment-status-tag.njk' import paymentStatusTag %}
 
-{% set pageTitle = "Ingestion date payment history" %}
+{% set pageTitle = "Payment history for scheme and date" %}
 {% set hasMultiplePages = totalPages and totalPages > 1 %}
 
 {% block pageTitle %}
@@ -40,7 +40,7 @@
 
       {% if payments.length %}
         <p class="govuk-body-m">
-          View the payment history for the entered date or
+          View the payment history for the entered date and scheme, or
           <a
             class="govuk-link"
             href="/monitoring-by-date">start a new search</a>.
@@ -52,7 +52,7 @@
           }}.
         </p>
 
-        <h2 class="govuk-heading-m">{{ day }}/{{ month }}/{{ year }} ingestion history</h2>
+        <h2 class="govuk-heading-m">Payment history for {{ schemeName }} on {{ day }}/{{ month }}/{{ year }}</h2>
 
         {{
           paymentEventSummaryRow(payments.length, hasMultiplePages, perPage, [100, 500, 1000], extraQuery)
@@ -141,7 +141,7 @@
         <p
           id="no-hold-text"
           class="govuk-body">
-          No payment events were found for ingestion date {{ day }}/{{ month }}/{{ year }}.
+          No payment events were found for {{ schemeName }} on {{ day }}/{{ month }}/{{ year }}.
         </p>
 
         <p class="govuk-body">
