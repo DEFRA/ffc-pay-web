@@ -298,4 +298,39 @@ describe('payment warning status tags', () => {
     expect(res.payload).toContain('govuk-tag govuk-tag--red">Failed')
     expect(res.payload).toContain('govuk-tag govuk-tag--yellow">Paused')
   })
+
+  const heldStatus = { name: 'Payment held', detail: 'Payment on hold', state: 'Waiting' }
+
+  test('GET /monitoring/payments/correlation-id shows latest waiting event as paused', async () => {
+    mockGetPaymentsByCorrelationId.mockResolvedValue({
+      frn: 1234567890,
+      agreementNumber: 'A1',
+      events: [
+        { timestamp: '01/01/2026 10:00', status: { name: 'Extracted from batch', state: 'In Progress' } },
+        { timestamp: '01/01/2026 10:01', status: heldStatus, lastEvent: true }
+      ]
+    })
+
+    const res = await server.inject({ method: 'GET', url: '/monitoring/payments/correlation-id?correlationId=abc', auth })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).toMatch(/Payment held\s*<\/td>\s*<td[^>]*>\s*<strong\s+class="govuk-tag govuk-tag--yellow">Paused/)
+  })
+
+  test('GET /monitoring/payments/correlation-id shows waiting event as completed once a later event arrives', async () => {
+    mockGetPaymentsByCorrelationId.mockResolvedValue({
+      frn: 1234567890,
+      agreementNumber: 'A1',
+      events: [
+        { timestamp: '01/01/2026 10:00', status: heldStatus },
+        { timestamp: '01/01/2026 10:01', status: { name: 'Final state calculated', state: 'In Progress' }, lastEvent: true }
+      ]
+    })
+
+    const res = await server.inject({ method: 'GET', url: '/monitoring/payments/correlation-id?correlationId=abc', auth })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).not.toContain('govuk-tag--yellow')
+    expect(res.payload).toMatch(/Payment held\s*<\/td>\s*<td[^>]*>\s*<strong\s+class="govuk-tag govuk-tag--green">Completed/)
+  })
 })
