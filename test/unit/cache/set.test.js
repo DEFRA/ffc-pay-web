@@ -30,7 +30,7 @@ describe('set cache', () => {
     }
 
     if (expectedError) {
-      await expect(set(request, key, value)).rejects.toThrowError(expectedError)
+      await expect(set(request, key, value)).rejects.toThrow(expectedError)
     } else {
       const result = await set(request, key, value)
       expect(getCache).toHaveBeenCalledWith(request)
