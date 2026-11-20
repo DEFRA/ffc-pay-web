@@ -46,6 +46,9 @@
           </thead>
           <tbody class="govuk-table__body">
             {% for event in events.events %}
+              {% set previousEvent = events.events[loop.index0 - 1] if not loop.first %}
+              {% set isPausedEvent = event.timestamp and event.lastEvent and event.status.state == 'Waiting' %}
+              {% set followsPausedEvent = previousEvent and previousEvent.timestamp and previousEvent.lastEvent and previousEvent.status.state == 'Waiting' %}
               <tr class="govuk-table__row">
                 <td class="govuk-table__cell govuk-body-s">
                   {{ event.status.name }}
@@ -54,13 +57,13 @@
                   {% if event.timestamp and event.status.warning and event.status.state == 'Failed' %}
                     <strong
                       class="govuk-tag govuk-tag--red">Failed</strong>
-                  {% elif event.timestamp and (event.status.warning or (event.lastEvent and event.status.state == 'Waiting')) %}
+                  {% elif (event.timestamp and event.status.warning) or isPausedEvent or followsPausedEvent %}
                     <strong
                       class="govuk-tag govuk-tag--yellow">Paused</strong>
                   {% elif event.timestamp %}
                     <strong
                       class="govuk-tag govuk-tag--green">Completed</strong>
-                  {% elif events.events[loop.index0 - 1].lastEvent %}
+                  {% elif previousEvent.lastEvent %}
                     <span class="govuk-tag">In progress</span>
                   {% else %}
                     <strong class="govuk-tag govuk-tag--grey">Not started
@@ -69,7 +72,7 @@
                 </td>
                 <td
                   class="govuk-table__cell govuk-table__cell--numeric govuk-body-s">
-                  {{ event.timestamp }}
+                  {% if not isPausedEvent %}{{ event.timestamp }}{% endif %}
                 </td>
               </tr>
             {% endfor %}

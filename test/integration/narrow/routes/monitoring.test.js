@@ -307,7 +307,9 @@ describe('payment warning status tags', () => {
       agreementNumber: 'A1',
       events: [
         { timestamp: '01/01/2026 10:00', status: { name: 'Extracted from batch', state: 'In Progress' } },
-        { timestamp: '01/01/2026 10:01', status: heldStatus, lastEvent: true }
+        { timestamp: '01/01/2026 10:01', status: heldStatus, lastEvent: true },
+        { status: { name: 'Final state calculated', state: 'In Progress' } },
+        { status: { name: 'Submitted to payment ledger', state: 'In Progress' } }
       ]
     })
 
@@ -315,6 +317,10 @@ describe('payment warning status tags', () => {
 
     expect(res.statusCode).toBe(200)
     expect(res.payload).toMatch(/Payment held\s*<\/td>\s*<td[^>]*>\s*<strong\s+class="govuk-tag govuk-tag--yellow">Paused/)
+    expect(res.payload).not.toContain('01/01/2026 10:01')
+    expect(res.payload).toMatch(/Final state calculated\s*<\/td>\s*<td[^>]*>\s*<strong\s+class="govuk-tag govuk-tag--yellow">Paused/)
+    expect(res.payload).not.toContain('In progress')
+    expect(res.payload).toMatch(/Submitted to payment ledger\s*<\/td>\s*<td[^>]*>\s*<strong class="govuk-tag govuk-tag--grey">Not started/)
   })
 
   test('GET /monitoring/payments/correlation-id shows waiting event as completed once a later event arrives', async () => {
