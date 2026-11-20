@@ -1,5 +1,6 @@
 const { getAlertingData } = require('../api')
 const { getAlertTypesAndSchemes } = require('./get-alert-types-and-schemes')
+const { NOT_FOUND } = require('../constants/http-status-codes')
 
 const normaliseValues = (value) => {
   if (Array.isArray(value)) {
@@ -19,11 +20,19 @@ const getContactPayload = async (loadContact, contactId, emailAddress) => {
     return {}
   }
 
-  const response = await getAlertingData(
-    `/contact/${encodeURIComponent(contactId || emailAddress)}`
-  )
+  try {
+    const response = await getAlertingData(
+      `/contact/${encodeURIComponent(contactId || emailAddress)}`
+    )
 
-  return response?.payload?.contact ?? {}
+    return response?.payload?.contact ?? {}
+  } catch (error) {
+    if (error?.output?.statusCode === NOT_FOUND) {
+      return {}
+    }
+
+    throw error
+  }
 }
 
 const getSchemesPayload = (sanitizedSchemesPayload, schemeId) =>

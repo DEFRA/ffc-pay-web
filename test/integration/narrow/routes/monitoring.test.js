@@ -5,23 +5,28 @@ const {
   getPaymentsByFrn: mockGetPaymentsByFrn,
   getPaymentsByCorrelationId: mockGetPaymentsByCorrelationId,
   getPaymentsByBatch: mockGetPaymentsByBatch,
-  getPaymentsByScheme: mockGetPaymentsByScheme
+  getPaymentsByScheme: mockGetPaymentsByScheme,
+  getPaymentsByDate: mockGetPaymentsByDate
 } = require('../../../../app/payments')
 
 const { DATA } = require('../../../mocks/values/data')
 const { holdAdmin } = require('../../../../app/auth/permissions')
 const createServer = require('../../../../app/server')
+const getCrumbs = require('../../../helpers/get-crumbs')
 
 let server
 let auth
 
 beforeEach(async () => {
+  jest.clearAllMocks()
+
   auth = { strategy: 'session-auth', credentials: { scope: [holdAdmin] } }
 
   mockGetPaymentsByCorrelationId.mockResolvedValue(DATA)
   mockGetPaymentsByFrn.mockResolvedValue(DATA)
   mockGetPaymentsByBatch.mockResolvedValue(DATA)
   mockGetPaymentsByScheme.mockResolvedValue(DATA)
+  mockGetPaymentsByDate.mockResolvedValue(DATA)
 
   server = await createServer()
   await server.initialize()
@@ -44,9 +49,12 @@ const testRoute = (url, viewText = 'View payment events') => {
 }
 
 describe('Monitoring routes', () => {
-  ['/monitoring',
+  [
+    '/monitoring',
     '/monitoring/payments/correlation-id',
-    '/monitoring/view-processed-payment-requests'
+    '/monitoring/view-processed-payment-requests',
+    '/monitoring-by-date',
+    '/monitoring/date'
   ].forEach(path => {
     testRoute(path, path.includes('processed') ? 'View payment events by scheme' : 'View payment events')
   })
@@ -101,6 +109,92 @@ describe('Monitoring routes', () => {
 
       expect(res.statusCode).toBe(302)
       expect(res.headers.location).toBe('/monitoring?error=true&errorField=batch')
+    })
+  })
+
+  describe('monitoring-by-date routes', () => {
+    const dateFormUrl = '/monitoring-by-date'
+    const validDate = {
+      schemeId: '1',
+      day: '29',
+      month: '2',
+      year: '2024'
+    }
+
+    const postDateForm = async payload => {
+      const { cookieCrumb, viewCrumb } = await getCrumbs(
+        () => { },
+        server,
+        dateFormUrl,
+        auth
+      )
+
+      const formData = new URLSearchParams({
+        ...payload,
+        crumb: viewCrumb
+      }).toString()
+
+      return server.inject({
+        method: 'POST',
+        url: dateFormUrl,
+        payload: formData,
+        headers: {
+          cookie: `crumb=${cookieCrumb}`,
+          'content-type': 'application/x-www-form-urlencoded'
+        },
+        auth
+      })
+    }
+
+    test('GET /monitoring-by-date displays the date search form', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: dateFormUrl,
+        auth
+      })
+
+      expect(res.statusCode).toBe(200)
+    })
+
+    test('POST /monitoring-by-date redirects with valid date values', async () => {
+      const res = await postDateForm(validDate)
+
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location)
+        .toBe('/monitoring/date?schemeId=1&day=29&month=2&year=2024')
+    })
+
+    test('POST /monitoring-by-date returns a bad request for an invalid date', async () => {
+      const res = await postDateForm({
+        ...validDate,
+        day: '31',
+        month: '4'
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(res.payload).toContain('Enter a valid date')
+    })
+
+    test('GET /monitoring/date returns a bad request for invalid query values', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring/date?schemeId=1&day=31&month=4&year=2024',
+        auth
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(mockGetPaymentsByDate).not.toHaveBeenCalled()
+    })
+
+    test('GET /monitoring/date displays events for a valid date', async () => {
+      const res = await server.inject({
+        method: 'GET',
+        url: '/monitoring/date?schemeId=1&day=29&month=2&year=2024',
+        auth
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(mockGetPaymentsByDate).toHaveBeenCalledWith(1, 29, 2, 2024)
     })
   })
 })
@@ -193,11 +287,56 @@ describe('payment warning status tags', () => {
       ]
     })
 
-    const res = await server.inject({ method: 'GET', url: '/monitoring/payments/correlation-id?correlationId=abc', auth })
+    const res = await server.inject({
+      method: 'GET',
+      url: '/monitoring/payments/correlation-id?correlationId=abc',
+      auth
+    })
 
     expect(res.statusCode).toBe(200)
     expect(res.payload).toContain('govuk-tag govuk-tag--green">Completed')
     expect(res.payload).toContain('govuk-tag govuk-tag--red">Failed')
     expect(res.payload).toContain('govuk-tag govuk-tag--yellow">Paused')
+  })
+
+  const heldStatus = { name: 'Payment held', detail: 'Payment on hold', state: 'Waiting' }
+
+  test('GET /monitoring/payments/correlation-id shows latest waiting event as paused', async () => {
+    mockGetPaymentsByCorrelationId.mockResolvedValue({
+      frn: 1234567890,
+      agreementNumber: 'A1',
+      events: [
+        { timestamp: '01/01/2026 10:00', status: { name: 'Extracted from batch', state: 'In Progress' } },
+        { timestamp: '01/01/2026 10:01', status: heldStatus, lastEvent: true },
+        { status: { name: 'Final state calculated', state: 'In Progress' } },
+        { status: { name: 'Submitted to payment ledger', state: 'In Progress' } }
+      ]
+    })
+
+    const res = await server.inject({ method: 'GET', url: '/monitoring/payments/correlation-id?correlationId=abc', auth })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).toMatch(/Payment held\s*<\/td>\s*<td[^>]*>\s*<strong\s+class="govuk-tag govuk-tag--yellow">Paused/)
+    expect(res.payload).not.toContain('01/01/2026 10:01')
+    expect(res.payload).toMatch(/Final state calculated\s*<\/td>\s*<td[^>]*>\s*<strong\s+class="govuk-tag govuk-tag--yellow">Paused/)
+    expect(res.payload).not.toContain('In progress')
+    expect(res.payload).toMatch(/Submitted to payment ledger\s*<\/td>\s*<td[^>]*>\s*<strong class="govuk-tag govuk-tag--grey">Not started/)
+  })
+
+  test('GET /monitoring/payments/correlation-id shows waiting event as completed once a later event arrives', async () => {
+    mockGetPaymentsByCorrelationId.mockResolvedValue({
+      frn: 1234567890,
+      agreementNumber: 'A1',
+      events: [
+        { timestamp: '01/01/2026 10:00', status: heldStatus },
+        { timestamp: '01/01/2026 10:01', status: { name: 'Final state calculated', state: 'In Progress' }, lastEvent: true }
+      ]
+    })
+
+    const res = await server.inject({ method: 'GET', url: '/monitoring/payments/correlation-id?correlationId=abc', auth })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.payload).not.toContain('govuk-tag--yellow')
+    expect(res.payload).toMatch(/Payment held\s*<\/td>\s*<td[^>]*>\s*<strong\s+class="govuk-tag govuk-tag--green">Completed/)
   })
 })

@@ -190,6 +190,47 @@ describe('get-alert-recipient-view-data', () => {
     await expect(getAlertRecipientViewData(request)).rejects.toThrow('failed schemes')
   })
 
+  test('returns empty contact data when contact is not found', async () => {
+    getAlertTypesAndSchemes.mockResolvedValue({
+      schemes: [{ schemeId: 1, name: 'Scheme One' }],
+      alertTypesPayload: ['EMAIL']
+    })
+
+    const error = new Error('Response Error: 404 Not Found')
+    error.output = {
+      statusCode: 404
+    }
+
+    getAlertingData.mockRejectedValue(error)
+
+    const request = {
+      auth: { credentials: { account: { name: 'Sam' } } },
+      query: {
+        emailAddress: 'missing@example.com'
+      }
+    }
+
+    const result = await getAlertRecipientViewData(request, {
+      loadContact: true
+    })
+
+    expect(getAlertingData).toHaveBeenCalledWith(
+      '/contact/missing%40example.com'
+    )
+
+    expect(result).toEqual({
+      schemesPayload: [{ schemeId: 1, name: 'Scheme One' }],
+      alertTypesPayload: ['EMAIL'],
+      selectedAlerts: {
+        EMAIL: {}
+      },
+      contactId: undefined,
+      emailAddress: 'missing@example.com',
+      schemeId: undefined,
+      action: undefined
+    })
+  })
+
   test('propagates errors from getAlertingData when loading contact', async () => {
     const error = new Error('failed contact')
     getAlertTypesAndSchemes.mockResolvedValue({
