@@ -70,8 +70,55 @@ describe('Process closures', () => {
     expect(result.errors.details.some(e => e.message === 'Enter a valid scheme name')).toBe(true)
   })
 
+  test('Should strip a UTF-8 byte order mark from the start of the file', async () => {
+    const csv = `\uFEFF${SFI},${FRN},${AGREEMENT_NUMBER},2023-12-04\r\n${IMPS},${FRN + 1},${AGREEMENT_NUMBER},2023-05-31`
+    const result = await processClosureData(csv)
+    expect(result.errors).toBeUndefined()
+    expect(result.uploadData).toHaveLength(2)
+    expect(result.uploadData[0].sourceSystem).toBe(SFI)
+  })
+
+  test('Should trim whitespace around values and ignore blank lines', async () => {
+    const csv = ` ${SFI} , ${FRN} , ${AGREEMENT_NUMBER} , 2023-12-04 \r\n   \r\n`
+    const result = await processClosureData(csv)
+    expect(result.errors).toBeUndefined()
+    expect(result.uploadData).toEqual([{
+      sourceSystem: SFI,
+      frn: FRN.toString(),
+      agreementNumber: AGREEMENT_NUMBER,
+      closureDate: '2023-12-04'
+    }])
+  })
+
+  test('Should accept agreement numbers longer than 20 characters', async () => {
+    const agreementNumber = 'A'.repeat(50)
+    const result = await processClosureData(`${SFI},${FRN},${agreementNumber},2023-12-04`)
+    expect(result.errors).toBeUndefined()
+    expect(result.uploadData[0].agreementNumber).toBe(agreementNumber)
+  })
+
+  test('Should reject agreement numbers longer than 50 characters', async () => {
+    const result = await processClosureData(`${SFI},${FRN},${'A'.repeat(51)},2023-12-04`)
+    expect(result.errors.details.some(e => e.message === 'Enter a valid agreement number')).toBe(true)
+  })
+
+  test.each([
+    ['2023-12-04', '2023-12-04'],
+    ['2023/12/04', '2023-12-04'],
+    ['04/12/2023', '2023-12-04'],
+    ['4/12/2023', '2023-12-04'],
+    ['04-12-2023', '2023-12-04'],
+    ['4-1-2023', '2023-01-04']
+  ])('Should normalise closure date %s to %s', async (closureDate, expected) => {
+    const result = await processClosureData(`${SFI},${FRN},${AGREEMENT_NUMBER},${closureDate}`)
+    expect(result.errors).toBeUndefined()
+    expect(result.uploadData[0].closureDate).toBe(expected)
+  })
+
   test.each([
     '2-12-04',
+    '31/02/2023',
+    '12/31/2023',
     '2023-87-05',
     '2023-12-76',
     ''
