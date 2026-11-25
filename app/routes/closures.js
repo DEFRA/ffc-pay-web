@@ -3,7 +3,7 @@ const schema = require('./schemas/closure/closure')
 const bulkSchema = require('./schemas/closure/bulk-closure')
 const removeConfirmSchema = require('./schemas/closure/remove-confirm')
 const { postRetention, getRetentionData } = require('../api')
-const { MAX_BYTES, MAX_MEGA_BYTES } = require('../constants/payload-sizes')
+const { CLOSURE_MAX_BYTES, CLOSURE_MAX_MEGA_BYTES } = require('../constants/payload-sizes')
 const { BAD_REQUEST } = require('../constants/http-status-codes')
 const { handleBulkClosureError } = require('../closure/handle-bulk-closure-error')
 const { handleBulkClosure } = require('../closure/handle-bulk-closure')
@@ -272,11 +272,11 @@ module.exports = [
         output: 'file',
         parse: true,
         allow: 'multipart/form-data',
-        maxBytes: MAX_BYTES,
+        maxBytes: CLOSURE_MAX_BYTES,
         multipart: true,
         failAction: async (request, h, _error) => {
           const crumb = request.payload?.crumb ?? request.state.crumb
-          return handleBulkClosureError(h, `The uploaded file is too large. Please upload a file smaller than ${MAX_MEGA_BYTES} MB.`, crumb)
+          return handleBulkClosureError(h, `The uploaded file is too large. Please upload a file smaller than ${CLOSURE_MAX_MEGA_BYTES} MB.`, crumb)
         }
       }
     }
