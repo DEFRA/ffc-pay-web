@@ -16,6 +16,17 @@ services:
       - ./app:/home/node/app
       - ./package.json:/home/node/package.json
     environment:
+      NODE_ENV: development
+      PDS_BASE_URL: ${PDS_BASE_URL:-}
+      REDIRECT_REPORTS: ${REDIRECT_REPORTS:-false}
+      REDIRECT_PAYMENT_EVENTS: ${REDIRECT_PAYMENT_EVENTS:-false}
+      REDIRECT_PAYMENT_HOLDS: ${REDIRECT_PAYMENT_HOLDS:-false}
+      REDIRECT_MANUAL_PAYMENTS: ${REDIRECT_MANUAL_PAYMENTS:-false}
+      REDIRECT_AGREEMENT_CLOSURES: ${REDIRECT_AGREEMENT_CLOSURES:-false}
+      REDIRECT_EMAIL_ALERTS: ${REDIRECT_EMAIL_ALERTS:-false}
+      REDIRECT_STATEMENTS: ${REDIRECT_STATEMENTS:-false}
+      REDIRECT_METRICS: ${REDIRECT_METRICS:-false}
+      REDIRECT_RESET_PAYMENT_REQUESTS: ${REDIRECT_RESET_PAYMENT_REQUESTS:-false}
       PAY_EVENT_STORE_AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://ffc-pay-event-store-azurite:10000/devstoreaccount1;
       PAY_INJECTION_AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;AccountName=devstoreaccount1;BlobEndpoint=http://ffc-pay-injection-azurite:10000/devstoreaccount1;
       DOC_AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://ffc-doc-statement-azurite:10000/devstoreaccount1;

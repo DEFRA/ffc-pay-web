@@ -2,6 +2,9 @@
 {{- define "ffc-pay-web.deployment" -}}
 spec:
   template:
+    metadata:
+      annotations:
+        checksum/card-redirects: {{ list .Values.container.pdsBaseUrl .Values.container.cardRedirects | toJson | sha256sum | quote }}
     spec:
       containers:
       - {{ include "ffc-helm-library.container" (list . "ffc-pay-web.container") }}

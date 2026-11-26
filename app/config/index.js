@@ -3,6 +3,7 @@ const authConfig = require('./auth')
 const storageConfig = require('./storage')
 const messageConfig = require('./message')
 const cacheConfig = require('./cache')
+const sitemap = require('../constants/sitemap')
 
 const portNumber = 3007
 const staticCacheTimeout = 604800000
@@ -10,6 +11,14 @@ const staticCacheTimeout = 604800000
 const TIMEOUT_MS = 2000
 const FAILURE_THRESHOLD = 3
 const RESET_TIMEOUT_MS = 10000
+
+const pdsHttpsUrl = Joi.string().uri({ scheme: ['https'] }).allow('')
+const pdsLocalUrl = Joi.string().uri({ scheme: ['http'] }).custom((value, helpers) => {
+  if (!URL.canParse(value) || new URL(value).hostname !== 'localhost') {
+    return helpers.error('string.uri')
+  }
+  return value
+})
 
 // Define config schema
 const schema = Joi.object({
@@ -39,6 +48,11 @@ const schema = Joi.object({
   failureThreshold: Joi.number().default(FAILURE_THRESHOLD),
   resetTimeoutMs: Joi.number().default(RESET_TIMEOUT_MS),
   legacyReportsEnabled: Joi.bool().default(false),
+  pdsBaseUrl: Joi.alternatives().conditional('env', {
+    is: 'development',
+    then: Joi.alternatives().try(pdsHttpsUrl, pdsLocalUrl),
+    otherwise: pdsHttpsUrl
+  }),
   bannerEnabled: Joi.bool().default(false),
   bannerHeader: Joi.string().allow(null, ''),
   bannerText: Joi.string().allow(null, ''),
@@ -73,6 +87,7 @@ const config = {
   failureThreshold: process.env.STMT_DB_FAILURES,
   resetTimeoutMs: process.env.STMT_DB_RESET_MS,
   legacyReportsEnabled: process.env.ENABLE_LEGACY_REPORTS,
+  pdsBaseUrl: process.env.PDS_BASE_URL,
   bannerEnabled: process.env.BANNER_ENABLED,
   bannerHeader: process.env.BANNER_HEADER,
   bannerText: process.env.BANNER_TEXT,
@@ -90,6 +105,7 @@ if (result.error) {
 }
 
 const value = result.value
+value.enabledCardRedirects = sitemap.filter(({ redirectFlag }) => redirectFlag && process.env[redirectFlag]?.toLowerCase() === 'true')
 
 value.isDev = value.env === 'development'
 value.isTest = value.env === 'test'
