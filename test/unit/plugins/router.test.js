@@ -97,7 +97,7 @@ describe('Router plugin feature flag', () => {
       for (const route of expectedRedirects) {
         const path = route.path.replace('{filename*}', 'reports/example.csv')
         const response = await testServer.inject(`${path}?updated=123`)
-        const continueLink = response.payload.match(/<a\b[^>]*>\s*Continue to FCP PDS Web\s*<\/a>/)?.[0]
+        const continueLink = response.payload.match(/<a\b[^>]*>\s*Continue to the new page\s*<\/a>/)?.[0]
 
         expect(response.statusCode).toBe(200)
         expect(response.headers.location).toBeUndefined()
