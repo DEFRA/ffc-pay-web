@@ -225,6 +225,47 @@ scripts/test -d
 
 ## CI pipeline
 
+### Dashboard card redirects as we decommission them
+
+Before deploying this wiring, add the following non-secret variables to the
+Azure DevOps Library group `ffc-pay-web-env-var` for each environment prefix
+(`pr`, `snd2`, `dev`, `test`, `pre`, `prd`). Set `<env>_pdsBaseUrl` to the
+environment's PDS Web HTTPS origin (without a path), or leave it empty if no
+destination is available. Initialise all card flags to `false`.
+
+For example, set the test Library variable like this, replacing the example
+hostname with the actual PDS Web test ingress hostname:
+
+```text
+test_pdsBaseUrl=https://fcp-pds-web.test.example.gov.uk
+```
+
+Include `https://` and the full hostname, but no path. `fcp-pds-web` on its own
+is not a valid value. Pay Web appends the existing path, such as `/alerts/manage`.
+
+| Card | Library variable |
+| --- | --- |
+| Reports | `<env>_redirectReports` |
+| Payment events | `<env>_redirectPaymentEvents` |
+| Payment holds | `<env>_redirectPaymentHolds` |
+| Manual payments | `<env>_redirectManualPayments` |
+| Agreement closures | `<env>_redirectAgreementClosures` |
+| Email alerts | `<env>_redirectEmailAlerts` |
+| Statements | `<env>_redirectStatements` |
+| Metrics dashboard | `<env>_redirectMetrics` |
+| Reset payment requests | `<env>_redirectResetPaymentRequests` |
+
+Once PDS Web serves all dashboard link paths for a card, set its flag to `true`
+and start a new pipeline run for that environment. For example,
+`test_redirectEmailAlerts=true` switches `/alerts/manage` in test. Existing
+links and bookmarks keep working: each enabled dashboard GET shows a notice
+after Pay Web checks access. The notice links to the same path on PDS Web.
+Query strings are not forwarded. Other GETs and form submissions stay on Pay Web.
+
+To roll back, set the flag to `false` and run the pipeline again. Changes take
+effect on pods started with the new configuration.
+
+
 This service uses the [FFC CI pipeline](https://github.com/DEFRA/ffc-jenkins-pipeline-library)
 
 ## Licence

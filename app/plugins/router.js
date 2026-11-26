@@ -1,4 +1,21 @@
 const config = require('../config')
+const redirectPrefixes = config.enabledCardRedirects.flatMap(({ routePrefixes }) => routePrefixes)
+
+const applyRouteRedirect = (route) => {
+  if (route.method !== 'GET' || !config.pdsBaseUrl || !redirectPrefixes.some(prefix => route.path === prefix || route.path.startsWith(`${prefix}/`))) {
+    return route
+  }
+
+  const handler = (request, h) => {
+    const destination = new URL('/', config.pdsBaseUrl)
+    destination.pathname = request.path
+    return h.view('service-moved', { destination: destination.href }).header('Cache-Control', 'no-store')
+  }
+  const options = { ...route.options }
+  delete options.validate
+
+  return route.handler ? { ...route, options, handler } : { ...route, options: { ...options, handler } }
+}
 
 let routes = [].concat(
   require('../routes/healthy'),
@@ -53,7 +70,7 @@ module.exports = {
         path: '/'
       })
 
-      server.route(routes)
+      server.route(routes.map(applyRouteRedirect))
     }
   }
 }

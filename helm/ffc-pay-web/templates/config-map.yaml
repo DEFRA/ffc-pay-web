@@ -67,4 +67,8 @@ data:
   BANNER_HEADER: {{ quote .Values.container.bannerHeader }}
   BANNER_TEXT: {{ quote .Values.container.bannerText }}
   BANNER_EMAIL: {{ quote .Values.container.bannerEmail }}
+  PDS_BASE_URL: {{ .Values.container.pdsBaseUrl | quote }}
+  {{- range $flag, $enabled := .Values.container.cardRedirects }}
+  {{ $flag }}: {{ $enabled | quote }}
+  {{- end }}
 {{- end -}}

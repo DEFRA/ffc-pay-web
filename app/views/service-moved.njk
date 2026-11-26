@@ -1,0 +1,25 @@
+{% extends '_layout.njk' %}
+{% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+
+{% set pageTitle = 'This service has now moved' %}
+
+{% block pageTitle %}{{ pageTitle }} - {{ serviceName }}{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: 'Back to home', href: '/' }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{ pageTitle }}</h1>
+      <p class="govuk-body">
+        This service has moved as part of a planned migration to a new improved
+        site for payment and document services. You should continue to the new
+        site and bookmark the new page.
+      </p>
+      {{ govukButton({ text: 'Continue to the new page', href: destination }) }}
+    </div>
+  </div>
+{% endblock %}

@@ -65,6 +65,8 @@ container:
   azureAppRegistrationClientSecret:
   azureAppRegistrationRedirectUrl: authenticate
   enableLegacyReports: false
+  pdsBaseUrl: ''
+  cardRedirects: {}
   googleTagManagerKey: GTM-5XJKV8F
   azureLogLevel: error
 
